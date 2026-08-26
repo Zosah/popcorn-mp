@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="81afcc2e-0036-4b63-9a64-96a098386367" name="Changes" comment="update">
+      <change beforePath="$PROJECT_DIR$/miniprogram/pages/createDiary/createDiary.js" beforeDir="false" afterPath="$PROJECT_DIR$/miniprogram/pages/createDiary/createDiary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/miniprogram/pages/createDiary/createDiary.json" beforeDir="false" afterPath="$PROJECT_DIR$/miniprogram/pages/createDiary/createDiary.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/miniprogram/pages/createDiary/createDiary.wxml" beforeDir="false" afterPath="$PROJECT_DIR$/miniprogram/pages/createDiary/createDiary.wxml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="package.json" />
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="4" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/miniprogram/app.json" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="ProjectId" id="2BRFiJ28ijDnwjkyb6DNONfKjaV" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../program-live/live-client" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.folding" />
+    <property name="ts.external.directory.path" value="D:\JetBrains\WebStorm 2021.2.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\program-profile\popcorn-mp\miniprogram\assets\images" />
+      <recent name="E:\program-profile\popcorn-mp\miniprogram\colorui" />
+      <recent name="E:\program-profile\popcorn-mp\miniprogram" />
+      <recent name="E:\program-profile\popcorn-mp\miniprogram\assets\images\menubar" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\program-profile\popcorn-mp\miniprogram\assets\images" />
+      <recent name="E:\program-profile\popcorn-mp\cloudfunctions\Diary\AddItem" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="81afcc2e-0036-4b63-9a64-96a098386367" name="Changes" comment="" />
+      <created>1656861115956</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1656861115956</updated>
+      <workItem from="1656861117192" duration="1690000" />
+      <workItem from="1656900593969" duration="12366000" />
+      <workItem from="1657429402259" duration="9495000" />
+      <workItem from="1657449466584" duration="17083000" />
+      <workItem from="1657516124562" duration="2175000" />
+      <workItem from="1657549551734" duration="4371000" />
+      <workItem from="1657594377769" duration="25000" />
+      <workItem from="1657601551981" duration="4532000" />
+      <workItem from="1657636123648" duration="3621000" />
+      <workItem from="1657723912325" duration="1887000" />
+      <workItem from="1657764376948" duration="86000" />
+      <workItem from="1657764465060" duration="6000" />
+      <workItem from="1657798101793" duration="42000" />
+      <workItem from="1657812489198" duration="711000" />
+      <workItem from="1657960228812" duration="40143000" />
+      <workItem from="1658109842704" duration="10000" />
+      <workItem from="1658140223341" duration="11000" />
+      <workItem from="1658196401977" duration="31000" />
+      <workItem from="1658557187416" duration="15218000" />
+      <workItem from="1658636616082" duration="602000" />
+      <workItem from="1658803405429" duration="1287000" />
+      <workItem from="1658821781629" duration="3169000" />
+    </task>
+    <task id="LOCAL-00001" summary="init">
+      <created>1656943318631</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1656943318631</updated>
+    </task>
+    <task id="LOCAL-00002" summary="打通云函数">
+      <created>1657019409724</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1657019409724</updated>
+    </task>
+    <task id="LOCAL-00003" summary="基本框架OK">
+      <created>1657549699750</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1657549699750</updated>
+    </task>
+    <task id="LOCAL-00004" summary="移除一些组件">
+      <created>1657798135586</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1657798135586</updated>
+    </task>
+    <task id="LOCAL-00005" summary="完成登录模块">
+      <created>1658033923529</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1658033923529</updated>
+    </task>
+    <task id="LOCAL-00006" summary="整合云函数">
+      <created>1658045669522</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1658045669522</updated>
+    </task>
+    <task id="LOCAL-00007" summary="整合云函数">
+      <created>1658045678822</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1658045678822</updated>
+    </task>
+    <task id="LOCAL-00008" summary="完成删除模块">
+      <created>1658109655082</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1658109655082</updated>
+    </task>
+    <task id="LOCAL-00009" summary="update">
+      <created>1658822691988</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1658822691988</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="init" />
+    <MESSAGE value="打通云函数" />
+    <MESSAGE value="基本框架OK" />
+    <MESSAGE value="移除一些组件" />
+    <MESSAGE value="完成登录模块" />
+    <MESSAGE value="整合云函数" />
+    <MESSAGE value="完成删除模块" />
+    <MESSAGE value="update" />
+    <option name="LAST_COMMIT_MESSAGE" value="update" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
