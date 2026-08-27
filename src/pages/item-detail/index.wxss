@@ -1,0 +1,13 @@
+.detail-meta { padding: 10rpx 5rpx 14rpx; color: #a2aacb; font-size: 17rpx; font-weight: 700; }
+.detail-hero { display: flex; align-items: center; gap: 20rpx; padding: 26rpx; }
+.detail-hero__icon { display: flex; align-items: center; justify-content: center; width: 96rpx; height: 96rpx; border-radius: 32rpx; background: #fff0e8; color: #ff835d; font-size: 39rpx; font-weight: 850; }
+.detail-hero__body { display: flex; align-items: flex-start; flex: 1; flex-direction: column; gap: 11rpx; }
+.detail-hero__name { color: #202d64; font-size: 36rpx; font-weight: 850; }
+.edit-link { padding: 14rpx; color: #6383df; font-weight: 750; }
+.info-card { overflow: hidden; padding: 0 24rpx; }
+.info-row { display: flex; align-items: center; justify-content: space-between; min-height: 90rpx; border-bottom: 1rpx solid #eef0f7; color: #9099bc; }
+.info-row:last-child { border-bottom: 0; }
+.info-row text:last-child { color: #28356b; font-weight: 700; }
+.note-card { padding: 26rpx; color: #65719a; line-height: 1.7; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15rpx; }
+.action-grid button { width: 100%; min-height: 84rpx; font-size: 25rpx; }

@@ -1,0 +1,23 @@
+.reminder-page { padding-bottom: calc(60rpx + env(safe-area-inset-bottom)); }
+.reminder-head { padding: 8rpx 6rpx 30rpx; }
+.reminder-head__meta { color: #8b75df; font-size: 18rpx; font-weight: 800; }
+.reminder-head__title { width: 90%; margin-top: 12rpx; color: #18255f; font-size: 48rpx; font-weight: 850; line-height: 1.3; }
+.reminder-head__copy { margin-top: 12rpx; color: #929bc0; font-size: 22rpx; line-height: 1.6; }
+.reminder-list { overflow: hidden; padding: 0 24rpx; border-radius: 38rpx; background: #fff; box-shadow: 0 14rpx 32rpx rgba(58, 72, 128, 0.07); }
+.reminder-row { display: flex; align-items: center; min-height: 126rpx; border-bottom: 1rpx solid #eef0f7; }
+.reminder-row:last-child { border-bottom: 0; }
+.reminder-row__icon { display: flex; align-items: center; justify-content: center; width: 62rpx; height: 62rpx; border-radius: 22rpx; background: #eef2ff; color: #6683dd; font-size: 21rpx; font-weight: 850; }
+.reminder-row__icon--orange { background: #fff0e8; color: #ff815c; }
+.reminder-row__icon--green { background: #eafaf3; color: #21b881; }
+.reminder-row__icon--purple { background: #f4eaff; color: #a15bd7; }
+.reminder-row__body { min-width: 0; flex: 1; margin-left: 17rpx; }
+.reminder-row__body text { display: block; color: #253269; font-size: 24rpx; font-weight: 750; }
+.reminder-row__body text + text { margin-top: 5rpx; color: #9ba4c5; font-size: 18rpx; font-weight: 500; }
+.reminder-section-title { margin: 42rpx 6rpx 16rpx; color: #1e2b63; font-size: 30rpx; font-weight: 800; }
+.time-card { display: flex; align-items: center; justify-content: space-between; padding: 26rpx; border-radius: 34rpx; background: #fff; }
+.time-card view text { display: block; color: #253269; font-size: 36rpx; font-weight: 850; }
+.time-card view text + text { margin-top: 6rpx; color: #9ba4c5; font-size: 18rpx; font-weight: 500; }
+.time-card > text { color: #6683dd; font-size: 21rpx; font-weight: 750; }
+.permission-note { display: flex; align-items: center; gap: 16rpx; margin-top: 24rpx; padding: 22rpx; border-radius: 30rpx; background: #eef2ff; }
+.permission-note view { display: flex; align-items: center; justify-content: center; width: 52rpx; height: 52rpx; border-radius: 19rpx; background: #668ff0; color: #fff; font-weight: 850; }
+.permission-note text { flex: 1; color: #7d89b0; font-size: 19rpx; line-height: 1.6; }

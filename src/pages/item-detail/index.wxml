@@ -1,0 +1,30 @@
+<view class="page-shell detail-page" wx:if="{{item}}">
+  <view class="subpage-back" bindtap="onBack">← 返回库存</view>
+  <view class="detail-meta">INVENTORY / 我们的家</view>
+  <view class="detail-hero surface">
+    <view class="detail-hero__icon">{{item.iconText}}</view>
+    <view class="detail-hero__body">
+      <view class="detail-hero__name">{{item.name}}</view>
+      <expiry-badge status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
+    </view>
+    <view class="edit-link" bindtap="onEdit">编辑</view>
+  </view>
+
+  <view class="section-title">物品信息</view>
+  <view class="surface info-card">
+    <view class="info-row"><text>数量</text><text>{{item.quantity}}{{item.unit}}</text></view>
+    <view class="info-row"><text>分类</text><text>{{item.categoryLabel}}</text></view>
+    <view class="info-row"><text>存放位置</text><text>{{item.locationLabel}}</text></view>
+    <view class="info-row"><text>有效期</text><text>{{item.expiresOn || '未设置'}}</text></view>
+    <view class="info-row"><text>当前状态</text><text>{{item.statusLabel}}</text></view>
+  </view>
+
+  <view wx:if="{{item.note}}" class="section-title">备注</view>
+  <view wx:if="{{item.note}}" class="surface note-card">{{item.note}}</view>
+
+  <view class="section-title">快捷操作</view>
+  <view class="action-grid">
+    <button wx:for="{{item.actions}}" wx:key="key" class="secondary-button" data-status="{{item.nextStatus}}" bindtap="onChangeStatus">{{item.label}}</button>
+    <button class="danger-button" bindtap="onDelete">删除物品</button>
+  </view>
+</view>

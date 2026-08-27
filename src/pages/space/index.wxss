@@ -1,0 +1,42 @@
+.space-page { min-height: 100vh; box-sizing: border-box; padding: 28rpx 30rpx 110rpx; }
+.space-head { padding: 12rpx 6rpx 32rpx; }
+.space-head__meta { display: flex; justify-content: space-between; color: #a2aacb; font-size: 18rpx; font-weight: 700; }
+.space-head__title { margin-top: 20rpx; color: #18255f; font-size: 58rpx; font-weight: 850; letter-spacing: -2rpx; }
+.space-head__title-row { display: flex; align-items: center; justify-content: space-between; }
+.space-head__edit { margin-top: 20rpx; padding: 10rpx 18rpx; border-radius: 22rpx; background: #eef2ff; color: #6683dd; font-size: 20rpx; font-weight: 750; }
+.space-head__copy { width: 92%; margin-top: 13rpx; color: #929bc0; font-size: 22rpx; line-height: 1.6; }
+.space-stats { display: grid; grid-template-columns: 1fr 1.3fr 1fr; padding: 12rpx; border-radius: 36rpx; background: #fff; box-shadow: 0 16rpx 36rpx rgba(58, 72, 128, 0.08); }
+.space-stats view { display: flex; align-items: center; min-height: 108rpx; border-radius: 26rpx; flex-direction: column; justify-content: center; }
+.space-stats view:nth-child(2) { background: #eef2ff; }
+.space-stats text:first-child { color: #6688e4; font-size: 36rpx; font-weight: 850; }
+.space-stats view:first-child text:first-child { color: #22be85; }
+.space-stats view:last-child text:first-child { color: #ff8b5d; }
+.space-stats text:last-child { margin-top: 4rpx; color: #949dc0; font-size: 17rpx; font-weight: 650; }
+.space-section-head { display: flex; justify-content: space-between; margin-top: 42rpx; padding: 0 6rpx 14rpx; }
+.space-section-head--spaced { margin-top: 48rpx; }
+.space-section-head text:first-child { color: #1e2b63; font-size: 30rpx; font-weight: 800; }
+.space-section-head text:last-child { color: #9da5c5; font-size: 16rpx; font-weight: 700; }
+.member-row { display: flex; align-items: center; gap: 14rpx; min-height: 116rpx; padding: 0 22rpx; border-bottom: 1rpx solid #eef0f7; background: #fff; }
+.space-section-head + .member-row { border-radius: 34rpx 34rpx 0 0; }
+.member-row + .member-row { border-radius: 0 0 34rpx 34rpx; border-bottom: 0; }
+.member-row__index { display: none; }
+.member-row__initial { display: flex; align-items: center; justify-content: center; width: 66rpx; height: 66rpx; border-radius: 23rpx; background: #eafaf3; color: #21b881; font-size: 24rpx; font-weight: 850; }
+.member-row__initial--owner { background: #fff0ea; color: #ff805b; }
+.member-row__body { min-width: 0; flex: 1; }
+.member-row__body text { display: block; color: #253269; font-size: 24rpx; font-weight: 750; }
+.member-row__body text + text { margin-top: 6rpx; color: #9ca4c4; font-size: 17rpx; font-weight: 500; }
+.member-row__role { padding: 6rpx 11rpx; border-radius: 14rpx; background: #eef2ff; color: #6684dd; font-size: 13rpx; font-weight: 800; }
+.invite-sheet { padding: 30rpx 24rpx; border-radius: 36rpx; background: #fff; box-shadow: 0 14rpx 32rpx rgba(58, 72, 128, 0.07); text-align: center; }
+.invite-sheet__label { color: #9aa3c4; font-size: 18rpx; font-weight: 650; }
+.invite-sheet__code { margin-top: 18rpx; color: #607fde; font-size: 50rpx; font-weight: 850; letter-spacing: 9rpx; }
+.invite-sheet__copy { margin: 13rpx auto 20rpx; color: #99a2c3; font-size: 19rpx; }
+.invite-sheet__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }
+.invite-sheet button { width: 100%; border-radius: 24rpx; background: #eef2ff; color: #5f7fd8; font-size: 21rpx; font-weight: 750; }
+.invite-sheet__actions button:last-child { background: #668ff0; color: #fff; }
+.invite-sheet__preview { display: block; margin-top: 20rpx; color: #6784db; font-size: 19rpx; font-weight: 700; }
+.invite-sheet__refresh { display: inline-block; margin-top: 18rpx; color: #9aa3c4; font-size: 19rpx; }
+.privacy-note { display: flex; align-items: center; gap: 17rpx; margin-top: 22rpx; padding: 22rpx; border-radius: 32rpx; background: #f0fbf6; }
+.privacy-note__mark { display: flex; align-items: center; justify-content: center; width: 58rpx; height: 58rpx; border-radius: 20rpx; background: #29c990; color: #fff; font-weight: 850; }
+.privacy-note view:last-child { flex: 1; }
+.privacy-note text { display: block; color: #315e60; font-size: 22rpx; font-weight: 700; }
+.privacy-note text + text { margin-top: 6rpx; color: #79a09a; font-size: 18rpx; font-weight: 500; line-height: 1.5; }

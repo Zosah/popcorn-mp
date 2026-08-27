@@ -1,0 +1,61 @@
+<view class="profile-page tab-page">
+  <view class="profile-head">
+    <view class="profile-head__meta">PERSONAL · SPACE</view>
+    <view class="profile-head__title">
+      <text>这个家，</text>
+      <text>有我们在。</text>
+    </view>
+    <view class="profile-head__copy">个人信息归个人，家里的事留在共同空间里。</view>
+  </view>
+
+  <view class="identity">
+    <view class="identity__initial">满</view>
+    <view class="identity__body">
+      <view class="identity__name">时刻在体验官</view>
+      <view class="identity__meta">Demo 身份 · 空间 Owner</view>
+    </view>
+    <view class="identity__number">01</view>
+  </view>
+
+  <view class="folio-head"><text>我的空间</text><text>1 SPACE</text></view>
+  <view class="folio-row folio-row--single" bindtap="onOpenSpace">
+    <view class="folio-row__index">01</view>
+    <view class="folio-row__body">
+      <view class="folio-row__title">{{spaceName}}</view>
+      <view class="folio-row__meta">2 位成员 · 家庭库存 · 共同记录</view>
+    </view>
+    <view class="folio-row__arrow">→</view>
+  </view>
+
+  <view class="folio-head folio-head--spaced"><text>本地 Demo</text><text>TOOLS</text></view>
+  <view class="folio-row" bindtap="onResetDemo">
+    <view class="folio-row__index">A</view>
+    <view class="folio-row__body">
+      <view class="folio-row__title">恢复初始库存</view>
+      <view class="folio-row__meta">清空本地修改，重新载入示例</view>
+    </view>
+    <view class="folio-row__arrow">→</view>
+  </view>
+  <view class="folio-row" bindtap="onOpenReminders">
+    <view class="folio-row__index">B</view>
+    <view class="folio-row__body">
+      <view class="folio-row__title">到期提醒</view>
+      <view class="folio-row__meta">先体验本地提醒偏好</view>
+    </view>
+    <view class="folio-row__arrow">→</view>
+  </view>
+  <view class="folio-row folio-row--last" bindtap="onOpenInvite">
+    <view class="folio-row__index">C</view>
+    <view class="folio-row__body">
+      <view class="folio-row__title">使用邀请码加入</view>
+      <view class="folio-row__meta">体验邀请校验与加入空间</view>
+    </view>
+    <view class="folio-row__arrow">→</view>
+  </view>
+
+  <view class="profile-foot">
+    <text>时刻在</text>
+    <text>{{version}}</text>
+    <text>把一起生活的事慢慢记下来</text>
+  </view>
+</view>

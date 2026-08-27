@@ -1,0 +1,51 @@
+.journal-page { min-height: 100vh; box-sizing: border-box; padding: 28rpx 30rpx calc(200rpx + env(safe-area-inset-bottom)); }
+.journal-head { padding: 12rpx 6rpx 32rpx; }
+.journal-head__meta { color: #a2aacb; font-size: 19rpx; font-weight: 700; }
+.journal-head__title { margin-top: 16rpx; color: #18255f; font-size: 56rpx; font-weight: 850; letter-spacing: -2rpx; }
+.journal-head__copy { width: 91%; margin-top: 12rpx; color: #929bc0; font-size: 23rpx; line-height: 1.6; }
+
+.journal-tabs { display: flex; gap: 8rpx; height: 76rpx; padding: 8rpx; border-radius: 38rpx; background: #e9ecf5; }
+.journal-tab { display: flex; align-items: center; justify-content: center; height: 60rpx; border-radius: 30rpx; color: #8b95bb; flex: 1; font-size: 23rpx; font-weight: 700; }
+.journal-tab--active { background: #fff; color: #5d7ed9; box-shadow: 0 8rpx 20rpx rgba(58, 72, 128, 0.09); }
+
+.timeline { margin-top: 24rpx; }
+.timeline-entry { display: flex; gap: 18rpx; margin-bottom: 20rpx; padding: 26rpx; border-radius: 36rpx; background: #fff; box-shadow: 0 14rpx 32rpx rgba(58, 72, 128, 0.07); }
+.timeline-entry__date { display: flex; align-items: center; width: 72rpx; height: 78rpx; border-radius: 24rpx; background: #fff0f4; color: #ec6d91; flex-direction: column; justify-content: center; }
+.timeline-entry:nth-child(2) .timeline-entry__date { background: #eafaf3; color: #1ebc82; }
+.timeline-entry:nth-child(3) .timeline-entry__date { background: #fff4e8; color: #f19350; }
+.timeline-entry--fresh { border: 2rpx solid rgba(102, 143, 240, 0.12); }
+.timeline-entry--fresh .timeline-entry__date { background: #eef2ff; color: #6683dd; }
+.timeline-entry__date text:first-child { font-size: 30rpx; font-weight: 850; line-height: 1; }
+.timeline-entry__date text:last-child { margin-top: 4rpx; font-size: 14rpx; font-weight: 800; }
+.timeline-entry__body { min-width: 0; flex: 1; }
+.timeline-entry__author,
+.timeline-entry__visibility { color: #9da5c5; font-size: 18rpx; }
+.timeline-entry__title { margin-top: 10rpx; color: #202d64; font-size: 29rpx; font-weight: 800; line-height: 1.45; }
+.timeline-entry__copy { margin-top: 15rpx; color: #737fa9; font-size: 22rpx; line-height: 1.65; }
+.timeline-entry__visibility { margin-top: 17rpx; }
+
+.photo-placeholder { position: relative; overflow: hidden; height: 250rpx; margin-top: 20rpx; border-radius: 30rpx; background: #ffe4d2; }
+.photo-placeholder text { position: absolute; right: 18rpx; bottom: 14rpx; color: rgba(87, 74, 110, 0.48); font-size: 17rpx; }
+.flower-stem { position: absolute; bottom: -30rpx; left: 46%; width: 5rpx; height: 220rpx; border-radius: 5rpx; background: #46b87a; transform: rotate(-12deg); }
+.flower-dot { position: absolute; width: 52rpx; height: 52rpx; border-radius: 50%; background: #ff896e; opacity: 0.9; }
+.flower-dot--one { top: 50rpx; left: 40%; }
+.flower-dot--two { top: 78rpx; left: 48%; width: 42rpx; height: 42rpx; background: #ffbd61; }
+.flower-dot--three { top: 36rpx; left: 51%; width: 36rpx; height: 36rpx; background: #f279a1; }
+
+.pet-note { display: flex; align-items: center; gap: 18rpx; margin-top: 20rpx; padding: 18rpx; border-radius: 28rpx; background: #effbf5; }
+.pet-note__initial { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; border-radius: 25rpx; background: #27ca90; color: #fff; font-size: 25rpx; font-weight: 850; }
+.pet-note text { display: block; color: #385d61; font-size: 21rpx; font-weight: 700; }
+.pet-note text + text { margin-top: 6rpx; color: #7da09c; font-size: 18rpx; font-weight: 500; }
+
+.notes-view { padding-top: 8rpx; }
+.notes-group { margin-top: 20rpx; padding: 8rpx 24rpx; border-radius: 34rpx; background: #fff; box-shadow: 0 14rpx 32rpx rgba(58, 72, 128, 0.07); }
+.notes-group__head { display: flex; justify-content: space-between; padding: 20rpx 0; color: #202d64; font-size: 26rpx; font-weight: 800; }
+.notes-group__head text:last-child { color: #9da5c5; font-size: 18rpx; }
+.note-row { display: flex; align-items: center; gap: 15rpx; min-height: 104rpx; border-top: 1rpx solid #eef0f7; }
+.note-row__index { display: flex; align-items: center; justify-content: center; width: 42rpx; height: 42rpx; border-radius: 15rpx; background: #eef2ff; color: #6688e4; font-size: 17rpx; font-weight: 800; }
+.note-row view { flex: 1; }
+.note-row view text { display: block; color: #26336a; font-size: 24rpx; font-weight: 700; }
+.note-row view text + text { margin-top: 5rpx; color: #9aa3c4; font-size: 18rpx; font-weight: 500; }
+.note-row__arrow { color: #b4bad1; font-size: 30rpx; }
+
+.journal-add { position: fixed; right: 34rpx; bottom: calc(132rpx + env(safe-area-inset-bottom)); z-index: 20; min-width: 176rpx; height: 76rpx; margin: 0; border-radius: 38rpx; background: #668ff0; color: #fff; box-shadow: 0 14rpx 26rpx rgba(102, 143, 240, 0.3); font-size: 23rpx; font-weight: 750; line-height: 76rpx; }

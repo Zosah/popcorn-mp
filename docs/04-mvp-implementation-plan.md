@@ -1,0 +1,297 @@
+# MVP 实施与部署基线
+
+> 最后更新：2026-08-26
+> 状态：已确认的 0→1 实施基线。后续架构、代码和部署变更应优先更新本文，避免仅存在于对话中。
+
+当前进度：前端 Demo 0.9 已完成“家、库存、记录、我的”四个核心入口、可爱生活感视觉、本地 Mock 库存闭环、邀请码与微信分享路径的本地邀请体验、多个宠物档案切换、宠物事件新增/详情/编辑/删除与月历、持续照护、每日吃喝拉撒记录、宠物食品和猫砂集合，以及菜单、生活记录和提醒设置的纯前端交互预览，详见 `docs/05-frontend-demo.md`；后端尚未开始搭建。这些预览能力不改变 MVP 真实接口范围，宠物真实接口仍属于第二阶段，邀请的 7 天有效期、单次使用和成员权限仍必须由服务端实现。
+
+## 1. 当前资源与约束
+
+### 已有
+
+- 微信小程序账号、管理员权限、AppID 和 AppSecret。
+- 自有域名，域名与现有服务器均已备案。
+- 腾讯云服务器。
+- 腾讯云 COS 桶。
+- GitHub 前端仓库 `popcorn-mp` 和后端仓库 `popcorn-server`。
+- 本机微信开发者工具、Node.js 20、Go 1.22.12。
+
+### 明确约束
+
+- 本机不能安装 Docker，因此本地开发和生产发布都不能把 Docker 作为必需条件。
+- 不升级系统全局 Go，避免影响其他工程。
+- `popcorn-server/go.mod` 单独声明 Go 1.27 工具链；本机 `GOTOOLCHAIN=auto` 会按模块自动选择工具链。
+- 前端 `project.config.json` 和 `project.private.config.json` 存在用户本地修改，初始化工程时不得覆盖。
+- 域名备案不等于小程序备案。正式提交新版前必须在微信公众平台确认并完成小程序备案。
+
+### 暂不要求购买或开通
+
+- TencentDB；MVP 复用服务器现有 MySQL。
+- TCR。
+- Redis、消息队列、Kubernetes。
+- 新 COS 桶；优先复用现有私有桶的独立前缀。
+
+## 2. MVP 目标与边界
+
+第一版只交付“微信登录 + 默认空间 + 家庭库存 + 单次邀请”的完整闭环。
+
+### 必须包含
+
+1. 微信登录，首次登录自动创建默认空间。
+2. 空间重命名、成员查看。
+3. 邀请码和微信分享路径邀请成员。
+4. 库存新增、详情、编辑、软删除。
+5. 已用完、已丢弃、已归档和恢复。
+6. 名称搜索，以及分类、位置、到期状态筛选。
+7. 已过期、今日到期、1～3 天、4～7 天、正常、无有效期。
+8. 测试环境部署、真机联调、生产发布、备份和基础监控。
+
+### 明确延后
+
+- 图片上传与 COS 用户媒体。
+- 二维码邀请和微信订阅消息。
+- 购物清单、宠物、健康、动态、菜谱。
+- AI、会员和支付。
+- Worker、Redis 和消息队列。
+
+### 已确认的产品规则
+
+- 邀请码为单次使用、7 天失效，数据库只保存哈希。
+- 到期阈值固定为 3 天和 7 天，首版不可配置。
+- 首版只开放 `owner` 和 `member` 两种角色。
+- 支持用户加入多个空间，但不提供主动创建多个空间的入口。
+- 分类支持食品、饮料、冷冻、调料、日用品、药品、宠物用品和其他。
+
+## 3. MVP 技术架构
+
+```text
+微信原生小程序
+       |
+       | HTTPS JSON API
+       v
+api-staging.<已备案域名> / api.<已备案域名>
+       |
+       v
+Caddy 或现有 Nginx
+       |
+       v
+Go API 二进制（systemd）
+       |
+       v
+MySQL（现有服务器的独立数据库）
+       |
+       `-- 每日 mysqldump -> 私有 COS 前缀
+```
+
+采用 Go 模块化单体，不拆微服务。生产进程由 systemd 管理，GitHub Actions 构建 Linux 二进制并上传服务器，不使用 Docker 镜像和 TCR。
+
+如果服务器已有稳定 Nginx，则复用 Nginx；否则优先使用 Caddy 自动管理 HTTPS。最终选择必须在读取服务器现状后确定。
+
+## 4. 本地开发方式
+
+```text
+微信开发者工具
+       |
+       v
+本机 Go API（go run / make dev）
+       |
+       v
+SSH 隧道 -> 服务器 MySQL 独立开发数据库
+```
+
+本地不直接开放远程 MySQL 端口，通过 SSH 本地端口转发访问服务器上的独立开发数据库。这样无需 Docker，也不强制安装本地数据库。若以后需要离线开发，再选择性安装本地 MySQL。开发、测试、迁移和构建统一收口到 Makefile：
+
+```text
+make dev
+make db-tunnel
+make test
+make migrate-up
+make migrate-down
+make generate
+make lint
+make build
+```
+
+本地提供严格隔离的模拟登录模式，避免微信真机登录阻塞前期开发。测试和生产环境如果启用了模拟登录，服务必须拒绝启动。
+
+## 5. 后端技术与目录
+
+```text
+Go 1.27.x
+chi
+go-sql-driver/mysql + sqlc
+goose
+OpenAPI 3.x
+slog
+systemd
+```
+
+```text
+popcorn-server/
+  cmd/api/
+  internal/
+    config/
+    auth/
+    spaces/
+    inventory/
+    platform/wechat/
+    platform/database/
+    httpapi/
+  migrations/
+  openapi/
+  deploy/systemd/
+  deploy/caddy/
+  scripts/
+  Makefile
+  .github/workflows/
+```
+
+领域内部只保持 `handler -> service -> repository`，不引入复杂的架构框架。
+
+## 6. 核心数据模型
+
+MVP 只建立以下表：
+
+- `users`：以 `wechat_appid + wechat_openid` 唯一识别微信用户。
+- `sessions`：只保存随机 Token 的哈希、过期和撤销状态。
+- `spaces`：空间名称、拥有者和固定时区 `Asia/Shanghai`。
+- `space_members`：空间成员和角色。
+- `space_invites`：单次邀请、哈希、过期和接受状态。
+- `inventory_items`：库存内容、生命周期、日期、乐观锁和软删除。
+
+关键约定：
+
+- ID 使用 UUIDv7。
+- 时间戳使用 UTC RFC3339。
+- `expires_on` 使用 MySQL `DATE`。
+- 到期状态实时计算，不存为生命周期状态。
+- 数量使用 `DECIMAL(12,3)`，API 使用十进制字符串。
+- `version` 用于防止多人编辑时静默覆盖。
+- 库存删除使用 `deleted_at` 软删除。
+
+MySQL 接入约束：
+
+- 优先使用仍在长期支持周期内的 MySQL 8.4 LTS。
+- 如果服务器版本较旧，不直接升级共享实例，先确认其他业务兼容性。
+- 使用 `utf8mb4` 字符集和 InnoDB。
+- 分别创建开发、测试、生产数据库，不能混用数据。
+- 运行账号只授予业务读写权限；迁移账号单独管理 DDL 权限。
+- MySQL 只监听本机或内网地址，不向公网开放 3306。
+
+## 7. API 基线
+
+```text
+POST   /v1/auth/wechat
+GET    /v1/session
+DELETE /v1/session
+
+GET    /v1/spaces
+GET    /v1/spaces/{spaceId}
+PATCH  /v1/spaces/{spaceId}
+GET    /v1/spaces/{spaceId}/members
+POST   /v1/spaces/{spaceId}/invites
+GET    /v1/invites/{code}
+POST   /v1/invites/{code}/accept
+
+GET    /v1/spaces/{spaceId}/inventory/summary
+GET    /v1/spaces/{spaceId}/inventory/items
+POST   /v1/spaces/{spaceId}/inventory/items
+GET    /v1/spaces/{spaceId}/inventory/items/{itemId}
+PATCH  /v1/spaces/{spaceId}/inventory/items/{itemId}
+DELETE /v1/spaces/{spaceId}/inventory/items/{itemId}
+POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/consume
+POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/discard
+POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/archive
+POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/restore
+```
+
+- JSON 字段统一使用 `camelCase`。
+- 日期使用 `YYYY-MM-DD`，时间戳使用 UTC RFC3339。
+- 错误结构统一为 `code/message/fields/requestId`。
+- 创建、邀请和状态变更支持 `Idempotency-Key`。
+- 列表使用游标分页和稳定排序。
+- OpenAPI 是前后端唯一接口契约。
+- 每个业务接口都必须验证会话、空间成员、角色和对象所属空间。
+
+## 8. 微信登录与安全
+
+```text
+wx.login()
+  -> POST /v1/auth/wechat
+  -> 服务端调用微信 code2session
+  -> 查询或创建用户
+  -> 首次用户创建默认空间
+  -> 创建可撤销会话
+  -> 返回 Token、用户和空间
+```
+
+- 不使用账号密码，不信任客户端提交的 `userId`、`openid` 或角色。
+- 不使用长期 JWT；使用高强度随机 Token，数据库只保存 SHA-256 哈希。
+- 401 后客户端最多自动重新登录一次。
+- AppSecret、数据库密码和会话 Token 不写入仓库或日志。
+- 登录和邀请接口需要基础限流。
+- 所有库存查询必须绑定经过鉴权的 `space_id`。
+
+## 9. 发布与回滚
+
+```text
+Pull Request
+  -> gofmt / go vet / test / OpenAPI 校验
+  -> 合并 master
+  -> 构建目标服务器架构的 Linux 二进制
+  -> 生成带 commit SHA 的发布包
+  -> 上传服务器 releases/<sha>/
+  -> 执行向后兼容的数据库迁移
+  -> current 软链接原子切换到新版本
+  -> systemctl restart popcorn-server
+  -> 检查 /healthz 和 /readyz
+  -> 失败则切回上一版本并重启
+```
+
+小程序第一版使用微信开发者工具手工上传、体验、审核和发布。流程稳定后再接入 `miniprogram-ci`。
+
+## 10. 数据库与 COS 备份
+
+- MySQL 只监听本机或内网地址，不直接暴露公网端口。
+- 至少每日执行一次 `mysqldump --single-transaction`。
+- 备份上传到现有私有 COS 的独立前缀，例如 `backups/popcorn/mysql/`。
+- 设置本地与 COS 保留周期，具体天数在检查桶容量和成本后确定。
+- 备份脚本和 systemd timer 纳入后端仓库。
+- 上线前必须完成一次从 COS 备份恢复到空数据库的演练。
+- 业务增长后再评估迁移至 TencentDB for MySQL。
+
+## 11. 实施阶段
+
+1. 工程与契约：后端骨架、OpenAPI、迁移、原生本地运行；前端 TypeScript 基础壳和请求层。
+2. 登录与空间：微信登录、会话、默认空间、重命名和成员列表。
+3. 测试环境：检查服务器、配置 HTTPS、部署 staging、真机登录联调。
+4. 库存闭环：CRUD、状态、软删除、搜索、筛选、分页和到期摘要。
+5. 邀请协作：邀请码、微信分享、接受邀请和越权校验。
+6. 上线加固：弱网、幂等、并发编辑、限流、日志脱敏、备份恢复和 CI/CD。
+
+## 12. 下一步需要核对的外部信息
+
+开始云端部署前，需要只读确认：
+
+- 服务器操作系统、CPU 架构、CPU、内存和磁盘。
+- 是否已经安装 Nginx、Caddy，以及现有 MySQL 的版本、配置和业务占用。
+- 域名 DNS 当前托管位置和可用子域名。
+- 安全组开放端口和 SSH 登录方式。
+- COS 桶名称、地域、访问权限和可用备份前缀。
+- 微信公众平台中的小程序备案状态与服务器合法域名配置。
+
+这些信息未确认前，不假设已经开通 TencentDB 或 TCR，也不要求新增付费资源。
+
+## 13. MVP 验收标准
+
+1. 两个不同微信用户可以进入同一空间并看到相同库存。
+2. 用户无法读取或修改未加入空间的数据。
+3. 库存新增、编辑、软删除和全部生命周期状态可用。
+4. 日期边界符合已过期、今日、1～3 天、4～7 天、正常和无有效期规则。
+5. 重复提交不会创建重复库存或重复接受邀请。
+6. 多人并发编辑时返回冲突，不静默覆盖。
+7. 会话失效后客户端最多自动重登一次。
+8. 真机通过 HTTPS 完成登录、空间、库存和邀请闭环。
+9. GitHub Actions 能测试、构建、发布 staging 并支持回滚。
+10. 数据库完成一次真实的 COS 备份恢复演练。
+11. 日志不出现 AppSecret、会话 Token 和 openid 明文。

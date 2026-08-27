@@ -6,9 +6,9 @@
 | --- | --- |
 | 小程序前端 | 微信原生小程序，TypeScript、WXML、WXSS |
 | 后端 | 独立 Go 服务 |
-| 云资源 | 腾讯云服务器、腾讯云 COS，后续按需新建桶 |
+| 云资源 | 已有腾讯云服务器、已备案域名与腾讯云 COS |
 | 源代码与自动化 | GitHub、GitHub Actions |
-| 部署形态 | Docker 容器；初期使用单机 Docker Compose |
+| 部署形态 | 无 Docker；Go Linux 二进制 + systemd，Caddy 或 Nginx 反向代理 |
 
 旧版微信云函数不再作为后端实现方案。本项目只保留小程序客户端；建议由独立的 `popcorn-server` 仓库维护 API、迁移和部署配置。
 
@@ -33,45 +33,37 @@ api.popcorn.example.com
   v
 Caddy 或 Nginx
   |
-  +-- Go API 容器
-  |     |- auth
-  |     |- spaces
-  |     |- inventory
-  |     |- pets
-  |     |- health
-  |     |- kitchen
-  |     |- moments
-  |     |- notes
-  |     |- media
-  |     |- notifications
-  |     |- ai
-  |     `- entitlements
+  v
+Go API（systemd）
+  |- auth
+  |- spaces
+  `- inventory
   |
-  `-- Go Worker 容器（后期启用）
-        |- 定时提醒
-        |- 媒体处理
-        `- AI 异步任务
-
-Go API / Worker
-  |- PostgreSQL：主业务数据
-  |- COS 私有桶：用户媒体和附件
-  |- COS 公共桶 + CDN：公共素材
-  `- Redis：后期任务、缓存、限流
+  v
+MySQL（复用服务器现有实例，使用独立数据库）
+  |
+  `-- 定时 mysqldump -> 已有私有 COS 桶
 ```
+
+图片、Worker、Redis、消息队列与托管数据库都不进入 MVP。用户量、数据量或运维风险达到实际阈值后，再评估迁移到 TencentDB for MySQL，并按需增加 COS 媒体、Worker 和 Redis。
 
 ## 4. 后端推荐栈
 
 ```text
-Go 1.24+
+Go 1.27.x
 chi                 HTTP 路由与中间件
-pgx + sqlc          PostgreSQL 数据访问
+go-sql-driver/mysql + sqlc
 goose 或 Atlas      数据库迁移
 OpenAPI 3.x         API 契约和接口文档
-Docker              容器镜像
-Docker Compose      本地开发与初期生产编排
+systemd             生产进程托管
+Makefile            本地开发、测试、迁移与构建入口
 ```
 
-PostgreSQL 优先于 MySQL。它适合空间成员关系、标签、筛选、时间范围查询、统计和逐步扩展的 JSON 字段。第一阶段无需 Redis、消息队列或 Kubernetes；当定时提醒、AI 异步工作和多实例部署产生实际需求后再增加。
+本机全局 Go 保持现状，不做系统级升级。后端 `go.mod` 声明项目所需的 Go 1.27 工具链，依靠 `GOTOOLCHAIN=auto` 在进入该模块时自动选择，不影响其他工程的 Go 版本。
+
+本地不安装 Docker。开发时原生运行 Go API，通过 SSH 隧道连接服务器上的独立开发数据库；MySQL 端口不得直接暴露公网。若以后需要离线开发，再选择性安装本地 MySQL。第一阶段无需 Redis、消息队列或 Kubernetes。
+
+服务器现有 MySQL 在接入前必须确认版本、字符集、磁盘、备份和其他业务占用。新项目优先采用仍在长期支持周期内的 MySQL 8.4 LTS；如果现有版本较旧，不直接升级共享实例，先评估现有业务兼容性。`popcorn` 使用独立数据库、独立迁移账号和独立运行账号，不修改其他业务表。
 
 ## 5. 数据模型
 
@@ -122,7 +114,7 @@ space_members(user_id, joined_at)
 未来模块使用独立表，而不是把宠物、健康、动态和笔记塞入一个泛化记录表：
 
 ```text
-pets / pet_records
+pets / pet_records / pet_daily_logs / pet_supplies
 health_profiles / health_weight_records / health_habits
 recipes / recipe_ingredients / meal_plans
 moments / moment_media / comments / reactions
@@ -232,7 +224,7 @@ popcorn-mp
   微信小程序前端
 
 popcorn-server
-  Go API、Worker、数据库迁移、Docker、部署配置
+  Go API、数据库迁移、Linux 二进制构建、systemd 与反向代理配置
 ```
 
 后端建议布局：
@@ -244,41 +236,39 @@ popcorn-server/
   internal/
   migrations/
   openapi/
-  deploy/compose/
+  deploy/systemd/
   deploy/caddy/
-  Dockerfile
-  compose.yaml
+  scripts/
+  Makefile
   .github/workflows/
 ```
 
-初期生产环境使用腾讯云 CVM + Docker Compose：
+初期生产环境复用已有腾讯云服务器：
 
 ```text
-CVM
+已有服务器
   |- Caddy 或 Nginx：TLS 与反向代理
-  |- Go API 容器
-  `- Go Worker 容器（需要提醒后启用）
-
-腾讯云托管 PostgreSQL
-腾讯云 COS
-腾讯云 TCR
+  |- popcorn-server.service：Go API 二进制
+  |- MySQL：复用现有实例的独立数据库
+  `- popcorn-backup.timer：定时备份并上传私有 COS
 ```
 
-PostgreSQL 生产数据应使用托管数据库，而非长期运行在同一台应用服务器容器中。
+MVP 阶段不要求 TCR 和 TencentDB。上线前必须确认服务器操作系统、CPU、内存、磁盘、现有反向代理、MySQL 版本、端口占用与安全组规则。数据库至少每日使用 `mysqldump --single-transaction` 备份到已有私有 COS，并完成一次恢复演练。业务增长后再评估迁移到 TencentDB for MySQL。
 
 ## 10. GitHub Actions 发布链路
 
 ```text
-推送 main
+推送 master
   -> Go 测试和静态检查
-  -> 构建多阶段 Docker 镜像
-  -> 推送镜像至腾讯云 TCR
-  -> 部署机拉取指定镜像
-  -> 执行数据库迁移
-  -> API 健康检查
-  -> 成功切换；失败时保留上一个可用镜像
+  -> 构建 Linux arm64/amd64 二进制（按服务器架构选择）
+  -> 保存带 commit SHA 的发布产物
+  -> 通过专用部署账号上传服务器
+  -> 执行向后兼容的数据库迁移
+  -> 原子切换 current 软链接并重启 systemd 服务
+  -> 检查 /healthz 和 /readyz
+  -> 失败则恢复上一个二进制并重启
 ```
 
 微信小程序的发布不同于 Web 静态站点：小程序代码由微信开发者工具或微信 CI 构建、上传、审核和发布。CDN 不承载小程序包；CDN 仅服务公共静态资源或未来 Web 管理端。
 
-微信公众平台必须配置 API、上传和下载域名白名单。所有密钥必须放在 GitHub Secrets、腾讯云密钥管理服务或部署机环境变量中，不得提交到仓库。
+微信公众平台必须配置 API 合法域名；图片能力启用后再配置 COS 上传和下载域名。域名已经备案，但还必须单独确认小程序备案状态。所有密钥必须放在 GitHub Secrets 或部署机环境变量中，不得提交到仓库。

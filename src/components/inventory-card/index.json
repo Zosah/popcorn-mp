@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "expiry-badge": "/components/expiry-badge/index"
+  }
+}

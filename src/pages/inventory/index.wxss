@@ -1,0 +1,93 @@
+.inventory-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 28rpx 30rpx calc(200rpx + env(safe-area-inset-bottom));
+}
+
+.inventory-mode { display: flex; gap: 8rpx; height: 76rpx; margin-bottom: 20rpx; padding: 8rpx; border-radius: 38rpx; background: #e9ecf5; }
+.inventory-mode__item { display: flex; align-items: center; justify-content: center; height: 60rpx; border-radius: 30rpx; color: #8b95bb; flex: 1; font-size: 23rpx; font-weight: 700; }
+.inventory-mode__item--active { background: #fff; color: #5d7ed9; box-shadow: 0 8rpx 20rpx rgba(58, 72, 128, 0.09); }
+
+.inventory-head { padding: 10rpx 6rpx 34rpx; }
+.inventory-head__meta { display: flex; justify-content: space-between; color: #a1a9ca; font-size: 19rpx; font-weight: 700; letter-spacing: 1rpx; }
+.inventory-head__title { margin-top: 18rpx; color: #17245e; font-size: 56rpx; font-weight: 850; letter-spacing: -2rpx; }
+.inventory-head__copy { width: 90%; margin-top: 12rpx; color: #939cc1; font-size: 23rpx; font-weight: 550; line-height: 1.55; }
+
+.stock-summary {
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 12rpx;
+  border-radius: 36rpx;
+  background: #fff;
+  box-shadow: 0 16rpx 38rpx rgba(58, 72, 128, 0.08);
+}
+
+.stock-summary__item {
+  display: flex;
+  align-items: center;
+  min-height: 112rpx;
+  border-radius: 27rpx;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stock-summary__item--active { background: #eef2ff; }
+.stock-summary__item text:first-child { color: #667fe0; font-size: 39rpx; font-weight: 850; }
+.stock-summary__item:nth-child(1) text:first-child { color: #ff6c70; }
+.stock-summary__item:nth-child(2) text:first-child { color: #ff9a57; }
+.stock-summary__item:nth-child(3) text:first-child { color: #25c98c; }
+.stock-summary__item text:last-child { margin-top: 4rpx; color: #8f99bf; font-size: 18rpx; font-weight: 650; }
+
+.search-line {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  margin-top: 22rpx;
+  padding: 0 26rpx;
+  border-radius: 28rpx;
+  background: #fff;
+  box-shadow: 0 12rpx 28rpx rgba(58, 72, 128, 0.06);
+}
+
+.search-line__label { width: 78rpx; color: #627fdf; font-size: 21rpx; font-weight: 800; }
+.search-line__input { height: 88rpx; flex: 1; color: #223064; font-size: 26rpx; line-height: 88rpx; }
+.search-line__placeholder { color: #b2b9d2; }
+.search-line__clear { color: #ff7975; font-size: 20rpx; font-weight: 700; }
+
+.filter-scroll { width: calc(100% + 60rpx); margin-left: -30rpx; white-space: nowrap; }
+.filter-row { display: inline-flex; gap: 14rpx; padding: 22rpx 30rpx 10rpx; }
+.filter-link { display: flex; align-items: center; height: 60rpx; padding: 0 25rpx; border-radius: 30rpx; background: #e9ecf6; color: #8993b8; font-size: 21rpx; font-weight: 700; }
+.filter-link--active { background: #668ff0; color: #fff; box-shadow: 0 8rpx 18rpx rgba(102, 143, 240, 0.25); }
+
+.inventory-section { margin-top: 34rpx; }
+.inventory-section__head { display: flex; align-items: flex-end; justify-content: space-between; padding: 0 6rpx 16rpx; }
+.inventory-section__head view text { display: block; }
+.inventory-section__head view text:first-child { color: #1c2962; font-size: 31rpx; font-weight: 800; }
+.inventory-section__head view text:last-child { margin-top: 5rpx; color: #9ca5c6; font-size: 18rpx; }
+.inventory-section__head > text { display: flex; align-items: center; justify-content: center; min-width: 42rpx; height: 42rpx; border-radius: 15rpx; background: #eaf0ff; color: #6688e4; font-size: 21rpx; font-weight: 800; }
+.inventory-list { overflow: hidden; padding: 0 24rpx; border-radius: 34rpx; background: #fff; box-shadow: 0 15rpx 34rpx rgba(58, 72, 128, 0.07); }
+
+.inventory-state,
+.inventory-empty { margin-top: 30rpx; padding: 72rpx 30rpx; border-radius: 34rpx; background: #fff; color: #939cc1; text-align: center; }
+.inventory-empty__index { display: flex; align-items: center; justify-content: center; width: 76rpx; height: 76rpx; margin: auto; border-radius: 50%; background: #eef2ff; color: #6c8be6; font-size: 23rpx; font-weight: 850; }
+.inventory-empty__title { margin-top: 18rpx; color: #223065; font-size: 32rpx; font-weight: 800; }
+.inventory-empty__copy { margin-top: 10rpx; color: #9ba4c5; font-size: 21rpx; }
+.inventory-empty button { width: 220rpx; margin-top: 26rpx; border-radius: 24rpx; background: #eef2ff; color: #5d7ed8; font-size: 23rpx; font-weight: 750; }
+
+.inventory-add {
+  position: fixed;
+  right: 34rpx;
+  bottom: calc(132rpx + env(safe-area-inset-bottom));
+  z-index: 20;
+  width: 190rpx;
+  height: 76rpx;
+  margin: 0;
+  border-radius: 38rpx;
+  background: #668ff0;
+  color: #fff;
+  box-shadow: 0 14rpx 26rpx rgba(102, 143, 240, 0.3);
+  font-size: 23rpx;
+  font-weight: 750;
+  line-height: 76rpx;
+}

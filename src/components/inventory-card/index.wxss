@@ -1,0 +1,12 @@
+.card { display: flex; align-items: center; min-height: 128rpx; border-bottom: 1rpx solid #eef0f7; }
+.card:last-child { border-bottom: 0; }
+.card__icon { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; margin-right: 18rpx; border-radius: 24rpx; background: #eef7ff; color: #4bafe5; font-size: 30rpx; font-weight: 850; }
+.card:nth-child(3n + 2) .card__icon { background: #fff1e8; color: #ff8b5e; }
+.card:nth-child(3n) .card__icon { background: #ebfaf3; color: #25c98c; }
+.card__body { min-width: 0; flex: 1; }
+.card__topline { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; }
+.card__name { overflow: hidden; min-width: 0; color: #202d64; font-size: 27rpx; font-weight: 780; text-overflow: ellipsis; white-space: nowrap; }
+.card__meta { display: flex; align-items: center; gap: 7rpx; margin-top: 8rpx; color: #98a1c2; font-size: 19rpx; }
+.dot { color: #c8ccdc; }
+.card__arrow { width: 38rpx; color: #b5bbd2; font-size: 28rpx; text-align: right; }
+.card__history-status { padding: 7rpx 13rpx; border-radius: 15rpx; background: #f0f2f8; color: #8f98b9; font-size: 17rpx; font-weight: 750; white-space: nowrap; }

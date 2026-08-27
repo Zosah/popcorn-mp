@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/inventory/index",
+    "pages/journal/index",
+    "pages/journal-form/index",
+    "pages/menu/index",
+    "pages/pets/index",
+    "pages/pet-event-form/index",
+    "pages/pet-event-detail/index",
+    "pages/pet-calendar/index",
+    "pages/item-form/index",
+    "pages/item-detail/index",
+    "pages/profile/index",
+    "pages/space/index",
+    "pages/invite/index",
+    "pages/reminder-settings/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#f5f6fc",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "时刻在",
+    "backgroundColor": "#f5f6fc",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#77736b",
+    "selectedColor": "#668ff0",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "家"
+      },
+      {
+        "pagePath": "pages/inventory/index",
+        "text": "库存"
+      },
+      {
+        "pagePath": "pages/journal/index",
+        "text": "记录"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

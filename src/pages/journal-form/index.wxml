@@ -1,0 +1,32 @@
+<view class="page-shell journal-form-page">
+  <view class="subpage-back" bindtap="onBack">← 返回记录</view>
+
+  <view class="journal-form-head">
+    <view class="journal-form-head__meta">A LITTLE MOMENT</view>
+    <view class="journal-form-head__title">今天，想记下什么？</view>
+    <view class="journal-form-head__copy">不用写得完整，一句话也能把这个瞬间留下来。</view>
+  </view>
+
+  <view class="surface journal-form-card">
+    <view class="journal-field">
+      <text>一句话标题</text>
+      <input value="{{form.title}}" maxlength="40" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
+    </view>
+    <view class="journal-field journal-field--last">
+      <text>再多写一点</text>
+      <textarea value="{{form.content}}" maxlength="300" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" />
+    </view>
+  </view>
+
+  <view class="visibility-title">谁可以看到</view>
+  <view class="visibility-grid">
+    <view class="visibility-card {{visibility === 'space' ? 'visibility-card--active' : ''}}" data-value="space" bindtap="onVisibilityChange">
+      <text>一起看</text><text>当前空间的成员</text>
+    </view>
+    <view class="visibility-card {{visibility === 'private' ? 'visibility-card--active' : ''}}" data-value="private" bindtap="onVisibilityChange">
+      <text>只给自己</text><text>保留一点小秘密</text>
+    </view>
+  </view>
+
+  <button class="primary-button journal-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">把这一刻记下来</button>
+</view>

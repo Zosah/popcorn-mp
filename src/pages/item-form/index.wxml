@@ -1,0 +1,65 @@
+<view class="page-shell form-page">
+  <view class="subpage-back" bindtap="onBack">← 返回库存</view>
+  <view class="intro">
+    <view class="intro__eyebrow">INVENTORY NOTE / 我们的家</view>
+    <view class="intro__title">{{itemId ? '改一改这条记录' : '记一件家里的东西'}}</view>
+    <view class="intro__copy">名称最重要，其余信息想起来再补也可以。</view>
+  </view>
+
+  <view class="surface form-card">
+    <view class="field">
+      <text class="field__label">物品名称 <text class="required">*</text></text>
+      <input class="field__input" value="{{form.name}}" maxlength="40" placeholder="例如：鲜牛奶" bindinput="onNameInput" />
+    </view>
+
+    <view class="field-grid">
+      <view class="field field--half">
+        <text class="field__label">分类</text>
+        <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <view class="picker-value">{{categoryLabels[categoryIndex]}} <text>›</text></view>
+        </picker>
+      </view>
+      <view class="field field--half">
+        <text class="field__label">存放位置</text>
+        <picker range="{{locationLabels}}" value="{{locationIndex}}" bindchange="onLocationChange">
+          <view class="picker-value">{{locationLabels[locationIndex]}} <text>›</text></view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="field-grid">
+      <view class="field field--quantity">
+        <text class="field__label">数量</text>
+        <input class="field__input" type="digit" value="{{form.quantity}}" bindinput="onQuantityInput" />
+      </view>
+      <view class="field field--unit">
+        <text class="field__label">单位</text>
+        <input class="field__input" value="{{form.unit}}" maxlength="8" bindinput="onUnitInput" />
+      </view>
+    </view>
+
+    <view class="switch-row">
+      <view>
+        <view class="field__label">设置有效期</view>
+        <view class="switch-row__hint">开启后会出现在临期提醒中</view>
+      </view>
+      <switch checked="{{hasExpiry}}" color="#e9644a" bindchange="onExpiryToggle" />
+    </view>
+
+    <view wx:if="{{hasExpiry}}" class="field field--last">
+      <text class="field__label">有效期</text>
+      <picker mode="date" value="{{form.expiresOn}}" bindchange="onExpiryChange">
+        <view class="picker-value picker-value--date">{{form.expiresOn || '选择日期'}} <text>›</text></view>
+      </picker>
+    </view>
+
+    <view class="field field--last">
+      <text class="field__label">备注</text>
+      <textarea class="field__textarea" value="{{form.note}}" maxlength="200" placeholder="可选，写点容易忘记的信息" bindinput="onNoteInput" />
+    </view>
+  </view>
+
+  <view class="form-footer">
+    <button class="primary-button" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">{{itemId ? '保存修改' : '添加到库存'}}</button>
+  </view>
+</view>

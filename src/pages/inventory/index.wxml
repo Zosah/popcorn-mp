@@ -1,0 +1,69 @@
+<view class="inventory-page tab-page">
+  <view class="inventory-head">
+    <view class="inventory-head__meta">
+      <text>HOUSEHOLD STOCK</text>
+      <text>{{spaceName}}</text>
+    </view>
+    <view class="inventory-head__title">家里还有什么</view>
+    <view class="inventory-head__copy">不是为了把东西管得井井有条，只是不想再忘记那盒牛奶。</view>
+  </view>
+
+  <view class="inventory-mode">
+    <view class="inventory-mode__item {{viewMode === 'active' ? 'inventory-mode__item--active' : ''}}" data-value="active" bindtap="onSwitchView">正在库存</view>
+    <view class="inventory-mode__item {{viewMode === 'history' ? 'inventory-mode__item--active' : ''}}" data-value="history" bindtap="onSwitchView">历史记录</view>
+  </view>
+
+  <view wx:if="{{viewMode === 'active'}}" class="stock-summary">
+    <view class="stock-summary__item {{selectedExpiry === 'expired' ? 'stock-summary__item--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">
+      <text>{{summary.expired}}</text><text>已过期</text>
+    </view>
+    <view class="stock-summary__item {{selectedExpiry === 'due' ? 'stock-summary__item--active' : ''}}" data-value="due" bindtap="onSelectExpiry">
+      <text>{{summary.dueWithin3Days}}</text><text>三天内</text>
+    </view>
+    <view class="stock-summary__item {{selectedExpiry === 'normal' ? 'stock-summary__item--active' : ''}}" data-value="normal" bindtap="onSelectExpiry">
+      <text>{{summary.normal}}</text><text>还安心</text>
+    </view>
+    <view class="stock-summary__item {{selectedExpiry === 'all' ? 'stock-summary__item--active' : ''}}" data-value="all" bindtap="onSelectExpiry">
+      <text>{{summary.total}}</text><text>全部</text>
+    </view>
+  </view>
+
+  <view class="search-line">
+    <text class="search-line__label">查找</text>
+    <input class="search-line__input" value="{{query}}" placeholder="输入物品名称" placeholder-class="search-line__placeholder" bindinput="onSearchInput" />
+    <text wx:if="{{query}}" class="search-line__clear" bindtap="onClearSearch">清除</text>
+  </view>
+
+  <scroll-view wx:if="{{viewMode === 'active'}}" class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="filter-row">
+      <view class="filter-link {{selectedExpiry === 'all' ? 'filter-link--active' : ''}}" data-value="all" bindtap="onSelectExpiry">全部</view>
+      <view class="filter-link {{selectedExpiry === 'expired' ? 'filter-link--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">已过期</view>
+      <view class="filter-link {{selectedExpiry === 'due' ? 'filter-link--active' : ''}}" data-value="due" bindtap="onSelectExpiry">三天内</view>
+      <view class="filter-link {{selectedExpiry === 'soon' ? 'filter-link--active' : ''}}" data-value="soon" bindtap="onSelectExpiry">七天内</view>
+      <view class="filter-link {{selectedExpiry === 'none' ? 'filter-link--active' : ''}}" data-value="none" bindtap="onSelectExpiry">无有效期</view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="inventory-state">正在翻家里的清单……</view>
+
+  <block wx:elif="{{hasResults}}">
+    <view wx:for="{{sections}}" wx:key="key" class="inventory-section">
+      <view class="inventory-section__head">
+        <view><text>{{item.title}}</text><text>{{item.hint}}</text></view>
+        <text>{{item.items.length}}</text>
+      </view>
+      <view class="inventory-list">
+        <inventory-card wx:for="{{item.items}}" wx:for-item="inventoryItem" wx:key="id" item="{{inventoryItem}}" bind:cardtap="onOpenItem" />
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="inventory-empty">
+    <view class="inventory-empty__index">00</view>
+    <view class="inventory-empty__title">{{viewMode === 'history' ? '还没有历史记录' : '这里没有找到东西'}}</view>
+    <view class="inventory-empty__copy">{{viewMode === 'history' ? '用完、丢弃或归档的物品会出现在这里。' : '换个条件，或者把家里第一件物品记下来。'}}</view>
+    <button wx:if="{{viewMode === 'active'}}" bindtap="onAddItem">添加物品 →</button>
+  </view>
+
+  <button wx:if="{{viewMode === 'active'}}" class="inventory-add tab-floating-action" bindtap="onAddItem">＋ 添加物品</button>
+</view>

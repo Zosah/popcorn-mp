@@ -1,20 +1,25 @@
 {
   "name": "popcorn-mp",
   "version": "1.0.0",
-  "dependencies": {
-    "@vant/weapp": "^1.10.3",
-    "wx-server-sdk": "^2.6.3"
-  },
-  "main": "index.js",
-  "devDependencies": {},
+  "private": true,
+  "type": "module",
+  "description": "我回来啦，把日子安放在一起。",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/Zosah/popcorn-mp.git"
+    "url": "git+ssh://git@github.com/Zosah/popcorn-mp.git"
   },
   "author": "Zosah",
   "license": "ISC",
-  "description": ""
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.11",
+    "miniprogram-api-typings": "^5.2.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "desc": "时刻在 Demo 页面索引",
+  "rules": [
+    {
+      "action": "disallow",
+      "page": "*"
+    }
+  ]
+}

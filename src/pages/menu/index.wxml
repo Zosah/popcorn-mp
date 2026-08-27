@@ -1,0 +1,39 @@
+<view class="page-shell menu-page">
+  <view class="subpage-back" bindtap="onBack">← 返回家</view>
+
+  <view class="menu-head">
+    <view class="menu-head__meta">TONIGHT · 19:00</view>
+    <view class="menu-head__title">番茄牛腩</view>
+    <view class="menu-head__copy">慢慢炖一锅，把冰箱里该吃掉的番茄用起来。</view>
+  </view>
+
+  <view class="menu-hero">
+    <view class="menu-bowl"><view></view><text>今晚一起吃</text></view>
+    <view class="menu-hero__info">
+      <text>预计 55 分钟</text>
+      <text>家常 · 微酸 · 暖呼呼</text>
+    </view>
+  </view>
+
+  <view class="menu-section-head">
+    <view><text>准备食材</text><text>{{readyCount}} / {{ingredients.length}} 已备好</text></view>
+    <view class="serving-stepper"><text data-delta="-1" bindtap="onChangeServings">−</text><text>{{servings}} 人份</text><text data-delta="1" bindtap="onChangeServings">＋</text></view>
+  </view>
+
+  <view class="ingredient-list">
+    <view wx:for="{{ingredients}}" wx:key="id" class="ingredient-row" data-id="{{item.id}}" bindtap="onToggleIngredient">
+      <view class="ingredient-check {{item.ready ? 'ingredient-check--ready' : ''}}">{{item.ready ? '✓' : ''}}</view>
+      <view class="ingredient-body"><text>{{item.name}}</text><text>{{item.source}}</text></view>
+      <view class="ingredient-amount">{{item.amount}}</view>
+    </view>
+  </view>
+
+  <view class="menu-section-head"><view><text>三步做好</text><text>不赶时间</text></view></view>
+  <view class="step-list">
+    <view><text>01</text><view><text>焯水</text><text>牛腩冷水下锅，煮开后洗净浮沫。</text></view></view>
+    <view><text>02</text><view><text>炒香</text><text>番茄炒出汁，再放入牛腩和洋葱。</text></view></view>
+    <view><text>03</text><view><text>慢炖</text><text>加水炖 45 分钟，最后放土豆。</text></view></view>
+  </view>
+
+  <button class="primary-button menu-start" bindtap="onStartCooking">看看能不能开火</button>
+</view>

@@ -1,0 +1,19 @@
+.pet-event-detail { padding-bottom: 90rpx; }
+.event-detail-head { padding: 12rpx 6rpx 28rpx; }
+.event-detail-head text { display: block; }
+.event-detail-head text:first-child { color: #e48770; font-size: 18rpx; font-weight: 800; letter-spacing: 2rpx; }
+.event-detail-head text:nth-child(2) { margin-top: 12rpx; color: #18255f; font-size: 43rpx; font-weight: 850; }
+.event-detail-head text:last-child { margin-top: 10rpx; color: #929bc0; font-size: 20rpx; }
+.event-detail-card { overflow: hidden; padding: 5rpx 24rpx; border-radius: 38rpx; background: #fff; box-shadow: 0 15rpx 35rpx rgba(58, 72, 128, 0.07); }
+.event-detail-row { display: flex; align-items: center; justify-content: space-between; min-height: 92rpx; border-bottom: 1rpx solid #eef0f7; }
+.event-detail-row text:first-child { color: #98a1be; font-size: 19rpx; }
+.event-detail-row text:last-child { max-width: 68%; color: #28356d; font-size: 21rpx; font-weight: 750; text-align: right; }
+.event-detail-note { padding: 24rpx 0 28rpx; }
+.event-detail-note text { display: block; }
+.event-detail-note text:first-child { color: #98a1be; font-size: 19rpx; }
+.event-detail-note text:last-child { margin-top: 12rpx; color: #3c4876; font-size: 21rpx; line-height: 1.7; white-space: pre-wrap; }
+.event-detail-actions { margin-top: 24rpx; }
+.event-detail-actions button { width: 100%; }
+.event-delete { margin-top: 14rpx; border: 0; border-radius: 26rpx; background: #fff1ef; color: #df6e65; font-size: 22rpx; font-weight: 750; }
+.event-delete::after { border: 0; }
+.event-detail-tip { margin-top: 18rpx; color: #98a1be; font-size: 17rpx; text-align: center; }

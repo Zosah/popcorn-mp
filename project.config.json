@@ -1,7 +1,7 @@
 {
-  "description": "项目配置文件，详见文档：https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
+  "description": "我回来啦，把日子安放在一起。",
   "cloudfunctionRoot": "cloudfunctions/",
-  "miniprogramRoot": "miniprogram/",
+  "miniprogramRoot": "src/",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -43,15 +43,20 @@
     "packNpmRelationList": [
       {
         "packageJsonPath": "./package.json",
-        "miniprogramNpmDistDir": "./miniprogram/"
+        "miniprogramNpmDistDir": "./src/"
       }
     ],
     "minifyWXSS": true,
     "disableUseStrict": false,
     "minifyWXML": true,
     "showES6CompileOption": false,
-    "useCompilerPlugins": false,
-    "useStaticServer": true
+    "useCompilerPlugins": [
+      "typescript"
+    ],
+    "useStaticServer": true,
+    "compileWorklet": false,
+    "localPlugins": false,
+    "condition": false
   },
   "compileType": "miniprogram",
   "libVersion": "2.24.7",
@@ -59,9 +64,10 @@
   "projectname": "popcorn-mp",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {},
-  "srcMiniprogramRoot": "miniprogram/",
+  "srcMiniprogramRoot": "src/",
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
-  }
+  },
+  "simulatorPluginLibVersion": {}
 }

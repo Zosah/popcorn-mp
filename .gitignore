@@ -1,11 +1,7 @@
-/node_modules/
-/miniprogram/miniprogram_npm/
-
-# Editor directories and files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+node_modules/
+coverage/
+src/miniprogram_npm/
+.idea/
+.vscode/
+*.log
+.DS_Store

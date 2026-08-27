@@ -1,0 +1,6 @@
+.badge { display: inline-flex; align-items: center; min-height: 38rpx; box-sizing: border-box; padding: 3rpx 13rpx; border-radius: 19rpx; background: #eef1f8; color: #7f89af; font-size: 18rpx; font-weight: 750; white-space: nowrap; }
+.badge--expired { background: #fff0f1; color: #ef666e; }
+.badge--today,
+.badge--urgent { background: #fff3e8; color: #f18b4d; }
+.badge--soon { background: #fff8dd; color: #c99d28; }
+.badge--normal { background: #eafaf3; color: #20b77f; }
