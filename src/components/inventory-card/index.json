@@ -1,6 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "expiry-badge": "/components/expiry-badge/index"
+    "expiry-badge": "/components/expiry-badge/index",
+    "line-icon": "/components/line-icon/index"
   }
 }

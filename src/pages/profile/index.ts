@@ -1,20 +1,40 @@
-import { resetDemoInventory } from '../../services/demo-inventory'
+import { formatVersionLabel } from '../../config/env'
+import { resetAllDemoData } from '../../services/demo-reset'
 import { getDemoSpaceName } from '../../services/demo-space'
+import { listDemoTodoItems } from '../../services/demo-todo'
 import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 
 Page({
   data: {
-    version: 'Demo 0.9',
+    version: formatVersionLabel(),
     spaceName: '我们的家',
+    todoPendingCount: 0,
+    todoSummary: '旅行准备、计划、健身、吃什么和账单',
   },
 
   onShow() {
     syncDemoTabBar(this, 3)
-    this.setData({ spaceName: getDemoSpaceName() })
+    const items = listDemoTodoItems()
+    const pendingCount = items.filter((item) => !item.done).length
+    const travelCount = items.filter(
+      (item) => item.kind === 'travel' && !item.done,
+    ).length
+    const summary = pendingCount
+      ? `${pendingCount} 件未完成${travelCount ? ` · ${travelCount} 个旅行准备` : ''}`
+      : '目前都做完了，可以再记一件'
+    this.setData({
+      spaceName: getDemoSpaceName(),
+      todoPendingCount: pendingCount,
+      todoSummary: summary,
+    })
   },
 
   onOpenSpace() {
     wx.navigateTo({ url: '/pages/space/index' })
+  },
+
+  onOpenTodo() {
+    wx.navigateTo({ url: '/pages/todo/index' })
   },
 
   onOpenReminders() {
@@ -27,14 +47,16 @@ Page({
 
   onResetDemo() {
     wx.showModal({
-      title: '重置 Demo 数据？',
-      content: '你新增和修改的本地库存会恢复成初始示例。',
+      title: '恢复 Demo 初始数据？',
+      content: '库存、宠物、生活记录、菜单、待办、提醒和空间设置都会恢复成初始示例。',
       confirmText: '重置',
-      confirmColor: '#668ff0',
+      confirmColor: '#e8695c',
       success: (result) => {
         if (!result.confirm) return
-        resetDemoInventory()
-        wx.showToast({ title: '已恢复示例', icon: 'success' })
+        resetAllDemoData()
+        this.setData({ spaceName: getDemoSpaceName() })
+        this.onShow()
+        wx.showToast({ title: 'Demo 已恢复', icon: 'success' })
       },
     })
   },

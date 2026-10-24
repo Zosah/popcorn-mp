@@ -1,6 +1,6 @@
 {
   "name": "popcorn-mp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "我回来啦，把日子安放在一起。",
@@ -8,7 +8,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:demo": "node scripts/verify-mvp.mjs",
+    "icons:build": "node scripts/build-icons.mjs"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,8 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.11",
     "miniprogram-api-typings": "^5.2.3",
+    "miniprogram-automator": "^0.13.0",
+    "sharp": "^0.34.5",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   }

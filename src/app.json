@@ -4,7 +4,10 @@
     "pages/inventory/index",
     "pages/journal/index",
     "pages/journal-form/index",
+    "pages/journal-detail/index",
     "pages/menu/index",
+    "pages/menu-detail/index",
+    "pages/menu-form/index",
     "pages/pets/index",
     "pages/pet-event-form/index",
     "pages/pet-event-detail/index",
@@ -12,22 +15,24 @@
     "pages/item-form/index",
     "pages/item-detail/index",
     "pages/profile/index",
+    "pages/todo/index",
+    "pages/todo-form/index",
     "pages/space/index",
     "pages/invite/index",
     "pages/reminder-settings/index"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#f5f6fc",
+    "navigationBarBackgroundColor": "#f6f4f9",
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "时刻在",
-    "backgroundColor": "#f5f6fc",
+    "backgroundColor": "#f6f4f9",
     "backgroundTextStyle": "light"
   },
   "tabBar": {
     "custom": true,
-    "color": "#77736b",
-    "selectedColor": "#668ff0",
-    "backgroundColor": "#ffffff",
+    "color": "#c6c9d6",
+    "selectedColor": "#5b6ee0",
+    "backgroundColor": "#f6f4f9",
     "borderStyle": "white",
     "list": [
       {

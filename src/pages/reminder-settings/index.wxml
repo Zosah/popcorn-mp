@@ -2,36 +2,39 @@
   <view class="subpage-back" bindtap="onBack">← 返回我的</view>
 
   <view class="reminder-head">
-    <view class="reminder-head__meta">A GENTLE NUDGE</view>
     <view class="reminder-head__title">该记得的事，轻轻提醒</view>
     <view class="reminder-head__copy">当前是本地 Demo 设置，用来确认信息层级与操作感受。</view>
+  <view class="sync-row"><sync-badge state="local" text="本机设置 · 不会真的发送通知" /></view>
   </view>
 
   <view class="reminder-list">
     <view class="reminder-row">
-      <view class="reminder-row__icon reminder-row__icon--orange">期</view>
+      <view class="reminder-row__icon"><line-icon name="circle-alert" size="26" tone="accent" /></view>
       <view class="reminder-row__body"><text>库存临期</text><text>有物品三天内到期时提醒</text></view>
-      <switch checked="{{settings.expiry}}" color="#668ff0" data-key="expiry" bindchange="onToggle" />
+      <switch checked="{{settings.expiry}}" color="#5b6ee0" data-key="expiry" bindchange="onToggle" />
     </view>
     <view class="reminder-row">
-      <view class="reminder-row__icon reminder-row__icon--green">宠</view>
+      <view class="reminder-row__icon"><line-icon name="paw-print" size="26" tone="accent" /></view>
       <view class="reminder-row__body"><text>宠物照护</text><text>驱虫、疫苗和每天的小任务</text></view>
-      <switch checked="{{settings.petCare}}" color="#668ff0" data-key="petCare" bindchange="onToggle" />
+      <switch checked="{{settings.petCare}}" color="#5b6ee0" data-key="petCare" bindchange="onToggle" />
     </view>
     <view class="reminder-row">
-      <view class="reminder-row__icon reminder-row__icon--purple">周</view>
+      <view class="reminder-row__icon"><line-icon name="calendar-days" size="26" tone="accent" /></view>
       <view class="reminder-row__body"><text>每周回顾</text><text>周日晚看看这一周的生活</text></view>
-      <switch checked="{{settings.weeklyReview}}" color="#668ff0" data-key="weeklyReview" bindchange="onToggle" />
+      <switch checked="{{settings.weeklyReview}}" color="#5b6ee0" data-key="weeklyReview" bindchange="onToggle" />
     </view>
   </view>
 
   <view class="reminder-section-title">默认提醒时间</view>
   <picker mode="time" value="{{settings.reminderTime}}" bindchange="onTimeChange">
-    <view class="time-card"><view><text>{{settings.reminderTime}}</text><text>采用 Asia/Shanghai 时间</text></view><text>调整 →</text></view>
+    <view class="time-card">
+      <view class="time-card__main"><line-icon name="clock-3" size="30" tone="accent" /><view><text>{{settings.reminderTime}}</text><text>采用 Asia/Shanghai 时间</text></view></view>
+      <text>调整 →</text>
+    </view>
   </picker>
 
   <view class="permission-note">
-    <view>知</view>
+    <view class="permission-note__icon"><line-icon name="bell" size="22" tone="muted" /></view>
     <text>正式版本还需要申请微信订阅消息授权；这里不会真的发送通知。</text>
   </view>
 </view>

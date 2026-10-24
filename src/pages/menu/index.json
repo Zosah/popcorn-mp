@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "今日菜单"
+  "navigationBarTitleText": "家常菜单",
+  "usingComponents": {
+    "sync-badge": "/components/sync-badge/index",
+    "line-icon": "/components/line-icon/index"
+  }
 }

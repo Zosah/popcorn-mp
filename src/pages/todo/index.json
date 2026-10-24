@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "待办与小计划",
+  "usingComponents": {
+    "sync-badge": "/components/sync-badge/index",
+    "line-icon": "/components/line-icon/index"
+  }
+}

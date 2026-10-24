@@ -1,0 +1,4 @@
+<view class="sync-badge sync-badge--{{state}}">
+  <view class="sync-badge__dot"></view>
+  <text>{{text ? text : (state === 'synced' ? '已同步' : state === 'pending' ? '待同步' : '本机')}}</text>
+</view>

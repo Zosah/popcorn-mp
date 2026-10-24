@@ -10,6 +10,11 @@ const ACCEPTED_CODES_KEY = 'popcorn_demo_accepted_invites_v1'
 const DEFAULT_CODE = 'SHIKEZAI'
 const CURRENT_CODE_PATTERN = /^(SHIKEZAI|SKZ[A-Z0-9]{5})$/
 
+export const DEMO_INVITE_STORAGE_KEYS = [
+  CURRENT_CODE_KEY,
+  ACCEPTED_CODES_KEY,
+] as const
+
 export function getDemoInviteCode(): string {
   const value = wx.getStorageSync<string | ''>(CURRENT_CODE_KEY)
   const code = typeof value === 'string' ? normalizeDemoInviteCode(value) : ''
@@ -34,4 +39,9 @@ export function acceptDemoInviteCode(code: string): DemoInviteResolution {
 
   wx.setStorageSync(ACCEPTED_CODES_KEY, [...acceptedCodes, invite.code])
   return { code: invite.code, status: 'accepted' }
+}
+
+export function resetDemoInviteData(): string {
+  for (const key of DEMO_INVITE_STORAGE_KEYS) wx.removeStorageSync(key)
+  return DEFAULT_CODE
 }

@@ -1,17 +1,52 @@
 <view class="page-shell pet-event-form">
   <view class="subpage-back" bindtap="onBack">← 返回宠物档案</view>
-  <view class="event-head"><text>PET EVENT</text><text>{{pageTitle}}</text><text>日期和详细内容以后都可以成为时间线与提醒的依据。</text></view>
 
-  <view class="event-form-card">
-    <view class="event-field"><text>事件类型</text><picker range="{{eventTypeLabels}}" value="{{eventTypeIndex}}" bindchange="onTypeChange"><view>{{eventTypeLabels[eventTypeIndex]}} ›</view></picker></view>
-    <view class="event-field"><text>发生日期</text><picker mode="date" value="{{form.occurredOn}}" bindchange="onDateChange"><view>{{form.occurredOn}} ›</view></picker></view>
-    <view class="event-field event-field--stack"><text>标题</text><input value="{{form.title}}" maxlength="40" placeholder="发生了什么" bindinput="onTitleInput" /></view>
-    <view class="event-field event-field--stack"><text>详细备注</text><textarea value="{{form.note}}" maxlength="300" placeholder="过程、结果、注意事项" bindinput="onNoteInput" /></view>
-    <view class="event-field event-field--stack"><text>医院 / 门店 / 地点</text><input value="{{form.provider}}" maxlength="60" placeholder="可选" bindinput="onProviderInput" /></view>
-    <view class="event-field event-field--stack"><text>费用</text><input type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" /></view>
-    <view class="event-field"><view><text>设置下次日期</text><text>用于月历预览</text></view><switch checked="{{hasNextDate}}" color="#668ff0" bindchange="onNextToggle" /></view>
-    <view wx:if="{{hasNextDate}}" class="event-field"><text>下次日期</text><picker mode="date" value="{{form.nextOn}}" bindchange="onNextDateChange"><view>{{form.nextOn || '选择日期'}} ›</view></picker></view>
+  <view class="event-head">
+    <view class="event-head__title">{{pageTitle}}</view>
+    <view class="event-head__copy">日期和详细内容会成为时间线与提醒的依据。</view>
   </view>
-  <button class="primary-button event-save" bindtap="onSave">{{saveText}}</button>
+
+  <view class="event-form-card card">
+    <view class="event-field">
+      <text>事件类型</text>
+      <picker range="{{eventTypeLabels}}" value="{{eventTypeIndex}}" bindchange="onTypeChange"><view class="event-field__picker"><line-icon name="{{eventTypeIconNames[eventTypeIndex]}}" size="22" tone="muted" /><text>{{eventTypeLabels[eventTypeIndex]}} ›</text></view></picker>
+    </view>
+    <view class="event-field">
+      <text>发生日期</text>
+      <picker mode="date" value="{{form.occurredOn}}" bindchange="onDateChange"><view>{{form.occurredOn}} ›</view></picker>
+    </view>
+    <view class="event-field event-field--stack">
+      <text>标题</text>
+      <input value="{{form.title}}" maxlength="40" placeholder="发生了什么" bindinput="onTitleInput" />
+    </view>
+    <view class="event-field event-field--stack">
+      <text>详细备注</text>
+      <textarea value="{{form.note}}" maxlength="300" placeholder="过程、结果、注意事项" bindinput="onNoteInput" />
+    </view>
+  </view>
+
+  <view class="section-head">
+    <text class="section-head__title">补充信息</text>
+  </view>
+  <view class="event-form-card card">
+    <view class="event-field event-field--stack">
+      <text>医院 / 门店 / 地点</text>
+      <input value="{{form.provider}}" maxlength="60" placeholder="可选" bindinput="onProviderInput" />
+    </view>
+    <view class="event-field event-field--stack">
+      <text>费用</text>
+      <input type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" />
+    </view>
+    <view class="event-field">
+      <view><text>设置下次日期</text><text>用于月历预览</text></view>
+      <switch checked="{{hasNextDate}}" color="#5b6ee0" bindchange="onNextToggle" />
+    </view>
+    <view wx:if="{{hasNextDate}}" class="event-field event-field--last">
+      <text>下次日期</text>
+      <picker mode="date" value="{{form.nextOn}}" bindchange="onNextDateChange"><view>{{form.nextOn || '选择日期'}} ›</view></picker>
+    </view>
+  </view>
+
+  <button class="primary-button event-save" bindtap="onSave"><line-icon name="pen-line" size="24" tone="white" /><text>{{saveText}}</text></button>
   <view class="event-note">医疗信息只作家庭生活记录，不构成诊疗建议。</view>
 </view>

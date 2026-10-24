@@ -1,80 +1,73 @@
-<view class="journal-page tab-page">
+<view class="tab-page journal-page">
   <view class="journal-head">
-    <view class="journal-head__meta">我们的家 / 共同可见</view>
-    <view class="journal-head__title">日子，慢慢记</view>
+    <view class="journal-head__top">
+      <view class="journal-head__title">日子，慢慢记</view>
+      <view class="journal-add" bindtap="onCreate">
+        <line-icon name="{{activeView === 'notes' ? 'file-text' : 'pen-line'}}" size="24" tone="ink" />
+        <text>{{activeView === 'notes' ? '存一份' : '记一下'}}</text>
+      </view>
+    </view>
     <view class="journal-head__copy">重要的不是每天都有故事，是我们记得一起过过这些天。</view>
+    <view class="sync-row"><sync-badge state="local" text="本机记录 · 暂未跨设备同步" /></view>
   </view>
 
-  <view class="journal-tabs">
-    <view class="journal-tab {{activeView === 'moments' ? 'journal-tab--active' : ''}}" data-value="moments" bindtap="onSwitchView">生活点滴</view>
-    <view class="journal-tab {{activeView === 'notes' ? 'journal-tab--active' : ''}}" data-value="notes" bindtap="onSwitchView">重要记录</view>
+  <view class="tabs">
+    <view class="tab {{activeView === 'moments' ? 'tab--active' : ''}}" data-value="moments" bindtap="onSwitchView">生活点滴</view>
+    <view class="tab {{activeView === 'notes' ? 'tab--active' : ''}}" data-value="notes" bindtap="onSwitchView">重要记录</view>
   </view>
 
   <view wx:if="{{activeView === 'moments'}}" class="timeline">
-    <view wx:for="{{entries}}" wx:key="id" class="timeline-entry timeline-entry--fresh">
-      <view class="timeline-entry__date"><text>{{item.day}}</text><text>{{item.month}}</text></view>
-      <view class="timeline-entry__body">
-        <view class="timeline-entry__author">我 · {{item.timeLabel}}</view>
-        <view class="timeline-entry__title">{{item.title}}</view>
-        <view wx:if="{{item.content}}" class="timeline-entry__copy">{{item.content}}</view>
-        <view class="timeline-entry__visibility">{{item.visibilityLabel}} · 本地 Demo</view>
-      </view>
-    </view>
-
-    <view class="timeline-entry">
-      <view class="timeline-entry__date"><text>25</text><text>AUG</text></view>
-      <view class="timeline-entry__body">
-        <view class="timeline-entry__author">小满 · 昨天 21:14</view>
-        <view class="timeline-entry__title">下班路上买了第一束桂花</view>
-        <view class="photo-placeholder photo-placeholder--flower">
-          <view class="flower-stem"></view>
-          <view class="flower-dot flower-dot--one"></view>
-          <view class="flower-dot flower-dot--two"></view>
-          <view class="flower-dot flower-dot--three"></view>
-          <text>一束花的影子</text>
+    <block wx:if="{{entries.length}}">
+      <view wx:for="{{entries}}" wx:key="id" class="entry" data-id="{{item.id}}" bindtap="onOpenEntry">
+        <view class="entry__date">
+          <text class="entry__day">{{item.day}}</text>
+          <text class="entry__month">{{item.monthLabel}}</text>
         </view>
-        <view class="timeline-entry__copy">放在餐桌上，屋子突然就有了秋天的味道。</view>
-        <view class="timeline-entry__visibility">空间成员可见 · 不开放评论</view>
-      </view>
-    </view>
-
-    <view class="timeline-entry">
-      <view class="timeline-entry__date"><text>22</text><text>AUG</text></view>
-      <view class="timeline-entry__body">
-        <view class="timeline-entry__author">阿屿 · 4 天前</view>
-        <view class="timeline-entry__title">糯米今天 3.8 kg</view>
-        <view class="pet-note">
-          <view class="pet-note__initial">糯</view>
-          <view><text>比上个月重了 0.1 kg</text><text>精神和食欲都很好</text></view>
+        <view class="entry__body">
+          <view class="entry__meta">{{item.authorName}} · {{item.timeLabel}}{{item.updatedAt ? ' · 已编辑' : ''}}</view>
+          <view class="entry__title">{{item.title}}</view>
+          <image wx:if="{{item.image}}" class="entry__photo" src="{{item.image.src}}" mode="aspectFill" />
+          <view wx:if="{{item.image && item.image.caption}}" class="entry__caption">{{item.image.caption}}</view>
+          <view wx:if="{{item.content}}" class="entry__copy">{{item.content}}</view>
+          <view class="entry__foot">
+            <view class="entry__visibility">
+              <line-icon name="{{item.visibility === 'private' ? 'lock' : 'users'}}" size="22" tone="muted" />
+              <text>{{item.visibilityLabel}}</text>
+            </view>
+            <text class="entry__open">查看</text>
+          </view>
         </view>
-        <view class="timeline-entry__visibility">宠物记录 · 空间成员可见</view>
       </view>
-    </view>
+    </block>
 
-    <view class="timeline-entry timeline-entry--last">
-      <view class="timeline-entry__date"><text>18</text><text>AUG</text></view>
-      <view class="timeline-entry__body">
-        <view class="timeline-entry__author">小满 · 上周</view>
-        <view class="timeline-entry__title">周日一起做了番茄牛腩</view>
-        <view class="timeline-entry__copy">第一次没有把土豆炖散，下次还是用这份配方。</view>
-        <view class="timeline-entry__visibility">厨房记录 · 可表态</view>
-      </view>
+    <view wx:else class="journal-empty">
+      <line-icon name="notebook-tabs" size="30" tone="muted" />
+      <text class="journal-empty__title">还没有留下记录</text>
+      <text class="journal-empty__copy">写下一句话，平常的一天也会有一个落点。</text>
     </view>
   </view>
 
   <view wx:else class="notes-view">
-    <view class="notes-group">
-      <view class="notes-group__head"><text>家的资料</text><text>3 项</text></view>
-      <view class="note-row" data-title="租房合同与交接清单" bindtap="onOpenNote"><text class="note-row__index">01</text><view><text>租房合同与交接清单</text><text>更新于 2026-05-20</text></view><text class="note-row__arrow">→</text></view>
-      <view class="note-row" data-title="家电保修与购买凭证" bindtap="onOpenNote"><text class="note-row__index">02</text><view><text>家电保修与购买凭证</text><text>4 份附件</text></view><text class="note-row__arrow">→</text></view>
-      <view class="note-row" data-title="紧急联系人" bindtap="onOpenNote"><text class="note-row__index">03</text><view><text>紧急联系人</text><text>仅空间 Owner 可编辑</text></view><text class="note-row__arrow">→</text></view>
-    </view>
-    <view class="notes-group">
-      <view class="notes-group__head"><text>糯米的资料</text><text>2 项</text></view>
-      <view class="note-row" data-title="疫苗本与驱虫记录" bindtap="onOpenNote"><text class="note-row__index">01</text><view><text>疫苗本与驱虫记录</text><text>下次驱虫：9 月 12 日</text></view><text class="note-row__arrow">→</text></view>
-      <view class="note-row" data-title="常去医院与病历" bindtap="onOpenNote"><text class="note-row__index">02</text><view><text>常去医院与病历</text><text>私密 · 指定成员可见</text></view><text class="note-row__arrow">→</text></view>
+    <block wx:if="{{noteGroups.length}}">
+      <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="notes-group">
+        <view class="notes-group__head"><text>{{group.label}}</text><text>{{group.entries.length}} 项</text></view>
+        <view class="notes-list">
+          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="note-row" data-id="{{entry.id}}" bindtap="onOpenEntry">
+            <view class="note-row__icon"><line-icon name="{{group.icon}}" size="30" tone="muted" /></view>
+            <view class="note-row__main">
+              <text class="note-row__title">{{entry.title}}</text>
+              <text class="note-row__copy">{{entry.content}}</text>
+              <text class="note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
+            </view>
+            <view class="note-row__chevron"></view>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="journal-empty">
+      <line-icon name="file-text" size="30" tone="muted" />
+      <text class="journal-empty__title">还没有重要记录</text>
+      <text class="journal-empty__copy">把证件信息、家规、照护资料收在这里，需要时随时能找到。</text>
     </view>
   </view>
-
-  <button class="journal-add tab-floating-action" bindtap="onCreate">＋ 记一下</button>
 </view>

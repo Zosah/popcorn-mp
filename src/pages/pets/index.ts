@@ -1,5 +1,10 @@
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import {
+  PET_DAILY_ICON_NAMES,
+  PET_SUPPLY_ICON_NAMES,
+  PET_TIMELINE_ICON_NAMES,
+} from '../../constants/icon-names'
+import {
   buildPetCareCards,
   buildPetDailySummary,
   buildPetTimeline,
@@ -111,23 +116,25 @@ Page({
     weightBars: [] as number[],
     timeline: [] as Array<
       ReturnType<typeof buildPetTimeline>[number] & {
-        iconText: string
+        iconName: string
         detailText: string
       }
     >,
     careCards: [] as Array<ReturnType<typeof buildPetCareCards>[number]>,
     careTimeline: [] as Array<
       ReturnType<typeof buildPetTimeline>[number] & {
-        iconText: string
+        iconName: string
         detailText: string
       }
     >,
     dailySummary: [] as Array<
-      ReturnType<typeof buildPetDailySummary>[number] & { iconText: string }
+      ReturnType<typeof buildPetDailySummary>[number] & {
+        iconName: string
+      }
     >,
     recentDailyLogs: [] as Array<{
       id: string
-      iconText: string
+      iconName: string
       typeLabel: string
       summary: string
       timeLabel: string
@@ -137,7 +144,6 @@ Page({
     currentSupplies: [] as Array<{
       id: string
       categoryLabel: string
-      iconText: string
       name: string
       note: string
     }>,
@@ -145,7 +151,7 @@ Page({
       id: string
       category: PetSupplyCategory
       categoryLabel: string
-      iconText: string
+      iconName: string
       name: string
       status: PetSupplyStatus
       statusLabel: string
@@ -175,7 +181,7 @@ Page({
       const event = state.events.find((candidate) => candidate.id === item.id)
       return {
         ...item,
-        iconText: item.typeLabel.slice(0, 1),
+        iconName: PET_TIMELINE_ICON_NAMES[item.type],
         detailText: [
           item.note,
           event?.provider,
@@ -213,11 +219,11 @@ Page({
         .slice(0, 6),
       dailySummary: buildPetDailySummary(state.dailyLogs, today).map((item) => ({
         ...item,
-        iconText: item.label.slice(0, 1),
+        iconName: PET_DAILY_ICON_NAMES[item.type],
       })),
       recentDailyLogs: todayDailyLogs.slice(0, 6).map((item) => ({
         id: item.id,
-        iconText: PET_DAILY_LOG_LABELS[item.type].slice(0, 1),
+        iconName: PET_DAILY_ICON_NAMES[item.type],
         typeLabel: PET_DAILY_LOG_LABELS[item.type],
         summary: item.summary,
         timeLabel: formatDailyTime(item.recordedAt),
@@ -225,7 +231,7 @@ Page({
       currentSupplies: getCurrentPetSupplies(state.supplies).map((item) => ({
         id: item.id,
         categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
-        iconText: PET_SUPPLY_CATEGORY_LABELS[item.category].slice(0, 1),
+        iconName: PET_SUPPLY_ICON_NAMES[item.category],
         name: item.name,
         note: item.note,
       })),
@@ -235,7 +241,7 @@ Page({
       ).map((item) => ({
         ...item,
         categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
-        iconText: PET_SUPPLY_CATEGORY_LABELS[item.category].slice(0, 1),
+        iconName: PET_SUPPLY_ICON_NAMES[item.category],
         statusLabel: getPetSupplyStatusLabel(item.category, item.status),
       })),
     })

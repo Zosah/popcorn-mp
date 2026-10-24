@@ -20,6 +20,8 @@ import {
 const STORAGE_KEY = 'popcorn_demo_pets_v2'
 const LEGACY_STORAGE_KEY = 'popcorn_demo_pet_v1'
 
+export const DEMO_PET_STORAGE_KEYS = [STORAGE_KEY, LEGACY_STORAGE_KEY] as const
+
 export interface DemoPetStore {
   activePetId: string
   pets: DemoPetState[]
@@ -72,6 +74,11 @@ export function getDemoPetStore(): DemoPetStore {
     activePetId: first.profile.id,
     pets: [first, createSecondDemoPetState()],
   })
+}
+
+export function resetDemoPetData(): DemoPetStore {
+  for (const key of DEMO_PET_STORAGE_KEYS) wx.removeStorageSync(key)
+  return getDemoPetStore()
 }
 
 export function getDemoPetState(): DemoPetState {

@@ -2,6 +2,10 @@ import {
   CATEGORY_OPTIONS,
   LOCATION_OPTIONS,
 } from '../../constants/inventory'
+import {
+  INVENTORY_CATEGORY_ICON_NAMES,
+  INVENTORY_LOCATION_ICON_NAMES,
+} from '../../constants/icon-names'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/demo-inventory'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -40,6 +44,12 @@ Page({
     locationIndex: 0,
     categoryLabels: CATEGORY_OPTIONS.map((item) => item.label),
     locationLabels: LOCATION_OPTIONS.map((item) => item.label),
+    categoryIconNames: CATEGORY_OPTIONS.map(
+      (item) => INVENTORY_CATEGORY_ICON_NAMES[item.value],
+    ),
+    locationIconNames: LOCATION_OPTIONS.map(
+      (item) => INVENTORY_LOCATION_ICON_NAMES[item.value],
+    ),
     form: { ...DEFAULT_FORM },
   },
 

@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "加入共同空间"
+  "navigationBarTitleText": "加入共同空间",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index"
+  }
 }

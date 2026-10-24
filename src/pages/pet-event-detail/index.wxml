@@ -2,24 +2,26 @@
   <view class="subpage-back" bindtap="onBack">← 返回{{petName}}的档案</view>
 
   <view class="event-detail-head">
-    <text>PET MEMORY</text>
-    <text>{{event.title}}</text>
-    <text>{{event.occurredOn}} · {{typeLabel}}</text>
+    <view class="event-detail-head__title-row"><view class="event-detail-head__mark"><line-icon name="{{iconName}}" size="32" tone="accent" /></view><view class="event-detail-head__title">{{event.title}}</view></view>
+    <view class="event-detail-head__copy">{{event.occurredOn}} · {{typeLabel}}</view>
   </view>
 
-  <view class="event-detail-card">
+  <view class="event-detail-card card">
     <view class="event-detail-row"><text>宠物</text><text>{{petName}}</text></view>
     <view class="event-detail-row"><text>类型</text><text>{{typeLabel}}</text></view>
     <view class="event-detail-row"><text>发生日期</text><text>{{event.occurredOn}}</text></view>
     <view wx:if="{{event.provider}}" class="event-detail-row"><text>机构 / 地点</text><text>{{event.provider}}</text></view>
     <view wx:if="{{event.cost}}" class="event-detail-row"><text>费用</text><text>¥{{event.cost}}</text></view>
     <view wx:if="{{event.nextOn}}" class="event-detail-row"><text>下次计划</text><text>{{event.nextOn}}</text></view>
-    <view class="event-detail-note"><text>详细记录</text><text>{{event.note || '这次没有补充备注。'}}</text></view>
+    <view class="event-detail-note">
+      <text>详细记录</text>
+      <text>{{event.note || '这次没有补充备注。'}}</text>
+    </view>
   </view>
 
   <view class="event-detail-actions">
-    <button class="primary-button" bindtap="onEdit">编辑事件</button>
-    <button class="event-delete" bindtap="onDelete">删除事件</button>
+    <button class="primary-button" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑事件</text></button>
+    <button class="danger-button event-delete" bindtap="onDelete"><line-icon name="circle-alert" size="23" tone="danger" /><text>删除事件</text></button>
   </view>
-  <view class="event-detail-tip">医疗信息只作家庭生活记录，不构成诊疗建议。</view>
+  <view class="event-detail-tip"><line-icon name="circle-alert" size="18" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>
 </view>

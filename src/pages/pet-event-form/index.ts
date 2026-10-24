@@ -2,6 +2,7 @@ import {
   PET_EVENT_LABELS,
   type PetEventType,
 } from '../../domain/demo-pet'
+import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import {
   addDemoPetEvent,
@@ -24,6 +25,9 @@ Page({
     saveText: '保存到时间线',
     eventTypeIndex: 0,
     eventTypeLabels: EVENT_TYPES.map((item) => item.label),
+    eventTypeIconNames: EVENT_TYPES.map(
+      (item) => PET_EVENT_ICON_NAMES[item.value],
+    ),
     hasNextDate: false,
     form: {
       type: 'vaccine' as PetEventType,

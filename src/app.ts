@@ -1,5 +1,8 @@
+import { appConfig } from './config/env'
+
 App({
   globalData: {
-    demoMode: true,
+    demoMode: appConfig.demoMode,
+    version: appConfig.version,
   },
 })

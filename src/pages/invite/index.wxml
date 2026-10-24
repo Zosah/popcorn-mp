@@ -2,15 +2,14 @@
   <view class="subpage-back" bindtap="onBack">← 暂不加入</view>
 
   <view class="invite-head">
-    <view class="invite-head__eyebrow">AN INVITATION HOME</view>
     <view class="invite-head__title">{{statusTitle}}</view>
     <view class="invite-head__copy">{{statusCopy}}</view>
   </view>
 
   <view wx:if="{{status === 'available' || status === 'accepted'}}" class="home-ticket">
     <view class="home-ticket__top">
-      <view class="home-ticket__mark">家</view>
-      <view class="home-ticket__number">SPACE 01</view>
+      <view class="home-ticket__mark"><line-icon name="house" size="24" tone="white" /></view>
+      <view class="home-ticket__number">共同空间</view>
     </view>
     <view class="home-ticket__label">你将加入</view>
     <view class="home-ticket__name">{{spaceName}}</view>
@@ -24,8 +23,8 @@
     <view class="home-ticket__code">邀请码 · {{code}}</view>
   </view>
 
-  <view class="code-card">
-    <view class="code-card__label">邀请码</view>
+  <view class="code-card card">
+    <view class="code-card__label"><line-icon name="ticket" size="23" tone="muted" /><text>邀请码</text></view>
     <view class="code-card__input-row">
       <input value="{{codeInput}}" maxlength="8" placeholder="例如 SHIKEZAI" placeholder-class="code-card__placeholder" bindinput="onCodeInput" />
       <view bindtap="onValidate">确认</view>
@@ -33,11 +32,19 @@
     <view wx:if="{{status === 'invalid'}}" class="code-card__error">邀请码应为 SHIKEZAI，或 SKZ 开头的 8 位字符。</view>
   </view>
 
-  <button wx:if="{{canAccept}}" class="primary-button invite-action" bindtap="onAccept">加入 {{spaceName}}</button>
-  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" bindtap="onGoHome">回到我们的家</button>
+  <view wx:if="{{status === 'empty' || status === 'invalid'}}" class="invite-vignette">
+    <image class="invite-vignette__image" src="../../images/ink-letter.png" mode="aspectFit" />
+    <view class="invite-vignette__copy">
+      <text>一封邀请，写给一起生活的人。</text>
+      <text>公版手札 · 插图示例</text>
+    </view>
+  </view>
+
+  <button wx:if="{{canAccept}}" class="primary-button invite-action" bindtap="onAccept"><line-icon name="plus" size="24" tone="white" /><text>加入 {{spaceName}}</text></button>
+  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" bindtap="onGoHome"><line-icon name="house" size="24" tone="ink" /><text>回到我们的家</text></button>
 
   <view class="demo-note">
-    <view class="demo-note__mark">DEMO</view>
+    <view class="demo-note__mark"><line-icon name="lock" size="22" tone="muted" /></view>
     <view>
       <text>这次加入只保存在当前设备</text>
       <text>真实版本会由服务端校验 7 天有效期、单次使用状态和空间成员权限。</text>

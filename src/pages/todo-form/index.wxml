@@ -1,0 +1,132 @@
+<view class="page-shell todo-form-page">
+  <view class="subpage-back" bindtap="onBack">← 返回待办</view>
+
+  <view class="todo-form-head">
+    <view class="todo-form-head__mark"><line-icon name="{{kindIcon}}" size="30" tone="accent" /></view>
+    <view class="todo-form-head__title">{{pageTitle}}</view>
+    <view class="todo-form-head__copy">先记下来，不用一次想得很完整。所有内容只保存在这台手机。</view>
+  </view>
+
+  <view class="kind-picker">
+    <view class="kind-picker__row">
+      <view
+        wx:for="{{kindOptions}}"
+        wx:key="value"
+        class="kind-option {{form.kind === item.value ? 'kind-option--active' : ''}}"
+        data-kind="{{item.value}}"
+        bindtap="onSelectKind"
+      >
+        <line-icon name="{{item.icon}}" size="24" tone="{{form.kind === item.value ? 'accent' : 'muted'}}" />
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+  <view class="kind-hint">{{kindHint}}</view>
+
+  <view class="todo-form-card">
+    <view class="todo-field todo-field--stack">
+      <text>{{titleLabel}}</text>
+      <input value="{{form.title}}" maxlength="50" placeholder="{{titlePlaceholder}}" data-field="title" bindinput="onFieldInput" />
+    </view>
+
+    <block wx:if="{{form.kind === 'travel'}}">
+      <view class="todo-field todo-field--stack">
+        <text>目的地</text>
+        <input value="{{form.destination}}" maxlength="30" placeholder="例如：大理" data-field="destination" bindinput="onFieldInput" />
+      </view>
+    </block>
+
+    <block wx:if="{{form.kind === 'fitness'}}">
+      <view class="todo-field todo-field--stack">
+        <text>运动名称</text>
+        <input value="{{form.exercise}}" maxlength="30" placeholder="例如：快走、游泳、力量训练" data-field="exercise" bindinput="onFieldInput" />
+      </view>
+      <view class="todo-form-grid">
+        <view class="todo-field">
+          <text>时长（分钟）</text>
+          <input type="number" value="{{form.durationMinutes}}" placeholder="30" data-field="durationMinutes" bindinput="onFieldInput" />
+        </view>
+        <view class="todo-field">
+          <text>热量（kcal）</text>
+          <input type="number" value="{{form.calories}}" placeholder="180" data-field="calories" bindinput="onFieldInput" />
+        </view>
+      </view>
+      <view class="todo-form-tip todo-form-tip--action">
+        <text>热量按运动类型 × 时长粗略估算，可手动调整，不构成医学建议。</text>
+        <text bindtap="onEstimateCalories">粗算热量</text>
+      </view>
+    </block>
+
+    <block wx:if="{{form.kind === 'meal'}}">
+      <view class="todo-field todo-field--stack">
+        <text>哪一餐</text>
+        <view class="meal-options">
+          <view
+            wx:for="{{mealTypeOptions}}"
+            wx:key="value"
+            class="meal-option {{form.mealType === item.value ? 'meal-option--active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onSelectMealType"
+          >{{item.label}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{form.kind === 'expense'}}">
+      <view class="todo-form-grid">
+        <view class="todo-field">
+          <text>金额（元）</text>
+          <input type="digit" value="{{form.amount}}" placeholder="0.00" data-field="amount" bindinput="onFieldInput" />
+        </view>
+        <view class="todo-field">
+          <text>购买地点</text>
+          <input value="{{form.merchant}}" maxlength="30" placeholder="例如：盒马" data-field="merchant" bindinput="onFieldInput" />
+        </view>
+      </view>
+    </block>
+
+    <view class="todo-field todo-field--date">
+      <picker mode="date" value="{{form.dueDate}}" bindchange="onDateChange">
+        <view class="todo-date-picker">
+          <view>
+            <text>{{dateLabel}}</text>
+            <text class="{{form.dueDate ? 'todo-date-picker__value' : ''}}">{{dateDisplay}}</text>
+          </view>
+          <text class="todo-date-picker__action">选择 →</text>
+        </view>
+      </picker>
+      <text wx:if="{{form.dueDate}}" class="todo-date-clear" bindtap="onClearDate">清除日期</text>
+    </view>
+
+    <view wx:if="{{form.kind === 'travel'}}" class="todo-field todo-field--stack todo-field--last">
+      <text>准备清单</text>
+      <textarea
+        value="{{form.checklistText}}"
+        maxlength="800"
+        auto-height
+        placeholder="每行一项，例如：身份证、充电器、常用药"
+        data-field="checklistText"
+        bindinput="onFieldInput"
+      />
+    </view>
+
+    <view wx:else class="todo-field todo-field--stack todo-field--last">
+      <text>{{noteLabel}}</text>
+      <textarea
+        value="{{form.note}}"
+        maxlength="300"
+        auto-height
+        placeholder="{{notePlaceholder}}"
+        data-field="note"
+        bindinput="onFieldInput"
+      />
+    </view>
+  </view>
+
+  <button class="primary-button todo-form-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+    <line-icon name="check" size="22" tone="white" />
+    <text>{{saveText}}</text>
+  </button>
+
+  <view wx:if="{{itemId}}" class="todo-form-delete" bindtap="onDelete">删除这条记录</view>
+</view>

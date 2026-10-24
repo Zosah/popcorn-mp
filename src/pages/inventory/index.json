@@ -2,6 +2,8 @@
   "navigationBarTitleText": "家庭库存",
   "enablePullDownRefresh": true,
   "usingComponents": {
-    "inventory-card": "/components/inventory-card/index"
+    "inventory-card": "/components/inventory-card/index",
+    "sync-badge": "/components/sync-badge/index",
+    "line-icon": "/components/line-icon/index"
   }
 }

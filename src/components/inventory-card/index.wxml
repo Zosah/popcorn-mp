@@ -1,18 +1,12 @@
-<view class="card" bindtap="onTap">
-  <view class="card__icon">{{item.iconText}}</view>
-  <view class="card__body">
-    <view class="card__topline">
-      <text class="card__name">{{item.name}}</text>
-      <expiry-badge wx:if="{{item.status === 'active'}}" status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
-      <view wx:else class="card__history-status">{{item.lifecycleLabel}}</view>
-    </view>
-    <view class="card__meta">
-      <text>{{item.quantity}}{{item.unit}}</text>
-      <text class="dot">·</text>
-      <text>{{item.locationLabel}}</text>
-      <text class="dot">·</text>
-      <text>{{item.categoryLabel}}</text>
-    </view>
+<view class="row" bindtap="onTap">
+  <view class="row__icon"><line-icon name="{{item.iconName}}" size="30" tone="muted" /></view>
+  <view class="row__main">
+    <view class="row__name">{{item.name}}</view>
+    <view class="row__meta">{{item.quantity}}{{item.unit}} · {{item.locationLabel}} · {{item.categoryLabel}}</view>
   </view>
-  <view class="card__arrow">→</view>
+  <view class="row__right">
+    <expiry-badge wx:if="{{item.status === 'active'}}" status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
+    <view wx:else class="row__history">{{item.lifecycleLabel}}</view>
+    <view class="row__chevron"></view>
+  </view>
 </view>

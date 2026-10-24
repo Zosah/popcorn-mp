@@ -1,19 +1,136 @@
-.pet-event-form { padding-bottom: 90rpx; }
-.event-head { padding: 12rpx 6rpx 28rpx; }
-.event-head text { display: block; }
-.event-head text:first-child { color: #24b880; font-size: 18rpx; font-weight: 800; letter-spacing: 2rpx; }
-.event-head text:nth-child(2) { margin-top: 12rpx; color: #18255f; font-size: 45rpx; font-weight: 850; }
-.event-head text:last-child { margin-top: 12rpx; color: #929bc0; font-size: 21rpx; line-height: 1.55; }
-.event-form-card { overflow: hidden; padding: 6rpx 24rpx; border-radius: 38rpx; background: #fff; }
-.event-field { display: flex; align-items: center; min-height: 96rpx; border-bottom: 1rpx solid #eef0f7; }
-.event-field:last-child { border-bottom: 0; }
-.event-field > text, .event-field > view:first-child > text:first-child { color: #27346b; font-size: 22rpx; font-weight: 750; }
-.event-field picker, .event-field switch { margin-left: auto; color: #7481aa; font-size: 21rpx; }
-.event-field switch { transform: scale(0.82); transform-origin: right center; }
-.event-field > view:first-child > text { display: block; }
-.event-field > view:first-child > text + text { margin-top: 4rpx; color: #a1a9c5; font-size: 16rpx; font-weight: 500; }
-.event-field--stack { align-items: stretch; padding: 20rpx 0; flex-direction: column; }
-.event-field--stack input { height: 70rpx; margin-top: 10rpx; padding: 0 18rpx; border-radius: 20rpx; background: #f5f6fb; color: #28356d; font-size: 22rpx; }
-.event-field--stack textarea { width: auto; min-height: 130rpx; margin-top: 12rpx; padding: 17rpx; border-radius: 22rpx; background: #f5f6fb; box-sizing: border-box; color: #28356d; font-size: 21rpx; }
-.event-save { width: 100%; margin-top: 24rpx; }
-.event-note { margin-top: 18rpx; color: #98a1be; font-size: 17rpx; text-align: center; }
+.pet-event-form {
+  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
+}
+
+.event-head {
+  padding: 8rpx 0 32rpx;
+}
+
+.event-head__title {
+  color: var(--c-text, #22242e);
+  font-size: 48rpx;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -2rpx;
+}
+
+.event-head__copy {
+  max-width: 610rpx;
+  margin-top: 12rpx;
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 24rpx;
+  line-height: 1.65;
+}
+
+.pet-event-form .card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.event-form-card {
+  overflow: hidden;
+  padding: 0;
+  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.event-field {
+  display: flex;
+  align-items: center;
+  min-height: 94rpx;
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.event-field:last-child,
+.event-field--last {
+  border-bottom: 0;
+}
+
+.event-field > text,
+.event-field > view:first-child > text:first-child {
+  color: var(--c-muted, #9497a6);
+  font-size: 22rpx;
+  font-weight: 400;
+}
+
+.event-field picker {
+  margin-left: auto;
+  color: var(--c-text, #22242e);
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.event-field__picker {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.event-field switch {
+  margin-left: auto;
+  transform: scale(0.78);
+  transform-origin: right center;
+}
+
+.event-field > view:first-child > text {
+  display: block;
+}
+
+.event-field > view:first-child > text + text {
+  margin-top: 4rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 20rpx;
+  font-weight: 400;
+}
+
+.event-field--stack {
+  align-items: stretch;
+  padding: 22rpx 0;
+  flex-direction: column;
+}
+
+.event-field--stack input {
+  height: 68rpx;
+  margin-top: 7rpx;
+  padding: 0;
+  border: 0;
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
+  color: var(--c-text, #22242e);
+  font-size: 27rpx;
+}
+
+.event-field--stack input::placeholder {
+  color: #a8abba;
+}
+
+.event-field--stack textarea {
+  width: auto;
+  min-height: 138rpx;
+  margin-top: 10rpx;
+  padding: 14rpx 0 14rpx 18rpx;
+  border: 0;
+  border-left: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
+  color: var(--c-text, #22242e);
+  font-size: 24rpx;
+  line-height: 1.65;
+}
+
+.event-save {
+  width: 100%;
+  margin-top: 30rpx;
+  gap: 10rpx;
+}
+
+.event-note {
+  margin-top: 18rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 20rpx;
+  text-align: center;
+}

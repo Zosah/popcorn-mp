@@ -1,4 +1,5 @@
 import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
+import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
 import {
   resolveInventoryLifecycleStatuses,
   type InventoryViewMode,
@@ -21,7 +22,7 @@ import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
 
 interface InventoryItemView extends InventoryItem {
-  iconText: string
+  iconName: string
   categoryLabel: string
   locationLabel: string
   expiry: ReturnType<typeof resolveExpiry>
@@ -66,7 +67,7 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
   }
   return {
     ...item,
-    iconText: item.name.slice(0, 1),
+    iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
     categoryLabel: getCategoryLabel(item.category),
     locationLabel: getLocationLabel(item.location),
     expiry: resolveExpiry(item.expiresOn, today),

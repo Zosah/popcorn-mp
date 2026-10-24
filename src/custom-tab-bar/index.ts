@@ -1,8 +1,8 @@
 const tabs = [
-  { pagePath: '/pages/home/index', label: '家', icon: '家' },
-  { pagePath: '/pages/inventory/index', label: '库存', icon: '物' },
-  { pagePath: '/pages/journal/index', label: '记录', icon: '记' },
-  { pagePath: '/pages/profile/index', label: '我的', icon: '我' },
+  { pagePath: '/pages/home/index', label: '家', icon: 'house' },
+  { pagePath: '/pages/inventory/index', label: '库存', icon: 'package' },
+  { pagePath: '/pages/journal/index', label: '记录', icon: 'notebook-tabs' },
+  { pagePath: '/pages/profile/index', label: '我的', icon: 'user-round' },
 ]
 
 Component({

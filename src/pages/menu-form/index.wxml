@@ -1,0 +1,47 @@
+<view class="page-shell menu-form-page">
+  <view class="subpage-back" bindtap="onBack">← 返回菜单</view>
+
+  <view class="menu-form-head">
+    <view class="menu-form-head__title">{{pageTitle}}</view>
+    <view class="menu-form-head__copy">菜名、食材和步骤会保存在本机，下次打开可以直接照着做。</view>
+  </view>
+
+  <view class="menu-form-card card">
+    <view class="menu-field menu-field--stack">
+      <text>菜名</text>
+      <input value="{{form.title}}" maxlength="30" placeholder="例如：番茄牛腩" bindinput="onTitleInput" />
+    </view>
+    <view class="menu-field menu-field--stack">
+      <text>一句话介绍</text>
+      <input value="{{form.description}}" maxlength="80" placeholder="什么时候会想做这道菜" bindinput="onDescriptionInput" />
+    </view>
+    <view class="menu-form-grid">
+      <view class="menu-field">
+        <text>人份</text>
+        <input type="number" value="{{form.servings}}" placeholder="2" bindinput="onServingsInput" />
+      </view>
+      <view class="menu-field">
+        <text>预计分钟</text>
+        <input type="number" value="{{form.cookingMinutes}}" placeholder="30" bindinput="onMinutesInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="section-head"><text class="section-head__title">食材</text></view>
+  <view class="menu-form-card card">
+    <view class="menu-field menu-field--stack menu-field--last">
+      <text>每行一样，用 | 分隔名称、用量、来源</text>
+      <textarea value="{{form.ingredientsText}}" maxlength="600" placeholder="牛腩 | 400g | 冰箱冷冻&#10;番茄 | 3 个 | 冰箱冷藏" bindinput="onIngredientsInput" />
+    </view>
+  </view>
+
+  <view class="section-head"><text class="section-head__title">步骤</text></view>
+  <view class="menu-form-card card">
+    <view class="menu-field menu-field--stack menu-field--last">
+      <text>每行一步，用 | 分隔步骤名和说明</text>
+      <textarea value="{{form.stepsText}}" maxlength="900" placeholder="焯水 | 牛腩冷水下锅，煮开后洗净浮沫。&#10;炒香 | 番茄炒出汁，再放入牛腩。" bindinput="onStepsInput" />
+    </view>
+  </view>
+
+  <button class="primary-button menu-form-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="utensils" size="24" tone="white" /><text>{{saveText}}</text></button>
+</view>

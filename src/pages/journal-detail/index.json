@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "记录详情",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index",
+    "sync-badge": "/components/sync-badge/index"
+  }
+}

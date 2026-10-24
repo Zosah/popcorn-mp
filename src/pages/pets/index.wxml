@@ -2,9 +2,9 @@
   <view class="subpage-back" bindtap="onBack">← 返回家</view>
 
   <view class="pets-head">
-    <view class="pets-head__meta">PET LIFE · 我们的家</view>
     <view class="pets-head__title">{{profile.name}}的每一天</view>
     <view class="pets-head__copy">从第一次到家，到今天吃什么、用什么，把照护和偏好慢慢积累下来。</view>
+  <view class="sync-row"><sync-badge state="local" text="本机预览 · 宠物暂未接入同步" /></view>
   </view>
 
   <scroll-view class="pet-switcher" scroll-x enhanced show-scrollbar="{{false}}">
@@ -14,7 +14,10 @@
         <text>{{item.name}}</text>
         <text>{{item.speciesLabel}}</text>
       </view>
-      <view class="pet-switcher__add" bindtap="onAddPet"><text>＋</text><text>添加宠物</text></view>
+      <view class="pet-switcher__add" bindtap="onAddPet">
+        <line-icon name="plus" size="24" tone="muted" />
+        <text>添加宠物</text>
+      </view>
     </view>
   </scroll-view>
 
@@ -33,10 +36,27 @@
     <view class="pet-profile__status">{{profile.status}}</view>
   </view>
 
-  <view class="pet-sections">
-    <view class="pet-sections__item {{activeSection === 'profile' ? 'pet-sections__item--active' : ''}}" data-value="profile" bindtap="onSwitchSection">档案</view>
-    <view class="pet-sections__item {{activeSection === 'care' ? 'pet-sections__item--active' : ''}}" data-value="care" bindtap="onSwitchSection">照护</view>
-    <view class="pet-sections__item {{activeSection === 'supplies' ? 'pet-sections__item--active' : ''}}" data-value="supplies" bindtap="onSwitchSection">吃喝拉撒</view>
+  <view class="pet-visual">
+    <image class="pet-visual__image" src="../../images/demo-cat-dreaming.jpg" mode="aspectFill" />
+    <view class="pet-visual__caption">
+      <text>陪伴不是大事，是每天的小事</text>
+      <text>公版艺术示例 · 不是糯米的照片</text>
+    </view>
+  </view>
+
+  <view class="segmented pet-sections">
+    <view class="segmented__item {{activeSection === 'profile' ? 'segmented__item--active' : ''}}" data-value="profile" bindtap="onSwitchSection">
+      <line-icon name="user-round" size="26" tone="{{activeSection === 'profile' ? 'ink' : 'muted'}}" />
+      <text>档案</text>
+    </view>
+    <view class="segmented__item {{activeSection === 'care' ? 'segmented__item--active' : ''}}" data-value="care" bindtap="onSwitchSection">
+      <line-icon name="heart-pulse" size="26" tone="{{activeSection === 'care' ? 'ink' : 'muted'}}" />
+      <text>照护</text>
+    </view>
+    <view class="segmented__item {{activeSection === 'supplies' ? 'segmented__item--active' : ''}}" data-value="supplies" bindtap="onSwitchSection">
+      <line-icon name="soup" size="26" tone="{{activeSection === 'supplies' ? 'ink' : 'muted'}}" />
+      <text>吃喝拉撒</text>
+    </view>
   </view>
 
   <block wx:if="{{activeSection === 'profile'}}">
@@ -62,7 +82,7 @@
       </view>
       <view class="profile-field">
         <text>是否绝育</text>
-        <switch checked="{{profileDraft.neuteredOn}}" color="#27c78d" bindchange="onNeuteredToggle" />
+        <switch checked="{{profileDraft.neuteredOn}}" color="#5b6ee0" bindchange="onNeuteredToggle" />
       </view>
       <view wx:if="{{profileDraft.neuteredOn}}" class="profile-field">
         <text>绝育日期</text>
@@ -73,7 +93,7 @@
 
     <view class="pet-section-head">
       <view><text>体重变化</text><text>记录身体的小变化</text></view>
-      <view bindtap="onRecordWeight">＋ 记录</view>
+      <view bindtap="onRecordWeight"><line-icon name="chart-no-axes-column" size="22" tone="ink" /><text>记录</text></view>
     </view>
     <view class="weight-card">
       <view class="weight-card__value"><text>{{latestWeight}}</text><text>kg</text></view>
@@ -83,11 +103,11 @@
 
     <view class="pet-section-head">
       <view><text>成长时间线</text><text>疫苗、绝育、洗护、生病、就诊与外出</text></view>
-      <view bindtap="onAddEvent">＋ 记录</view>
+      <view bindtap="onAddEvent"><line-icon name="plus" size="22" tone="ink" /><text>记录</text></view>
     </view>
     <view class="pet-timeline">
       <view wx:for="{{timeline}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-        <view class="timeline-row__mark">{{item.iconText}}</view>
+        <view class="timeline-row__mark"><line-icon name="{{item.iconName}}" size="26" tone="accent" /></view>
         <view class="timeline-row__body"><text>{{item.title}}</text><text>{{item.detailText || item.typeLabel}}</text></view>
         <view class="timeline-row__date">{{item.occurredOn}}</view>
       </view>
@@ -96,11 +116,11 @@
 
   <block wx:elif="{{activeSection === 'care'}}">
     <view class="care-intro">
-      <view class="care-intro__mark">循</view>
+      <view class="care-intro__mark"><line-icon name="heart-pulse" size="24" tone="accent" /></view>
       <view><text>持续记录，不靠记忆</text><text>体内驱虫按 90 天、体外驱虫按 30 天生成下一次日期。</text></view>
     </view>
 
-    <view class="pet-section-head"><view><text>内外驱周期</text><text>完成一次，自动向后推算</text></view><view bindtap="onOpenCalendar">查看月历</view></view>
+    <view class="pet-section-head"><view><text>内外驱周期</text><text>完成一次，自动向后推算</text></view><view bindtap="onOpenCalendar"><line-icon name="calendar-days" size="22" tone="ink" /><text>查看月历</text></view></view>
     <view class="care-cycle-list">
       <view wx:for="{{careCards}}" wx:key="type" class="care-cycle care-cycle--{{item.status}}">
         <view class="care-cycle__top"><text>{{item.title}}</text><text>{{item.intervalLabel}}</text></view>
@@ -112,11 +132,11 @@
 
     <view class="pet-section-head">
       <view><text>最近照护</text><text>医疗信息仅作生活记录</text></view>
-      <view bindtap="onAddEvent">＋ 其他事件</view>
+      <view bindtap="onAddEvent"><line-icon name="plus" size="22" tone="ink" /><text>其他事件</text></view>
     </view>
     <view class="pet-timeline">
       <view wx:for="{{careTimeline}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-        <view class="timeline-row__mark timeline-row__mark--care">{{item.iconText}}</view>
+        <view class="timeline-row__mark timeline-row__mark--care"><line-icon name="{{item.iconName}}" size="26" tone="accent" /></view>
         <view class="timeline-row__body"><text>{{item.title}}</text><text>{{item.detailText || item.typeLabel}}</text></view>
         <view class="timeline-row__date">{{item.occurredOn}}</view>
       </view>
@@ -129,7 +149,10 @@
     </view>
     <view class="daily-grid">
       <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card {{item.done ? 'daily-card--done' : ''}}" data-type="{{item.type}}" bindtap="onAddDailyLog">
-        <view class="daily-card__top"><text>{{item.iconText}}</text><text>{{item.count ? item.count + ' 次' : '未记'}}</text></view>
+        <view class="daily-card__top">
+          <view class="daily-card__icon"><line-icon name="{{item.iconName}}" size="28" tone="{{item.done ? 'ink' : 'accent'}}" /></view>
+          <text>{{item.count ? item.count + ' 次' : '未记'}}</text>
+        </view>
         <view class="daily-card__title">{{item.label}}</view>
         <view class="daily-card__summary">{{item.latestSummary}}</view>
         <view class="daily-card__time">{{item.latestTime}} · ＋记录</view>
@@ -139,7 +162,7 @@
     <view wx:if="{{recentDailyLogs.length}}" class="daily-recent">
       <view class="daily-recent__head"><text>今天的记录</text><text>{{recentDailyLogs.length}} 条</text></view>
       <view wx:for="{{recentDailyLogs}}" wx:key="id" class="daily-log-row">
-        <view class="daily-log-row__icon">{{item.iconText}}</view>
+        <view class="daily-log-row__icon"><line-icon name="{{item.iconName}}" size="24" tone="ink" /></view>
         <view class="daily-log-row__body"><text>{{item.summary}}</text><text>{{item.typeLabel}}</text></view>
         <view class="daily-log-row__time">{{item.timeLabel}}</view>
       </view>
@@ -166,7 +189,7 @@
 
     <view class="supply-list">
       <view wx:for="{{supplies}}" wx:key="id" class="supply-row" data-id="{{item.id}}" bindtap="onChangeSupplyStatus">
-        <view class="supply-row__icon">{{item.iconText}}</view>
+        <view class="supply-row__icon"><line-icon name="{{item.iconName}}" size="28" tone="accent" /></view>
         <view class="supply-row__body"><text>{{item.name}}</text><text>{{item.categoryLabel}} · {{item.note || item.recordedOn}}</text></view>
         <view class="supply-row__status supply-row__status--{{item.status}}">{{item.statusLabel}}</view>
       </view>

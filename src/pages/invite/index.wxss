@@ -1,33 +1,288 @@
-.invite-page { min-height: 100vh; box-sizing: border-box; padding: 28rpx 30rpx 110rpx; overflow: hidden; }
-.invite-head { padding: 28rpx 8rpx 34rpx; }
-.invite-head__eyebrow { color: #9da6c8; font-size: 18rpx; font-weight: 750; letter-spacing: 2rpx; }
-.invite-head__title { width: 90%; margin-top: 18rpx; color: #18255f; font-size: 54rpx; font-weight: 850; line-height: 1.22; letter-spacing: -2rpx; }
-.invite-head__copy { width: 88%; margin-top: 14rpx; color: #919abe; font-size: 22rpx; line-height: 1.65; }
+.invite-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 36rpx 48rpx calc(90rpx + env(safe-area-inset-bottom));
+  overflow: hidden;
+}
 
-.home-ticket { position: relative; padding: 30rpx; border-radius: 40rpx; background: linear-gradient(145deg, #728ff0 0%, #867ae8 100%); box-shadow: 0 22rpx 46rpx rgba(94, 111, 199, 0.24); color: #fff; overflow: hidden; }
-.home-ticket::after { position: absolute; right: -38rpx; bottom: -58rpx; width: 210rpx; height: 210rpx; border: 28rpx solid rgba(255, 255, 255, 0.09); border-radius: 50%; content: ''; }
-.home-ticket__top { display: flex; align-items: center; justify-content: space-between; }
-.home-ticket__mark { display: flex; align-items: center; justify-content: center; width: 64rpx; height: 64rpx; border-radius: 23rpx; background: #fff; color: #6d85e8; font-size: 24rpx; font-weight: 850; }
-.home-ticket__number { color: rgba(255, 255, 255, 0.62); font-size: 16rpx; font-weight: 750; letter-spacing: 2rpx; }
-.home-ticket__label { margin-top: 38rpx; color: rgba(255, 255, 255, 0.66); font-size: 18rpx; font-weight: 650; }
-.home-ticket__name { margin-top: 6rpx; font-size: 44rpx; font-weight: 850; }
-.home-ticket__inviter { position: relative; z-index: 1; display: flex; align-items: center; gap: 15rpx; margin-top: 30rpx; }
-.home-ticket__avatar { display: flex; align-items: center; justify-content: center; width: 58rpx; height: 58rpx; border-radius: 20rpx; background: #ff9978; font-size: 21rpx; font-weight: 850; }
-.home-ticket__inviter text { display: block; font-size: 21rpx; font-weight: 750; }
-.home-ticket__inviter text + text { margin-top: 4rpx; color: rgba(255, 255, 255, 0.65); font-size: 17rpx; font-weight: 500; }
-.home-ticket__code { position: relative; z-index: 1; margin-top: 28rpx; padding-top: 20rpx; border-top: 1rpx dashed rgba(255, 255, 255, 0.28); color: rgba(255, 255, 255, 0.76); font-size: 18rpx; letter-spacing: 2rpx; }
+.invite-head {
+  padding: 16rpx 0 34rpx;
+}
 
-.code-card { margin-top: 24rpx; padding: 25rpx; border-radius: 34rpx; background: #fff; box-shadow: 0 14rpx 32rpx rgba(58, 72, 128, 0.07); }
-.code-card__label { color: #26336b; font-size: 22rpx; font-weight: 800; }
-.code-card__input-row { display: flex; align-items: center; gap: 14rpx; margin-top: 15rpx; }
-.code-card__input-row input { min-width: 0; height: 78rpx; padding: 0 22rpx; border-radius: 24rpx; background: #f4f6fc; color: #243169; flex: 1; font-size: 26rpx; font-weight: 750; letter-spacing: 2rpx; }
-.code-card__input-row view { display: flex; align-items: center; justify-content: center; width: 106rpx; height: 78rpx; border-radius: 24rpx; background: #edf1ff; color: #607ed7; font-size: 21rpx; font-weight: 750; }
-.code-card__placeholder { color: #b0b7cf; font-weight: 500; letter-spacing: 0; }
-.code-card__error { margin-top: 14rpx; color: #db6c70; font-size: 18rpx; line-height: 1.5; }
-.invite-action { margin-top: 25rpx; width: 100%; }
+.invite-head__title {
+  max-width: 620rpx;
+  color: var(--c-text, #22242e);
+  font-size: 48rpx;
+  font-weight: 500;
+  letter-spacing: -2rpx;
+  line-height: 1.3;
+}
 
-.demo-note { display: flex; align-items: flex-start; gap: 16rpx; margin-top: 25rpx; padding: 22rpx; border-radius: 30rpx; background: #eef9f4; }
-.demo-note__mark { margin-top: 2rpx; padding: 7rpx 10rpx; border-radius: 12rpx; background: #2ac58c; color: #fff; font-size: 13rpx; font-weight: 850; letter-spacing: 1rpx; }
-.demo-note view:last-child { flex: 1; }
-.demo-note text { display: block; color: #376b64; font-size: 20rpx; font-weight: 750; }
-.demo-note text + text { margin-top: 7rpx; color: #759b94; font-size: 17rpx; font-weight: 500; line-height: 1.55; }
+.invite-head__copy {
+  max-width: 610rpx;
+  margin-top: 13rpx;
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 24rpx;
+  line-height: 1.65;
+}
+
+.home-ticket {
+  position: relative;
+  padding: 30rpx 28rpx 26rpx;
+  border-radius: 4rpx;
+  background: var(--c-text, #22242e);
+  color: var(--c-bg, #f6f4f9);
+  overflow: hidden;
+}
+
+.home-ticket::after {
+  position: absolute;
+  right: -60rpx;
+  bottom: -94rpx;
+  width: 220rpx;
+  height: 220rpx;
+  border: 1rpx solid rgba(246, 244, 249, 0.16);
+  border-radius: 50%;
+  content: '';
+}
+
+.home-ticket__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-ticket__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52rpx;
+  height: 52rpx;
+  border: 1rpx solid rgba(246, 244, 249, 0.48);
+  border-radius: 50%;
+  color: var(--c-bg, #f6f4f9);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 22rpx;
+}
+
+.home-ticket__number {
+  color: rgba(246, 244, 249, 0.56);
+  font-size: 20rpx;
+}
+
+.home-ticket__label {
+  margin-top: 38rpx;
+  color: rgba(246, 244, 249, 0.56);
+  font-size: 21rpx;
+}
+
+.home-ticket__name {
+  margin-top: 5rpx;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 48rpx;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.home-ticket__inviter {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-top: 30rpx;
+}
+
+.home-ticket__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50rpx;
+  height: 50rpx;
+  border: 1rpx solid rgba(246, 244, 249, 0.4);
+  border-radius: 50%;
+  color: rgba(246, 244, 249, 0.82);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 19rpx;
+}
+
+.home-ticket__inviter text {
+  display: block;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.home-ticket__inviter text + text {
+  margin-top: 4rpx;
+  color: rgba(246, 244, 249, 0.58);
+  font-size: 20rpx;
+  font-weight: 400;
+}
+
+.home-ticket__code {
+  position: relative;
+  z-index: 1;
+  margin-top: 26rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(246, 244, 249, 0.22);
+  color: rgba(246, 244, 249, 0.68);
+  font-size: 20rpx;
+  letter-spacing: 1rpx;
+}
+
+.invite-page .card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.code-card {
+  margin-top: 28rpx;
+  padding: 0;
+  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.code-card__label {
+  display: flex;
+  align-items: center;
+  gap: 9rpx;
+  padding-top: 24rpx;
+  color: var(--c-text, #22242e);
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.code-card__input-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 0 24rpx;
+}
+
+.code-card__input-row input {
+  min-width: 0;
+  height: 68rpx;
+  padding: 0;
+  border: 0;
+  border-bottom: 1rpx solid var(--c-line-strong, #d6d5e0);
+  background: transparent;
+  box-sizing: border-box;
+  color: var(--c-text, #22242e);
+  flex: 1;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 30rpx;
+  letter-spacing: 3rpx;
+}
+
+.code-card__input-row view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96rpx;
+  height: 60rpx;
+  border: 1rpx solid var(--c-text, #22242e);
+  border-radius: 999rpx;
+  color: var(--c-text, #22242e);
+  font-size: 21rpx;
+}
+
+.code-card__placeholder {
+  color: #a8abba;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  font-size: 24rpx;
+  letter-spacing: 0;
+}
+
+.code-card__error {
+  padding-bottom: 18rpx;
+  color: var(--c-danger, #e8695c);
+  font-size: 21rpx;
+  line-height: 1.5;
+}
+
+.invite-vignette {
+  display: flex;
+  align-items: center;
+  gap: 26rpx;
+  margin-top: 34rpx;
+  padding: 22rpx 0 26rpx;
+  border-top: 1rpx solid var(--c-line, #e7e6ee);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.invite-vignette__image {
+  width: 146rpx;
+  height: 222rpx;
+  opacity: 0.94;
+  flex-shrink: 0;
+  transform: rotate(-1.5deg);
+}
+
+.invite-vignette__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.invite-vignette__copy text:first-child {
+  color: var(--c-text, #22242e);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 29rpx;
+  line-height: 1.55;
+}
+
+.invite-vignette__copy text:last-child {
+  color: var(--c-muted, #9497a6);
+  font-size: 18rpx;
+  letter-spacing: 1rpx;
+  line-height: 1.5;
+}
+
+.invite-action {
+  width: 100%;
+  margin-top: 28rpx;
+  gap: 10rpx;
+}
+
+.demo-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 18rpx;
+  margin-top: 28rpx;
+  padding: 20rpx 0 0 18rpx;
+  border-top: 1rpx solid var(--c-line, #e7e6ee);
+  border-left: 1rpx solid var(--c-line-strong, #d6d5e0);
+}
+
+.demo-note__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24rpx;
+  height: 24rpx;
+  margin-top: 1rpx;
+  color: var(--c-accent, #5b6ee0);
+  flex-shrink: 0;
+}
+
+.demo-note view:last-child {
+  flex: 1;
+}
+
+.demo-note text {
+  display: block;
+  color: var(--c-text, #22242e);
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.demo-note text + text {
+  margin-top: 7rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 21rpx;
+  font-weight: 400;
+  line-height: 1.55;
+}

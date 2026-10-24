@@ -1,0 +1,263 @@
+.menu-detail-page {
+  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
+}
+
+.menu-detail-head {
+  padding: 8rpx 0 28rpx;
+}
+
+.menu-detail-head__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22rpx;
+}
+
+.menu-detail-title {
+  min-width: 0;
+  flex: 1;
+  color: var(--c-text, #22242e);
+  font-size: 50rpx;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -2rpx;
+}
+
+.menu-detail-edit {
+  display: flex;
+  height: 48rpx;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 8rpx;
+  color: var(--c-text, #22242e);
+  font-size: 21rpx;
+}
+
+.menu-detail-copy {
+  max-width: 610rpx;
+  margin-top: 12rpx;
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 24rpx;
+  line-height: 1.65;
+}
+
+.menu-hero {
+  padding-top: 14rpx;
+  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.menu-hero--plain {
+  display: flex;
+  padding: 26rpx 0;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--c-muted, #9497a6);
+  font-size: 21rpx;
+}
+
+.menu-hero__image {
+  display: block;
+  width: 100%;
+  height: 320rpx;
+  background: var(--c-primary-soft, #eaedfc);
+}
+
+.menu-hero__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28rpx;
+  padding: 20rpx 0 24rpx;
+}
+
+.menu-hero__info {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 5rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 21rpx;
+}
+
+.menu-hero__time {
+  display: flex;
+  align-items: center;
+  gap: 7rpx;
+}
+
+.menu-hero__time text {
+  color: var(--c-text, #22242e);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 30rpx;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.menu-hero--plain .menu-hero__time text {
+  font-family: inherit;
+  font-size: 21rpx;
+}
+
+.menu-hero__credit {
+  max-width: 220rpx;
+  color: var(--c-muted, #9497a6);
+  flex-shrink: 0;
+  font-size: 18rpx;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.menu-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 42rpx;
+  padding: 0 0 14rpx;
+}
+
+.menu-section-head > view:first-child text {
+  display: block;
+  color: var(--c-text, #22242e);
+  font-size: 27rpx;
+  font-weight: 500;
+}
+
+.menu-section-head > view:first-child text + text {
+  margin-top: 5rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 21rpx;
+  font-weight: 400;
+}
+
+.serving-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 20rpx;
+}
+
+.serving-stepper text:first-child,
+.serving-stepper text:last-child {
+  display: flex;
+  width: 42rpx;
+  height: 42rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-radius: 50%;
+  color: var(--c-text, #22242e);
+  font-size: 24rpx;
+}
+
+.ingredient-list,
+.step-list {
+  overflow: hidden;
+  border-top: 1rpx solid var(--c-line, #e7e6ee);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.ingredient-row {
+  display: flex;
+  min-height: 104rpx;
+  align-items: center;
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.ingredient-row:last-child {
+  border-bottom: 0;
+}
+
+.ingredient-check {
+  display: flex;
+  width: 42rpx;
+  height: 42rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-radius: 2rpx;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ingredient-check--ready {
+  border-color: var(--c-text, #22242e);
+  background: var(--c-text, #22242e);
+}
+
+.ingredient-body {
+  min-width: 0;
+  flex: 1;
+  margin-left: 18rpx;
+}
+
+.ingredient-body text {
+  display: block;
+  color: var(--c-text, #22242e);
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.ingredient-body text + text {
+  margin-top: 5rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 21rpx;
+  font-weight: 400;
+}
+
+.ingredient-amount {
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 21rpx;
+}
+
+.step-list > view {
+  display: flex;
+  gap: 20rpx;
+  padding: 23rpx 0;
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.step-list > view:last-child {
+  border-bottom: 0;
+}
+
+.step-list > view > text {
+  color: var(--c-accent, #5b6ee0);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 22rpx;
+}
+
+.step-list view view text {
+  display: block;
+  color: var(--c-text, #22242e);
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.step-list view view text + text {
+  margin-top: 6rpx;
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 22rpx;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.menu-start {
+  width: 100%;
+  margin-top: 30rpx;
+  gap: 9rpx;
+}
+
+.menu-delete {
+  width: 100%;
+  margin-top: 14rpx;
+  gap: 9rpx;
+}
+
+.menu-detail-sync {
+  display: flex;
+  justify-content: center;
+  margin-top: 20rpx;
+}

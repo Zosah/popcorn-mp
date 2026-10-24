@@ -1,0 +1,6 @@
+<image
+  class="line-icon"
+  src="/images/icons/{{name}}-{{tone}}.png"
+  mode="aspectFit"
+  style="width: {{size}}rpx; height: {{size}}rpx;"
+/>

@@ -1,31 +1,180 @@
-.profile-page { min-height: 100vh; box-sizing: border-box; padding: 28rpx 30rpx calc(190rpx + env(safe-area-inset-bottom)); }
-.profile-head { padding: 12rpx 6rpx 32rpx; }
-.profile-head__meta { color: #a2aacb; font-size: 19rpx; font-weight: 700; }
-.profile-head__title { margin-top: 18rpx; color: #18255f; font-size: 55rpx; font-weight: 850; line-height: 1.22; letter-spacing: -2rpx; }
-.profile-head__title text { display: block; }
-.profile-head__copy { margin-top: 13rpx; color: #929bc0; font-size: 23rpx; }
+.profile-head {
+  padding: 8rpx 0 34rpx;
+}
 
-.identity { display: flex; align-items: center; min-height: 150rpx; padding: 0 26rpx; border-radius: 38rpx; background: #fff; box-shadow: 0 16rpx 36rpx rgba(58, 72, 128, 0.08); }
-.identity__initial { display: flex; align-items: center; justify-content: center; width: 86rpx; height: 86rpx; border-radius: 30rpx; background: #ff8b68; color: #fff; box-shadow: 0 10rpx 22rpx rgba(255, 139, 104, 0.24); font-size: 29rpx; font-weight: 850; }
-.identity__body { flex: 1; margin-left: 20rpx; }
-.identity__name { color: #202d64; font-size: 28rpx; font-weight: 800; }
-.identity__meta { margin-top: 7rpx; color: #99a2c3; font-size: 19rpx; }
-.identity__number { display: flex; align-items: center; justify-content: center; width: 46rpx; height: 46rpx; border-radius: 17rpx; background: #fff0eb; color: #ff805e; font-size: 18rpx; font-weight: 800; }
+.profile-head__title {
+  color: var(--c-text, #22242e);
+  font-size: 48rpx;
+  font-weight: 500;
+  letter-spacing: -2rpx;
+  line-height: 1.3;
+}
 
-.folio-head { display: flex; justify-content: space-between; margin-top: 42rpx; padding: 0 6rpx 15rpx; }
-.folio-head--spaced { margin-top: 46rpx; }
-.folio-head text:first-child { color: #1d2a62; font-size: 31rpx; font-weight: 800; }
-.folio-head text:last-child { color: #9ca5c6; font-size: 17rpx; font-weight: 700; }
-.folio-row { display: flex; align-items: center; gap: 17rpx; min-height: 118rpx; padding: 0 24rpx; background: #fff; border-bottom: 1rpx solid #eef0f7; }
-.folio-head + .folio-row { border-radius: 34rpx 34rpx 0 0; }
-.folio-row + .folio-row { border-radius: 0; }
-.folio-row--last { border-radius: 0 0 34rpx 34rpx !important; border-bottom: 0; }
-.folio-row--single { border-radius: 34rpx !important; border-bottom: 0; }
-.folio-row--muted { opacity: 0.72; }
-.folio-row__index { display: flex; align-items: center; justify-content: center; width: 48rpx; height: 48rpx; border-radius: 17rpx; background: #eef2ff; color: #6688e4; font-size: 18rpx; font-weight: 800; }
-.folio-row__body { flex: 1; }
-.folio-row__title { color: #253269; font-size: 25rpx; font-weight: 750; }
-.folio-row__meta { margin-top: 6rpx; color: #9ba4c5; font-size: 18rpx; }
-.folio-row__arrow { color: #aeb5cf; font-size: 32rpx; }
-.folio-row__status { padding: 6rpx 12rpx; border-radius: 14rpx; background: #f0f2f8; color: #959dbd; font-size: 14rpx; font-weight: 750; }
-.profile-foot { display: flex; align-items: center; flex-direction: column; gap: 7rpx; margin-top: 52rpx; color: #a2aac7; font-size: 18rpx; }
+.profile-head__copy {
+  max-width: 610rpx;
+  margin-top: 12rpx;
+  color: var(--c-text-2, #5c5f6e);
+  font-size: 24rpx;
+  line-height: 1.65;
+}
+
+.profile-page .card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 0;
+  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.identity__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 78rpx;
+  height: 78rpx;
+  border: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-accent, #5b6ee0);
+  flex-shrink: 0;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 32rpx;
+  font-weight: 400;
+}
+
+.identity__body {
+  min-width: 0;
+  margin-left: 22rpx;
+  flex: 1;
+}
+
+.identity__name {
+  color: var(--c-text, #22242e);
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.identity__meta {
+  margin-top: 4rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 22rpx;
+}
+
+.rows {
+  border-top: 1rpx solid var(--c-line, #e7e6ee);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  min-height: 112rpx;
+  padding: 0;
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row__icon {
+  display: flex;
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 20rpx;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.row__body {
+  min-width: 0;
+  flex: 1;
+  padding: 22rpx 0;
+}
+
+.row__title {
+  color: var(--c-text, #22242e);
+  font-size: 27rpx;
+  font-weight: 500;
+}
+
+.row__meta {
+  margin-top: 5rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.row__tag {
+  margin-right: 16rpx;
+  color: var(--c-muted, #9497a6);
+  font-size: 21rpx;
+}
+
+.row__chevron {
+  width: 10rpx;
+  height: 10rpx;
+  flex-shrink: 0;
+  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-right: 1rpx solid var(--c-line-strong, #d6d5e0);
+  transform: rotate(45deg);
+}
+
+.profile-garden {
+  display: flex;
+  align-items: stretch;
+  gap: 26rpx;
+  margin-top: 44rpx;
+  padding: 22rpx 0 24rpx;
+  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
+  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
+}
+
+.profile-garden__copy {
+  display: flex;
+  min-width: 0;
+  padding: 6rpx 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.profile-garden__copy text:first-child {
+  color: var(--c-text, #22242e);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 30rpx;
+  line-height: 1.55;
+}
+
+.profile-garden__copy text:last-child {
+  color: var(--c-muted, #9497a6);
+  font-size: 18rpx;
+  letter-spacing: 1rpx;
+  line-height: 1.5;
+}
+
+.profile-garden__image {
+  display: block;
+  width: 146rpx;
+  height: 196rpx;
+  background: var(--c-primary-soft, #eaedfc);
+  flex-shrink: 0;
+}
+
+.profile-foot {
+  display: flex;
+  align-items: center;
+  margin-top: 44rpx;
+  color: #a8abba;
+  flex-direction: column;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 20rpx;
+  line-height: 1.8;
+}

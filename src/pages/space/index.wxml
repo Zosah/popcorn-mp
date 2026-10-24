@@ -1,7 +1,7 @@
 <view class="space-page">
   <view class="subpage-back" bindtap="onBack">← 返回我的</view>
+
   <view class="space-head">
-    <view class="space-head__meta"><text>SPACE NO. 01</text><text>Asia / Shanghai</text></view>
     <view class="space-head__title-row">
       <view class="space-head__title">{{spaceName}}</view>
       <view class="space-head__edit" bindtap="onRename">改名</view>
@@ -9,41 +9,41 @@
     <view class="space-head__copy">2024 年 5 月 20 日创建。这里的内容，只属于被邀请进来的人。</view>
   </view>
 
-  <view class="space-stats">
+  <view class="space-stats card">
     <view><text>2</text><text>成员</text></view>
     <view><text>829</text><text>一起生活</text></view>
     <view><text>5</text><text>在库物品</text></view>
   </view>
 
-  <view class="space-section-head"><text>一起生活的人</text><text>MEMBERS</text></view>
-  <view class="member-row">
-    <view class="member-row__index">01</view>
-    <view class="member-row__initial member-row__initial--owner">满</view>
-    <view class="member-row__body"><text>时刻在体验官</text><text>空间创建者 · 可以管理成员</text></view>
-    <view class="member-row__role">OWNER</view>
-  </view>
-  <view class="member-row">
-    <view class="member-row__index">02</view>
-    <view class="member-row__initial">屿</view>
-    <view class="member-row__body"><text>共同生活成员</text><text>可以维护共同内容</text></view>
-    <view class="member-row__role">MEMBER</view>
+  <view class="space-section-head"><view class="space-section-head__label"><line-icon name="users" size="24" tone="muted" /><text>一起生活的人</text></view><text>2 位</text></view>
+  <view class="member-list card">
+    <view class="member-row">
+      <view class="member-row__initial member-row__initial--owner">满</view>
+      <view class="member-row__body"><text>时刻在体验官</text><text>空间创建者 · 可以管理成员</text></view>
+      <view class="member-row__role">创建者</view>
+    </view>
+    <view class="member-row">
+      <view class="member-row__initial">屿</view>
+      <view class="member-row__body"><text>共同生活成员</text><text>可以维护共同内容</text></view>
+      <view class="member-row__role">成员</view>
+    </view>
   </view>
 
-  <view class="space-section-head space-section-head--spaced"><text>邀请一个人回家</text><text>INVITE</text></view>
-  <view class="invite-sheet">
-    <view class="invite-sheet__label">一次性 Demo 邀请码</view>
+  <view class="space-section-head space-section-head--spaced"><view class="space-section-head__label"><line-icon name="ticket" size="24" tone="muted" /><text>邀请一个人回家</text></view><text>一次性</text></view>
+  <view class="invite-sheet card">
+    <view class="invite-sheet__label">Demo 邀请码</view>
     <view class="invite-sheet__code">{{inviteCode}}</view>
     <view class="invite-sheet__copy">真实版本中，邀请码 7 天内有效且只能使用一次。</view>
     <view class="invite-sheet__actions">
-      <button bindtap="onCopyInvite">复制邀请码</button>
-      <button open-type="share">微信分享</button>
+      <button class="secondary-button" bindtap="onCopyInvite">复制邀请码</button>
+      <button class="primary-button" open-type="share">微信分享</button>
     </view>
     <view class="invite-sheet__preview" bindtap="onPreviewInvite">预览对方看到的页面 →</view>
     <view class="invite-sheet__refresh" bindtap="onRefreshInvite">换一个邀请码</view>
   </view>
 
   <view class="privacy-note">
-    <view class="privacy-note__mark">私</view>
+    <view class="privacy-note__mark"><line-icon name="lock" size="22" tone="muted" /></view>
     <view><text>空间默认不公开</text><text>健康、病历和悄悄话仍会有独立的可见范围。</text></view>
   </view>
 </view>

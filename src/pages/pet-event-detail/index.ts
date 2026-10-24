@@ -1,4 +1,5 @@
 import { PET_EVENT_LABELS } from '../../domain/demo-pet'
+import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
 import {
   getDemoPetEvent,
   getDemoPetState,
@@ -11,6 +12,7 @@ Page({
     eventId: '',
     petName: '',
     typeLabel: '',
+    iconName: 'heart-pulse',
     event: null as ReturnType<typeof getDemoPetEvent>,
   },
 
@@ -31,6 +33,7 @@ Page({
     this.setData({
       petName: getDemoPetState().profile.name,
       typeLabel: PET_EVENT_LABELS[event.type],
+      iconName: PET_EVENT_ICON_NAMES[event.type],
       event,
     })
   },
@@ -50,7 +53,7 @@ Page({
       title: '删除这条事件？',
       content: '删除后，时间线和月历中的这条记录会同时消失。',
       confirmText: '删除',
-      confirmColor: '#e76f65',
+      confirmColor: '#e8695c',
       success: (result) => {
         if (!result.confirm) return
         removeDemoPetEvent(this.data.eventId)

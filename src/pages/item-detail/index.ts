@@ -1,4 +1,5 @@
 import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
+import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
 import { resolveInventoryLifecycleActions } from '../../domain/demo-interactions'
 import { getShanghaiDateOnly, resolveExpiry } from '../../domain/expiry'
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
@@ -20,7 +21,7 @@ const ACTION_LABELS = {
 } as const
 
 interface ItemDetailView extends InventoryItem {
-  iconText: string
+  iconName: string
   categoryLabel: string
   locationLabel: string
   expiry: ReturnType<typeof resolveExpiry>
@@ -60,7 +61,7 @@ Page({
       loading: false,
       item: {
         ...item,
-        iconText: item.name.slice(0, 1),
+        iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
         categoryLabel: getCategoryLabel(item.category),
         locationLabel: getLocationLabel(item.location),
         expiry: resolveExpiry(item.expiresOn, today),
@@ -109,7 +110,7 @@ Page({
       title: '删除这件物品？',
       content: 'Demo 中会从库存列表移除，但仍采用软删除逻辑。',
       confirmText: '删除',
-      confirmColor: '#c64d42',
+      confirmColor: '#e8695c',
       success: (result) => {
         if (!result.confirm) return
         void inventoryGateway.remove(item.id, item.version).then(() => {

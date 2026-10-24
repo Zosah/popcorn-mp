@@ -5,3 +5,9 @@ src/miniprogram_npm/
 .vscode/
 *.log
 .DS_Store
+.preview/
+shots/
+design-review/
+
+# 设计技能运行时产物
+.taste-skill/

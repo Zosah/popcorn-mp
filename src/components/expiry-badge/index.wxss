@@ -1,6 +1,28 @@
-.badge { display: inline-flex; align-items: center; min-height: 38rpx; box-sizing: border-box; padding: 3rpx 13rpx; border-radius: 19rpx; background: #eef1f8; color: #7f89af; font-size: 18rpx; font-weight: 750; white-space: nowrap; }
-.badge--expired { background: #fff0f1; color: #ef666e; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 21rpx;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.badge--expired {
+  color: var(--c-danger, #e8695c);
+}
+
 .badge--today,
-.badge--urgent { background: #fff3e8; color: #f18b4d; }
-.badge--soon { background: #fff8dd; color: #c99d28; }
-.badge--normal { background: #eafaf3; color: #20b77f; }
+.badge--urgent {
+  color: var(--c-warning, #e0a038);
+}
+
+.badge--soon {
+  color: #c98a2e;
+}
+
+.badge--normal {
+  color: var(--c-success, #4fa87d);
+}
+
+.badge--none {
+  color: var(--c-muted, #9497a6);
+}

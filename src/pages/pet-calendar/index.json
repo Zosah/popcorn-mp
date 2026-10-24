@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "宠物月历"
+  "navigationBarTitleText": "宠物月历",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index"
+  }
 }

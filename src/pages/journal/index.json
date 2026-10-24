@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "生活记录"
+  "navigationBarTitleText": "生活记录",
+  "usingComponents": {
+    "sync-badge": "/components/sync-badge/index",
+    "line-icon": "/components/line-icon/index"
+  }
 }

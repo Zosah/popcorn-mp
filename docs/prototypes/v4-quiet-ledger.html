@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>时刻在 · 静默账本 · v4 视觉提案</title>
+  <style>
+    :root {
+      --paper: #f4f3f1;
+      --paper-deep: #e5e4e0;
+      --surface: #faf9f6;
+      --ink: #1b1b18;
+      --ink-2: #5f605a;
+      --muted: #64655e;
+      --line: #e1ded7;
+      --line-strong: #d2cec5;
+      --accent: #743e37;
+      --control: #1b1b18;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background: var(--paper-deep);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .gallery {
+      width: 1370px;
+      margin: 0 auto;
+      padding: 48px 40px 56px;
+    }
+
+    .gallery-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .gallery-title {
+      margin: 0;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .gallery-copy {
+      max-width: 620px;
+      margin: 10px 0 0;
+      color: var(--ink-2);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .gallery-note {
+      margin: 0 0 3px;
+
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: right;
+    }
+
+    .phones {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 36px;
+    }
+
+    .phone-wrap { width: 390px; }
+
+    .phone-label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin: 0 2px 10px;
+      color: var(--ink-2);
+      font-size: 12px;
+    }
+
+    .phone-label strong {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .phone {
+    font-variant-numeric: tabular-nums;
+      position: relative;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: 36px;
+      background: var(--paper);
+    }
+
+    .screen {
+      height: 100%;
+      padding-bottom: 84px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 42px;
+      padding: 0 24px 0 28px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
+    }
+
+    .signal {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 10px;
+    }
+
+    .signal i {
+      display: block;
+      width: 2px;
+      border-radius: 1px;
+      background: currentColor;
+    }
+
+    .signal i:nth-child(1) { height: 4px; }
+    .signal i:nth-child(2) { height: 6px; }
+    .signal i:nth-child(3) { height: 8px; }
+    .signal i:nth-child(4) { height: 10px; }
+
+    .battery {
+      position: relative;
+      width: 19px;
+      height: 9px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+    }
+
+    .battery::before {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      bottom: 1px;
+      left: 1px;
+      border-radius: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    .battery::after {
+      position: absolute;
+      top: 2px;
+      right: -3px;
+      width: 2px;
+      height: 3px;
+      border-radius: 0 1px 1px 0;
+      background: currentColor;
+      content: "";
+    }
+
+    .navbar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .capsule {
+      position: absolute;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      width: 84px;
+      height: 30px;
+      border: 1px solid rgba(27, 27, 24, 0.16);
+      border-radius: 999px;
+      background: rgba(250, 249, 246, 0.54);
+    }
+
+    .capsule-dots {
+      letter-spacing: 2px;
+      transform: translateY(-1px);
+    }
+
+    .capsule-ring {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+
+    .content {
+      padding: 22px 24px 0;
+    }
+
+    .home-content { padding-top: 14px; }
+
+    .date-stamp {
+      display: flex;
+      align-items: flex-end;
+      height: 78px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .date-stamp__day {
+    color: var(--accent);
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 40px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      letter-spacing: -5px;
+      line-height: 0.72;
+    }
+
+    .date-stamp__meta {
+      display: flex;
+      margin-left: 15px;
+      padding-bottom: 2px;
+      flex-direction: column;
+      color: var(--ink-2);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .date-stamp__meta strong {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .home-intro {
+      padding: 18px 0 19px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+      letter-spacing: -1.2px;
+      line-height: 1.25;
+    }
+
+    .page-copy {
+      margin: 7px 0 0;
+      color: var(--ink-2);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .sync-line {
+      display: flex;
+      align-items: center;
+      margin-top: 11px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .sync-line::before {
+      width: 5px;
+      height: 5px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      content: "";
+    }
+
+    .notice {
+      padding: 15px 0 16px;
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .notice__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--ink-2);
+      font-size: 12px;
+    }
+
+    .notice__body {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    .notice__value {
+      display: flex;
+      align-items: baseline;
+      min-width: 0;
+    }
+
+    .notice__number {
+    font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 32px;
+      font-weight: 500;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .notice__text {
+      margin-left: 9px;
+      font-size: 14px;
+      letter-spacing: -0.2px;
+    }
+
+    .text-action {
+      border: 0;
+      padding: 4px 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 12px;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 21px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .section-action {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .quicklinks {
+      display: grid;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .quicklink {
+      display: flex;
+      height: 62px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .quicklink + .quicklink { border-left: 1px solid var(--line); }
+
+    .quicklink strong {
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .quicklink span {
+      margin-top: 6px;
+      color: var(--ink-2);
+      font-size: 12px;
+    }
+
+    .recent-list { margin-top: 4px; }
+
+    .recent-row {
+      display: grid;
+      min-height: 57px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      grid-template-columns: 42px 1fr auto;
+    }
+
+    .recent-row__date {
+    font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 17px;
+    }
+
+    .recent-row__main {
+      overflow: hidden;
+      padding: 10px 8px 10px 0;
+    }
+
+    .recent-row__title {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 500;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recent-row__meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .recent-row__mark {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--line-strong);
+    }
+
+    .home-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 17px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .home-foot strong {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 14px;
+    }
+
+    .page-head__sub {
+      margin-top: 7px;
+      color: var(--ink-2);
+      font-size: 12px;
+    }
+
+    .quiet-action {
+      margin-top: 3px;
+      border: 1px solid var(--control);
+      border-radius: 999px;
+      padding: 7px 13px;
+      background: transparent;
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      position: relative;
+      padding: 0 0 11px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tab.active {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .tab.active::after {
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 1px;
+      background: var(--ink);
+      content: "";
+    }
+
+    .stats {
+      display: grid;
+      margin-top: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .stat + .stat { border-left: 1px solid var(--line); }
+
+    .stat__value {
+    font-variant-numeric: tabular-nums;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 25px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .stat--alert .stat__value { color: var(--accent); }
+
+    .stat__label {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      height: 40px;
+      align-items: center;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .search-icon {
+      position: relative;
+      width: 13px;
+      height: 13px;
+      margin-right: 9px;
+      border: 1px solid var(--muted);
+      border-radius: 50%;
+    }
+
+    .search-icon::after {
+      position: absolute;
+      right: -4px;
+      bottom: -3px;
+      width: 6px;
+      height: 1px;
+      background: var(--muted);
+      transform: rotate(45deg);
+      content: "";
+    }
+
+    .search-text {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 20px;
+      padding: 12px 0 10px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .filter.active {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .filter.active::before {
+      display: inline-block;
+      width: 3px;
+      height: 3px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      vertical-align: 2px;
+      content: "";
+    }
+
+    .group-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 14px 0 6px;
+    }
+
+    .group-head h2 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .group-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .item-row {
+      display: flex;
+      min-height: 56px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+    }
+
+    .item-row__main { min-width: 0; flex: 1; }
+
+    .item-row__name {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 500;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-row__meta {
+      overflow: hidden;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-row__status {
+      margin-left: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .item-row__status.alert { color: var(--accent); }
+
+    .chevron {
+      width: 6px;
+      height: 6px;
+      margin-left: 11px;
+      border-top: 1px solid var(--line-strong);
+      border-right: 1px solid var(--line-strong);
+      transform: rotate(45deg);
+    }
+
+    .journal-head { padding-bottom: 17px; }
+
+    .journal-copy {
+      max-width: 292px;
+      margin: 7px 0 0;
+      color: var(--ink-2);
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .timeline {
+      padding-top: 4px;
+    }
+
+    .entry {
+      display: grid;
+      padding: 15px 0 17px;
+      border-bottom: 1px solid var(--line);
+      grid-template-columns: 44px 1fr;
+    }
+
+    .entry__date {
+      display: flex;
+      padding-top: 2px;
+      flex-direction: column;
+      color: var(--ink);
+      font-family: "Songti SC", "STSong", serif;
+    }
+
+    .entry__day {
+    font-variant-numeric: tabular-nums;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .entry__month {
+      margin-top: 4px;
+      color: var(--muted);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      font-size: 12px;
+    }
+
+    .entry__meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .entry__title {
+      margin: 7px 0 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .entry__copy {
+      margin: 7px 0 0;
+      color: var(--ink-2);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .entry__visibility {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .entry__image {
+      display: block;
+      width: 100%;
+      height: 142px;
+      margin-top: 10px;
+      object-fit: cover;
+      object-position: center 34%;
+      filter: saturate(0.72) contrast(0.96);
+    }
+
+    .entry__caption {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .entry__note {
+      margin-top: 9px;
+      padding: 8px 0 8px 11px;
+      border-left: 1px solid var(--line-strong);
+      color: var(--ink-2);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .tabbar {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 84px;
+      border-top: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .tabbar-items {
+      display: grid;
+      height: 63px;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .tabbar-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tabbar-item.active { color: var(--ink); }
+
+    .tabbar-item svg {
+      width: 18px;
+      height: 18px;
+      margin-bottom: 3px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.5;
+    }
+
+    .home-indicator {
+      width: 112px;
+      height: 4px;
+      margin: 4px auto 0;
+      border-radius: 999px;
+      background: var(--ink);
+      opacity: 0.92;
+    }
+
+    .gallery-credit {
+      margin: 24px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <main class="gallery">
+    <header class="gallery-head">
+      <div>
+        <h1 class="gallery-title">静默账本</h1>
+        <p class="gallery-copy">暖灰纸面、细线与宋体数字。装饰退到后面，让日期、数量和生活内容自己建立层级。</p>
+      </div>
+      <p class="gallery-note">时刻在 · 视觉方向 04<br />首页 / 库存 / 记录</p>
+    </header>
+
+    <section class="phones" aria-label="三张核心页面预览">
+      <article class="phone-wrap">
+        <div class="phone-label"><strong>首页</strong><span>今天与最近</span></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="status">
+              <span>9:41</span>
+              <span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="battery"></span></span>
+            </div>
+            <div class="navbar"><span>时刻在</span><span class="capsule"><span class="capsule-dots">•••</span><span class="capsule-ring"></span></span></div>
+
+            <div class="content home-content">
+              <div class="date-stamp">
+                <span class="date-stamp__day">24</span>
+                <span class="date-stamp__meta"><strong>十月</strong><span>星期六</span></span>
+              </div>
+
+              <div class="home-intro">
+                <h2 class="page-title">我回来啦</h2>
+                <p class="page-copy">早上好，家里的事都在这儿。</p>
+                <div class="sync-line">本机 Demo，数据只在这台手机</div>
+              </div>
+
+              <section class="notice">
+                <div class="notice__head"><span>需要看看</span><span>冰箱与储物柜</span></div>
+                <div class="notice__body">
+                  <div class="notice__value"><span class="notice__number">4</span><span class="notice__text">件东西已经过期</span></div>
+                  <button class="text-action" type="button">查看库存</button>
+                </div>
+              </section>
+
+              <div class="section-title-row"><h2 class="section-title">常用</h2><span class="section-action">今天</span></div>
+              <nav class="quicklinks" aria-label="常用入口">
+                <a class="quicklink" href="#"><strong>5</strong><span>库存</span></a>
+                <a class="quicklink" href="#"><strong>1</strong><span>宠物</span></a>
+                <a class="quicklink" href="#"><strong>—</strong><span>菜单</span></a>
+                <a class="quicklink" href="#"><strong>3</strong><span>记录</span></a>
+              </nav>
+
+              <div class="section-title-row"><h2 class="section-title">最近</h2><span class="section-action">全部记录</span></div>
+              <div class="recent-list">
+                <div class="recent-row"><span class="recent-row__date">24</span><div class="recent-row__main"><div class="recent-row__title">今天没有新的记录</div><div class="recent-row__meta">写一句也好，日子会留在这里</div></div><span class="recent-row__mark"></span></div>
+                <div class="recent-row"><span class="recent-row__date">22</span><div class="recent-row__main"><div class="recent-row__title">糯米今天 3.8 kg</div><div class="recent-row__meta">宠物记录 · 空间成员可见</div></div><span class="recent-row__mark"></span></div>
+              </div>
+
+              <div class="home-foot"><span><strong>糯米</strong> · 3.8 kg</span><span>体内驱虫 · 已逾期 48 天</span></div>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="底部导航">
+            <div class="tabbar-items">
+              <span class="tabbar-item active"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20h-6v-5h-4v5H4z"/></svg><span>家</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 11h16M9 7V4h6v3"/></svg><span>库存</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg><span>记录</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5.5 20c.4-4 2.6-6 6.5-6s6.1 2 6.5 6"/></svg><span>我的</span></span>
+            </div>
+            <div class="home-indicator"></div>
+          </nav>
+        </div>
+      </article>
+
+      <article class="phone-wrap">
+        <div class="phone-label"><strong>库存</strong><span>先处理需要看的</span></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="status">
+              <span>9:41</span>
+              <span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="battery"></span></span>
+            </div>
+            <div class="navbar"><span>家庭库存</span><span class="capsule"><span class="capsule-dots">•••</span><span class="capsule-ring"></span></span></div>
+
+            <div class="content">
+              <header class="page-head">
+                <div><h2 class="page-title">家里还有什么</h2><div class="page-head__sub">我们的家 · 5 件在库</div></div>
+                <button class="quiet-action" type="button">添加</button>
+              </header>
+
+              <div class="tabs"><span class="tab active">正在库存</span><span class="tab">历史记录</span></div>
+
+              <section class="stats" aria-label="库存概览">
+                <span class="stat stat--alert"><strong class="stat__value">4</strong><span class="stat__label">已过期</span></span>
+                <span class="stat"><strong class="stat__value">0</strong><span class="stat__label">三天内</span></span>
+                <span class="stat"><strong class="stat__value">0</strong><span class="stat__label">还安心</span></span>
+                <span class="stat"><strong class="stat__value">5</strong><span class="stat__label">全部</span></span>
+              </section>
+
+              <div class="search-row"><span class="search-icon"></span><span class="search-text">搜索物品</span></div>
+
+              <div class="filters"><span class="filter active">全部</span><span class="filter">已过期</span><span class="filter">三天内</span><span class="filter">七天内</span><span class="filter">无有效期</span></div>
+
+              <div class="group-head"><h2>已过期</h2><span>4 件 · 优先处理</span></div>
+              <div class="item-list">
+                <div class="item-row"><div class="item-row__main"><div class="item-row__name">鲜牛奶</div><div class="item-row__meta">1 盒 · 冰箱冷藏 · 饮料</div></div><span class="item-row__status alert">已过期 60 天</span><span class="chevron"></span></div>
+                <div class="item-row"><div class="item-row__main"><div class="item-row__name">原味酸奶</div><div class="item-row__meta">3 杯 · 冰箱冷藏 · 饮料</div></div><span class="item-row__status alert">已过期 57 天</span><span class="chevron"></span></div>
+                <div class="item-row"><div class="item-row__main"><div class="item-row__name">可生食鸡蛋</div><div class="item-row__meta">8 枚 · 冰箱冷藏 · 食材</div></div><span class="item-row__status alert">已过期 53 天</span><span class="chevron"></span></div>
+                <div class="item-row"><div class="item-row__main"><div class="item-row__name">玉米猪肉水饺</div><div class="item-row__meta">2 袋 · 冰箱冷冻 · 冷冻</div></div><span class="item-row__status alert">已过期 11 天</span><span class="chevron"></span></div>
+              </div>
+
+              <div class="group-head"><h2>长期存放</h2><span>1 件</span></div>
+              <div class="item-row"><div class="item-row__main"><div class="item-row__name">厨房纸</div><div class="item-row__meta">2 卷 · 储物柜 · 日用品</div></div><span class="item-row__status">无有效期</span><span class="chevron"></span></div>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="底部导航">
+            <div class="tabbar-items">
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20h-6v-5h-4v5H4z"/></svg><span>家</span></span>
+              <span class="tabbar-item active"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 11h16M9 7V4h6v3"/></svg><span>库存</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg><span>记录</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5.5 20c.4-4 2.6-6 6.5-6s6.1 2 6.5 6"/></svg><span>我的</span></span>
+            </div>
+            <div class="home-indicator"></div>
+          </nav>
+        </div>
+      </article>
+
+      <article class="phone-wrap">
+        <div class="phone-label"><strong>记录</strong><span>像翻一本家里的书</span></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="status">
+              <span>9:41</span>
+              <span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="battery"></span></span>
+            </div>
+            <div class="navbar"><span>生活记录</span><span class="capsule"><span class="capsule-dots">•••</span><span class="capsule-ring"></span></span></div>
+
+            <div class="content">
+              <header class="journal-head">
+                <h2 class="page-title">日子，慢慢记</h2>
+                <p class="journal-copy">重要的不是每天都有故事，是我们记得一起过过这些天。</p>
+                <div class="sync-line">本机记录，暂未跨设备同步</div>
+              </header>
+
+              <div class="tabs"><span class="tab active">生活点滴</span><span class="tab">重要记录</span></div>
+
+              <section class="timeline" aria-label="生活记录时间线">
+                <article class="entry">
+                  <div class="entry__date"><span class="entry__day">24</span><span class="entry__month">十月</span></div>
+                  <div><div class="entry__meta">小满 · 今天 08:42</div><h2 class="entry__title">早上把厨房重新收拾了一遍</h2><p class="entry__copy">把常用的东西放回伸手就能拿到的地方。没有买新的收纳盒，反而清爽了很多。</p><div class="entry__visibility">空间成员可见</div></div>
+                </article>
+
+                <article class="entry">
+                  <div class="entry__date"><span class="entry__day">22</span><span class="entry__month">十月</span></div>
+                  <div><div class="entry__meta">阿屿 · 2 天前</div><h2 class="entry__title">下班路上买了第一束桂花</h2><img class="entry__image" src="../../assets/vase-of-flowers-on-a-table.jpg" alt="公版花卉静物画，作为记录图片的排版示例" /><div class="entry__caption">图片为公版艺术示例</div><p class="entry__copy">放在餐桌上，屋子突然就有了秋天的味道。</p><div class="entry__visibility">空间成员可见 · 不开放评论</div></div>
+                </article>
+
+                <article class="entry">
+                  <div class="entry__date"><span class="entry__day">19</span><span class="entry__month">十月</span></div>
+                  <div><div class="entry__meta">阿屿 · 5 天前</div><h2 class="entry__title">糯米今天 3.8 kg</h2><div class="entry__note">比上个月重了 0.1 kg<br />精神和食欲都很好</div><div class="entry__visibility">宠物记录 · 空间成员可见</div></div>
+                </article>
+              </section>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="底部导航">
+            <div class="tabbar-items">
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20h-6v-5h-4v5H4z"/></svg><span>家</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 11h16M9 7V4h6v3"/></svg><span>库存</span></span>
+              <span class="tabbar-item active"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg><span>记录</span></span>
+              <span class="tabbar-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5.5 20c.4-4 2.6-6 6.5-6s6.1 2 6.5 6"/></svg><span>我的</span></span>
+            </div>
+            <div class="home-indicator"></div>
+          </nav>
+        </div>
+      </article>
+    </section>
+
+    <p class="gallery-credit">记录页图片：“Vase of Flowers on a Table”, 1600–1800, public domain (CC0), via The Metropolitan Museum of Art.</p>
+  </main>
+</body>
+</html>

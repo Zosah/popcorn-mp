@@ -1,0 +1,131 @@
+<view class="page-shell todo-page">
+  <view class="subpage-back" bindtap="onBack">← 返回我的</view>
+
+  <view class="todo-hero">
+    <view class="todo-hero__eyebrow">MY LITTLE LIST</view>
+    <view class="todo-hero__title">还有一点，慢慢做完</view>
+    <view class="todo-hero__copy">旅行、小计划、健身、吃饭和花销，都先放在这里。</view>
+    <view class="sync-row"><sync-badge state="local" text="本机待办 · 数据只在这台手机" /></view>
+
+    <view class="todo-summary">
+      <view class="todo-summary__number">{{pendingCount}}</view>
+      <view class="todo-summary__body">
+        <text>件还没做</text>
+        <text>{{completedCount}} 件已完成 · 共 {{totalCount}} 条记录</text>
+      </view>
+      <view class="todo-summary__mark"><line-icon name="check" size="20" tone="accent" /></view>
+    </view>
+  </view>
+
+  <view class="todo-filters">
+    <view class="todo-filter-row">
+      <view
+        wx:for="{{filters}}"
+        wx:key="value"
+        class="todo-filter {{activeKind === item.value ? 'todo-filter--active' : ''}}"
+        data-kind="{{item.value}}"
+        bindtap="onSelectFilter"
+      >
+        <line-icon name="{{item.icon}}" size="24" tone="{{activeKind === item.value ? 'ink' : 'muted'}}" />
+        <text>{{item.label}}</text>
+        <text class="todo-filter__count">{{item.count}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{activeKind === 'meal'}}" class="meal-idea">
+    <view class="meal-idea__copy">
+      <text>今天吃什么 · 小建议</text>
+      <text>{{mealIdea}}</text>
+    </view>
+    <view class="meal-idea__actions">
+      <text bindtap="onShuffleMealIdea">换一个</text>
+      <text bindtap="onUseMealIdea">就吃这个</text>
+    </view>
+  </view>
+
+  <view wx:if="{{activeKind === 'expense'}}" class="expense-total">
+    <view>
+      <text>账本累计</text>
+      <text>{{expenseCount}} 笔记录</text>
+    </view>
+    <text>{{expenseTotalLabel}}</text>
+  </view>
+
+  <view class="section-head todo-section-head">
+    <text class="section-head__title">{{activeLabel}}</text>
+    <text class="section-head__action">{{items.length}} 条</text>
+  </view>
+
+  <view wx:if="{{items.length}}" class="todo-list">
+    <view
+      wx:for="{{items}}"
+      wx:key="id"
+      class="todo-item {{item.done ? 'todo-item--done' : ''}}"
+      data-id="{{item.id}}"
+      bindlongpress="onLongPressItem"
+    >
+      <view class="todo-item__main" data-id="{{item.id}}" bindtap="onEditItem">
+        <view
+          class="todo-check {{item.done ? 'todo-check--done' : ''}}"
+          data-id="{{item.id}}"
+          catchtap="onToggleItem"
+        >
+          <line-icon wx:if="{{item.done}}" name="check" size="18" tone="white" />
+        </view>
+
+        <view class="todo-item__body">
+          <view class="todo-item__topline">
+            <view class="todo-kind">
+              <line-icon name="{{item.kindIcon}}" size="20" tone="muted" />
+              <text>{{item.kindLabel}}</text>
+            </view>
+            <text wx:if="{{item.overdue}}" class="todo-overdue">已过期</text>
+            <text wx:elif="{{item.dateLabel}}" class="todo-date">{{item.dateLabel}}</text>
+          </view>
+          <view class="todo-item__title">{{item.title}}</view>
+          <view class="todo-item__meta">{{item.meta}}</view>
+          <view wx:if="{{item.note}}" class="todo-item__note">{{item.note}}</view>
+        </view>
+
+        <view class="todo-item__chevron"></view>
+      </view>
+
+      <view wx:if="{{item.checklist.length}}" class="todo-checklist">
+        <view class="todo-checklist__head">
+          <text>准备清单</text>
+          <text>{{item.checklistText}}</text>
+        </view>
+        <view
+          wx:for="{{item.checklist}}"
+          wx:for-item="check"
+          wx:key="id"
+          class="todo-checklist__row {{check.done ? 'todo-checklist__row--done' : ''}}"
+          data-parent-id="{{item.id}}"
+          data-checklist-id="{{check.id}}"
+          catchtap="onToggleChecklist"
+        >
+          <view class="todo-checklist__check">
+            <line-icon wx:if="{{check.done}}" name="check" size="14" tone="white" />
+          </view>
+          <text class="todo-checklist__number">{{check.number}}</text>
+          <text class="todo-checklist__text">{{check.text}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="todo-empty">
+    <view class="todo-empty__icon"><line-icon name="{{emptyIcon}}" size="38" tone="muted" /></view>
+    <text class="todo-empty__title">{{emptyTitle}}</text>
+    <text class="todo-empty__copy">{{emptyCopy}}</text>
+    <view class="todo-empty__action" bindtap="onCreate">记下第一件事</view>
+  </view>
+
+  <view class="todo-action-bar">
+    <button class="primary-button todo-add" bindtap="onCreate">
+      <line-icon name="plus" size="22" tone="white" />
+      <text>记一件要做的事</text>
+    </button>
+  </view>
+</view>

@@ -5,6 +5,7 @@ import {
   shiftPetCalendarMonth,
   type DemoPetEvent,
 } from '../../domain/demo-pet'
+import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import { getDemoPetState } from '../../services/demo-pet'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -15,6 +16,7 @@ interface CalendarEventView {
   date: string
   title: string
   typeLabel: string
+  iconName: string
   kindLabel: string
 }
 
@@ -91,6 +93,7 @@ Page({
       date: event.occurredOn,
       title: event.title,
       typeLabel: PET_EVENT_LABELS[event.type],
+      iconName: PET_EVENT_ICON_NAMES[event.type],
       kindLabel: '已记录',
     }))
     const plannedEvents: CalendarEventView[] = state.events
@@ -101,6 +104,7 @@ Page({
         date: event.nextOn!,
         title: `下次${PET_EVENT_LABELS[event.type]}`,
         typeLabel: PET_EVENT_LABELS[event.type],
+        iconName: PET_EVENT_ICON_NAMES[event.type],
         kindLabel: '计划',
       }))
     const careEvents: CalendarEventView[] = buildPetCareCards(
@@ -120,6 +124,7 @@ Page({
         date: item.nextOn!,
         title: item.title,
         typeLabel: '周期照护',
+        iconName: PET_EVENT_ICON_NAMES[item.type],
         kindLabel: '自动推算',
       }))
     const calendarEvents = [...actualEvents, ...plannedEvents, ...careEvents]

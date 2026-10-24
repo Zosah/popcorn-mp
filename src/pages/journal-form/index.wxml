@@ -2,12 +2,17 @@
   <view class="subpage-back" bindtap="onBack">← 返回记录</view>
 
   <view class="journal-form-head">
-    <view class="journal-form-head__meta">A LITTLE MOMENT</view>
-    <view class="journal-form-head__title">今天，想记下什么？</view>
-    <view class="journal-form-head__copy">不用写得完整，一句话也能把这个瞬间留下来。</view>
+    <view class="journal-form-head__title">{{pageTitle}}</view>
+    <view class="journal-form-head__copy">{{pageCopy}}</view>
   </view>
 
-  <view class="surface journal-form-card">
+  <view class="journal-form-card card">
+    <view wx:if="{{kind === 'note'}}" class="journal-field">
+      <text>归档位置</text>
+      <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+        <view class="journal-category-picker"><line-icon name="folder" size="24" tone="muted" /><text>{{categoryLabels[categoryIndex]}} ›</text></view>
+      </picker>
+    </view>
     <view class="journal-field">
       <text>一句话标题</text>
       <input value="{{form.title}}" maxlength="40" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
@@ -18,15 +23,19 @@
     </view>
   </view>
 
-  <view class="visibility-title">谁可以看到</view>
+  <view class="section-head">
+    <text class="section-head__title">谁可以看到</text>
+  </view>
   <view class="visibility-grid">
     <view class="visibility-card {{visibility === 'space' ? 'visibility-card--active' : ''}}" data-value="space" bindtap="onVisibilityChange">
-      <text>一起看</text><text>当前空间的成员</text>
+      <view class="visibility-card__title"><line-icon name="users" size="24" tone="{{visibility === 'space' ? 'ink' : 'muted'}}" /><text>一起看</text></view>
+      <text class="visibility-card__copy">当前空间的成员</text>
     </view>
     <view class="visibility-card {{visibility === 'private' ? 'visibility-card--active' : ''}}" data-value="private" bindtap="onVisibilityChange">
-      <text>只给自己</text><text>保留一点小秘密</text>
+      <view class="visibility-card__title"><line-icon name="lock" size="24" tone="{{visibility === 'private' ? 'ink' : 'muted'}}" /><text>只给自己</text></view>
+      <text class="visibility-card__copy">保留一点小秘密</text>
     </view>
   </view>
 
-  <button class="primary-button journal-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">把这一刻记下来</button>
+  <button class="primary-button journal-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="white" /><text>{{saveText}}</text></button>
 </view>
