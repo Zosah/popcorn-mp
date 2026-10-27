@@ -14,6 +14,7 @@ export interface TransportResponse<T> {
   data: T
   statusCode: number
   requestId: string
+  headers: Record<string, string>
 }
 
 export class TransportError extends Error {
@@ -66,10 +67,14 @@ export function sendRequest<T>(
         ) || requestId
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
+          const headers = normalizeHeaders(
+            response.header as Record<string, string> | undefined,
+          )
           resolve({
             data: response.data as T,
             statusCode: response.statusCode,
             requestId: responseRequestId,
+            headers,
           })
           return
         }
@@ -109,4 +114,15 @@ function findHeader(
     (key) => key.toLowerCase() === name,
   )
   return matchedKey ? headers[matchedKey] ?? '' : ''
+}
+
+function normalizeHeaders(
+  headers: Record<string, string> | undefined,
+): Record<string, string> {
+  const normalized: Record<string, string> = {}
+  if (!headers) return normalized
+  for (const [key, value] of Object.entries(headers)) {
+    normalized[key.toLowerCase()] = value
+  }
+  return normalized
 }

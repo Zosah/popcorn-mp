@@ -4,7 +4,7 @@
       <view class="eyebrow">SOFT PLANNER</view>
       <view class="todo-top__title">待办与小计划</view>
     </view>
-    <sync-badge state="local" text="只在本机" />
+    <sync-badge state="{{syncState}}" text="{{syncText}}" />
   </view>
 
   <view class="todo-hero glass-card">
@@ -79,7 +79,20 @@
     <text class="section-head__action">{{items.length}} 条</text>
   </view>
 
-  <view wx:if="{{items.length}}" class="todo-list">
+  <view wx:if="{{loading && !items.length}}" class="todo-empty glass-card">
+    <view class="todo-empty__icon"><line-icon name="notebook-tabs" size="40" tone="accent" /></view>
+    <text class="todo-empty__title">正在把待办轻轻收好</text>
+    <text class="todo-empty__copy">稍等一下，马上就好。</text>
+  </view>
+
+  <view wx:elif="{{loadError && !items.length}}" class="todo-empty glass-card">
+    <view class="todo-empty__icon"><line-icon name="circle-alert" size="40" tone="accent" /></view>
+    <text class="todo-empty__title">暂时没有连上</text>
+    <text class="todo-empty__copy">{{loadError}}</text>
+    <view class="todo-empty__action" bindtap="onRetryLoad">重新加载</view>
+  </view>
+
+  <view wx:elif="{{items.length}}" class="todo-list">
     <view
       wx:for="{{items}}"
       wx:key="id"

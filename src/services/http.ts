@@ -3,6 +3,7 @@ import {
   sendRequest,
   TransportError,
   type HttpMethod,
+  type TransportResponse,
 } from './transport'
 
 export interface ApiRequestOptions {
@@ -16,6 +17,13 @@ export function requestApi<T>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
+  return requestApiResponse<T>(path, options).then((response) => response.data)
+}
+
+export function requestApiResponse<T>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<TransportResponse<T>> {
   if (appConfig.demoMode) {
     throw new TransportError({
       statusCode: 0,
@@ -45,5 +53,5 @@ export function requestApi<T>(
     headers,
     data: options.body,
     timeoutMs: appConfig.requestTimeoutMs,
-  }).then((response) => response.data)
+  })
 }

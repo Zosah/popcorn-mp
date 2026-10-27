@@ -4,9 +4,21 @@
   <view class="todo-form-head glass-card">
     <view class="todo-form-head__mark"><line-icon name="{{kindIcon}}" size="30" tone="accent" /></view>
     <view class="todo-form-head__title">{{pageTitle}}</view>
-    <view class="todo-form-head__copy">先记下来，不用一次想得很完整。所有内容只保存在这台手机。</view>
+    <view class="todo-form-head__copy">先记下来，不用一次想得很完整。{{storageCopy}}</view>
   </view>
 
+  <view wx:if="{{loading}}" class="todo-form-state glass-card">
+    <line-icon name="notebook-tabs" size="34" tone="accent" />
+    <text>正在把这件事找回来…</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="todo-form-state glass-card">
+    <line-icon name="circle-alert" size="34" tone="accent" />
+    <text>{{loadError}}</text>
+    <view bindtap="onRetryLoad">重新加载</view>
+  </view>
+
+  <block wx:else>
   <view class="kind-picker">
     <view class="kind-picker__row">
       <view
@@ -33,6 +45,17 @@
       <view class="todo-field todo-field--stack">
         <text>目的地</text>
         <input value="{{form.destination}}" maxlength="30" placeholder="例如：大理" data-field="destination" bindinput="onFieldInput" />
+      </view>
+      <view class="todo-field todo-field--stack">
+        <text>{{noteLabel}}</text>
+        <textarea
+          value="{{form.note}}"
+          maxlength="300"
+          auto-height
+          placeholder="{{notePlaceholder}}"
+          data-field="note"
+          bindinput="onFieldInput"
+        />
       </view>
     </block>
 
@@ -129,4 +152,5 @@
   </button>
 
   <view wx:if="{{itemId}}" class="todo-form-delete" bindtap="onDelete">删除这条记录</view>
+  </block>
 </view>

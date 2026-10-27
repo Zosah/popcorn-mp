@@ -1,3 +1,4 @@
+import { appConfig } from '../../config/env'
 import {
   DEMO_MEAL_TYPE_OPTIONS,
   DEMO_TODO_KIND_OPTIONS,
@@ -5,16 +6,15 @@ import {
   formatDemoTodoChecklist,
   parseDemoTodoChecklist,
   type DemoMealType,
+  type DemoTodoChecklistItem,
   type DemoTodoInput,
   type DemoTodoKind,
 } from '../../domain/demo-todo'
+import { todoGateway } from '../../services/todo'
 import {
-  addDemoTodoItem,
-  getDemoTodoItem,
-  removeDemoTodoItem,
-  updateDemoTodoItem,
-} from '../../services/demo-todo'
-import { navigateBackOrTab } from '../../utils/demo-navigation'
+  getTodoErrorMessage,
+  isTodoVersionConflict,
+} from '../../services/todo-gateway'
 
 type TodoFormField =
   | 'title'
@@ -94,12 +94,26 @@ function formatDateDisplay(value: string): string {
   return `${year}年${month}月${day}日`
 }
 
+function backToTodo(): void {
+  if (getCurrentPages().length > 1) {
+    wx.navigateBack()
+    return
+  }
+  wx.reLaunch({ url: '/pages/todo/index' })
+}
+
 Page({
   data: {
     saving: false,
+    loading: false,
+    loadError: '',
     itemId: '',
+    version: 0,
     pageTitle: '记一件要做的事',
     saveText: '放进待办',
+    storageCopy: appConfig.demoMode
+      ? '所有内容只保存在这台手机。'
+      : '保存后会同步给共同空间里的成员。',
     kindOptions: DEMO_TODO_KIND_OPTIONS,
     mealTypeOptions: DEMO_MEAL_TYPE_OPTIONS,
     kindHint: '旅行准备 · 目的地、清单和物品',
@@ -110,6 +124,7 @@ Page({
     noteLabel: KIND_COPY.plan.noteLabel,
     notePlaceholder: KIND_COPY.plan.notePlaceholder,
     dateDisplay: '选择日期',
+    currentChecklist: [] as DemoTodoChecklistItem[],
     form: {
       kind: 'plan' as DemoTodoKind,
       title: '',
@@ -129,35 +144,14 @@ Page({
   onLoad(options: Record<string, string | undefined>) {
     const id = options.id ?? ''
     if (id) {
-      const item = getDemoTodoItem(id)
-      if (!item) {
-        wx.showToast({ title: '这条待办不存在', icon: 'none' })
-        navigateBackOrTab('/pages/profile/index')
-        return
-      }
-
+      wx.setNavigationBarTitle({ title: '编辑待办' })
       this.setData({
-        itemId: item.id,
+        itemId: id,
+        loading: true,
         pageTitle: '把这件事再整理一下',
         saveText: '保存修改',
-        dateDisplay: formatDateDisplay(item.dueDate),
-        form: {
-          kind: item.kind,
-          title: item.title,
-          note: item.note,
-          dueDate: item.dueDate,
-          destination: item.destination,
-          checklistText: formatDemoTodoChecklist(item.checklist),
-          exercise: item.exercise,
-          durationMinutes: item.durationMinutes ? String(item.durationMinutes) : '',
-          calories: item.calories ? String(item.calories) : '',
-          mealType: item.mealType || 'dinner',
-          amount: item.amount ? String(item.amount) : '',
-          merchant: item.merchant,
-        },
       })
-      this.applyKindCopy(item.kind)
-      wx.setNavigationBarTitle({ title: '编辑待办' })
+      void this.loadItem(id)
       return
     }
 
@@ -175,8 +169,54 @@ Page({
     this.applyKindCopy(kind)
   },
 
+  async loadItem(id: string) {
+    this.setData({ loading: true, loadError: '' })
+    try {
+      const item = await todoGateway.get(id)
+      if (!item) {
+        wx.showToast({ title: '这条待办不存在', icon: 'none' })
+        backToTodo()
+        return
+      }
+
+      this.setData({
+        itemId: item.id,
+        version: item.version,
+        currentChecklist: item.checklist,
+        pageTitle: '把这件事再整理一下',
+        saveText: '保存修改',
+        dateDisplay: formatDateDisplay(item.dueDate),
+        form: {
+          kind: item.kind,
+          title: item.title,
+          note: item.note,
+          dueDate: item.dueDate,
+          destination: item.destination,
+          checklistText: formatDemoTodoChecklist(item.checklist),
+          exercise: item.exercise,
+          durationMinutes: item.durationMinutes ? String(item.durationMinutes) : '',
+          calories: item.calories ? String(item.calories) : '',
+          mealType: item.mealType || 'dinner',
+          amount: item.amount ? item.amount.toFixed(2) : '',
+          merchant: item.merchant,
+        },
+      })
+      this.applyKindCopy(item.kind)
+    } catch (error) {
+      this.setData({
+        loadError: getTodoErrorMessage(error, '这条待办暂时没有加载出来'),
+      })
+    } finally {
+      this.setData({ loading: false })
+    }
+  },
+
+  onRetryLoad() {
+    if (this.data.itemId) void this.loadItem(this.data.itemId)
+  },
+
   onBack() {
-    navigateBackOrTab('/pages/profile/index')
+    backToTodo()
   },
 
   applyKindCopy(kind: DemoTodoKind) {
@@ -254,13 +294,23 @@ Page({
 
   buildInput(): DemoTodoInput {
     const form = this.data.form
+    const previousChecklist = new Map(
+      this.data.currentChecklist.map((item) => [item.text, item]),
+    )
     return {
       kind: form.kind,
       title: form.title,
       note: form.note,
       dueDate: form.dueDate,
       destination: form.destination,
-      checklist: parseDemoTodoChecklist(form.checklistText),
+      checklist: parseDemoTodoChecklist(form.checklistText).map((item) => {
+        const previous = previousChecklist.get(item.text)
+        return {
+          ...(previous?.id ? { id: previous.id } : {}),
+          text: item.text,
+          done: previous?.done === true,
+        }
+      }),
       exercise: form.exercise,
       durationMinutes: Number(form.durationMinutes || 0),
       calories: Number(form.calories || 0),
@@ -270,7 +320,8 @@ Page({
     }
   },
 
-  onSave() {
+  async onSave() {
+    if (this.data.saving || this.data.loading || this.data.loadError) return
     const form = this.data.form
     const durationMinutes = Number(form.durationMinutes || 0)
     const calories = Number(form.calories || 0)
@@ -291,51 +342,84 @@ Page({
     }
     if (
       form.kind === 'fitness' &&
-      (!Number.isFinite(calories) || calories < 0 || calories > 10000)
+      (!Number.isFinite(calories) || calories < 0 || calories > 20000)
     ) {
-      wx.showToast({ title: '热量请填 0–10000 kcal', icon: 'none' })
+      wx.showToast({ title: '热量请填 0–20000 kcal', icon: 'none' })
       return
     }
     if (
       form.kind === 'expense' &&
-      (!Number.isFinite(amount) || amount <= 0 || amount > 9999999)
+      (!Number.isFinite(amount) || amount <= 0 || amount > 999999999)
     ) {
       wx.showToast({ title: '请填写有效金额', icon: 'none' })
       return
     }
 
     this.setData({ saving: true })
-    const input = this.buildInput()
-    if (this.data.itemId) {
-      updateDemoTodoItem(this.data.itemId, input)
-    } else {
-      addDemoTodoItem(input)
-    }
+    try {
+      const input = this.buildInput()
+      if (this.data.itemId) {
+        await todoGateway.update(this.data.itemId, input, this.data.version)
+      } else {
+        await todoGateway.create(input)
+      }
 
-    wx.showToast({
-      title: this.data.itemId
-        ? '修改已保存'
-        : form.kind === 'expense'
-          ? '账单已记下'
-          : '已经放进待办',
-      icon: 'success',
-    })
-    navigateBackOrTab('/pages/profile/index')
+      wx.showToast({
+        title: this.data.itemId
+          ? '修改已保存'
+          : form.kind === 'expense'
+            ? '账单已记下'
+            : '已经放进待办',
+        icon: 'success',
+      })
+      backToTodo()
+    } catch (error) {
+      if (isTodoVersionConflict(error) && this.data.itemId) {
+        wx.showToast({ title: '内容已更新，已加载最新版本', icon: 'none' })
+        await this.loadItem(this.data.itemId)
+      } else {
+        wx.showToast({
+          title: getTodoErrorMessage(error, '保存失败，请稍后再试'),
+          icon: 'none',
+        })
+      }
+    } finally {
+      this.setData({ saving: false })
+    }
   },
 
   onDelete() {
-    if (!this.data.itemId) return
+    if (!this.data.itemId || this.data.saving) return
     wx.showModal({
       title: '删除这条记录？',
       content: '删除后无法恢复。',
       confirmText: '删除',
       confirmColor: '#e8695c',
       success: (result) => {
-        if (!result.confirm) return
-        removeDemoTodoItem(this.data.itemId)
-        wx.showToast({ title: '已删除', icon: 'success' })
-        navigateBackOrTab('/pages/profile/index')
+        if (result.confirm) void this.deleteItem()
       },
     })
+  },
+
+  async deleteItem() {
+    if (!this.data.itemId) return
+    this.setData({ saving: true })
+    try {
+      await todoGateway.remove(this.data.itemId, this.data.version)
+      wx.showToast({ title: '已删除', icon: 'success' })
+      backToTodo()
+    } catch (error) {
+      if (isTodoVersionConflict(error)) {
+        wx.showToast({ title: '内容已更新，已加载最新版本', icon: 'none' })
+        await this.loadItem(this.data.itemId)
+      } else {
+        wx.showToast({
+          title: getTodoErrorMessage(error, '删除没有完成'),
+          icon: 'none',
+        })
+      }
+    } finally {
+      this.setData({ saving: false })
+    }
   },
 })

@@ -259,3 +259,25 @@
   line-height: 1.5;
   text-align: center;
 }
+
+.todo-form-state {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-top: 22rpx;
+  padding: 22rpx 24rpx;
+  color: var(--c-muted, #9592a4);
+  font-size: 20rpx;
+}
+
+.todo-form-state text {
+  flex: 1;
+}
+
+.todo-form-state > view:last-child {
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.70);
+  color: var(--c-primary-deep, #665bd7);
+  flex-shrink: 0;
+}

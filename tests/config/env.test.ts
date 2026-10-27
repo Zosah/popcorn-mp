@@ -4,9 +4,11 @@ import { appConfig, formatVersionLabel, type AppConfig } from '../../src/config/
 const base: AppConfig = { ...appConfig }
 
 describe('appConfig', () => {
-  it('默认处于 demo 模式，避免误连真实接口', () => {
-    expect(appConfig.demoMode).toBe(true)
-    expect(appConfig.apiBaseUrl).toBe('')
+  it('默认连接生产 HTTPS 接口并使用微信登录', () => {
+    expect(appConfig.env).toBe('production')
+    expect(appConfig.demoMode).toBe(false)
+    expect(appConfig.apiBaseUrl).toBe('https://popcorn-api.simiway.cc')
+    expect(appConfig.apiAuthMode).toBe('wechat')
   })
 
   it('demo 模式展示 Demo 前缀版本号', () => {

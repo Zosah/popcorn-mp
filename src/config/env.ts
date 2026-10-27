@@ -24,11 +24,11 @@ export interface AppConfig {
 }
 
 export const appConfig: AppConfig = {
-  env: 'local',
+  env: 'production',
   version: '1.4.0',
-  demoMode: true,
-  apiBaseUrl: '',
-  apiAuthMode: 'mock',
+  demoMode: false,
+  apiBaseUrl: 'https://popcorn-api.simiway.cc',
+  apiAuthMode: 'wechat',
   requestTimeoutMs: 10000,
 }
 

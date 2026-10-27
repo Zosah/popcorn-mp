@@ -42,6 +42,7 @@ describe('小程序请求层', () => {
       statusCode: 200,
       requestId: 'server-request-id',
       data: { status: 'ready' },
+      headers: { 'x-request-id': 'server-request-id' },
     })
     const options = request.mock.calls[0]?.[0]
     expect(options?.header?.['X-Request-Id']).toMatch(/^mp_/)

@@ -181,3 +181,70 @@ export interface ApiInventorySummary {
   none: number
   dueWithin3Days: number
 }
+
+export type ApiTodoKind = 'travel' | 'plan' | 'fitness' | 'meal' | 'expense'
+export type ApiTodoStatus = 'all' | 'pending' | 'completed'
+export type ApiMealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+
+export interface ApiTodoChecklistItem {
+  id: string
+  text: string
+  done: boolean
+  sortOrder: number
+}
+
+export interface ApiTodoChecklistItemInput {
+  id?: string
+  text: string
+  done: boolean
+}
+
+export interface ApiTodoItem {
+  id: string
+  spaceId: string
+  kind: ApiTodoKind
+  title: string
+  note: string
+  done: boolean
+  dueDate: string | null
+  destination: string
+  checklist: ApiTodoChecklistItem[]
+  exercise: string
+  durationMinutes: number
+  calories: number
+  mealType: string
+  amount: string
+  merchant: string
+  version: number
+  createdBy: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiTodoWriteRequest {
+  kind: ApiTodoKind
+  title: string
+  note?: string
+  dueDate?: string | null
+  destination?: string
+  checklist?: ApiTodoChecklistItemInput[]
+  exercise?: string
+  durationMinutes?: number
+  calories?: number
+  mealType?: ApiMealType
+  amount?: string
+  merchant?: string
+}
+
+export interface ApiTodoList {
+  items: ApiTodoItem[]
+  nextCursor: string
+}
+
+export interface ApiTodoSummary {
+  total: number
+  pending: number
+  completed: number
+  pendingByKind: Record<ApiTodoKind, number>
+}

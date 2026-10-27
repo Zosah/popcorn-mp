@@ -1,17 +1,17 @@
+import { appConfig } from '../../config/env'
 import {
   DEMO_MEAL_TYPE_LABELS,
   DEMO_TODO_KIND_LABELS,
   DEMO_TODO_KIND_OPTIONS,
-  type DemoTodoChecklistItem,
-  type DemoTodoItem,
   type DemoTodoKind,
 } from '../../domain/demo-todo'
+import { todoGateway } from '../../services/todo'
 import {
-  listDemoTodoItems,
-  removeDemoTodoItem,
-  toggleDemoTodoChecklistItem,
-  toggleDemoTodoItem,
-} from '../../services/demo-todo'
+  getTodoErrorMessage,
+  isTodoVersionConflict,
+  type TodoItem,
+  type TodoSummary,
+} from '../../services/todo-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 type TodoFilterValue = DemoTodoKind | 'all'
@@ -23,7 +23,10 @@ interface TodoFilterView {
   count: number
 }
 
-interface TodoChecklistView extends DemoTodoChecklistItem {
+interface TodoChecklistView {
+  id: string
+  text: string
+  done: boolean
   number: string
 }
 
@@ -35,6 +38,8 @@ interface TodoItemView {
   title: string
   note: string
   done: boolean
+  version: number
+  amount: number
   meta: string
   dateLabel: string
   overdue: boolean
@@ -95,7 +100,7 @@ function formatAmount(amount: number): string {
   return amount > 0 ? `¥${amount.toFixed(2)}` : '未记金额'
 }
 
-function itemMeta(item: DemoTodoItem): string {
+function itemMeta(item: TodoItem): string {
   const dateLabel = formatDateLabel(item.dueDate)
   switch (item.kind) {
     case 'travel': {
@@ -134,7 +139,7 @@ function itemMeta(item: DemoTodoItem): string {
   }
 }
 
-function itemToView(item: DemoTodoItem): TodoItemView {
+function itemToView(item: TodoItem): TodoItemView {
   const checklistDone = item.checklist.filter((entry) => entry.done).length
   const dateLabel = formatDateLabel(item.dueDate)
   return {
@@ -147,11 +152,15 @@ function itemToView(item: DemoTodoItem): TodoItemView {
     title: item.title,
     note: item.note,
     done: item.done,
+    version: item.version,
+    amount: item.amount,
     meta: itemMeta(item),
     dateLabel,
     overdue: !item.done && Boolean(item.dueDate) && item.dueDate < localDateKey(new Date()),
     checklist: item.checklist.map((entry, index) => ({
-      ...entry,
+      id: entry.id,
+      text: entry.text,
+      done: entry.done,
       number: String(index + 1).padStart(2, '0'),
     })),
     checklistDone,
@@ -162,23 +171,39 @@ function itemToView(item: DemoTodoItem): TodoItemView {
   }
 }
 
-function buildFilters(items: DemoTodoItem[]): TodoFilterView[] {
-  const pendingByKind = new Map<DemoTodoKind, number>()
+function summarizeItems(items: TodoItem[]): TodoSummary {
+  const pendingByKind: Record<DemoTodoKind, number> = {
+    travel: 0,
+    plan: 0,
+    fitness: 0,
+    meal: 0,
+    expense: 0,
+  }
+  let pending = 0
   for (const item of items) {
     if (item.done) continue
-    pendingByKind.set(item.kind, (pendingByKind.get(item.kind) ?? 0) + 1)
+    pending += 1
+    pendingByKind[item.kind] += 1
   }
+  return {
+    total: items.length,
+    pending,
+    completed: items.length - pending,
+    pendingByKind,
+  }
+}
 
+function buildFilters(summary: TodoSummary): TodoFilterView[] {
   return [
     {
       ...ALL_FILTER,
-      count: items.filter((item) => !item.done).length,
+      count: summary.pending,
     },
     ...DEMO_TODO_KIND_OPTIONS.map((option) => ({
       value: option.value,
       label: option.label,
       icon: option.icon,
-      count: pendingByKind.get(option.value) ?? 0,
+      count: summary.pendingByKind[option.value] ?? 0,
     })),
   ]
 }
@@ -190,6 +215,13 @@ Page({
     emptyIcon: 'list-todo',
     filters: [] as TodoFilterView[],
     items: [] as TodoItemView[],
+    allItems: [] as TodoItem[],
+    summary: null as TodoSummary | null,
+    loading: true,
+    loadError: '',
+    mutating: false,
+    syncState: appConfig.demoMode ? 'local' : 'pending',
+    syncText: appConfig.demoMode ? '只在本机' : '正在同步',
     pendingCount: 0,
     completedCount: 0,
     totalCount: 0,
@@ -214,35 +246,73 @@ Page({
   },
 
   onShow() {
-    this.refresh()
+    void this.refresh()
   },
 
   onBack() {
     navigateBackOrTab('/pages/profile/index')
   },
 
-  refresh() {
-    const allItems = listDemoTodoItems()
-    const filters = buildFilters(allItems)
-    const selected = filters.find((filter) => filter.value === this.data.activeKind)
-    const visible =
-      this.data.activeKind === 'all'
-        ? allItems
-        : allItems.filter((item) => item.kind === this.data.activeKind)
-    const expenses = allItems.filter((item) => item.kind === 'expense')
+  async refresh() {
+    this.setData({
+      loading: true,
+      loadError: '',
+      syncState: appConfig.demoMode ? 'local' : 'pending',
+      syncText: appConfig.demoMode ? '只在本机' : '正在同步',
+    })
+    try {
+      const [items, summary] = await Promise.all([
+        todoGateway.list(),
+        todoGateway.summary(),
+      ])
+      this.render(items, summary)
+      this.setData({
+        loading: false,
+        syncState: appConfig.demoMode ? 'local' : 'synced',
+        syncText: appConfig.demoMode ? '只在本机' : '已同步',
+      })
+    } catch (error) {
+      const message = getTodoErrorMessage(error, '待办暂时没有加载出来')
+      this.setData({
+        loading: false,
+        loadError: message,
+        syncState: 'pending',
+        syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
+      })
+      if (this.data.allItems.length) {
+        wx.showToast({ title: message, icon: 'none' })
+      }
+    }
+  },
+
+  onRetryLoad() {
+    void this.refresh()
+  },
+
+  render(items: TodoItem[], summary: TodoSummary, activeKind?: TodoFilterValue) {
+    const selectedKind = activeKind ?? this.data.activeKind
+    const filters = buildFilters(summary)
+    const selected = filters.find((filter) => filter.value === selectedKind)
+    const visibleItems = selectedKind === 'all'
+      ? items
+      : items.filter((item) => item.kind === selectedKind)
+    const expenses = items.filter((item) => item.kind === 'expense')
     const expenseTotal = expenses.reduce((total, item) => total + item.amount, 0)
+    const progressPercent = summary.total
+      ? Math.round((summary.completed / summary.total) * 100)
+      : 0
 
     this.setData({
       filters,
       activeLabel: selected?.label ?? '全部事项',
       emptyIcon: selected && selected.value !== 'all' ? selected.icon : 'list-todo',
-      items: visible.map(itemToView),
-      pendingCount: allItems.filter((item) => !item.done).length,
-      completedCount: allItems.filter((item) => item.done).length,
-      totalCount: allItems.length,
-      progressPercent: allItems.length
-        ? Math.round((allItems.filter((item) => item.done).length / allItems.length) * 100)
-        : 0,
+      items: visibleItems.map(itemToView),
+      allItems: items,
+      summary,
+      pendingCount: summary.pending,
+      completedCount: summary.completed,
+      totalCount: summary.total,
+      progressPercent,
       expenseTotalLabel: `¥${expenseTotal.toFixed(2)}`,
       expenseCount: expenses.length,
       emptyTitle: selected && selected.value !== 'all'
@@ -261,7 +331,7 @@ Page({
     const kind = event.currentTarget.dataset.kind
     if (!kind) return
     this.setData({ activeKind: kind })
-    this.refresh()
+    this.render(this.data.allItems, this.data.summary ?? summarizeItems([]), kind)
   },
 
   onShuffleMealIdea() {
@@ -289,27 +359,49 @@ Page({
     wx.navigateTo({ url: `/pages/todo-form/index?id=${encodeURIComponent(id)}` })
   },
 
-  onToggleItem(event: { currentTarget: { dataset: { id?: string } } }) {
+  async onToggleItem(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
-    if (!id) return
+    if (!id || this.data.mutating) return
+    const item = this.findItem(id)
+    if (!item) return
+    if (item.kind === 'expense') {
+      wx.showToast({ title: '账单是消费记录，不需要重新打开', icon: 'none' })
+      return
+    }
+
+    this.setData({ mutating: true })
     try {
-      toggleDemoTodoItem(id)
-      this.refresh()
-    } catch {
-      wx.showToast({ title: '这条待办找不到了', icon: 'none' })
+      const updated = await todoGateway.setDone(id, !item.done, item.version)
+      this.applyUpdatedItem(updated)
+    } catch (error) {
+      this.handleMutationError(error, '这条待办没有保存成功')
+    } finally {
+      this.setData({ mutating: false })
     }
   },
 
-  onToggleChecklist(event: {
+  async onToggleChecklist(event: {
     currentTarget: { dataset: { parentId?: string; checklistId?: string } }
   }) {
     const { parentId, checklistId } = event.currentTarget.dataset
-    if (!parentId || !checklistId) return
+    if (!parentId || !checklistId || this.data.mutating) return
+    const parent = this.findItem(parentId)
+    const checklist = parent?.checklist.find((item) => item.id === checklistId)
+    if (!parent || !checklist) return
+
+    this.setData({ mutating: true })
     try {
-      toggleDemoTodoChecklistItem(parentId, checklistId)
-      this.refresh()
-    } catch {
-      wx.showToast({ title: '这个准备项找不到了', icon: 'none' })
+      const updated = await todoGateway.setChecklistDone(
+        parentId,
+        checklistId,
+        !checklist.done,
+        parent.version,
+      )
+      this.applyUpdatedItem(updated)
+    } catch (error) {
+      this.handleMutationError(error, '这个准备项没有保存成功')
+    } finally {
+      this.setData({ mutating: false })
     }
   },
 
@@ -323,19 +415,50 @@ Page({
           wx.navigateTo({ url: `/pages/todo-form/index?id=${encodeURIComponent(id)}` })
           return
         }
+        const item = this.findItem(id)
+        if (!item) return
         wx.showModal({
           title: '删除这条待办？',
           content: '删除后无法恢复。',
           confirmText: '删除',
           confirmColor: '#e8695c',
           success: (modal) => {
-            if (!modal.confirm) return
-            removeDemoTodoItem(id)
-            this.refresh()
-            wx.showToast({ title: '已删除', icon: 'success' })
+            if (modal.confirm) void this.deleteItem(id, item.version)
           },
         })
       },
     })
+  },
+
+  async deleteItem(id: string, version: number) {
+    if (this.data.mutating) return
+    this.setData({ mutating: true })
+    try {
+      await todoGateway.remove(id, version)
+      const remaining = this.data.allItems.filter((item) => item.id !== id)
+      this.render(remaining, summarizeItems(remaining))
+      wx.showToast({ title: '已删除', icon: 'success' })
+    } catch (error) {
+      this.handleMutationError(error, '删除没有完成')
+    } finally {
+      this.setData({ mutating: false })
+    }
+  },
+
+  findItem(id: string): TodoItem | undefined {
+    return this.data.allItems.find((item) => item.id === id)
+  },
+
+  applyUpdatedItem(updated: TodoItem) {
+    const items = this.data.allItems.map((item) =>
+      item.id === updated.id ? updated : item,
+    )
+    this.render(items, summarizeItems(items))
+  },
+
+  handleMutationError(error: unknown, fallback: string) {
+    const message = getTodoErrorMessage(error, fallback)
+    wx.showToast({ title: message, icon: 'none' })
+    if (isTodoVersionConflict(error)) void this.refresh()
   },
 })

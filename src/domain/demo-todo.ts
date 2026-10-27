@@ -13,7 +13,7 @@ export interface DemoTodoInput {
   note?: string
   dueDate?: string
   destination?: string
-  checklist?: Array<{ text: string; done?: boolean }>
+  checklist?: Array<{ id?: string; text: string; done?: boolean }>
   exercise?: string
   durationMinutes?: number
   calories?: number

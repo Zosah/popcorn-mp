@@ -12,7 +12,8 @@
     "verify:demo": "node scripts/verify-mvp.mjs",
     "icons:build": "node scripts/build-icons.mjs",
     "verify:http-b2": "node scripts/verify-http-b2.mjs",
-    "verify:http-b3": "node scripts/verify-http-b3.mjs"
+    "verify:http-b3": "node scripts/verify-http-b3.mjs",
+    "verify:http-b4": "node scripts/verify-http-b4.mjs"
   },
   "repository": {
     "type": "git",
