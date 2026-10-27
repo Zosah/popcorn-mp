@@ -106,6 +106,22 @@
   font-size: 19rpx;
 }
 
+.home-ticket__avatar--lavender {
+  background: rgba(205, 197, 255, 0.26);
+}
+
+.home-ticket__avatar--mint {
+  background: rgba(180, 232, 215, 0.22);
+}
+
+.home-ticket__avatar--peach {
+  background: rgba(246, 199, 207, 0.22);
+}
+
+.home-ticket__avatar--sun {
+  background: rgba(245, 216, 154, 0.22);
+}
+
 .home-ticket__inviter text {
   display: block;
   font-size: 22rpx;

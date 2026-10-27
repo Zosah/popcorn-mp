@@ -5,6 +5,7 @@ import type { DemoJournalEntry } from '../../domain/demo-journal'
 import { listDemoJournalMoments } from '../../services/demo-journal'
 import { inventoryGateway } from '../../services/demo-inventory'
 import { listDemoMenuRecipes } from '../../services/demo-menu'
+import { listDemoTodoItems } from '../../services/demo-todo'
 import { getDemoPetState, listDemoPetProfiles } from '../../services/demo-pet'
 import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 
@@ -43,6 +44,8 @@ Page({
     menuCount: 0,
     recordCount: 0,
     petCount: 0,
+    todoPendingCount: 0,
+    todoSummary: '旅行、计划、健身、吃什么和账单',
     petSnapshot: {
       name: '糯米',
       status: '精神不错',
@@ -77,6 +80,9 @@ Page({
           : '今天的吃喝拉撒已记录'
     const [, month = 1, day = 1] = today.split('-').map(Number)
     const moments = listDemoJournalMoments()
+    const todos = listDemoTodoItems()
+    const pendingTodos = todos.filter((item) => !item.done)
+    const travelTodos = pendingTodos.filter((item) => item.kind === 'travel')
     this.setData({
       today,
       dateParts: {
@@ -88,6 +94,10 @@ Page({
       menuCount: listDemoMenuRecipes().length,
       recordCount: moments.length,
       petCount: listDemoPetProfiles().length,
+      todoPendingCount: pendingTodos.length,
+      todoSummary: pendingTodos.length
+        ? `${pendingTodos.length} 件还没做${travelTodos.length ? ` · ${travelTodos.length} 个旅行准备` : ''}`
+        : '目前都做完了，可以再记一件',
       petSnapshot: {
         name: petState.profile.name,
         status: petState.profile.status,
@@ -103,6 +113,10 @@ Page({
 
   onOpenJournal() {
     wx.switchTab({ url: '/pages/journal/index' })
+  },
+
+  onOpenTodo() {
+    wx.navigateTo({ url: '/pages/todo/index' })
   },
 
   onOpenProfile() {

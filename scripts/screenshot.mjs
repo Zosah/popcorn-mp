@@ -8,13 +8,27 @@ const miniProgram = await automator.connect({ wsEndpoint })
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+async function open(url) {
+  const page = await miniProgram.reLaunch(url)
+  await wait(700)
+  if (!page) throw new Error(`页面打开失败：${url}`)
+  return page
+}
+
 // 截图使用固定的 Demo 种子数据，避免本地操作记录污染视觉验收。
-const profile = await miniProgram.reLaunch('/pages/profile/index')
-await wait(500)
+const profile = await open('/pages/profile/index')
 await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
 await profile.callMethod('onResetDemo')
 await wait(800)
 await miniProgram.restoreWxMethod('showModal')
+await miniProgram.callWxMethod(
+  'removeStorageSync',
+  'popcorn_demo_auth_account_v1',
+)
+await miniProgram.callWxMethod(
+  'removeStorageSync',
+  'popcorn_demo_auth_session_v1',
+)
 
 const capture = async (name) => {
   await wait(1800)
@@ -75,6 +89,8 @@ const pageTargets = [
   ['journal-note-edit', '/pages/journal-form/index?id=demo-note-home'],
   ['todo', '/pages/todo/index'],
   ['todo-form', '/pages/todo-form/index?kind=travel'],
+  ['auth-login', '/pages/auth/index'],
+  ['auth-register', '/pages/auth/index?mode=register'],
   ['reminder-settings', '/pages/reminder-settings/index'],
   ['space', '/pages/space/index'],
   ['invite', '/pages/invite/index'],
@@ -85,8 +101,7 @@ for (const [name, url] of pageTargets) {
     console.log('skipped', name)
     continue
   }
-  await miniProgram.reLaunch('/pages/home/index')
-  await wait(300)
+  await open('/pages/home/index')
   await miniProgram.navigateTo(url)
   await wait(600)
   await miniProgram.pageScrollTo(0)

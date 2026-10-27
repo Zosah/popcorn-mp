@@ -1,7 +1,7 @@
 <view class="page-shell todo-form-page">
   <view class="subpage-back" bindtap="onBack">← 返回待办</view>
 
-  <view class="todo-form-head">
+  <view class="todo-form-head glass-card">
     <view class="todo-form-head__mark"><line-icon name="{{kindIcon}}" size="30" tone="accent" /></view>
     <view class="todo-form-head__title">{{pageTitle}}</view>
     <view class="todo-form-head__copy">先记下来，不用一次想得很完整。所有内容只保存在这台手机。</view>
@@ -23,7 +23,7 @@
   </view>
   <view class="kind-hint">{{kindHint}}</view>
 
-  <view class="todo-form-card">
+  <view class="todo-form-card glass-card">
     <view class="todo-field todo-field--stack">
       <text>{{titleLabel}}</text>
       <input value="{{form.title}}" maxlength="50" placeholder="{{titlePlaceholder}}" data-field="title" bindinput="onFieldInput" />

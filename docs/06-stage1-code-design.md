@@ -1,7 +1,7 @@
 # 阶段 1 代码设计：工程与契约
 
-> 最后更新：2026-10-24
-> 状态：**下一阶段（后端 0→1）的设计预案，尚未启动实施**。当前项目仍处于前端 Demo 阶段，本文不改变该阶段的工作内容。
+> 最后更新：2026-10-27
+> 状态：**实施中**。B0 工程骨架、B1 登录/资料/Session、B2 空间/成员/邀请已完成并通过真实数据库与开发者工具 HTTP 验收；B3 库存是下一阶段。
 > 上位基线是 `docs/04-mvp-implementation-plan.md`；本文只把阶段 1（工程与契约）细化到可直接编码的程度，不改变 MVP 范围。
 
 ## 0. 本文要解决的问题
@@ -14,45 +14,48 @@
 
 | 冲突项 | 裁决 | 理由 |
 | --- | --- | --- |
-| 库存路径 | `/v1/spaces/{spaceId}/inventory/...`（资源嵌套在空间下） | 空间是鉴权边界，路径即权限声明；服务端可从路径直接校验成员关系 |
-| summary | 保留 `GET /v1/spaces/{spaceId}/inventory/summary` | 首页只需要计数，不应拉全量 |
-| `POST /v1/spaces` | **删除**，MVP 不提供主动创建多空间入口 | `docs/04` §2 已确认 |
+| 库存路径 | `/spaces/{spaceId}/inventory/...`（资源嵌套在空间下） | 空间是鉴权边界，路径即权限声明；服务端可从路径直接校验成员关系 |
+| summary | 保留 `GET /spaces/{spaceId}/inventory/summary` | 首页只需要计数，不应拉全量 |
+| `POST /spaces` | **删除**，MVP 不提供主动创建多空间入口 | `docs/04` §2 已确认 |
 | `restore` | 保留 `POST .../items/{itemId}/restore` | 前端历史视图已实现"恢复到库存" |
-| `/v1/media/*` | **不进 MVP**，接口不注册 | `docs/04` 明确延后图片上传 |
+| `/media/*` | **不进 MVP**，接口不注册 | `docs/04` 明确延后图片上传 |
 | 字段名 | 日期类字段统一 `purchasedOn` / `openedOn` / `expiresOn`（`YYYY-MM-DD`） | `docs/01` §5 明确保存日期字符串，不存到期时间戳；`docs/02` 的 `*_at` 写法需修订 |
 | 时间戳字段 | `createdAt` / `updatedAt` / `deletedAt` 为 UTC RFC3339 | 与日期字段语义分离 |
 
-需要回写的文档修订（确认后执行）：`docs/02` §5.2 字段名、§8 示例路径；`docs/03` §8 接口清单；`docs/01` §9 待决定事项标注为已决。
+已实现部分以 `popcorn-server/openapi/openapi.yaml` 和 `db/migrations/00001_init.sql` 为准；旧草案中的 ULID、开发/生产双库和单独迁移账号均已废弃。
 
 ## 2. API 契约细则
 
 ### 2.1 完整清单
 
 ```text
-POST   /v1/auth/wechat                                  微信登录
-POST   /v1/auth/mock                                    模拟登录（仅 local）
-GET    /v1/session                                      当前会话快照
-DELETE /v1/session                                      退出登录（撤销 token）
+POST   /auth/wechat                                  微信登录
+POST   /auth/mock                                    模拟登录（仅 local）
+GET    /session                                      当前会话快照
+DELETE /session                                      退出登录（撤销 token）
+PUT    /me                                           保存资料（wx.request 兼容）
+PATCH  /me                                           保存资料
 
-GET    /v1/spaces                                       我可访问的空间
-GET    /v1/spaces/{spaceId}                             空间详情
-PATCH  /v1/spaces/{spaceId}                             重命名（owner）
-GET    /v1/spaces/{spaceId}/members                     成员列表
+GET    /spaces                                       我可访问的空间
+GET    /spaces/{spaceId}                             空间详情
+PUT    /spaces/{spaceId}                             重命名（owner，wx.request 兼容）
+PATCH  /spaces/{spaceId}                             重命名（owner）
+GET    /spaces/{spaceId}/members                     成员列表
 
-POST   /v1/spaces/{spaceId}/invites                     生成邀请码（owner）
-GET    /v1/invites/{code}                               校验邀请码（无需登录）
-POST   /v1/invites/{code}/accept                        接受邀请
+POST   /spaces/{spaceId}/invites                     生成 10 位一次性邀请码（owner）
+GET    /invites/{code}                               校验邀请码（无需登录）
+POST   /invites/{code}/accept                        接受邀请
 
-GET    /v1/spaces/{spaceId}/inventory/summary           到期计数摘要
-GET    /v1/spaces/{spaceId}/inventory/items             列表（筛选 + 游标分页）
-POST   /v1/spaces/{spaceId}/inventory/items             新增
-GET    /v1/spaces/{spaceId}/inventory/items/{itemId}    详情
-PATCH  /v1/spaces/{spaceId}/inventory/items/{itemId}    编辑
-DELETE /v1/spaces/{spaceId}/inventory/items/{itemId}    软删除
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/consume
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/discard
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/archive
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/restore
+GET    /spaces/{spaceId}/inventory/summary           到期计数摘要
+GET    /spaces/{spaceId}/inventory/items             列表（筛选 + 游标分页）
+POST   /spaces/{spaceId}/inventory/items             新增
+GET    /spaces/{spaceId}/inventory/items/{itemId}    详情
+PATCH  /spaces/{spaceId}/inventory/items/{itemId}    编辑
+DELETE /spaces/{spaceId}/inventory/items/{itemId}    软删除
+POST   /spaces/{spaceId}/inventory/items/{itemId}/consume
+POST   /spaces/{spaceId}/inventory/items/{itemId}/discard
+POST   /spaces/{spaceId}/inventory/items/{itemId}/archive
+POST   /spaces/{spaceId}/inventory/items/{itemId}/restore
 
 GET    /healthz                                         存活（无鉴权、无 DB）
 GET    /readyz                                          就绪（含 DB ping）
@@ -63,8 +66,8 @@ GET    /readyz                                          就绪（含 DB ping）
 ```jsonc
 // InventoryItem
 {
-  "id": "01J9ZK...",              // ULID 字符串
-  "spaceId": "01J9ZJ...",
+  "id": "0192f...",               // UUIDv7 字符串
+  "spaceId": "0192f...",
   "name": "鲜牛奶",
   "category": "drink",            // food|drink|frozen|seasoning|daily|medicine|pet|other
   "quantity": "1.00",             // 字符串传输的 decimal，避免 JS 浮点精度问题
@@ -78,7 +81,7 @@ GET    /readyz                                          就绪（含 DB ping）
   "expiryStatus": "expired",      // 服务端计算：expired|today|urgent|soon|normal|none
   "daysRemaining": -1,            // 服务端计算，none 时为 null
   "version": 3,
-  "createdBy": "01J9ZJ...",
+  "createdBy": "0192f...",
   "createdAt": "2026-10-19T02:11:00Z",
   "updatedAt": "2026-10-24T01:00:00Z"
 }
@@ -160,27 +163,28 @@ sort=updated  ORDER BY status_rank ASC, updated_at DESC, id ASC
 
 ### 2.6 限流
 
-MVP 只做进程内令牌桶，按 IP + 路由分组：`/v1/auth/*` 与 `/v1/invites/*` 严格（10 次/分钟/IP），其余宽松（120 次/分钟/用户）。不引入 Redis；多实例部署时再升级为共享存储。
+MVP 只做进程内令牌桶，按 IP + 路由分组：`/auth/*` 与 `/invites/*` 严格（10 次/分钟/IP），其余宽松（120 次/分钟/用户）。不引入 Redis；多实例部署时再升级为共享存储。
 
 ## 3. 数据模型
 
-MySQL 8.x，`utf8mb4` / `utf8mb4_0900_ai_ci`，InnoDB。主键统一 `CHAR(26)` ULID 字符串（可读、不泄漏规模、跨表迁移简单；MVP 数据量下索引成本可接受）。
+MySQL 8.x，`utf8mb4` / `utf8mb4_0900_ai_ci`，InnoDB。主键统一使用 UUIDv7 `CHAR(36)`；所有业务表统一 `t_` 前缀，goose 版本表为 `t_schema_migrations`。
 
 ```sql
-users(
-  id CHAR(26) PK,
+t_users(
+  id CHAR(36) PK,
   wechat_appid VARCHAR(32) NOT NULL,
   wechat_openid VARCHAR(64) NOT NULL,
   nickname VARCHAR(64) NOT NULL DEFAULT '',
-  avatar_url VARCHAR(512) NOT NULL DEFAULT '',
+  avatar_tone ENUM('lavender','mint','peach','sun') NOT NULL DEFAULT 'lavender',
+  onboarding_completed_at DATETIME(3) NULL,
   created_at DATETIME(3) NOT NULL,
   updated_at DATETIME(3) NOT NULL,
   UNIQUE KEY uk_users_wechat (wechat_appid, wechat_openid)
 )
 
-sessions(
-  id CHAR(26) PK,
-  user_id CHAR(26) NOT NULL,
+t_sessions(
+  id CHAR(36) PK,
+  user_id CHAR(36) NOT NULL,
   token_hash CHAR(64) NOT NULL,          -- SHA-256(token)，明文不落库
   device_label VARCHAR(64) NOT NULL DEFAULT '',
   expires_at DATETIME(3) NOT NULL,
@@ -190,32 +194,32 @@ sessions(
   KEY idx_sessions_user (user_id, expires_at)
 )
 
-spaces(
-  id CHAR(26) PK,
+t_spaces(
+  id CHAR(36) PK,
   name VARCHAR(40) NOT NULL,
   type ENUM('family','couple','pet','circle') NOT NULL DEFAULT 'family',
-  owner_id CHAR(26) NOT NULL,
+  owner_id CHAR(36) NOT NULL,
   timezone VARCHAR(32) NOT NULL DEFAULT 'Asia/Shanghai',
   created_at DATETIME(3) NOT NULL,
   updated_at DATETIME(3) NOT NULL
 )
 
-space_members(
-  space_id CHAR(26) NOT NULL,
-  user_id CHAR(26) NOT NULL,
+t_space_members(
+  space_id CHAR(36) NOT NULL,
+  user_id CHAR(36) NOT NULL,
   role ENUM('owner','member') NOT NULL DEFAULT 'member',
   joined_at DATETIME(3) NOT NULL,
   PRIMARY KEY (space_id, user_id),
   KEY idx_members_user (user_id, joined_at)
 )
 
-space_invites(
-  id CHAR(26) PK,
-  space_id CHAR(26) NOT NULL,
-  code_hash CHAR(64) NOT NULL,           -- 只存哈希
-  created_by CHAR(26) NOT NULL,
+t_space_invites(
+  id CHAR(36) PK,
+  space_id CHAR(36) NOT NULL,
+  code_hash CHAR(64) NOT NULL,           -- 10 位邀请码的 SHA-256，只存哈希
+  created_by CHAR(36) NOT NULL,
   expires_at DATETIME(3) NOT NULL,       -- 创建后 7 天
-  accepted_by CHAR(26) NULL,
+  accepted_by CHAR(36) NULL,
   accepted_at DATETIME(3) NULL,
   revoked_at DATETIME(3) NULL,
   created_at DATETIME(3) NOT NULL,
@@ -223,12 +227,12 @@ space_invites(
   KEY idx_invites_space (space_id, created_at)
 )
 
-inventory_items(
-  id CHAR(26) PK,
-  space_id CHAR(26) NOT NULL,
+t_inventory_items(
+  id CHAR(36) PK,
+  space_id CHAR(36) NOT NULL,
   name VARCHAR(60) NOT NULL,
   category VARCHAR(16) NOT NULL,
-  quantity DECIMAL(10,2) NOT NULL,
+  quantity DECIMAL(12,3) NOT NULL,
   unit VARCHAR(12) NOT NULL DEFAULT '',
   location VARCHAR(16) NOT NULL,
   purchased_on DATE NULL,
@@ -237,7 +241,7 @@ inventory_items(
   note VARCHAR(500) NOT NULL DEFAULT '',
   status ENUM('active','consumed','discarded','archived') NOT NULL DEFAULT 'active',
   version INT NOT NULL DEFAULT 1,        -- 乐观锁
-  created_by CHAR(26) NOT NULL,
+  created_by CHAR(36) NOT NULL,
   created_at DATETIME(3) NOT NULL,
   updated_at DATETIME(3) NOT NULL,
   deleted_at DATETIME(3) NULL,           -- 软删除
@@ -247,8 +251,8 @@ inventory_items(
 )
 
 idempotency_keys(
-  id CHAR(26) PK,
-  user_id CHAR(26) NOT NULL,
+  id CHAR(36) PK,
+  user_id CHAR(36) NOT NULL,
   idem_key VARCHAR(64) NOT NULL,
   request_fingerprint CHAR(64) NOT NULL,
   response_status SMALLINT NOT NULL,
@@ -279,11 +283,12 @@ popcorn-server/
     auth/                      会话签发/校验/撤销、微信登录编排、鉴权中间件
     spaces/                    空间、成员、邀请（handler → service → repository）
     inventory/                 库存 handler/service/repository + expiry 计算
-    platform/database/         连接池、事务助手、ULID、时钟
+    platform/database/         连接池、事务助手、时钟
+    platform/idgen/            UUIDv7
     platform/wechat/           code2session 客户端（接口化，测试注入 fake）
-  migrations/
+  db/migrations/               goose 迁移与 embed.FS
   openapi/openapi.yaml         唯一契约
-  deploy/systemd/  deploy/caddy/
+  deploy/systemd/  deploy/nginx/
   scripts/                     备份、部署、隧道脚本
   Makefile
   .github/workflows/
@@ -296,7 +301,7 @@ popcorn-server/
 ```go
 // platform/database
 type Clock interface{ Now() time.Time }        // 到期计算与 token 过期必须可注入
-func NewULID(now time.Time) string
+func NewUUIDv7(now time.Time) (string, error)
 
 // auth
 type Token string
@@ -359,7 +364,7 @@ RequestID → Recover → AccessLog(slog, 脱敏) → RateLimit
 ### 4.4 认证与会话
 
 ```text
-wx.login() → POST /v1/auth/wechat {code, deviceLabel}
+wx.login() → POST /auth/wechat {code, deviceLabel}
   → code2session（AppID/AppSecret 来自环境变量）
   → upsert users by (appid, openid)
   → 若新用户：创建默认空间「我们的家」+ owner 成员（同一事务）
@@ -369,7 +374,7 @@ wx.login() → POST /v1/auth/wechat {code, deviceLabel}
 
 - Token TTL 30 天，MVP **不做滑动续期**（简化撤销语义）；过期后客户端重新 `wx.login`。
 - 撤销场景：主动退出、成员被移出空间（撤销其全部会话可留到阶段 5）。
-- 模拟登录：`AUTH_MODE=mock` + `ENV=local` 时开放 `POST /v1/auth/mock {identity}`，用固定 identity 复用/创建用户，便于两个"用户"并发测试越权。`ENV != local` 且 `AUTH_MODE=mock` → 启动直接 fatal，配置校验在 `internal/config`。
+- 模拟登录：`AUTH_MODE=mock` + `ENV=local` 时开放 `POST /auth/mock {identity}`，用固定 identity 复用/创建用户，便于两个"用户"并发测试越权。`ENV != local` 且 `AUTH_MODE=mock` → 启动直接 fatal，配置校验在 `internal/config`。
 
 ### 4.5 配置项
 
@@ -393,14 +398,15 @@ LOG_LEVEL=info|debug
 
 ```text
 src/
-  config/env.ts                       baseUrl 与 demoMode 开关（按编译期常量切换）
-  types/api.ts                        DTO 类型（先手写，后续用 openapi-typescript 生成）
-  services/transport.ts               wx.request 的薄封装接口（可注入，便于 vitest 测试）
-  services/http.ts                    统一请求层
-  services/auth.ts                    登录/会话/退出
-  services/http-inventory-gateway.ts  InventoryGateway 的 HTTP 实现
-  services/gateway.ts                 demoMode ? Mock : Http 的工厂
-  stores/session.ts                   token、user、spaces、activeSpaceId、role
+  config/env.ts                     baseUrl、demoMode 与 apiAuthMode 编译期开关
+  types/api.ts                      Session、Space、Invite 等 DTO 类型
+  services/transport.ts             wx.request 薄封装、Request-Id 与错误规范化
+  services/http.ts                  Bearer Token、baseUrl 与 JSON 请求层
+  services/auth.ts                  Demo/HTTP 账号状态门面
+  services/auth-gateway.ts          登录、Session 恢复、资料保存、退出
+  services/space-gateway.ts         空间详情、成员、重命名、邀请码与接受邀请
+  services/http-inventory-gateway.ts  库存 HTTP 实现（B3 待补）
+  stores/session.ts                 token、user、spaces、activeSpaceId、role
 ```
 
 现有 `services/demo-*.ts` 与 `mocks/` 全部保留，Demo 仍可离线运行。
@@ -409,9 +415,9 @@ src/
 
 - 拼 baseUrl、注入 `Authorization: Bearer`、`X-Request-Id` 透传。
 - 超时（10s）与网络错误规范化为 `HttpError{code,message,fields,requestId,httpStatus}`。
-- **401 只自动重登一次**：用单飞（single-flight）Promise 合并并发请求的重登，避免多个请求同时触发 `wx.login` 造成 token 互相覆盖；重登后重放原请求一次，再失败就抛出并跳登录态。
-- 为写接口自动生成并持久化 `Idempotency-Key`（同一逻辑操作重试复用同一 key，成功后清除）。
-- 页面内不得出现裸 `wx.request`。
+- 当前 B1/B2 在 401 时清理失效会话并回到未登录状态；单飞（single-flight）自动重登与请求重放留到库存弱网加固阶段实现。
+- B1/B2 尚未进入写业务数据阶段；`Idempotency-Key` 的自动生成、持久化和复用随 B3 库存写接口一起落地。
+- 页面内不得出现裸 `wx.request`，B1/B2 页面已统一通过 Gateway 访问。
 
 ### 5.3 `InventoryGateway` 接口演进
 
@@ -445,14 +451,14 @@ export interface InventoryGateway {
 | `pages/home` | 库存摘要改为读 `summary()`，不再 `list({})` 拉全量 |
 | 其余页面 | 不动 |
 
-登录态接入后，`app.ts` 启动流程改为：读本地 token → `GET /v1/session` → 失败则 `wx.login` → 写入 `stores/session.ts`。`activeSpaceId` 只作请求上下文缓存，权限一律以服务端为准。
+登录态接入后，登录页和个人中心会读本地 token → `GET /session` 恢复；失效时清 Token，再由用户重新登录。`activeSpaceId` 只作请求上下文缓存，空间与邀请权限一律由服务端重新校验。
 
 ## 6. 测试策略（本机无 Docker）
 
 | 层 | 方式 |
 | --- | --- |
 | 后端 service / expiry / 幂等 | 纯单元测试 + fake repository，`make test` 默认执行 |
-| 后端 repository | 集成测试，`//go:build integration` 隔离，通过 SSH 隧道连服务器开发库，`make test-integration` 手动执行 |
+| 后端 repository | 集成测试，`//go:build integration` 隔离，通过 SSH 隧道连服务器业务库 `db_popcorn_mp`，`make test-integration` 手动执行 |
 | 后端 handler | `httptest` + fake service，校验状态码、错误结构、鉴权与越权 |
 | 契约 | `kin-openapi` 校验所有 handler 响应符合 `openapi.yaml`；CI 中作为独立步骤 |
 | 前端 | vitest：`http.ts`（注入 fake transport，覆盖 401 单飞重登、幂等 key 复用、超时）、`HttpInventoryGateway`（DTO ↔ domain 映射）、分页分段渲染纯函数 |
@@ -464,13 +470,13 @@ WXML/WXSS 与真机交互仍在微信开发者工具中人工验收，沿用 `do
 
 ```text
 make dev               ENV=local AUTH_MODE=mock go run ./cmd/api
-make db-tunnel         ssh -N -L 13306:127.0.0.1:3306 <server>
+make db-tunnel         ssh -N -L 13307:127.0.0.1:33123 <server>
 make test              go test ./...（单元）
-make test-integration  go test -tags=integration ./...
-make migrate-up/down   goose -dir migrations mysql "$MYSQL_DSN" up|down
-make generate          sqlc generate + openapi 校验
+make test-race         go test -race ./...
+make migrate-up/down   goose -dir db/migrations mysql "$MYSQL_DSN" up|down
+make openapi-check     校验 openapi.yaml 可解析
 make lint              gofmt -l + go vet + golangci-lint
-make build             CGO_ENABLED=0 GOOS=linux go build ./cmd/api
+make build-linux       CGO_ENABLED=0 GOOS=linux go build ./cmd/api
 make openapi-check     校验 openapi.yaml 可解析且与路由一致
 ```
 
@@ -489,12 +495,12 @@ master  → 上述全部 → 构建 linux arm64 + amd64 → 产物按 commit SHA
 
 | 片 | 内容 | 验收 |
 | --- | --- | --- |
-| S1-1 | 后端骨架：go.mod（go 1.27 + toolchain）、config、slog、db、`/healthz`、`/readyz`、Makefile、CI 测试链 | `make dev` 起服务，两个探测接口返回正常，CI 绿 |
-| S1-2 | `openapi.yaml` + 迁移 00001 + sqlc + 模拟登录 + session 中间件 | 用 mock 登录拿到 token，`GET /v1/session` 正确，无 token 访问业务接口返回 401 |
-| S1-3 | 前端 `transport/http/auth/stores/session` + `config/env.ts` | vitest 覆盖 401 单飞重登与幂等 key；真机/工具连 local 后端拿到会话 |
-| S1-4 | 库存后端：CRUD、状态变更、软删除、summary、筛选、游标分页、幂等、乐观锁 | handler 测试 + 契约测试通过；越权访问他人空间返回 404 |
+| ✅ S1-1 | 后端骨架：go.mod（go 1.27 + toolchain）、config、slog、db、`/healthz`、`/readyz`、Makefile、CI 测试链 | 已通过 `make lint`、`make test-race`、`make build-linux` |
+| ✅ S1-2 | `openapi.yaml` + 迁移 00001 + 模拟登录 + Session + 资料 + 默认空间 | mock 登录、Session 恢复、资料保存、无 token 401 已验证 |
+| ✅ S1-3 | 前端 `transport/http/auth/stores/session` + `config/env.ts` | 22 个测试文件、135 项测试通过；开发者工具真实 HTTP 会话与 B2 页面验收通过 |
+| ▶ S1-4 | 库存后端：CRUD、状态变更、软删除、summary、筛选、游标分页、幂等、乐观锁 | 下一阶段；handler 测试 + 真实数据库验证，越权访问他人空间返回 404 |
 | S1-5 | 前端 `HttpInventoryGateway` + inventory/home/item-detail/item-form 改造 | 关闭 demoMode 后库存全链路可用，Demo 模式仍可离线运行 |
-| S1-6 | 空间与邀请：重命名、成员列表、邀请码生成/校验/接受（7 天、单次、只存哈希） | 两个 mock 用户进入同一空间看到相同库存；重复接受返回 `INVITE_USED` |
+| ✅ S1-6 | 空间与邀请：重命名、成员列表、10 位邀请码生成/校验/接受（7 天、单次、只存哈希） | 真实数据库与 HTTP 页面验收通过；重复接受返回 `INVITE_USED` |
 
 S1-1 与 S1-3 可并行（前端先对 mock 后端联调）。S1-4 依赖 S1-2 的契约冻结。
 
@@ -502,6 +508,6 @@ S1-1 与 S1-3 可并行（前端先对 mock 后端联调）。S1-4 依赖 S1-2 �
 
 1. `quantity` 用字符串传输 decimal 是否接受（另一选择是 number + 前端格式化）。
 2. 会话 TTL 30 天且不滑动续期是否接受。
-3. 主键用 ULID `CHAR(26)` 是否接受（另一选择是 `BINARY(16)`，更省空间但日志不可读）。
+3. ✅ 主键已裁决为 UUIDv7 `CHAR(36)`，数据库与 API 均已落地。
 4. 名称搜索 MVP 用 `LIKE`，暂不上中文全文索引，是否接受。
 5. 限流只做进程内令牌桶（单实例前提），是否接受。

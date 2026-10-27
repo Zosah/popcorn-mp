@@ -15,6 +15,7 @@
     "pages/item-form/index",
     "pages/item-detail/index",
     "pages/profile/index",
+    "pages/auth/index",
     "pages/todo/index",
     "pages/todo-form/index",
     "pages/space/index",
@@ -22,17 +23,17 @@
     "pages/reminder-settings/index"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#f6f4f9",
+    "navigationBarBackgroundColor": "#f6f3fb",
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "时刻在",
-    "backgroundColor": "#f6f4f9",
+    "backgroundColor": "#f5f2fa",
     "backgroundTextStyle": "light"
   },
   "tabBar": {
     "custom": true,
-    "color": "#c6c9d6",
-    "selectedColor": "#5b6ee0",
-    "backgroundColor": "#f6f4f9",
+    "color": "#aaa7b8",
+    "selectedColor": "#7569e8",
+    "backgroundColor": "#f5f2fa",
     "borderStyle": "white",
     "list": [
       {

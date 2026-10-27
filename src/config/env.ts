@@ -1,8 +1,13 @@
 /**
  * 小程序没有运行时环境变量，环境切换通过这里的编译期常量完成。
- * 正式构建（liveMode）时把 DEMO_MODE 改为 false 并填写 API_BASE_URL。
+ *
+ * 本地联调真实接口：
+ *   env: 'local'、demoMode: false、apiBaseUrl: 'http://127.0.0.1:8080'、apiAuthMode: 'mock'
+ * 体验版/正式版：
+ *   env: 'production'、demoMode: false、apiBaseUrl: 'https://popcorn-api.simiway.cc'、apiAuthMode: 'wechat'
  */
 export type AppEnv = 'local' | 'staging' | 'production'
+export type ApiAuthMode = 'wechat' | 'mock'
 
 export interface AppConfig {
   env: AppEnv
@@ -12,19 +17,22 @@ export interface AppConfig {
   demoMode: boolean
   /** demoMode 为 false 时必填，例如 https://api.example.com */
   apiBaseUrl: string
+  /** HTTP 模式下使用真实微信登录，或仅限本地环境的模拟登录 */
+  apiAuthMode: ApiAuthMode
   /** 请求超时（毫秒） */
   requestTimeoutMs: number
 }
 
 export const appConfig: AppConfig = {
   env: 'local',
-  version: '1.1.0',
+  version: '1.3.0',
   demoMode: true,
   apiBaseUrl: '',
+  apiAuthMode: 'mock',
   requestTimeoutMs: 10000,
 }
 
-/** 展示用版本号，例如「Demo 1.1.0」 */
+/** 展示用版本号，例如「Demo 1.3.0」 */
 export function formatVersionLabel(config: AppConfig = appConfig): string {
   return config.demoMode ? `Demo ${config.version}` : `v${config.version}`
 }

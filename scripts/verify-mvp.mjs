@@ -51,9 +51,59 @@ async function resetDemo() {
 try {
   await resetDemo()
 
+  // 登录注册：本地建号 → 退出 → 再次登录
+  await miniProgram.callWxMethod(
+    'removeStorageSync',
+    'popcorn_demo_auth_account_v1',
+  )
+  await miniProgram.callWxMethod(
+    'removeStorageSync',
+    'popcorn_demo_auth_session_v1',
+  )
+  await open('/pages/profile/index')
+  let page = await go('/pages/auth/index')
+  await page.setData({
+    nicknameInput: 'MVP 验收员',
+    nicknamePreview: 'M',
+    selectedTone: 'mint',
+  })
+  await page.callMethod('onSubmitProfile')
+  await wait(900)
+
+  let authAccount = await miniProgram.callWxMethod(
+    'getStorageSync',
+    'popcorn_demo_auth_account_v1',
+  )
+  let authSession = await miniProgram.callWxMethod(
+    'getStorageSync',
+    'popcorn_demo_auth_session_v1',
+  )
+  assert.equal(authAccount.nickname, 'MVP 验收员')
+  assert.equal(authSession.userId, authAccount.id)
+  console.log('PASS 本机账号注册与登录态')
+
+  page = await go('/pages/auth/index')
+  await confirmModal()
+  await page.callMethod('onLogout')
+  await wait(400)
+  await restoreModal()
+  authSession = await miniProgram.callWxMethod(
+    'getStorageSync',
+    'popcorn_demo_auth_session_v1',
+  )
+  assert.equal(authSession, '')
+  await page.callMethod('onWechatLogin')
+  await wait(700)
+  authSession = await miniProgram.callWxMethod(
+    'getStorageSync',
+    'popcorn_demo_auth_session_v1',
+  )
+  assert.equal(authSession.userId, authAccount.id)
+  console.log('PASS 退出与再次登录')
+
   // 重要记录：新增 → 编辑 → 删除
   await open('/pages/journal/index')
-  let page = await go('/pages/journal-form/index?kind=note')
+  page = await go('/pages/journal-form/index?kind=note')
   await page.setData({
     form: { title: 'MVP 验收 · 重要记录', content: '新增内容' },
     category: 'other',

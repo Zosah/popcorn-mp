@@ -193,6 +193,7 @@ Page({
     pendingCount: 0,
     completedCount: 0,
     totalCount: 0,
+    progressPercent: 0,
     mealIdea: (MEAL_IDEAS[0] ?? '番茄牛腩配米饭') as string,
     mealIdeaIndex: 0,
     expenseTotalLabel: '¥0.00',
@@ -239,6 +240,9 @@ Page({
       pendingCount: allItems.filter((item) => !item.done).length,
       completedCount: allItems.filter((item) => item.done).length,
       totalCount: allItems.length,
+      progressPercent: allItems.length
+        ? Math.round((allItems.filter((item) => item.done).length / allItems.length) * 100)
+        : 0,
       expenseTotalLabel: `¥${expenseTotal.toFixed(2)}`,
       expenseCount: expenses.length,
       emptyTitle: selected && selected.value !== 'all'

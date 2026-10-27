@@ -1,9 +1,9 @@
 # MVP 实施与部署基线
 
-> 最后更新：2026-10-24
+> 最后更新：2026-10-27
 > 状态：已确认的 0→1 实施基线。后续架构、代码和部署变更应优先更新本文，避免仅存在于对话中。
 
-当前进度：前端 MVP Demo 1.1 已完成“家、库存、记录、我的”四个核心入口、v4.6「冷柔光纸面」视觉和主要模块的本地持久化闭环。库存、多个宠物档案与事件月历、持续照护、每日吃喝拉撒、宠物食品和猫砂集合、菜单、生活点滴、重要记录、待办与小计划、提醒设置、共同空间和邀请体验均可操作；待办页覆盖旅行准备清单、小计划、健身与热量、今天吃什么和共同账单，菜单与重要记录已支持详情、编辑、删除，并提供全量 Demo 重置。详见 `docs/05-frontend-demo.md`。后端、MySQL、COS 用户媒体和跨设备同步尚未开始接入；邀请的 7 天有效期、单次使用和成员权限仍必须由服务端实现。
+当前进度：前端 Demo 1.3 已完成四个核心入口、v5「柔光玻璃生活手帐」视觉和主要生活模块的本地闭环。后端 B0/B1/B2 已完成并通过真实 MySQL、Go 测试和微信开发者工具 HTTP 页面验收：微信/模拟登录、可撤销 Session、资料保存、默认空间、空间详情、owner 重命名、成员列表、10 位单次邀请码、公开预览、接受邀请和服务端权限校验均已打通。前端账号、资料、空间和邀请已支持 HTTP Gateway，库存与其余生活模块仍保留本机 Demo。下一条主链路是 B3 库存。COS 用户媒体、跨设备业务数据和恢复演练尚未进入。
 
 ## 1. 当前资源与约束
 
@@ -56,7 +56,7 @@
 
 ### 已确认的产品规则
 
-- 邀请码为单次使用、7 天失效，数据库只保存哈希。
+- 邀请码为 10 位、单次使用、7 天失效，数据库只保存 SHA-256 哈希。
 - 到期阈值固定为 3 天和 7 天，首版不可配置。
 - 首版只开放 `owner` 和 `member` 两种角色。
 - 支持用户加入多个空间，但不提供主动创建多个空间的入口。
@@ -69,7 +69,7 @@
        |
        | HTTPS JSON API
        v
-api-staging.<已备案域名> / api.<已备案域名>
+https://popcorn-api.simiway.cc
        |
        v
 Caddy 或现有 Nginx
@@ -83,9 +83,7 @@ MySQL（现有服务器的独立数据库）
        `-- 每日 mysqldump -> 私有 COS 前缀
 ```
 
-采用 Go 模块化单体，不拆微服务。生产进程由 systemd 管理，GitHub Actions 构建 Linux 二进制并上传服务器，不使用 Docker 镜像和 TCR。
-
-如果服务器已有稳定 Nginx，则复用 Nginx；否则优先使用 Caddy 自动管理 HTTPS。最终选择必须在读取服务器现状后确定。
+采用 Go 模块化单体，不拆微服务。生产进程由 systemd 管理，GitHub Actions 构建 Linux 二进制并上传服务器，不使用 Docker 镜像和 TCR。当前已复用服务器现有 Nginx。
 
 ## 4. 本地开发方式
 
@@ -96,10 +94,10 @@ MySQL（现有服务器的独立数据库）
 本机 Go API（go run / make dev）
        |
        v
-SSH 隧道 -> 服务器 MySQL 独立开发数据库
+SSH 隧道 -> 服务器 MySQL db_popcorn_mp
 ```
 
-本地不直接开放远程 MySQL 端口，通过 SSH 本地端口转发访问服务器上的独立开发数据库。这样无需 Docker，也不强制安装本地数据库。若以后需要离线开发，再选择性安装本地 MySQL。开发、测试、迁移和构建统一收口到 Makefile：
+本地不直接开放 MySQL 公网端口，通过 SSH 把服务器 `127.0.0.1:33123` 映射到本机 `127.0.0.1:13307`。本地、体验版和生产统一使用 `db_popcorn_mp`，不再拆分开发库。开发、测试、迁移和构建统一收口到 Makefile：
 
 ```text
 make dev
@@ -137,7 +135,7 @@ popcorn-server/
     platform/wechat/
     platform/database/
     httpapi/
-  migrations/
+  db/migrations/
   openapi/
   deploy/systemd/
   deploy/caddy/
@@ -152,12 +150,13 @@ popcorn-server/
 
 MVP 只建立以下表：
 
-- `users`：以 `wechat_appid + wechat_openid` 唯一识别微信用户。
-- `sessions`：只保存随机 Token 的哈希、过期和撤销状态。
-- `spaces`：空间名称、拥有者和固定时区 `Asia/Shanghai`。
-- `space_members`：空间成员和角色。
-- `space_invites`：单次邀请、哈希、过期和接受状态。
-- `inventory_items`：库存内容、生命周期、日期、乐观锁和软删除。
+- `t_users`：以 `wechat_appid + wechat_openid` 唯一识别微信用户。
+- `t_sessions`：只保存随机 Token 的哈希、过期和撤销状态。
+- `t_spaces`：空间名称、拥有者和固定时区 `Asia/Shanghai`。
+- `t_space_members`：空间成员和角色。
+- `t_space_invites`：单次邀请、哈希、过期和接受状态。
+- `t_inventory_items`：库存内容、生命周期、日期、乐观锁和软删除。
+- `t_idempotency_keys`：写接口幂等重放。
 
 关键约定：
 
@@ -174,35 +173,39 @@ MySQL 接入约束：
 - 优先使用仍在长期支持周期内的 MySQL 8.4 LTS。
 - 如果服务器版本较旧，不直接升级共享实例，先确认其他业务兼容性。
 - 使用 `utf8mb4` 字符集和 InnoDB。
-- 分别创建开发、测试、生产数据库，不能混用数据。
-- 运行账号只授予业务读写权限；迁移账号单独管理 DDL 权限。
-- MySQL 只监听本机或内网地址，不向公网开放 3306。
+- 统一使用 `db_popcorn_mp`；本地通过 SSH 隧道，服务器内服务连接 `127.0.0.1:33123`。
+- `popcorn_app` 是唯一业务账号，对本库拥有 DML/DDL 权限，但不能访问其他业务库。
+- MySQL 不向公网开放；DataGrip 使用 SSH + `admin`，应用使用 `popcorn_app`。
 
 ## 7. API 基线
 
 ```text
-POST   /v1/auth/wechat
-GET    /v1/session
-DELETE /v1/session
+POST   /auth/wechat
+POST   /auth/mock
+GET    /session
+DELETE /session
+PUT    /me
+PATCH  /me
 
-GET    /v1/spaces
-GET    /v1/spaces/{spaceId}
-PATCH  /v1/spaces/{spaceId}
-GET    /v1/spaces/{spaceId}/members
-POST   /v1/spaces/{spaceId}/invites
-GET    /v1/invites/{code}
-POST   /v1/invites/{code}/accept
+GET    /spaces
+GET    /spaces/{spaceId}
+PUT    /spaces/{spaceId}
+PATCH  /spaces/{spaceId}
+GET    /spaces/{spaceId}/members
+POST   /spaces/{spaceId}/invites
+GET    /invites/{code}
+POST   /invites/{code}/accept
 
-GET    /v1/spaces/{spaceId}/inventory/summary
-GET    /v1/spaces/{spaceId}/inventory/items
-POST   /v1/spaces/{spaceId}/inventory/items
-GET    /v1/spaces/{spaceId}/inventory/items/{itemId}
-PATCH  /v1/spaces/{spaceId}/inventory/items/{itemId}
-DELETE /v1/spaces/{spaceId}/inventory/items/{itemId}
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/consume
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/discard
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/archive
-POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/restore
+GET    /spaces/{spaceId}/inventory/summary
+GET    /spaces/{spaceId}/inventory/items
+POST   /spaces/{spaceId}/inventory/items
+GET    /spaces/{spaceId}/inventory/items/{itemId}
+PATCH  /spaces/{spaceId}/inventory/items/{itemId}
+DELETE /spaces/{spaceId}/inventory/items/{itemId}
+POST   /spaces/{spaceId}/inventory/items/{itemId}/consume
+POST   /spaces/{spaceId}/inventory/items/{itemId}/discard
+POST   /spaces/{spaceId}/inventory/items/{itemId}/archive
+POST   /spaces/{spaceId}/inventory/items/{itemId}/restore
 ```
 
 - JSON 字段统一使用 `camelCase`。
@@ -217,7 +220,7 @@ POST   /v1/spaces/{spaceId}/inventory/items/{itemId}/restore
 
 ```text
 wx.login()
-  -> POST /v1/auth/wechat
+  -> POST /auth/wechat
   -> 服务端调用微信 code2session
   -> 查询或创建用户
   -> 首次用户创建默认空间
@@ -253,21 +256,19 @@ Pull Request
 ## 10. 数据库与 COS 备份
 
 - MySQL 只监听本机或内网地址，不直接暴露公网端口。
-- 至少每日执行一次 `mysqldump --single-transaction`。
-- 备份上传到现有私有 COS 的独立前缀，例如 `backups/popcorn/mysql/`。
-- 设置本地与 COS 保留周期，具体天数在检查桶容量和成本后确定。
-- 备份脚本和 systemd timer 纳入后端仓库。
-- 上线前必须完成一次从 COS 备份恢复到空数据库的演练。
+- 旧备份任务已清理，新的每日 `mysqldump --single-transaction` 尚未落地，不能把现有状态视为已有可靠备份。
+- 备份将上传到现有私有 COS 的独立前缀，例如 `backups/popcorn/mysql/`。
+- 备份脚本、systemd timer、保留周期和恢复演练在正式推广前单独补齐，不阻塞 B3 开发。
 - 业务增长后再评估迁移至 TencentDB for MySQL。
 
 ## 11. 实施阶段
 
-1. 工程与契约：后端骨架、OpenAPI、迁移、原生本地运行；前端 TypeScript 基础壳和请求层。
-2. 登录与空间：微信登录、会话、默认空间、重命名和成员列表。
-3. 测试环境：检查服务器、配置 HTTPS、部署 staging、真机登录联调。
-4. 库存闭环：CRUD、状态、软删除、搜索、筛选、分页和到期摘要。
-5. 邀请协作：邀请码、微信分享、接受邀请和越权校验。
-6. 上线加固：弱网、幂等、并发编辑、限流、日志脱敏、备份恢复和 CI/CD。
+1. ✅ 工程与契约：Go 骨架、OpenAPI、迁移、systemd、原生本地运行；前端 TypeScript 请求层。
+2. ✅ 登录与空间：微信/模拟登录、会话、资料、默认空间、重命名和成员列表。
+3. ✅ 邀请协作：10 位邀请码、公开预览、接受邀请、单次失效和越权校验。
+4. ✅ 部署链路：服务器 HTTPS、systemd、GitHub Actions 自动发布和健康检查。
+5. ▶ 库存闭环：CRUD、状态、软删除、搜索、筛选、分页、到期摘要、幂等和乐观锁。
+6. 后续加固：弱网、限流、日志脱敏、COS 备份恢复演练和真机稳定性验收。
 
 ## 12. 下一步需要核对的外部信息
 

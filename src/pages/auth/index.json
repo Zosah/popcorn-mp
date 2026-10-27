@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "账号与登录",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index",
+    "sync-badge": "/components/sync-badge/index"
+  }
+}

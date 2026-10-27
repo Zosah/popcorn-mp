@@ -1,73 +1,105 @@
 <view class="tab-page journal-page">
   <view class="journal-head">
-    <view class="journal-head__top">
-      <view class="journal-head__title">日子，慢慢记</view>
-      <view class="journal-add" bindtap="onCreate">
-        <line-icon name="{{activeView === 'notes' ? 'file-text' : 'pen-line'}}" size="24" tone="ink" />
-        <text>{{activeView === 'notes' ? '存一份' : '记一下'}}</text>
-      </view>
+    <view>
+      <view class="eyebrow">OUR LITTLE LIFE</view>
+      <view class="journal-head__title">生活记录</view>
     </view>
-    <view class="journal-head__copy">重要的不是每天都有故事，是我们记得一起过过这些天。</view>
-    <view class="sync-row"><sync-badge state="local" text="本机记录 · 暂未跨设备同步" /></view>
+    <sync-badge state="local" text="本机记录" />
   </view>
 
-  <view class="tabs">
-    <view class="tab {{activeView === 'moments' ? 'tab--active' : ''}}" data-value="moments" bindtap="onSwitchView">生活点滴</view>
-    <view class="tab {{activeView === 'notes' ? 'tab--active' : ''}}" data-value="notes" bindtap="onSwitchView">重要记录</view>
+  <view class="journal-hero glass-card" bindtap="onCreate">
+    <view class="journal-hero__glow"></view>
+    <view class="journal-hero__copy">
+      <view class="journal-hero__label">{{activeView === 'notes' ? 'IMPORTANT NOTES' : 'MY DIARY'}}</view>
+      <view class="journal-hero__title">{{activeView === 'notes' ? '把重要的事，妥帖收好' : '日子，慢慢记'}}</view>
+      <view class="journal-hero__desc">{{activeView === 'notes' ? '证件、家规和照护资料，需要时总能找到。' : '重要的不是每天都有故事，是我们记得一起过过这些天。'}}</view>
+      <view class="journal-hero__button">
+        <text>{{activeView === 'notes' ? '存一份记录' : '写一笔今天'}}</text>
+        <line-icon name="{{activeView === 'notes' ? 'file-text' : 'pen-line'}}" size="24" tone="white" />
+      </view>
+    </view>
+    <view class="journal-hero__visual">
+      <image class="journal-hero__image" src="../../images/demo-flowers.jpg" mode="aspectFill" />
+      <view class="journal-hero__pin"><line-icon name="heart-pulse" size="22" tone="accent" /></view>
+    </view>
+  </view>
+
+  <view class="journal-tabs glass-card">
+    <view class="journal-tab {{activeView === 'moments' ? 'journal-tab--active' : ''}}" data-value="moments" bindtap="onSwitchView">
+      <text>生活点滴</text>
+      <text>{{entries.length}}</text>
+    </view>
+    <view class="journal-tab {{activeView === 'notes' ? 'journal-tab--active' : ''}}" data-value="notes" bindtap="onSwitchView">
+      <text>重要记录</text>
+      <text>{{notesCount}}</text>
+    </view>
   </view>
 
   <view wx:if="{{activeView === 'moments'}}" class="timeline">
     <block wx:if="{{entries.length}}">
-      <view wx:for="{{entries}}" wx:key="id" class="entry" data-id="{{item.id}}" bindtap="onOpenEntry">
-        <view class="entry__date">
-          <text class="entry__day">{{item.day}}</text>
-          <text class="entry__month">{{item.monthLabel}}</text>
-        </view>
-        <view class="entry__body">
-          <view class="entry__meta">{{item.authorName}} · {{item.timeLabel}}{{item.updatedAt ? ' · 已编辑' : ''}}</view>
-          <view class="entry__title">{{item.title}}</view>
-          <image wx:if="{{item.image}}" class="entry__photo" src="{{item.image.src}}" mode="aspectFill" />
-          <view wx:if="{{item.image && item.image.caption}}" class="entry__caption">{{item.image.caption}}</view>
-          <view wx:if="{{item.content}}" class="entry__copy">{{item.content}}</view>
-          <view class="entry__foot">
-            <view class="entry__visibility">
-              <line-icon name="{{item.visibility === 'private' ? 'lock' : 'users'}}" size="22" tone="muted" />
-              <text>{{item.visibilityLabel}}</text>
-            </view>
-            <text class="entry__open">查看</text>
+      <view wx:for="{{entries}}" wx:key="id" class="entry glass-card" data-id="{{item.id}}" bindtap="onOpenEntry">
+        <view class="entry__head">
+          <view class="entry__date">
+            <text>{{item.day}}</text>
+            <text>{{item.monthLabel}}</text>
           </view>
+          <view class="entry__meta">
+            <text>{{item.authorName}}</text>
+            <text>{{item.timeLabel}}{{item.updatedAt ? ' · 已编辑' : ''}}</text>
+          </view>
+          <view class="entry__more">•••</view>
+        </view>
+
+        <view class="entry__title">{{item.title}}</view>
+        <image wx:if="{{item.image}}" class="entry__photo" src="{{item.image.src}}" mode="aspectFill" />
+        <view wx:if="{{item.image && item.image.caption}}" class="entry__caption">{{item.image.caption}} · 公版艺术示例</view>
+        <view wx:if="{{item.content}}" class="entry__copy">{{item.content}}</view>
+
+        <view class="entry__foot">
+          <view class="entry__visibility">
+            <line-icon name="{{item.visibility === 'private' ? 'lock' : 'users'}}" size="20" tone="muted" />
+            <text>{{item.visibilityLabel}}</text>
+          </view>
+          <view class="entry__open">翻开看看 →</view>
         </view>
       </view>
     </block>
 
-    <view wx:else class="journal-empty">
-      <line-icon name="notebook-tabs" size="30" tone="muted" />
+    <view wx:else class="journal-empty glass-card">
+      <view class="journal-empty__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
       <text class="journal-empty__title">还没有留下记录</text>
       <text class="journal-empty__copy">写下一句话，平常的一天也会有一个落点。</text>
+      <view class="journal-empty__button" bindtap="onCreate">记下第一笔</view>
     </view>
   </view>
 
   <view wx:else class="notes-view">
     <block wx:if="{{noteGroups.length}}">
       <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="notes-group">
-        <view class="notes-group__head"><text>{{group.label}}</text><text>{{group.entries.length}} 项</text></view>
-        <view class="notes-list">
+        <view class="notes-group__head">
+          <view>
+            <line-icon name="{{group.icon}}" size="24" tone="accent" />
+            <text>{{group.label}}</text>
+          </view>
+          <text>{{group.entries.length}} 项</text>
+        </view>
+        <view class="notes-list glass-card">
           <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="note-row" data-id="{{entry.id}}" bindtap="onOpenEntry">
-            <view class="note-row__icon"><line-icon name="{{group.icon}}" size="30" tone="muted" /></view>
             <view class="note-row__main">
               <text class="note-row__title">{{entry.title}}</text>
               <text class="note-row__copy">{{entry.content}}</text>
               <text class="note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
             </view>
-            <view class="note-row__chevron"></view>
+            <view class="note-row__arrow">›</view>
           </view>
         </view>
       </view>
     </block>
-    <view wx:else class="journal-empty">
-      <line-icon name="file-text" size="30" tone="muted" />
+    <view wx:else class="journal-empty glass-card">
+      <view class="journal-empty__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
       <text class="journal-empty__title">还没有重要记录</text>
       <text class="journal-empty__copy">把证件信息、家规、照护资料收在这里，需要时随时能找到。</text>
+      <view class="journal-empty__button" bindtap="onCreate">存一份记录</view>
     </view>
   </view>
 </view>

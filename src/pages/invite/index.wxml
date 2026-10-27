@@ -14,22 +14,22 @@
     <view class="home-ticket__label">你将加入</view>
     <view class="home-ticket__name">{{spaceName}}</view>
     <view class="home-ticket__inviter">
-      <view class="home-ticket__avatar">满</view>
+      <view class="home-ticket__avatar home-ticket__avatar--{{inviterAvatarTone}}">{{inviterAvatar}}</view>
       <view>
-        <text>时刻在体验官</text>
+        <text>{{inviterName}}</text>
         <text>邀请你共同记录家里的小事</text>
       </view>
     </view>
-    <view class="home-ticket__code">邀请码 · {{code}}</view>
+    <view class="home-ticket__code">邀请码 · {{code}}<text wx:if="{{expiresLabel}}"> · {{expiresLabel}}</text></view>
   </view>
 
   <view class="code-card card">
     <view class="code-card__label"><line-icon name="ticket" size="23" tone="muted" /><text>邀请码</text></view>
     <view class="code-card__input-row">
-      <input value="{{codeInput}}" maxlength="8" placeholder="例如 SHIKEZAI" placeholder-class="code-card__placeholder" bindinput="onCodeInput" />
+      <input value="{{codeInput}}" maxlength="10" placeholder="例如 7K3M9Q2XAB" placeholder-class="code-card__placeholder" bindinput="onCodeInput" />
       <view bindtap="onValidate">确认</view>
     </view>
-    <view wx:if="{{status === 'invalid'}}" class="code-card__error">邀请码应为 SHIKEZAI，或 SKZ 开头的 8 位字符。</view>
+    <view wx:if="{{status === 'invalid'}}" class="code-card__error">请检查邀请码是否完整，真实邀请码为 10 位字符。</view>
   </view>
 
   <view wx:if="{{status === 'empty' || status === 'invalid'}}" class="invite-vignette">
@@ -40,14 +40,14 @@
     </view>
   </view>
 
-  <button wx:if="{{canAccept}}" class="primary-button invite-action" bindtap="onAccept"><line-icon name="plus" size="24" tone="white" /><text>加入 {{spaceName}}</text></button>
+  <button wx:if="{{canAccept}}" class="primary-button invite-action" loading="{{isSubmitting}}" bindtap="onAccept"><line-icon name="plus" size="24" tone="white" /><text>加入 {{spaceName}}</text></button>
   <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" bindtap="onGoHome"><line-icon name="house" size="24" tone="ink" /><text>回到我们的家</text></button>
 
   <view class="demo-note">
     <view class="demo-note__mark"><line-icon name="lock" size="22" tone="muted" /></view>
     <view>
-      <text>这次加入只保存在当前设备</text>
-      <text>真实版本会由服务端校验 7 天有效期、单次使用状态和空间成员权限。</text>
+      <text>{{isDemoMode ? '这次加入只保存在当前设备' : '邀请由服务端校验'}}</text>
+      <text>{{isDemoMode ? '真实版本会由服务端校验 7 天有效期、单次使用状态和空间成员权限。' : '服务端会在事务中校验 7 天有效期、单次使用状态和空间成员权限。'}}</text>
     </view>
   </view>
 </view>

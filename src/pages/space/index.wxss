@@ -148,6 +148,22 @@
   color: var(--c-accent, #5b6ee0);
 }
 
+.member-row__initial--lavender {
+  background: linear-gradient(145deg, #e7e2ff, #c9c1fb);
+}
+
+.member-row__initial--mint {
+  background: linear-gradient(145deg, #dcf5ed, #b8e7d9);
+}
+
+.member-row__initial--peach {
+  background: linear-gradient(145deg, #ffe5e5, #f6c7cf);
+}
+
+.member-row__initial--sun {
+  background: linear-gradient(145deg, #fff0ce, #f5d89a);
+}
+
 .member-row__body {
   min-width: 0;
   flex: 1;
@@ -207,6 +223,10 @@
   grid-template-columns: 1fr 1fr;
   gap: 14rpx;
   margin-top: 24rpx;
+}
+
+.invite-sheet__actions--single {
+  grid-template-columns: 1fr;
 }
 
 .invite-sheet__actions button {
