@@ -371,3 +371,11 @@
   font-size: 20rpx;
   font-weight: 600;
 }
+
+.empty--error {
+  background: linear-gradient(145deg, rgba(255, 252, 251, 0.84), rgba(252, 235, 238, 0.66));
+}
+
+.empty__icon--error {
+  background: linear-gradient(145deg, #fff3f3, #fbe7ea);
+}

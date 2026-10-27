@@ -101,3 +101,83 @@ export interface ProfileUpdateRequest {
   nickname: string
   avatarTone: ApiAvatarTone
 }
+
+export type ApiInventoryCategory =
+  | 'food'
+  | 'drink'
+  | 'frozen'
+  | 'seasoning'
+  | 'daily'
+  | 'medicine'
+  | 'pet'
+  | 'other'
+
+export type ApiInventoryLocation =
+  | 'fridge'
+  | 'freezer'
+  | 'kitchen'
+  | 'living-room'
+  | 'bathroom'
+  | 'storage'
+  | 'other'
+
+export type ApiInventoryLifecycleStatus =
+  | 'active'
+  | 'consumed'
+  | 'discarded'
+  | 'archived'
+
+export type ApiExpiryStatus =
+  | 'expired'
+  | 'today'
+  | 'urgent'
+  | 'soon'
+  | 'normal'
+  | 'none'
+
+export interface ApiInventoryItem {
+  id: string
+  spaceId: string
+  name: string
+  category: ApiInventoryCategory
+  quantity: string
+  unit: string
+  location: ApiInventoryLocation
+  purchasedOn: string | null
+  openedOn: string | null
+  expiresOn: string | null
+  note: string
+  status: ApiInventoryLifecycleStatus
+  version: number
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiInventoryItemInput {
+  name: string
+  category: ApiInventoryCategory
+  quantity: string
+  unit: string
+  location: ApiInventoryLocation
+  purchasedOn: string | null
+  openedOn: string | null
+  expiresOn: string | null
+  note: string
+}
+
+export interface ApiInventoryItemList {
+  items: ApiInventoryItem[]
+  nextCursor: string
+}
+
+export interface ApiInventorySummary {
+  total: number
+  expired: number
+  today: number
+  urgent: number
+  soon: number
+  normal: number
+  none: number
+  dueWithin3Days: number
+}

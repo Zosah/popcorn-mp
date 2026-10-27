@@ -1,6 +1,9 @@
 import type { InventoryItem } from './inventory'
 import { getShanghaiDateOnly } from './expiry'
-import { summarizeInventory } from './inventory-query'
+import {
+  summarizeInventory,
+  type InventorySummary,
+} from './inventory-query'
 
 export type HomeDayPeriod = 'late-night' | 'morning' | 'afternoon' | 'evening'
 
@@ -19,10 +22,16 @@ export function buildHomeSnapshot(
   items: readonly InventoryItem[],
   nowMs: number,
 ): HomeSnapshot {
+  return buildHomeSnapshotFromSummary(summarizeInventory(items, getShanghaiDateOnly(nowMs)), nowMs)
+}
+
+export function buildHomeSnapshotFromSummary(
+  summary: InventorySummary,
+  nowMs: number,
+): HomeSnapshot {
   const shanghaiDate = new Date(nowMs + 8 * 60 * 60 * 1000)
   const hour = shanghaiDate.getUTCHours()
   const today = getShanghaiDateOnly(nowMs)
-  const summary = summarizeInventory(items, today)
   const inventoryNoticeCount = summary.expired + summary.dueWithin3Days
 
   let period: HomeDayPeriod

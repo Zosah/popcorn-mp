@@ -25,14 +25,14 @@ export interface AppConfig {
 
 export const appConfig: AppConfig = {
   env: 'local',
-  version: '1.3.0',
+  version: '1.4.0',
   demoMode: true,
   apiBaseUrl: '',
   apiAuthMode: 'mock',
   requestTimeoutMs: 10000,
 }
 
-/** 展示用版本号，例如「Demo 1.3.0」 */
+/** 展示用版本号，例如「Demo 1.4.0」 */
 export function formatVersionLabel(config: AppConfig = appConfig): string {
   return config.demoMode ? `Demo ${config.version}` : `v${config.version}`
 }

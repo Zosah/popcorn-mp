@@ -28,6 +28,7 @@
 }
 
 .home-top,
+.home-error,
 .home-hero,
 .feature-grid,
 .quicklinks,
@@ -78,6 +79,56 @@
 .date-chip__meta text:first-child {
   color: var(--c-text, #292737);
   font-size: 23rpx;
+  font-weight: 600;
+}
+
+
+.home-error {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding: 17rpx 19rpx;
+  border: 1rpx solid rgba(223, 111, 125, 0.14);
+  border-radius: 26rpx;
+  background: linear-gradient(135deg, rgba(255, 250, 249, 0.88), rgba(252, 235, 238, 0.72));
+  gap: 14rpx;
+}
+
+.home-error__icon {
+  display: flex;
+  width: 52rpx;
+  height: 52rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.76);
+  flex-shrink: 0;
+}
+
+.home-error__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3rpx;
+}
+
+.home-error__title {
+  color: var(--c-text, #292737);
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.home-error__copy {
+  color: var(--c-text-2, #615f70);
+  font-size: 17rpx;
+  line-height: 1.45;
+}
+
+.home-error__retry {
+  color: var(--c-primary-deep, #665bd7);
+  flex-shrink: 0;
+  font-size: 18rpx;
   font-weight: 600;
 }
 

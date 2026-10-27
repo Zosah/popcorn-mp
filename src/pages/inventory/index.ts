@@ -15,9 +15,10 @@ import {
   type InventoryFilters,
   type InventorySummary,
 } from '../../domain/inventory-query'
-import { inventoryGateway } from '../../services/demo-inventory'
+import { inventoryGateway } from '../../services/inventory'
 import { getDemoSpaceName } from '../../services/demo-space'
 import { syncDemoTabBar } from '../../utils/demo-tab-bar'
+import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
 
@@ -130,6 +131,7 @@ function buildSections(
 Page({
   data: {
     loading: true,
+    errorMessage: '',
     spaceName: '我们的家',
     today: '',
     query: '',
@@ -150,28 +152,44 @@ Page({
     void this.loadInventory(true)
   },
 
+  onRetry() {
+    void this.loadInventory()
+  },
+
   async loadInventory(fromPullDown = false) {
-    this.setData({ loading: !fromPullDown })
-    const today = getShanghaiDateOnly(Date.now())
-    const allItems = await inventoryGateway.list({}, today)
-    const filters: InventoryFilters = {
-      query: this.data.query,
-      lifecycleStatuses: resolveInventoryLifecycleStatuses(this.data.viewMode),
-      expiryStatuses:
-        this.data.viewMode === 'active'
-          ? toExpiryStatuses(this.data.selectedExpiry)
-          : undefined,
+    this.setData({ loading: !fromPullDown, errorMessage: '' })
+    try {
+      const today = getShanghaiDateOnly(Date.now())
+      const summary = await inventoryGateway.summary(today)
+      const filters: InventoryFilters = {
+        query: this.data.query,
+        lifecycleStatuses: resolveInventoryLifecycleStatuses(this.data.viewMode),
+        expiryStatuses:
+          this.data.viewMode === 'active'
+            ? toExpiryStatuses(this.data.selectedExpiry)
+            : undefined,
+      }
+      const visibleItems = await inventoryGateway.list(filters, today)
+      const views = visibleItems.map((item) => toView(item, today))
+      this.setData({
+        today,
+        summary,
+        sections: buildSections(views, this.data.viewMode),
+        hasResults: views.length > 0,
+      })
+    } catch (error) {
+      this.setData({
+        sections: [],
+        hasResults: false,
+        errorMessage: getInventoryErrorMessage(
+          error,
+          '库存暂时没有加载出来，请稍后再试',
+        ),
+      })
+    } finally {
+      this.setData({ loading: false })
+      if (fromPullDown) wx.stopPullDownRefresh()
     }
-    const visibleItems = await inventoryGateway.list(filters, today)
-    const views = visibleItems.map((item) => toView(item, today))
-    this.setData({
-      loading: false,
-      today,
-      summary: summarizeInventory(allItems, today),
-      sections: buildSections(views, this.data.viewMode),
-      hasResults: views.length > 0,
-    })
-    if (fromPullDown) wx.stopPullDownRefresh()
   },
 
   onSearchInput(event: { detail: { value: string } }) {

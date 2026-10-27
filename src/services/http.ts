@@ -9,6 +9,7 @@ export interface ApiRequestOptions {
   method?: HttpMethod
   body?: WechatMiniprogram.IAnyObject | string | ArrayBuffer
   token?: string
+  headers?: Record<string, string>
 }
 
 export function requestApi<T>(
@@ -36,6 +37,7 @@ export function requestApi<T>(
   const headers: Record<string, string> = {}
   if (options.body !== undefined) headers['Content-Type'] = 'application/json'
   if (options.token) headers.Authorization = `Bearer ${options.token}`
+  Object.assign(headers, options.headers)
 
   return sendRequest<T>({
     url: `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`,

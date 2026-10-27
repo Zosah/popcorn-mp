@@ -107,6 +107,11 @@ describe('MockInventoryGateway', () => {
         (item) => item.id,
       ),
     ).toEqual(['generated-id'])
+    expect(await gateway.summary('2026-08-26')).toMatchObject({
+      total: 2,
+      expired: 0,
+      none: 0,
+    })
   })
 
   it('通过存储适配器跨实例保留数据', async () => {

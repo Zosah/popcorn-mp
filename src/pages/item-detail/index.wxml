@@ -1,4 +1,13 @@
-<view class="page-shell detail-page" wx:if="{{item}}">
+<view class="page-shell detail-page">
+  <view wx:if="{{loading}}" class="detail-state card">正在打开这件物品…</view>
+  <view wx:elif="{{errorMessage}}" class="detail-state detail-state--error card">
+    <view class="detail-state__icon"><line-icon name="circle-alert" size="34" tone="accent" /></view>
+    <view class="detail-state__title">详情暂时没连上</view>
+    <view class="detail-state__copy">{{errorMessage}}</view>
+    <view class="detail-state__action" bindtap="onRetry">重新加载</view>
+  </view>
+
+  <block wx:elif="{{item}}">
   <view class="subpage-back" bindtap="onBack">← 返回库存</view>
 
   <view class="detail-hero card">
@@ -36,4 +45,5 @@
     <button wx:for="{{item.actions}}" wx:key="key" class="secondary-button" data-status="{{item.nextStatus}}" bindtap="onChangeStatus">{{item.label}}</button>
     <button class="danger-button" bindtap="onDelete">删除物品</button>
   </view>
+  </block>
 </view>

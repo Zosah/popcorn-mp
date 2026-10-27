@@ -6,6 +6,15 @@
     <view class="page-head__copy">名称最重要，其余信息想起来再补也可以。</view>
   </view>
 
+  <view wx:if="{{loading}}" class="form-state card">正在打开这件物品…</view>
+  <view wx:elif="{{loadError}}" class="form-state form-state--error card">
+    <view class="form-state__icon"><line-icon name="circle-alert" size="34" tone="accent" /></view>
+    <view class="form-state__title">物品信息暂时没连上</view>
+    <view class="form-state__copy">{{loadError}}</view>
+    <view class="form-state__action" bindtap="onRetryLoad">重新加载</view>
+  </view>
+
+  <block wx:else>
   <view class="form-card card">
     <view class="field field--name">
       <text class="field__label">物品名称 <text class="required">*</text></text>
@@ -70,4 +79,5 @@
   <view class="form-footer">
     <button class="primary-button" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="{{itemId ? 'pen-line' : 'plus'}}" size="24" tone="white" /><text>{{itemId ? '保存修改' : '添加到库存'}}</text></button>
   </view>
+  </block>
 </view>

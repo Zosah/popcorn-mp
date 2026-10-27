@@ -4,7 +4,11 @@ import type {
   InventoryLifecycleStatus,
 } from '../domain/inventory'
 import type { InventoryFilters } from '../domain/inventory-query'
-import { filterInventoryItems } from '../domain/inventory-query'
+import type { InventorySummary } from '../domain/inventory-query'
+import {
+  filterInventoryItems,
+  summarizeInventory,
+} from '../domain/inventory-query'
 import {
   InventoryGatewayError,
   type InventoryGateway,
@@ -43,6 +47,10 @@ export class MockInventoryGateway implements InventoryGateway {
 
   async list(filters: InventoryFilters, today: string): Promise<InventoryItem[]> {
     return filterInventoryItems(this.items, filters, today)
+  }
+
+  async summary(today: string): Promise<InventorySummary> {
+    return summarizeInventory(this.items, today)
   }
 
   async get(id: string): Promise<InventoryItem | null> {

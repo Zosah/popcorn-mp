@@ -7,8 +7,9 @@ import {
   INVENTORY_LOCATION_ICON_NAMES,
 } from '../../constants/icon-names'
 import type { InventoryItemInput } from '../../domain/inventory'
-import { inventoryGateway } from '../../services/demo-inventory'
+import { inventoryGateway } from '../../services/inventory'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 interface PickerEvent {
   detail: { value: string }
@@ -38,6 +39,8 @@ Page({
   data: {
     itemId: '',
     version: 0,
+    loading: false,
+    loadError: '',
     saving: false,
     hasExpiry: false,
     categoryIndex: 0,
@@ -57,41 +60,57 @@ Page({
     const itemId = options.id ?? ''
     if (itemId) {
       wx.setNavigationBarTitle({ title: '编辑物品' })
-      this.setData({ itemId })
+      this.setData({ itemId, loading: true })
       void this.loadItem(itemId)
     }
   },
 
   async loadItem(id: string) {
-    const item = await inventoryGateway.get(id)
-    if (!item) {
-      wx.showToast({ title: '物品不存在', icon: 'none' })
-      navigateBackOrTab('/pages/inventory/index')
-      return
+    this.setData({ loading: true, loadError: '' })
+    try {
+      const item = await inventoryGateway.get(id)
+      if (!item) {
+        wx.showToast({ title: '物品不存在', icon: 'none' })
+        navigateBackOrTab('/pages/inventory/index')
+        return
+      }
+      this.setData({
+        version: item.version,
+        hasExpiry: item.expiresOn !== null,
+        categoryIndex: Math.max(
+          0,
+          CATEGORY_OPTIONS.findIndex((option) => option.value === item.category),
+        ),
+        locationIndex: Math.max(
+          0,
+          LOCATION_OPTIONS.findIndex((option) => option.value === item.location),
+        ),
+        form: {
+          name: item.name,
+          category: item.category,
+          quantity: item.quantity,
+          unit: item.unit,
+          location: item.location,
+          purchasedOn: item.purchasedOn,
+          openedOn: item.openedOn,
+          expiresOn: item.expiresOn,
+          note: item.note,
+        },
+      })
+    } catch (error) {
+      this.setData({
+        loadError: getInventoryErrorMessage(
+          error,
+          '物品信息暂时没有加载出来',
+        ),
+      })
+    } finally {
+      this.setData({ loading: false })
     }
-    this.setData({
-      version: item.version,
-      hasExpiry: item.expiresOn !== null,
-      categoryIndex: Math.max(
-        0,
-        CATEGORY_OPTIONS.findIndex((option) => option.value === item.category),
-      ),
-      locationIndex: Math.max(
-        0,
-        LOCATION_OPTIONS.findIndex((option) => option.value === item.location),
-      ),
-      form: {
-        name: item.name,
-        category: item.category,
-        quantity: item.quantity,
-        unit: item.unit,
-        location: item.location,
-        purchasedOn: item.purchasedOn,
-        openedOn: item.openedOn,
-        expiresOn: item.expiresOn,
-        note: item.note,
-      },
-    })
+  },
+
+  onRetryLoad() {
+    if (this.data.itemId) void this.loadItem(this.data.itemId)
   },
 
   onBack() {
@@ -143,6 +162,7 @@ Page({
   },
 
   async onSave() {
+    if (this.data.loading || this.data.loadError) return
     const form = this.data.form
     if (!form.name.trim()) {
       wx.showToast({ title: '请填写物品名称', icon: 'none' })
@@ -175,7 +195,7 @@ Page({
       navigateBackOrTab('/pages/inventory/index')
     } catch (error) {
       wx.showToast({
-        title: error instanceof Error ? error.message : '保存失败',
+        title: getInventoryErrorMessage(error, '保存失败'),
         icon: 'none',
       })
     } finally {

@@ -13,6 +13,15 @@
     <sync-badge state="local" text="本机 Demo" />
   </view>
 
+  <view wx:if="{{inventoryError}}" class="home-error glass-card">
+    <view class="home-error__icon"><line-icon name="circle-alert" size="27" tone="accent" /></view>
+    <view class="home-error__body">
+      <text class="home-error__title">库存暂时没连上</text>
+      <text class="home-error__copy">{{inventoryError}}</text>
+    </view>
+    <view class="home-error__retry" bindtap="onRetryInventory">再试一次</view>
+  </view>
+
   <view class="home-hero glass-card" bindtap="onOpenJournal">
     <view class="home-hero__halo home-hero__halo--mint"></view>
     <view class="home-hero__halo home-hero__halo--violet"></view>

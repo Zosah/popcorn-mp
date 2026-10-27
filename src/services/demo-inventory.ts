@@ -27,9 +27,10 @@ function createGateway(): MockInventoryGateway {
   })
 }
 
-export let inventoryGateway = createGateway()
+export function createDemoInventoryGateway(): MockInventoryGateway {
+  return createGateway()
+}
 
 export function resetDemoInventory(): void {
   wx.removeStorageSync(STORAGE_KEY)
-  inventoryGateway = createGateway()
 }

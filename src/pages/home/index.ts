@@ -1,13 +1,18 @@
-import { buildHomeSnapshot, type HomeSnapshot } from '../../domain/home'
+import {
+  buildHomeSnapshotFromSummary,
+  type HomeSnapshot,
+} from '../../domain/home'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import type { InventorySummary } from '../../domain/inventory-query'
 import { buildPetCareCards, buildPetDailySummary } from '../../domain/demo-pet'
 import type { DemoJournalEntry } from '../../domain/demo-journal'
 import { listDemoJournalMoments } from '../../services/demo-journal'
-import { inventoryGateway } from '../../services/demo-inventory'
+import { inventoryGateway } from '../../services/inventory'
 import { listDemoMenuRecipes } from '../../services/demo-menu'
 import { listDemoTodoItems } from '../../services/demo-todo'
 import { getDemoPetState, listDemoPetProfiles } from '../../services/demo-pet'
 import { syncDemoTabBar } from '../../utils/demo-tab-bar'
+import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 const CHINESE_MONTHS = [
   '一月',
@@ -24,6 +29,17 @@ const CHINESE_MONTHS = [
   '十二月',
 ] as const
 
+const EMPTY_INVENTORY_SUMMARY: InventorySummary = {
+  total: 0,
+  expired: 0,
+  today: 0,
+  urgent: 0,
+  soon: 0,
+  normal: 0,
+  none: 0,
+  dueWithin3Days: 0,
+}
+
 const EMPTY_SNAPSHOT: HomeSnapshot = {
   today: '',
   dateLabel: '',
@@ -38,6 +54,7 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
 Page({
   data: {
     snapshot: EMPTY_SNAPSHOT,
+    inventoryError: '',
     today: '',
     dateParts: { day: '', month: '' },
     recentEntries: [] as DemoJournalEntry[],
@@ -62,7 +79,16 @@ Page({
   async loadSnapshot() {
     const nowMs = Date.now()
     const today = getShanghaiDateOnly(nowMs)
-    const items = await inventoryGateway.list({}, today)
+    let inventorySummary = EMPTY_INVENTORY_SUMMARY
+    let inventoryError = ''
+    try {
+      inventorySummary = await inventoryGateway.summary(today)
+    } catch (error) {
+      inventoryError = getInventoryErrorMessage(
+        error,
+        '家庭库存暂时没有加载出来',
+      )
+    }
     const petState = getDemoPetState()
     const latestWeight = petState.weights[petState.weights.length - 1]
     const careCards = buildPetCareCards(petState.events, today)
@@ -89,7 +115,8 @@ Page({
         day: String(day),
         month: CHINESE_MONTHS[(month ?? 1) - 1] ?? '一月',
       },
-      snapshot: buildHomeSnapshot(items, nowMs),
+      snapshot: buildHomeSnapshotFromSummary(inventorySummary, nowMs),
+      inventoryError,
       recentEntries: moments.slice(0, 3),
       menuCount: listDemoMenuRecipes().length,
       recordCount: moments.length,
@@ -105,6 +132,10 @@ Page({
         careNotice,
       },
     })
+  },
+
+  onRetryInventory() {
+    void this.loadSnapshot()
   },
 
   onOpenInventory() {

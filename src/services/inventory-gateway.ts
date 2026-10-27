@@ -4,8 +4,9 @@ import type {
   InventoryLifecycleStatus,
 } from '../domain/inventory'
 import type { InventoryFilters } from '../domain/inventory-query'
+import type { InventorySummary } from '../domain/inventory-query'
 
-export type InventoryGatewayErrorCode = 'NOT_FOUND' | 'VERSION_CONFLICT'
+export type InventoryGatewayErrorCode = string
 
 export class InventoryGatewayError extends Error {
   constructor(
@@ -19,6 +20,7 @@ export class InventoryGatewayError extends Error {
 
 export interface InventoryGateway {
   list(filters: InventoryFilters, today: string): Promise<InventoryItem[]>
+  summary(today: string): Promise<InventorySummary>
   get(id: string): Promise<InventoryItem | null>
   create(input: InventoryItemInput): Promise<InventoryItem>
   update(

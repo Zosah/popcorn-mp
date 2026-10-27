@@ -73,6 +73,16 @@
 
   <view wx:if="{{loading}}" class="state glass-card">正在翻家里的清单…</view>
 
+  <view wx:elif="{{errorMessage}}" class="empty empty--error glass-card">
+    <view class="empty__icon empty__icon--error"><line-icon name="circle-alert" size="40" tone="accent" /></view>
+    <view class="empty__title">库存暂时没连上</view>
+    <view class="empty__copy">{{errorMessage}}</view>
+    <view class="empty__action" bindtap="onRetry">
+      <line-icon name="rotate-ccw" size="21" tone="white" />
+      <text>重新加载</text>
+    </view>
+  </view>
+
   <block wx:elif="{{hasResults}}">
     <view wx:for="{{sections}}" wx:key="key" class="group">
       <view class="group__head">
