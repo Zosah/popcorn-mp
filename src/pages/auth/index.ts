@@ -87,14 +87,14 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     profilePreviewLabel: appConfig.demoMode ? '你的本机身份' : '你的空间身份',
     profilePreviewMeta: appConfig.demoMode
       ? 'Demo 账号'
-      : 'Popcorn 账号',
+      : '时刻见账号',
     accountHeadCopy: appConfig.demoMode
-      ? '这是你在「时刻在」的本机体验身份。'
-      : '这是你在「时刻在」的微信账号。',
+      ? '这是你在「时刻见」的本机体验身份。'
+      : '这是你在「时刻见」的微信账号。',
     accountTypeLabel: appConfig.demoMode ? '本机体验账号' : '微信账号',
     accountScopeCopy: appConfig.demoMode
       ? '仅保存在当前设备'
-      : '已连接 Popcorn 服务',
+      : '已连接时刻见服务',
     clearAccountLabel: appConfig.demoMode
       ? '清除本机账号（不影响其他 Demo 数据）'
       : '清除本机登录信息',

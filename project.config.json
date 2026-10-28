@@ -61,7 +61,7 @@
   "compileType": "miniprogram",
   "libVersion": "2.24.7",
   "appid": "wxc68e8c1b722a2007",
-  "projectname": "popcorn-mp",
+  "projectname": "时刻见",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {},
   "srcMiniprogramRoot": "src/",

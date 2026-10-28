@@ -65,7 +65,7 @@ Page({
     statusTitle: STATUS_COPY.empty.title,
     statusCopy: STATUS_COPY.empty.copy,
     spaceName: '我们的家',
-    inviterName: '时刻在体验官',
+    inviterName: '时刻见体验官',
     inviterAvatar: '满',
     inviterAvatarTone: 'lavender',
     expiresLabel: '',
@@ -83,8 +83,8 @@ Page({
       isLoggedIn: auth.isLoggedIn,
       spaceName: auth.spaceName || getDemoSpaceName(),
       inviterName: auth.isLoggedIn && auth.user
-        ? auth.user.nickname || '时刻在体验官'
-        : '时刻在体验官',
+        ? auth.user.nickname || '时刻见体验官'
+        : '时刻见体验官',
       inviterAvatar: auth.isLoggedIn ? auth.avatarText : '满',
       inviterAvatarTone: auth.user?.avatarTone ?? 'lavender',
     })

@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "时刻在",
+  "navigationBarTitleText": "时刻见",
   "usingComponents": {
     "sync-badge": "/components/sync-badge/index",
     "line-icon": "/components/line-icon/index"

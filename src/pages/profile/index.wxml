@@ -110,7 +110,7 @@
   </view>
 
   <view class="profile-foot">
-    <text>时刻在</text>
+    <text>时刻见</text>
     <text>{{version}}</text>
   </view>
 </view>
