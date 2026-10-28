@@ -44,7 +44,11 @@ page {
 }
 
 page {
+  width: 100%;
+  max-width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
   background-color: #f5f2fa;
   background-image:
     radial-gradient(circle at 8% 3%, rgba(196, 220, 255, 0.74) 0, rgba(196, 220, 255, 0) 32%),
@@ -65,6 +69,14 @@ button {
 
 button::after {
   border: 0;
+}
+
+/* 页面装饰元素会刻意越过视口边缘，统一裁掉横向滚动；滚动条只保留滚动能力，不显示轨道。 */
+page::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  color: transparent;
 }
 
 /* 原生 TabBar 由微信管理安全区，页面只保留内容收尾留白。 */

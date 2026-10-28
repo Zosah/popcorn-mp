@@ -13,7 +13,7 @@
 
 .home-ambient--one {
   top: 80rpx;
-  right: -130rpx;
+  right: 0;
   width: 330rpx;
   height: 330rpx;
   background: radial-gradient(circle, rgba(192, 235, 220, 0.86), rgba(192, 235, 220, 0));
@@ -21,7 +21,7 @@
 
 .home-ambient--two {
   top: 690rpx;
-  left: -170rpx;
+  left: 0;
   width: 360rpx;
   height: 360rpx;
   background: radial-gradient(circle, rgba(242, 204, 226, 0.68), rgba(242, 204, 226, 0));

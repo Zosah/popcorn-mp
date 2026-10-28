@@ -23,7 +23,7 @@
 }
 
 .pet-switcher {
-  width: calc(100% + 48rpx);
+  width: calc(100% + 36rpx);
   margin: 0 0 22rpx;
   white-space: nowrap;
 }
