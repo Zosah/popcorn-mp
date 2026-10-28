@@ -101,6 +101,11 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    if (options.reason === 'session-expired') {
+      this.setData({
+        loginVignetteNote: '登录状态已经过期，重新登录后会回到刚才的页面。',
+      })
+    }
     void this.bootstrap(options.mode)
   },
 

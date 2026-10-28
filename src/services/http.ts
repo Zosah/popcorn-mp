@@ -1,4 +1,5 @@
 import { appConfig } from '../config/env'
+import { handleApiUnauthorized } from './auth-expiry'
 import {
   sendRequest,
   TransportError,
@@ -53,5 +54,14 @@ export function requestApiResponse<T>(
     headers,
     data: options.body,
     timeoutMs: appConfig.requestTimeoutMs,
+  }).catch((error: unknown) => {
+    if (
+      options.token &&
+      error instanceof TransportError &&
+      (error.statusCode === 401 || error.code === 'UNAUTHENTICATED')
+    ) {
+      handleApiUnauthorized(options.token)
+    }
+    throw error
   })
 }
