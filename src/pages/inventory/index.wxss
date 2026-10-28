@@ -224,6 +224,13 @@
   border: 1rpx solid rgba(255, 255, 255, 0.78);
   border-radius: 23rpx;
   background: rgba(255, 255, 255, 0.54);
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.search--focused {
+  border-color: rgba(117, 105, 232, 0.28);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10rpx 26rpx rgba(92, 77, 132, 0.09);
 }
 
 .search__icon {
@@ -248,9 +255,14 @@
 }
 
 .search__clear {
-  padding-left: 14rpx;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-end;
+  padding-left: 18rpx;
   color: var(--c-primary-deep, #665bd7);
   font-size: 18rpx;
+  font-weight: 500;
 }
 
 .chips {
@@ -279,13 +291,12 @@
   font-weight: 600;
 }
 
-.state {
+.inv-state {
   margin-top: 20rpx;
-  padding: 54rpx 0;
-  border-radius: 30rpx;
-  color: var(--c-muted, #9592a4);
-  font-size: 21rpx;
-  text-align: center;
+}
+
+.inv-state-banner {
+  margin-top: 20rpx;
 }
 
 .group {
@@ -320,62 +331,4 @@
 .group__list {
   padding: 2rpx 20rpx;
   border-radius: 32rpx;
-}
-
-.empty {
-  display: flex;
-  margin-top: 20rpx;
-  padding: 45rpx 24rpx 38rpx;
-  align-items: center;
-  border-radius: 34rpx;
-  flex-direction: column;
-  text-align: center;
-}
-
-.empty__icon {
-  display: flex;
-  width: 88rpx;
-  height: 88rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 30rpx;
-  background: linear-gradient(145deg, #eeeaff, #e5f7ef);
-}
-
-.empty__title {
-  margin-top: 17rpx;
-  color: var(--c-text, #292737);
-  font-size: 26rpx;
-  font-weight: 600;
-}
-
-.empty__copy {
-  max-width: 480rpx;
-  margin-top: 7rpx;
-  color: var(--c-muted, #9592a4);
-  font-size: 19rpx;
-  line-height: 1.6;
-}
-
-.empty__action {
-  display: inline-flex;
-  height: 66rpx;
-  align-items: center;
-  justify-content: center;
-  gap: 7rpx;
-  margin-top: 20rpx;
-  padding: 0 24rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(135deg, #8c7cf0, #6d63db);
-  color: #fff;
-  font-size: 20rpx;
-  font-weight: 600;
-}
-
-.empty--error {
-  background: linear-gradient(145deg, rgba(255, 252, 251, 0.84), rgba(252, 235, 238, 0.66));
-}
-
-.empty__icon--error {
-  background: linear-gradient(145deg, #fff3f3, #fbe7ea);
 }

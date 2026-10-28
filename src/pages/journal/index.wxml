@@ -35,18 +35,27 @@
     </view>
   </view>
 
+  <view wx:if="{{loadError && (entries.length || notesCount)}}" class="state-banner state-banner--warm glass-card journal-state-banner">
+    <view class="state-banner__icon"><line-icon name="circle-alert" size="24" tone="accent" /></view>
+    <view class="state-banner__body">
+      <text class="state-banner__title">记录刷新没完成</text>
+      <text class="state-banner__copy">先保留已经读到的内容，稍后可以再试。</text>
+    </view>
+    <view class="state-banner__action" bindtap="onRetryLoad">重新加载</view>
+  </view>
+
   <view wx:if="{{activeView === 'moments'}}" class="timeline">
-    <view wx:if="{{loading && !entries.length}}" class="journal-empty glass-card">
-      <view class="journal-empty__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
-      <text class="journal-empty__title">正在把日子轻轻翻出来</text>
-      <text class="journal-empty__copy">稍等一下，马上就好。</text>
+    <view wx:if="{{loading && !entries.length}}" class="state-card state-card--loading glass-card">
+      <view class="state-card__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
+      <view class="state-card__title">正在把日子轻轻翻出来</view>
+      <view class="state-card__copy">稍等一下，马上就好。</view>
     </view>
 
-    <view wx:elif="{{loadError && !entries.length}}" class="journal-empty glass-card">
-      <view class="journal-empty__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
-      <text class="journal-empty__title">暂时没有连上</text>
-      <text class="journal-empty__copy">{{loadError}}</text>
-      <view class="journal-empty__button" bindtap="onRetryLoad">重新加载</view>
+    <view wx:elif="{{loadError && !entries.length}}" class="state-card state-card--error glass-card">
+      <view class="state-card__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
+      <view class="state-card__title">暂时没有连上</view>
+      <view class="state-card__copy">{{loadError}}</view>
+      <view class="state-card__action" bindtap="onRetryLoad">重新加载</view>
     </view>
 
     <block wx:elif="{{entries.length}}">
@@ -78,26 +87,26 @@
       </view>
     </block>
 
-    <view wx:else class="journal-empty glass-card">
-      <view class="journal-empty__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
-      <text class="journal-empty__title">还没有留下记录</text>
-      <text class="journal-empty__copy">写下一句话，平常的一天也会有一个落点。</text>
-      <view class="journal-empty__button" bindtap="onCreate">记下第一笔</view>
+    <view wx:else class="state-card glass-card">
+      <view class="state-card__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
+      <view class="state-card__title">还没有留下记录</view>
+      <view class="state-card__copy">写下一句话，平常的一天也会有一个落点。</view>
+      <view class="state-card__action" bindtap="onCreate">记下第一笔</view>
     </view>
   </view>
 
   <view wx:else class="notes-view">
-    <view wx:if="{{loading && !notesCount}}" class="journal-empty glass-card">
-      <view class="journal-empty__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
-      <text class="journal-empty__title">正在整理重要记录</text>
-      <text class="journal-empty__copy">稍等一下，马上就好。</text>
+    <view wx:if="{{loading && !notesCount}}" class="state-card state-card--loading glass-card">
+      <view class="state-card__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
+      <view class="state-card__title">正在整理重要记录</view>
+      <view class="state-card__copy">稍等一下，马上就好。</view>
     </view>
 
-    <view wx:elif="{{loadError && !notesCount}}" class="journal-empty glass-card">
-      <view class="journal-empty__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
-      <text class="journal-empty__title">暂时没有连上</text>
-      <text class="journal-empty__copy">{{loadError}}</text>
-      <view class="journal-empty__button" bindtap="onRetryLoad">重新加载</view>
+    <view wx:elif="{{loadError && !notesCount}}" class="state-card state-card--error glass-card">
+      <view class="state-card__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
+      <view class="state-card__title">暂时没有连上</view>
+      <view class="state-card__copy">{{loadError}}</view>
+      <view class="state-card__action" bindtap="onRetryLoad">重新加载</view>
     </view>
 
     <block wx:elif="{{noteGroups.length}}">
@@ -121,11 +130,11 @@
         </view>
       </view>
     </block>
-    <view wx:else class="journal-empty glass-card">
-      <view class="journal-empty__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
-      <text class="journal-empty__title">还没有重要记录</text>
-      <text class="journal-empty__copy">把证件信息、家规、照护资料收在这里，需要时随时能找到。</text>
-      <view class="journal-empty__button" bindtap="onCreate">存一份记录</view>
+    <view wx:else class="state-card glass-card">
+      <view class="state-card__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
+      <view class="state-card__title">还没有重要记录</view>
+      <view class="state-card__copy">把证件信息、家规、照护资料收在这里，需要时随时能找到。</view>
+      <view class="state-card__action" bindtap="onCreate">存一份记录</view>
     </view>
   </view>
 </view>

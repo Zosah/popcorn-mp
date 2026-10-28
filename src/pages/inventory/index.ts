@@ -19,6 +19,7 @@ import {
 import { inventoryGateway } from '../../services/inventory'
 import { hydrateAuthState } from '../../services/auth'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { createDebouncer, createRequestGate } from '../../utils/request-control'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
 
@@ -47,6 +48,12 @@ const EMPTY_SUMMARY: InventorySummary = {
   none: 0,
   dueWithin3Days: 0,
 }
+
+const inventoryRequestGate = createRequestGate()
+const inventoryPageGate = createRequestGate()
+const inventorySearchDebouncer = createDebouncer(300)
+const PAGE_REFRESH_INTERVAL_MS = 500
+let lastPageRefreshAt = 0
 
 function toExpiryStatuses(filter: DemoExpiryFilter): ExpiryStatus[] | undefined {
   const mapping: Record<Exclude<DemoExpiryFilter, 'all'>, ExpiryStatus[]> = {
@@ -131,10 +138,12 @@ function buildSections(
 Page({
   data: {
     loading: true,
+    hasLoaded: false,
     errorMessage: '',
     spaceName: '我们的家',
     today: '',
     query: '',
+    searchFocused: false,
     viewMode: 'active' as InventoryViewMode,
     selectedExpiry: 'all' as DemoExpiryFilter,
     summary: EMPTY_SUMMARY,
@@ -149,29 +158,38 @@ Page({
   },
 
   onPullDownRefresh() {
+    inventoryPageGate.invalidate()
+    inventorySearchDebouncer.cancel()
     void this.loadInventory(true)
   },
 
   onRetry() {
+    inventorySearchDebouncer.cancel()
     void this.loadInventory()
   },
 
   async refreshPage() {
+    const now = Date.now()
+    if (now - lastPageRefreshAt < PAGE_REFRESH_INTERVAL_MS) return
+    lastPageRefreshAt = now
+    const sequence = inventoryPageGate.begin()
     const auth = await hydrateAuthState()
+    if (!inventoryPageGate.isCurrent(sequence)) return
     this.setData({ spaceName: auth.spaceName })
-    await this.loadInventory()
+    inventorySearchDebouncer.cancel()
+    void this.loadInventory()
   },
 
   async loadInventory(fromPullDown = false) {
+    const sequence = inventoryRequestGate.begin()
     this.setData({
-      loading: !fromPullDown,
+      loading: !fromPullDown && !this.data.hasLoaded,
       errorMessage: '',
       syncState: appConfig.demoMode ? 'local' : 'pending',
       syncText: appConfig.demoMode ? '只在本机' : '正在同步',
     })
     try {
       const today = getShanghaiDateOnly(Date.now())
-      const summary = await inventoryGateway.summary(today)
       const filters: InventoryFilters = {
         query: this.data.query,
         lifecycleStatuses: resolveInventoryLifecycleStatuses(this.data.viewMode),
@@ -180,20 +198,50 @@ Page({
             ? toExpiryStatuses(this.data.selectedExpiry)
             : undefined,
       }
-      const visibleItems = await inventoryGateway.list(filters, today)
+      const [summaryResult, listResult] = await Promise.allSettled([
+        inventoryGateway.summary(today),
+        inventoryGateway.list(filters, today),
+      ])
+      if (!inventoryRequestGate.isCurrent(sequence)) return
+
+      const errors: string[] = []
+      if (summaryResult.status === 'rejected') {
+        errors.push(getInventoryErrorMessage(
+          summaryResult.reason,
+          '库存摘要暂时没有加载出来',
+        ))
+      }
+      if (listResult.status === 'rejected') {
+        errors.push(getInventoryErrorMessage(
+          listResult.reason,
+          '库存列表暂时没有加载出来',
+        ))
+      }
+
+      const visibleItems = listResult.status === 'fulfilled' ? listResult.value : []
       const views = visibleItems.map((item) => toView(item, today))
+      const hasListLoaded = listResult.status === 'fulfilled'
+      const hasLoaded = this.data.hasLoaded || hasListLoaded
+      const hasError = errors.length > 0
       this.setData({
         today,
-        summary,
-        sections: buildSections(views, this.data.viewMode),
-        hasResults: views.length > 0,
-        syncState: appConfig.demoMode ? 'local' : 'synced',
-        syncText: appConfig.demoMode ? '只在本机' : '已同步',
+        summary: summaryResult.status === 'fulfilled'
+          ? summaryResult.value
+          : this.data.summary,
+        sections: hasListLoaded
+          ? buildSections(views, this.data.viewMode)
+          : this.data.sections,
+        hasResults: hasListLoaded ? views.length > 0 : this.data.hasResults,
+        hasLoaded,
+        errorMessage: errors[0] ?? '',
+        syncState: hasError ? 'pending' : appConfig.demoMode ? 'local' : 'synced',
+        syncText: hasError
+          ? '部分未同步'
+          : appConfig.demoMode ? '只在本机' : '已同步',
       })
     } catch (error) {
+      if (!inventoryRequestGate.isCurrent(sequence)) return
       this.setData({
-        sections: [],
-        hasResults: false,
         errorMessage: getInventoryErrorMessage(
           error,
           '库存暂时没有加载出来，请稍后再试',
@@ -202,22 +250,37 @@ Page({
         syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
       })
     } finally {
-      this.setData({ loading: false })
+      if (inventoryRequestGate.isCurrent(sequence)) {
+        this.setData({ loading: false })
+      }
       if (fromPullDown) wx.stopPullDownRefresh()
     }
   },
 
   onSearchInput(event: { detail: { value: string } }) {
+    inventoryRequestGate.invalidate()
     this.setData({ query: event.detail.value })
-    void this.loadInventory()
+    inventorySearchDebouncer.schedule(() => {
+      void this.loadInventory()
+    })
   },
 
   onClearSearch() {
+    inventorySearchDebouncer.cancel()
     this.setData({ query: '' })
     void this.loadInventory()
   },
 
+  onSearchFocus() {
+    this.setData({ searchFocused: true })
+  },
+
+  onSearchBlur() {
+    this.setData({ searchFocused: false })
+  },
+
   onSelectExpiry(event: { currentTarget: { dataset: { value: DemoExpiryFilter } } }) {
+    inventorySearchDebouncer.cancel()
     const value = event.currentTarget.dataset.value
     this.setData({
       selectedExpiry: this.data.selectedExpiry === value ? 'all' : value,
@@ -228,6 +291,7 @@ Page({
   onSwitchView(event: {
     currentTarget: { dataset: { value: InventoryViewMode } }
   }) {
+    inventorySearchDebouncer.cancel()
     const viewMode = event.currentTarget.dataset.value
     if (viewMode === this.data.viewMode) return
     this.setData({ viewMode, selectedExpiry: 'all' })
@@ -240,5 +304,11 @@ Page({
 
   onAddItem() {
     wx.navigateTo({ url: '/pages/item-form/index' })
+  },
+
+  onUnload() {
+    inventorySearchDebouncer.cancel()
+    inventoryPageGate.invalidate()
+    inventoryRequestGate.invalidate()
   },
 })

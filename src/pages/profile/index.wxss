@@ -171,6 +171,14 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(237, 234, 255, 0.68));
 }
 
+.todo-focus--loading .todo-focus__count {
+  color: var(--c-muted, #9592a4);
+}
+
+.todo-focus--loading .todo-focus__fill {
+  opacity: 0.58;
+}
+
 .todo-focus__icon {
   display: flex;
   width: 76rpx;

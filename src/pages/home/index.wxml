@@ -13,13 +13,13 @@
     <sync-badge state="{{syncState}}" text="{{syncText}}" />
   </view>
 
-  <view wx:if="{{inventoryError}}" class="home-error glass-card">
-    <view class="home-error__icon"><line-icon name="circle-alert" size="27" tone="accent" /></view>
-    <view class="home-error__body">
-      <text class="home-error__title">库存暂时没连上</text>
-      <text class="home-error__copy">{{inventoryError}}</text>
+  <view wx:if="{{inventoryError}}" class="state-banner state-banner--warm glass-card home-state-banner">
+    <view class="state-banner__icon"><line-icon name="circle-alert" size="25" tone="accent" /></view>
+    <view class="state-banner__body">
+      <text class="state-banner__title">{{hasLoadedInventory ? '库存刷新没完成' : '库存暂时没连上'}}</text>
+      <text class="state-banner__copy">{{hasLoadedInventory ? '先保留上次的内容，稍后可以再试。' : inventoryError}}</text>
     </view>
-    <view class="home-error__retry" bindtap="onRetryInventory">再试一次</view>
+    <view class="state-banner__action" bindtap="onRetryInventory">重新加载</view>
   </view>
 
   <view class="home-hero glass-card" bindtap="onOpenJournal">

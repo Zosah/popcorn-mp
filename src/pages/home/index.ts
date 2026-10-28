@@ -3,7 +3,6 @@ import {
   type HomeSnapshot,
 } from '../../domain/home'
 import { getShanghaiDateOnly } from '../../domain/expiry'
-import type { InventorySummary } from '../../domain/inventory-query'
 import { buildPetCareCards, buildPetDailySummary } from '../../domain/demo-pet'
 import { appConfig } from '../../config/env'
 import { journalGateway } from '../../services/journal'
@@ -14,6 +13,7 @@ import { getDemoPetState, listDemoPetProfiles } from '../../services/demo-pet'
 import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage, type TodoSummary } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { createRequestGate } from '../../utils/request-control'
 
 const CHINESE_MONTHS = [
   '一月',
@@ -30,17 +30,6 @@ const CHINESE_MONTHS = [
   '十二月',
 ] as const
 
-const EMPTY_INVENTORY_SUMMARY: InventorySummary = {
-  total: 0,
-  expired: 0,
-  today: 0,
-  urgent: 0,
-  soon: 0,
-  normal: 0,
-  none: 0,
-  dueWithin3Days: 0,
-}
-
 const EMPTY_SNAPSHOT: HomeSnapshot = {
   today: '',
   dateLabel: '',
@@ -51,6 +40,8 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
   inventoryNoticeCount: 0,
   inventoryItemCount: 0,
 }
+
+const homeRequestGate = createRequestGate()
 
 Page({
   data: {
@@ -64,6 +55,9 @@ Page({
     petCount: 0,
     todoPendingCount: 0,
     todoSummary: '旅行、计划、健身、吃什么和账单',
+    hasLoadedInventory: false,
+    hasLoadedMoments: false,
+    hasLoadedTodos: false,
     syncState: appConfig.demoMode ? 'local' : 'pending',
     syncText: appConfig.demoMode ? '只在本机' : '正在同步',
     petSnapshot: {
@@ -79,33 +73,30 @@ Page({
   },
 
   async loadSnapshot() {
+    const sequence = homeRequestGate.begin()
     const nowMs = Date.now()
     const today = getShanghaiDateOnly(nowMs)
-    let inventorySummary = EMPTY_INVENTORY_SUMMARY
-    let inventoryError = ''
-    try {
-      inventorySummary = await inventoryGateway.summary(today)
-    } catch (error) {
-      inventoryError = getInventoryErrorMessage(
-        error,
+
+    const [inventoryResult, momentsResult, todoResult] = await Promise.allSettled([
+      inventoryGateway.summary(today),
+      journalGateway.list({ kinds: ['moment'] }),
+      todoGateway.summary(),
+    ])
+    if (!homeRequestGate.isCurrent(sequence)) return
+
+    const inventoryError = inventoryResult.status === 'rejected'
+      ? getInventoryErrorMessage(
+        inventoryResult.reason,
         '家庭库存暂时没有加载出来',
       )
-    }
-    let moments = this.data.recentEntries
-    let journalError = false
-    try {
-      moments = await journalGateway.list({ kinds: ['moment'] })
-    } catch {
-      journalError = true
-      // 首页保留上一次成功加载的记录，具体错误在生活记录页提示。
-    }
-    let todoSummary: TodoSummary | null = null
-    let todoError = ''
-    try {
-      todoSummary = await todoGateway.summary()
-    } catch (error) {
-      todoError = getTodoErrorMessage(error, '待办暂时没有同步过来')
-    }
+      : ''
+    const moments = momentsResult.status === 'fulfilled'
+      ? momentsResult.value
+      : this.data.recentEntries
+    const todoSummary = todoResult.status === 'fulfilled' ? todoResult.value : null
+    const todoError = todoResult.status === 'rejected'
+      ? getTodoErrorMessage(todoResult.reason, '待办暂时没有同步过来')
+      : ''
     const petState = getDemoPetState()
     const latestWeight = petState.weights[petState.weights.length - 1]
     const careCards = buildPetCareCards(petState.events, today)
@@ -124,14 +115,16 @@ Page({
     const [, month = 1, day = 1] = today.split('-').map(Number)
     const pendingTodoCount = todoSummary?.pending ?? 0
     const pendingTravelCount = todoSummary?.pendingByKind.travel ?? 0
-    const hasPartialError = Boolean(inventoryError) || journalError || Boolean(todoError)
+    const hasPartialError = Boolean(inventoryError) || momentsResult.status === 'rejected' || Boolean(todoError)
     this.setData({
       today,
       dateParts: {
         day: String(day),
         month: CHINESE_MONTHS[(month ?? 1) - 1] ?? '一月',
       },
-      snapshot: buildHomeSnapshotFromSummary(inventorySummary, nowMs),
+      snapshot: inventoryResult.status === 'fulfilled'
+        ? buildHomeSnapshotFromSummary(inventoryResult.value, nowMs)
+        : this.data.snapshot,
       inventoryError,
       recentEntries: moments.slice(0, 3),
       menuCount: listDemoMenuRecipes().length,
@@ -142,7 +135,13 @@ Page({
         ? (pendingTodoCount
           ? `${pendingTodoCount} 件还没做${pendingTravelCount ? ` · ${pendingTravelCount} 个旅行准备` : ''}`
           : '目前都做完了，可以再记一件')
-        : todoError,
+        : this.data.hasLoadedTodos ? this.data.todoSummary : todoError,
+      hasLoadedInventory:
+        this.data.hasLoadedInventory || inventoryResult.status === 'fulfilled',
+      hasLoadedMoments:
+        this.data.hasLoadedMoments || momentsResult.status === 'fulfilled',
+      hasLoadedTodos:
+        this.data.hasLoadedTodos || todoResult.status === 'fulfilled',
       syncState: hasPartialError
         ? 'pending'
         : appConfig.demoMode ? 'local' : 'synced',

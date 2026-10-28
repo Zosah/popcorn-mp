@@ -256,6 +256,127 @@ page::-webkit-scrollbar {
   line-height: 1.4;
 }
 
+/* 加载、空态与失败态共用同一套层级，避免各页面出现不同高度的状态块。 */
+.state-card {
+  display: flex;
+  min-height: 320rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 42rpx 30rpx 38rpx;
+  border-radius: 34rpx;
+  flex-direction: column;
+  text-align: center;
+}
+
+.state-card--loading {
+  min-height: 250rpx;
+}
+
+.state-card--error {
+  background: linear-gradient(145deg, rgba(255, 252, 251, 0.88), rgba(252, 235, 238, 0.68));
+}
+
+.state-card__icon {
+  display: flex;
+  width: 88rpx;
+  height: 88rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(255, 255, 255, 0.78);
+  border-radius: 30rpx;
+  background: linear-gradient(145deg, #eeeaff, #e5f7ef);
+  box-shadow: 0 9rpx 22rpx rgba(92, 77, 132, 0.07);
+}
+
+.state-card--error .state-card__icon {
+  background: linear-gradient(145deg, #fff4f4, #fbe7ea);
+}
+
+.state-card__title {
+  margin-top: 18rpx;
+  color: var(--c-text, #292737);
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.state-card__copy {
+  max-width: 490rpx;
+  margin-top: 7rpx;
+  color: var(--c-muted, #9592a4);
+  font-size: 19rpx;
+  line-height: 1.65;
+}
+
+.state-card__action {
+  display: inline-flex;
+  min-height: 66rpx;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20rpx;
+  padding: 0 24rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.78);
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--c-primary-deep, #665bd7);
+  font-size: 19rpx;
+  font-weight: 600;
+}
+
+.state-banner {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 18rpx;
+  border-radius: 26rpx;
+  gap: 13rpx;
+}
+
+.state-banner--warm {
+  background: linear-gradient(135deg, rgba(255, 252, 249, 0.90), rgba(252, 237, 235, 0.76));
+}
+
+.state-banner__icon {
+  display: flex;
+  width: 50rpx;
+  height: 50rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17rpx;
+  background: rgba(255, 255, 255, 0.74);
+  flex-shrink: 0;
+}
+
+.state-banner__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.state-banner__title {
+  color: var(--c-text, #292737);
+  font-size: 19rpx;
+  font-weight: 600;
+}
+
+.state-banner__copy {
+  color: var(--c-text-2, #615f70);
+  font-size: 16rpx;
+  line-height: 1.45;
+}
+
+.state-banner__action {
+  display: flex;
+  min-height: 54rpx;
+  align-items: center;
+  padding: 0 4rpx 0 10rpx;
+  color: var(--c-primary-deep, #665bd7);
+  flex-shrink: 0;
+  font-size: 17rpx;
+  font-weight: 600;
+}
+
 input,
 textarea {
   font-family: inherit;

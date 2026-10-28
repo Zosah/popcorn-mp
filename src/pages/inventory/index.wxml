@@ -54,9 +54,9 @@
       <view class="tab {{viewMode === 'history' ? 'tab--active' : ''}}" data-value="history" bindtap="onSwitchView">历史记录</view>
     </view>
 
-    <view class="search">
+    <view class="search {{searchFocused ? 'search--focused' : ''}}">
       <view class="search__icon"><line-icon name="search" size="27" tone="muted" /></view>
-      <input class="search__input" value="{{query}}" placeholder="找找家里的东西" placeholder-class="search__placeholder" bindinput="onSearchInput" />
+      <input class="search__input" value="{{query}}" placeholder="找找家里的东西" placeholder-class="search__placeholder" bindinput="onSearchInput" bindfocus="onSearchFocus" bindblur="onSearchBlur" />
       <text wx:if="{{query}}" class="search__clear" bindtap="onClearSearch">清除</text>
     </view>
 
@@ -71,40 +71,55 @@
     </scroll-view>
   </view>
 
-  <view wx:if="{{loading}}" class="state glass-card">正在翻家里的清单…</view>
+  <view wx:if="{{loading && !hasLoaded}}" class="state-card state-card--loading glass-card inv-state">
+    <view class="state-card__icon"><line-icon name="book-open" size="38" tone="accent" /></view>
+    <view class="state-card__title">正在翻家里的清单</view>
+    <view class="state-card__copy">库存和有效期正在一起核对。</view>
+  </view>
 
-  <view wx:elif="{{errorMessage}}" class="empty empty--error glass-card">
-    <view class="empty__icon empty__icon--error"><line-icon name="circle-alert" size="40" tone="accent" /></view>
-    <view class="empty__title">库存暂时没连上</view>
-    <view class="empty__copy">{{errorMessage}}</view>
-    <view class="empty__action" bindtap="onRetry">
-      <line-icon name="rotate-ccw" size="21" tone="white" />
+  <view wx:elif="{{errorMessage && !hasResults}}" class="state-card state-card--error glass-card inv-state">
+    <view class="state-card__icon"><line-icon name="circle-alert" size="40" tone="accent" /></view>
+    <view class="state-card__title">库存暂时没连上</view>
+    <view class="state-card__copy">{{errorMessage}}</view>
+    <view class="state-card__action" bindtap="onRetry">
+      <line-icon name="rotate-ccw" size="20" tone="accent" />
       <text>重新加载</text>
     </view>
   </view>
 
-  <block wx:elif="{{hasResults}}">
-    <view wx:for="{{sections}}" wx:key="key" class="group">
-      <view class="group__head">
-        <view>
-          <text class="group__title">{{item.title}}</text>
-          <text class="group__count">{{item.items.length}} 件</text>
-        </view>
-        <text class="group__hint">{{item.hint}}</text>
+  <block wx:else>
+    <view wx:if="{{errorMessage}}" class="state-banner state-banner--warm glass-card inv-state-banner">
+      <view class="state-banner__icon"><line-icon name="circle-alert" size="24" tone="accent" /></view>
+      <view class="state-banner__body">
+        <text class="state-banner__title">这次没有刷新完整</text>
+        <text class="state-banner__copy">先保留上次的清单，之后再试一次。</text>
       </view>
-      <view class="group__list glass-card">
-        <inventory-card wx:for="{{item.items}}" wx:for-item="inventoryItem" wx:key="id" item="{{inventoryItem}}" bind:cardtap="onOpenItem" />
+      <view class="state-banner__action" bindtap="onRetry">重新加载</view>
+    </view>
+
+    <block wx:if="{{hasResults}}">
+      <view wx:for="{{sections}}" wx:key="key" class="group">
+        <view class="group__head">
+          <view>
+            <text class="group__title">{{item.title}}</text>
+            <text class="group__count">{{item.items.length}} 件</text>
+          </view>
+          <text class="group__hint">{{item.hint}}</text>
+        </view>
+        <view class="group__list glass-card">
+          <inventory-card wx:for="{{item.items}}" wx:for-item="inventoryItem" wx:key="id" item="{{inventoryItem}}" bind:cardtap="onOpenItem" />
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="state-card glass-card inv-state">
+      <view class="state-card__icon"><line-icon name="package" size="40" tone="accent" /></view>
+      <view class="state-card__title">{{viewMode === 'history' ? '还没有历史记录' : '这里没有找到东西'}}</view>
+      <view class="state-card__copy">{{viewMode === 'history' ? '用完、丢弃或归档的物品会出现在这里。' : '换个条件，或者把家里第一件物品记下来。'}}</view>
+      <view wx:if="{{viewMode === 'active'}}" class="state-card__action" bindtap="onAddItem">
+        <line-icon name="plus" size="20" tone="accent" />
+        <text>添加物品</text>
       </view>
     </view>
   </block>
-
-  <view wx:else class="empty glass-card">
-    <view class="empty__icon"><line-icon name="package" size="40" tone="accent" /></view>
-    <view class="empty__title">{{viewMode === 'history' ? '还没有历史记录' : '这里没有找到东西'}}</view>
-    <view class="empty__copy">{{viewMode === 'history' ? '用完、丢弃或归档的物品会出现在这里。' : '换个条件，或者把家里第一件物品记下来。'}}</view>
-    <view wx:if="{{viewMode === 'active'}}" class="empty__action" bindtap="onAddItem">
-      <line-icon name="plus" size="22" tone="white" />
-      <text>添加物品</text>
-    </view>
-  </view>
 </view>

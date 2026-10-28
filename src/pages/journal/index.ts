@@ -8,6 +8,7 @@ import {
   getJournalErrorMessage,
   type JournalItem,
 } from '../../services/journal-gateway'
+import { createRequestGate } from '../../utils/request-control'
 
 const NOTE_CATEGORY_ORDER: DemoNoteCategory[] = ['home', 'health', 'pet', 'other']
 const NOTE_CATEGORY_ICONS: Record<DemoNoteCategory, string> = {
@@ -16,6 +17,8 @@ const NOTE_CATEGORY_ICONS: Record<DemoNoteCategory, string> = {
   pet: 'paw-print',
   other: 'file-text',
 }
+
+const journalRequestGate = createRequestGate()
 
 interface DemoNoteGroup {
   key: DemoNoteCategory
@@ -50,8 +53,10 @@ Page({
   },
 
   async refresh() {
+    const sequence = journalRequestGate.begin()
+    const hasExistingData = this.data.entries.length > 0 || this.data.notesCount > 0
     this.setData({
-      loading: true,
+      loading: !hasExistingData,
       loadError: '',
       syncState: appConfig.demoMode ? 'local' : 'pending',
       syncText: appConfig.demoMode ? '只在本机' : '正在同步',
@@ -61,6 +66,7 @@ Page({
         journalGateway.list({ kinds: ['moment'] }),
         journalGateway.list({ kinds: ['note'] }),
       ])
+      if (!journalRequestGate.isCurrent(sequence)) return
       this.setData({
         entries: moments,
         noteGroups: buildNoteGroups(notes),
@@ -70,6 +76,7 @@ Page({
         syncText: appConfig.demoMode ? '只在本机' : '已同步',
       })
     } catch (error) {
+      if (!journalRequestGate.isCurrent(sequence)) return
       const message = getJournalErrorMessage(error, '生活记录暂时没有加载出来')
       this.setData({
         loading: false,
@@ -100,5 +107,9 @@ Page({
     const id = event.currentTarget.dataset.id
     if (!id) return
     wx.navigateTo({ url: `/pages/journal-detail/index?id=${encodeURIComponent(id)}` })
+  },
+
+  onUnload() {
+    journalRequestGate.invalidate()
   },
 })

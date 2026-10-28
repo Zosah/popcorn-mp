@@ -320,6 +320,10 @@
   margin-top: 30rpx;
 }
 
+.todo-state-banner {
+  margin-bottom: 16rpx;
+}
+
 .todo-list {
   display: flex;
   flex-direction: column;
@@ -490,52 +494,6 @@
 .todo-checklist__row--done .todo-checklist__text {
   color: var(--c-muted, #9592a4);
   text-decoration: line-through;
-}
-
-.todo-empty {
-  display: flex;
-  min-height: 340rpx;
-  align-items: center;
-  justify-content: center;
-  padding: 28rpx;
-  color: var(--c-muted, #9592a4);
-  flex-direction: column;
-  border-radius: 34rpx;
-}
-
-.todo-empty__icon {
-  display: flex;
-  width: 92rpx;
-  height: 92rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 31rpx;
-  background: linear-gradient(145deg, #eeeaff, #e4f7ef);
-}
-
-.todo-empty__title {
-  margin-top: 18rpx;
-  color: var(--c-text, #292737);
-  font-size: 26rpx;
-  font-weight: 600;
-}
-
-.todo-empty__copy {
-  max-width: 470rpx;
-  margin-top: 7rpx;
-  font-size: 20rpx;
-  line-height: 1.6;
-  text-align: center;
-}
-
-.todo-empty__action {
-  margin-top: 18rpx;
-  padding: 10rpx 18rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--c-primary-deep, #665bd7);
-  font-size: 19rpx;
-  font-weight: 500;
 }
 
 .todo-action-bar {

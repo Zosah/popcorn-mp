@@ -13,6 +13,7 @@ import {
   type TodoSummary,
 } from '../../services/todo-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { createRequestGate } from '../../utils/request-control'
 
 type TodoFilterValue = DemoTodoKind | 'all'
 
@@ -63,6 +64,8 @@ const ALL_FILTER: TodoFilterView = {
   icon: 'notebook-tabs',
   count: 0,
 }
+
+const todoRequestGate = createRequestGate()
 
 function localDateKey(date: Date): string {
   const year = date.getFullYear()
@@ -254,8 +257,10 @@ Page({
   },
 
   async refresh() {
+    const sequence = todoRequestGate.begin()
+    const hasExistingData = this.data.allItems.length > 0
     this.setData({
-      loading: true,
+      loading: !hasExistingData,
       loadError: '',
       syncState: appConfig.demoMode ? 'local' : 'pending',
       syncText: appConfig.demoMode ? '只在本机' : '正在同步',
@@ -265,6 +270,7 @@ Page({
         todoGateway.list(),
         todoGateway.summary(),
       ])
+      if (!todoRequestGate.isCurrent(sequence)) return
       this.render(items, summary)
       this.setData({
         loading: false,
@@ -272,6 +278,7 @@ Page({
         syncText: appConfig.demoMode ? '只在本机' : '已同步',
       })
     } catch (error) {
+      if (!todoRequestGate.isCurrent(sequence)) return
       const message = getTodoErrorMessage(error, '待办暂时没有加载出来')
       this.setData({
         loading: false,
@@ -369,6 +376,7 @@ Page({
       return
     }
 
+    todoRequestGate.invalidate()
     this.setData({ mutating: true })
     try {
       const updated = await todoGateway.setDone(id, !item.done, item.version)
@@ -389,6 +397,7 @@ Page({
     const checklist = parent?.checklist.find((item) => item.id === checklistId)
     if (!parent || !checklist) return
 
+    todoRequestGate.invalidate()
     this.setData({ mutating: true })
     try {
       const updated = await todoGateway.setChecklistDone(
@@ -432,6 +441,7 @@ Page({
 
   async deleteItem(id: string, version: number) {
     if (this.data.mutating) return
+    todoRequestGate.invalidate()
     this.setData({ mutating: true })
     try {
       await todoGateway.remove(id, version)
@@ -460,5 +470,9 @@ Page({
     const message = getTodoErrorMessage(error, fallback)
     wx.showToast({ title: message, icon: 'none' })
     if (isTodoVersionConflict(error)) void this.refresh()
+  },
+
+  onUnload() {
+    todoRequestGate.invalidate()
   },
 })

@@ -27,10 +27,10 @@
 
   <view class="section-head">
     <text class="section-head__title">我的安排</text>
-    <text class="section-head__action">{{todoPendingCount ? todoPendingCount + ' 件待做' : '已清空'}}</text>
+    <text class="section-head__action">{{todoLoading ? '同步中' : todoPendingCount ? todoPendingCount + ' 件待做' : '已清空'}}</text>
   </view>
 
-  <view class="todo-focus glass-card" bindtap="onOpenTodo">
+  <view class="todo-focus glass-card {{todoLoading ? 'todo-focus--loading' : ''}}" bindtap="onOpenTodo">
     <view class="todo-focus__icon"><line-icon name="list-todo" size="35" tone="accent" /></view>
     <view class="todo-focus__main">
       <view class="todo-focus__head">
@@ -42,7 +42,7 @@
       </view>
       <view class="todo-focus__progress">
         <view class="todo-focus__track"><view class="todo-focus__fill" style="width: {{todoProgress}}%;"></view></view>
-        <text>{{todoCompletedCount}} / {{todoTotalCount}} 已完成</text>
+        <text>{{todoLoading ? '正在同步最新进度' : todoCompletedCount + ' / ' + todoTotalCount + ' 已完成'}}</text>
       </view>
     </view>
     <view class="todo-focus__arrow">›</view>

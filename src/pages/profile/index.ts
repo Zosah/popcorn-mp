@@ -7,6 +7,9 @@ import {
   getTodoErrorMessage,
   type TodoSummary,
 } from '../../services/todo-gateway'
+import { createRequestGate } from '../../utils/request-control'
+
+const profileRequestGate = createRequestGate()
 
 Page({
   data: {
@@ -28,6 +31,8 @@ Page({
     todoCompletedCount: 0,
     todoTotalCount: 0,
     todoProgress: 0,
+    todoLoading: false,
+    lastTodoSummary: null as TodoSummary | null,
     showResetDemo: appConfig.demoMode,
   },
 
@@ -36,33 +41,48 @@ Page({
   },
 
   async refreshProfile() {
+    const sequence = profileRequestGate.begin()
     const auth = await hydrateAuthState()
+    if (!profileRequestGate.isCurrent(sequence)) return
+
+    if (!auth.isLoggedIn) {
+      this.setData({ lastTodoSummary: null })
+      this.renderAuth(auth, null, '')
+      return
+    }
+
+    this.setData({ todoLoading: true })
     let summary: TodoSummary | null = null
     let todoError = ''
-    if (auth.isLoggedIn) {
-      try {
-        summary = await todoGateway.summary()
-      } catch (error) {
-        todoError = getTodoErrorMessage(error, '待办暂时没有同步过来')
-      }
+    try {
+      summary = await todoGateway.summary()
+    } catch (error) {
+      todoError = getTodoErrorMessage(error, '待办暂时没有同步过来')
     }
-    this.renderAuth(auth, summary, todoError)
+    if (!profileRequestGate.isCurrent(sequence)) return
+
+    const effectiveSummary = summary ?? this.data.lastTodoSummary
+    if (summary) this.setData({ lastTodoSummary: summary })
+    this.renderAuth(auth, effectiveSummary, todoError)
   },
 
   renderAuth(auth: AuthState, summary: TodoSummary | null, todoError: string) {
     const loggedInUser = auth.isLoggedIn ? auth.user : null
     const isLoggedIn = Boolean(loggedInUser)
-    const pendingCount = summary?.pending ?? 0
-    const travelCount = summary?.pendingByKind.travel ?? 0
-    const completedCount = summary?.completed ?? 0
-    const totalCount = summary?.total ?? 0
-    const summaryText = pendingCount
-      ? `${pendingCount} 件未完成${travelCount ? ` · ${travelCount} 个旅行准备` : ''}`
-      : todoError
-        ? todoError
-        : isLoggedIn
-          ? '目前都做完了，可以再记一件'
-          : '登录后会同步你的待办和小计划'
+    const activeSummary = isLoggedIn ? summary : null
+    const pendingCount = activeSummary?.pending ?? 0
+    const travelCount = activeSummary?.pendingByKind.travel ?? 0
+    const completedCount = activeSummary?.completed ?? 0
+    const totalCount = activeSummary?.total ?? 0
+    let summaryText = '登录后会同步你的待办和小计划'
+    if (isLoggedIn) {
+      summaryText = activeSummary
+        ? pendingCount
+          ? `${pendingCount} 件未完成${travelCount ? ` · ${travelCount} 个旅行准备` : ''}`
+          : '目前都做完了，可以再记一件'
+        : todoError || '正在同步你的待办和小计划'
+      if (activeSummary && todoError) summaryText += ' · 同步失败'
+    }
     const isApiAccount = auth.source === 'api'
     this.setData({
       spaceName: auth.spaceName,
@@ -94,6 +114,7 @@ Page({
       todoCompletedCount: completedCount,
       todoTotalCount: totalCount,
       todoProgress: totalCount ? Math.round((completedCount / totalCount) * 100) : 0,
+      todoLoading: false,
     })
   },
 
@@ -131,5 +152,9 @@ Page({
         wx.showToast({ title: 'Demo 已恢复', icon: 'success' })
       },
     })
+  },
+
+  onUnload() {
+    profileRequestGate.invalidate()
   },
 })
