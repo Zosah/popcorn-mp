@@ -30,27 +30,34 @@
     "backgroundTextStyle": "light"
   },
   "tabBar": {
-    "custom": true,
-    "color": "#aaa7b8",
-    "selectedColor": "#7569e8",
-    "backgroundColor": "#f5f2fa",
-    "borderStyle": "white",
+    "color": "#9497a6",
+    "selectedColor": "#5b6ee0",
+    "backgroundColor": "#fbfafe",
+    "borderStyle": "black",
     "list": [
       {
         "pagePath": "pages/home/index",
-        "text": "家"
+        "text": "家",
+        "iconPath": "images/icons/house-faint.png",
+        "selectedIconPath": "images/icons/house-accent.png"
       },
       {
         "pagePath": "pages/inventory/index",
-        "text": "库存"
+        "text": "库存",
+        "iconPath": "images/icons/package-faint.png",
+        "selectedIconPath": "images/icons/package-accent.png"
       },
       {
         "pagePath": "pages/journal/index",
-        "text": "记录"
+        "text": "记录",
+        "iconPath": "images/icons/notebook-tabs-faint.png",
+        "selectedIconPath": "images/icons/notebook-tabs-accent.png"
       },
       {
         "pagePath": "pages/profile/index",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "images/icons/user-round-faint.png",
+        "selectedIconPath": "images/icons/user-round-accent.png"
       }
     ]
   },
