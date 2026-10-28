@@ -9,7 +9,6 @@ import {
   listAcceptedDemoInviteCodes,
 } from '../../services/demo-invite'
 import { hydrateAuthState } from '../../services/auth'
-import { getDemoSpaceName } from '../../services/demo-space'
 import {
   acceptApiInvite,
   resolveApiInvite,
@@ -81,12 +80,6 @@ Page({
     this.setData({
       isDemoMode: appConfig.demoMode,
       isLoggedIn: auth.isLoggedIn,
-      spaceName: auth.spaceName || getDemoSpaceName(),
-      inviterName: auth.isLoggedIn && auth.user
-        ? auth.user.nickname || '时刻见体验官'
-        : '时刻见体验官',
-      inviterAvatar: auth.isLoggedIn ? auth.avatarText : '满',
-      inviterAvatarTone: auth.user?.avatarTone ?? 'lavender',
     })
     if (options.code) await this.applyCode(options.code)
   },

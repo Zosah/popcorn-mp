@@ -1,3 +1,4 @@
+import { appConfig } from '../../config/env'
 import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
 import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
 import {
@@ -16,7 +17,7 @@ import {
   type InventorySummary,
 } from '../../domain/inventory-query'
 import { inventoryGateway } from '../../services/inventory'
-import { getDemoSpaceName } from '../../services/demo-space'
+import { hydrateAuthState } from '../../services/auth'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
@@ -139,11 +140,12 @@ Page({
     summary: EMPTY_SUMMARY,
     sections: [] as InventorySection[],
     hasResults: false,
+    syncState: appConfig.demoMode ? 'local' : 'pending',
+    syncText: appConfig.demoMode ? '只在本机' : '正在同步',
   },
 
   onShow() {
-    this.setData({ spaceName: getDemoSpaceName() })
-    void this.loadInventory()
+    void this.refreshPage()
   },
 
   onPullDownRefresh() {
@@ -154,8 +156,19 @@ Page({
     void this.loadInventory()
   },
 
+  async refreshPage() {
+    const auth = await hydrateAuthState()
+    this.setData({ spaceName: auth.spaceName })
+    await this.loadInventory()
+  },
+
   async loadInventory(fromPullDown = false) {
-    this.setData({ loading: !fromPullDown, errorMessage: '' })
+    this.setData({
+      loading: !fromPullDown,
+      errorMessage: '',
+      syncState: appConfig.demoMode ? 'local' : 'pending',
+      syncText: appConfig.demoMode ? '只在本机' : '正在同步',
+    })
     try {
       const today = getShanghaiDateOnly(Date.now())
       const summary = await inventoryGateway.summary(today)
@@ -174,6 +187,8 @@ Page({
         summary,
         sections: buildSections(views, this.data.viewMode),
         hasResults: views.length > 0,
+        syncState: appConfig.demoMode ? 'local' : 'synced',
+        syncText: appConfig.demoMode ? '只在本机' : '已同步',
       })
     } catch (error) {
       this.setData({
@@ -183,6 +198,8 @@ Page({
           error,
           '库存暂时没有加载出来，请稍后再试',
         ),
+        syncState: 'pending',
+        syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
       })
     } finally {
       this.setData({ loading: false })

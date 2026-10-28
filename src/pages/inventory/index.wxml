@@ -24,7 +24,7 @@
       </view>
       <view class="inv-summary__copy">
         <text>{{summary.expired ? '先照顾快过期的东西' : '家里的节奏刚刚好'}}</text>
-        <sync-badge state="local" text="本机 Demo" />
+        <sync-badge state="{{syncState}}" text="{{syncText}}" />
       </view>
     </view>
 

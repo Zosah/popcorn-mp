@@ -1,8 +1,12 @@
-import { formatVersionLabel } from '../../config/env'
-import { getAuthState, hydrateAuthState, type AuthState } from '../../services/auth'
+import { appConfig, formatVersionLabel } from '../../config/env'
+import { hydrateAuthState, type AuthState } from '../../services/auth'
 import { resetAllDemoData } from '../../services/demo-reset'
 import { getDemoSpaceName } from '../../services/demo-space'
-import { listDemoTodoItems } from '../../services/demo-todo'
+import { todoGateway } from '../../services/todo'
+import {
+  getTodoErrorMessage,
+  type TodoSummary,
+} from '../../services/todo-gateway'
 
 Page({
   data: {
@@ -24,6 +28,7 @@ Page({
     todoCompletedCount: 0,
     todoTotalCount: 0,
     todoProgress: 0,
+    showResetDemo: appConfig.demoMode,
   },
 
   onShow() {
@@ -32,21 +37,32 @@ Page({
 
   async refreshProfile() {
     const auth = await hydrateAuthState()
-    this.renderAuth(auth)
+    let summary: TodoSummary | null = null
+    let todoError = ''
+    if (auth.isLoggedIn) {
+      try {
+        summary = await todoGateway.summary()
+      } catch (error) {
+        todoError = getTodoErrorMessage(error, '待办暂时没有同步过来')
+      }
+    }
+    this.renderAuth(auth, summary, todoError)
   },
 
-  renderAuth(auth: AuthState) {
+  renderAuth(auth: AuthState, summary: TodoSummary | null, todoError: string) {
     const loggedInUser = auth.isLoggedIn ? auth.user : null
     const isLoggedIn = Boolean(loggedInUser)
-    const items = listDemoTodoItems()
-    const pendingCount = items.filter((item) => !item.done).length
-    const travelCount = items.filter(
-      (item) => item.kind === 'travel' && !item.done,
-    ).length
-    const completedCount = items.filter((item) => item.done).length
-    const summary = pendingCount
+    const pendingCount = summary?.pending ?? 0
+    const travelCount = summary?.pendingByKind.travel ?? 0
+    const completedCount = summary?.completed ?? 0
+    const totalCount = summary?.total ?? 0
+    const summaryText = pendingCount
       ? `${pendingCount} 件未完成${travelCount ? ` · ${travelCount} 个旅行准备` : ''}`
-      : '目前都做完了，可以再记一件'
+      : todoError
+        ? todoError
+        : isLoggedIn
+          ? '目前都做完了，可以再记一件'
+          : '登录后会同步你的待办和小计划'
     const isApiAccount = auth.source === 'api'
     this.setData({
       spaceName: auth.spaceName,
@@ -56,7 +72,7 @@ Page({
       avatarTone: loggedInUser?.avatarTone ?? 'lavender',
       identityMeta: isLoggedIn
         ? (isApiAccount
-          ? '已登录 · 账号资料已同步，生活数据正在逐步接入'
+          ? '已登录 · 账号资料与共享空间已同步'
           : '已登录 · 这是保存在当前设备的体验身份')
         : '登录后认领空间身份，和朋友共享同一份生活。',
       identityBadge: isLoggedIn
@@ -67,17 +83,17 @@ Page({
         : '登录或注册一个账号',
       accountTag: isLoggedIn ? '已登录' : '未登录',
       spaceMembersCopy: isLoggedIn
-        ? (isApiAccount ? '空间已连接 · 成员功能即将开放' : '2 位成员 · 一起生活')
+        ? (isApiAccount ? '空间已连接 · 可查看成员与邀请' : '2 位成员 · 一起生活')
         : '登录后管理共同空间',
       syncBadgeState: isApiAccount && isLoggedIn ? 'synced' : 'local',
       syncBadgeText: isApiAccount
         ? (isLoggedIn ? '账号已同步' : '未登录')
         : (isLoggedIn ? '本机账号' : 'Demo 访客'),
       todoPendingCount: pendingCount,
-      todoSummary: summary,
+      todoSummary: summaryText,
       todoCompletedCount: completedCount,
-      todoTotalCount: items.length,
-      todoProgress: items.length ? Math.round((completedCount / items.length) * 100) : 0,
+      todoTotalCount: totalCount,
+      todoProgress: totalCount ? Math.round((completedCount / totalCount) * 100) : 0,
     })
   },
 

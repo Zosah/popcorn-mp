@@ -87,7 +87,7 @@
       <view class="profile-row__tag">即将支持</view>
       <view class="profile-row__chevron"></view>
     </view>
-    <view class="profile-row" bindtap="onResetDemo">
+    <view wx:if="{{showResetDemo}}" class="profile-row" bindtap="onResetDemo">
       <view class="profile-row__icon profile-row__icon--rose"><line-icon name="rotate-ccw" size="27" tone="accent" /></view>
       <view class="profile-row__body">
         <view class="profile-row__title">恢复 Demo 初始数据</view>

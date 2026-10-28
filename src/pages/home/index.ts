@@ -5,12 +5,14 @@ import {
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import type { InventorySummary } from '../../domain/inventory-query'
 import { buildPetCareCards, buildPetDailySummary } from '../../domain/demo-pet'
+import { appConfig } from '../../config/env'
 import { journalGateway } from '../../services/journal'
 import type { JournalItem } from '../../services/journal-gateway'
 import { inventoryGateway } from '../../services/inventory'
 import { listDemoMenuRecipes } from '../../services/demo-menu'
-import { listDemoTodoItems } from '../../services/demo-todo'
 import { getDemoPetState, listDemoPetProfiles } from '../../services/demo-pet'
+import { todoGateway } from '../../services/todo'
+import { getTodoErrorMessage, type TodoSummary } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 const CHINESE_MONTHS = [
@@ -62,6 +64,8 @@ Page({
     petCount: 0,
     todoPendingCount: 0,
     todoSummary: '旅行、计划、健身、吃什么和账单',
+    syncState: appConfig.demoMode ? 'local' : 'pending',
+    syncText: appConfig.demoMode ? '只在本机' : '正在同步',
     petSnapshot: {
       name: '糯米',
       status: '精神不错',
@@ -88,10 +92,19 @@ Page({
       )
     }
     let moments = this.data.recentEntries
+    let journalError = false
     try {
       moments = await journalGateway.list({ kinds: ['moment'] })
     } catch {
+      journalError = true
       // 首页保留上一次成功加载的记录，具体错误在生活记录页提示。
+    }
+    let todoSummary: TodoSummary | null = null
+    let todoError = ''
+    try {
+      todoSummary = await todoGateway.summary()
+    } catch (error) {
+      todoError = getTodoErrorMessage(error, '待办暂时没有同步过来')
     }
     const petState = getDemoPetState()
     const latestWeight = petState.weights[petState.weights.length - 1]
@@ -109,9 +122,9 @@ Page({
           ? `${dueSoonCare.title} · ${dueSoonCare.statusLabel}`
           : '今天的吃喝拉撒已记录'
     const [, month = 1, day = 1] = today.split('-').map(Number)
-    const todos = listDemoTodoItems()
-    const pendingTodos = todos.filter((item) => !item.done)
-    const travelTodos = pendingTodos.filter((item) => item.kind === 'travel')
+    const pendingTodoCount = todoSummary?.pending ?? 0
+    const pendingTravelCount = todoSummary?.pendingByKind.travel ?? 0
+    const hasPartialError = Boolean(inventoryError) || journalError || Boolean(todoError)
     this.setData({
       today,
       dateParts: {
@@ -124,10 +137,18 @@ Page({
       menuCount: listDemoMenuRecipes().length,
       recordCount: moments.length,
       petCount: listDemoPetProfiles().length,
-      todoPendingCount: pendingTodos.length,
-      todoSummary: pendingTodos.length
-        ? `${pendingTodos.length} 件还没做${travelTodos.length ? ` · ${travelTodos.length} 个旅行准备` : ''}`
-        : '目前都做完了，可以再记一件',
+      todoPendingCount: pendingTodoCount,
+      todoSummary: todoSummary
+        ? (pendingTodoCount
+          ? `${pendingTodoCount} 件还没做${pendingTravelCount ? ` · ${pendingTravelCount} 个旅行准备` : ''}`
+          : '目前都做完了，可以再记一件')
+        : todoError,
+      syncState: hasPartialError
+        ? 'pending'
+        : appConfig.demoMode ? 'local' : 'synced',
+      syncText: hasPartialError
+        ? '部分未同步'
+        : appConfig.demoMode ? '只在本机' : '已同步',
       petSnapshot: {
         name: petState.profile.name,
         status: petState.profile.status,

@@ -10,7 +10,7 @@
         <text>{{snapshot.weekdayLabel}}</text>
       </view>
     </view>
-    <sync-badge state="local" text="本机 Demo" />
+    <sync-badge state="{{syncState}}" text="{{syncText}}" />
   </view>
 
   <view wx:if="{{inventoryError}}" class="home-error glass-card">
