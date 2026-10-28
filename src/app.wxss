@@ -67,12 +67,12 @@ button::after {
   border: 0;
 }
 
-/* 底部悬浮 TabBar 约占 128rpx + 安全区 */
+/* 原生 TabBar 由微信管理安全区，页面只保留内容收尾留白。 */
 .tab-page {
   position: relative;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 34rpx 36rpx calc(196rpx + env(safe-area-inset-bottom));
+  padding: 34rpx 36rpx 48rpx;
 }
 
 .page-shell {

@@ -17,7 +17,6 @@ import {
 } from '../../domain/inventory-query'
 import { inventoryGateway } from '../../services/inventory'
 import { getDemoSpaceName } from '../../services/demo-space'
-import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
@@ -143,7 +142,6 @@ Page({
   },
 
   onShow() {
-    syncDemoTabBar(this, 1)
     this.setData({ spaceName: getDemoSpaceName() })
     void this.loadInventory()
   },

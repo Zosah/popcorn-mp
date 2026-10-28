@@ -11,7 +11,6 @@ import { inventoryGateway } from '../../services/inventory'
 import { listDemoMenuRecipes } from '../../services/demo-menu'
 import { listDemoTodoItems } from '../../services/demo-todo'
 import { getDemoPetState, listDemoPetProfiles } from '../../services/demo-pet'
-import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
 const CHINESE_MONTHS = [
@@ -72,7 +71,6 @@ Page({
   },
 
   onShow() {
-    syncDemoTabBar(this, 0)
     void this.loadSnapshot()
   },
 

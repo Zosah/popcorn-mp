@@ -32,7 +32,7 @@ export const appConfig: AppConfig = {
   requestTimeoutMs: 10000,
 }
 
-/** 展示用版本号，例如「Demo 1.5.0」 */
+/** 展示用版本号，例如「Demo 1.6.0」 */
 export function formatVersionLabel(config: AppConfig = appConfig): string {
   return config.demoMode ? `Demo ${config.version}` : `v${config.version}`
 }

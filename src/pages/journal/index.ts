@@ -8,7 +8,6 @@ import {
   getJournalErrorMessage,
   type JournalItem,
 } from '../../services/journal-gateway'
-import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 
 const NOTE_CATEGORY_ORDER: DemoNoteCategory[] = ['home', 'health', 'pet', 'other']
 const NOTE_CATEGORY_ICONS: Record<DemoNoteCategory, string> = {
@@ -47,7 +46,6 @@ Page({
   },
 
   onShow() {
-    syncDemoTabBar(this, 2)
     void this.refresh()
   },
 

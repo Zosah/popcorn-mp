@@ -3,7 +3,6 @@ import { getAuthState, hydrateAuthState, type AuthState } from '../../services/a
 import { resetAllDemoData } from '../../services/demo-reset'
 import { getDemoSpaceName } from '../../services/demo-space'
 import { listDemoTodoItems } from '../../services/demo-todo'
-import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 
 Page({
   data: {
@@ -28,7 +27,6 @@ Page({
   },
 
   onShow() {
-    syncDemoTabBar(this, 3)
     void this.refreshProfile()
   },
 
