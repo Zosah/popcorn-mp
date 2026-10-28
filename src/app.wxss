@@ -1,36 +1,36 @@
 /*
- * 「时刻见」设计 token（v5 柔光生活手帐）
- * 清透玻璃层、低饱和薄荷与薰衣草、暖桃点缀；界面要有呼吸感，也要保持家庭工具的可读性。
+ * 「时刻见」设计 token（v6 暖纸生活手帐）
+ * 暖纸底、低饱和薰衣草与鼠尾草、半实色玻璃卡片；照片负责叙事，界面只做安静的承载。
  */
 page {
-  --c-primary: #7569e8;
-  --c-primary-deep: #665bd7;
-  --c-primary-soft: #ebe8ff;
-  --c-accent: #7569e8;
-  --c-accent-2: #50b7ae;
-  --c-accent-3: #ee9eb4;
-  --c-accent-soft: #eeeaff;
-  --c-mint-soft: #e4f6ef;
-  --c-peach-soft: #fbe8e7;
-  --c-warm-soft: #fbf0d9;
-  --c-bg: #f5f2fa;
-  --c-surface: rgba(255, 255, 255, 0.72);
-  --c-surface-strong: rgba(255, 255, 255, 0.90);
+  --c-primary: #746aae;
+  --c-primary-deep: #665c9c;
+  --c-primary-soft: #eeebf7;
+  --c-accent: #746aae;
+  --c-accent-2: #7a9f91;
+  --c-accent-3: #b88b79;
+  --c-accent-soft: #f0edf7;
+  --c-mint-soft: #eaf2ee;
+  --c-peach-soft: #f5ece8;
+  --c-warm-soft: #f4eee2;
+  --c-bg: #f7f5f1;
+  --c-surface: rgba(255, 254, 250, 0.90);
+  --c-surface-strong: rgba(255, 254, 250, 0.97);
   --c-text: #292737;
   --c-text-2: #615f70;
-  --c-muted: #9592a4;
-  --c-faint: #bbb8c8;
-  --c-line: rgba(106, 98, 139, 0.10);
-  --c-line-strong: rgba(106, 98, 139, 0.17);
-  --c-success: #4ba98d;
-  --c-success-soft: #e5f6ef;
-  --c-warning: #d99c3f;
-  --c-warning-soft: #fdf1df;
-  --c-danger: #df6f7d;
-  --c-danger-soft: #fce9ec;
-  --c-shadow: rgba(92, 77, 132, 0.10);
-  --r-card: 32rpx;
-  --r-card-lg: 42rpx;
+  --c-muted: #8a8693;
+  --c-faint: #b7b2bb;
+  --c-line: rgba(87, 80, 93, 0.10);
+  --c-line-strong: rgba(87, 80, 93, 0.17);
+  --c-success: #638f80;
+  --c-success-soft: #eaf3ef;
+  --c-warning: #b98552;
+  --c-warning-soft: #f7eee1;
+  --c-danger: #b96f78;
+  --c-danger-soft: #f7e9eb;
+  --c-shadow: rgba(68, 61, 76, 0.08);
+  --r-card: 30rpx;
+  --r-card-lg: 40rpx;
   --r-btn: 999rpx;
   --r-pill: 999rpx;
   --sp-1: 8rpx;
@@ -49,13 +49,11 @@ page {
   min-height: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
-  background-color: #f5f2fa;
+  background-color: #f7f5f1;
   background-image:
-    radial-gradient(circle at 8% 3%, rgba(196, 220, 255, 0.74) 0, rgba(196, 220, 255, 0) 32%),
-    radial-gradient(circle at 96% 11%, rgba(191, 238, 217, 0.82) 0, rgba(191, 238, 217, 0) 36%),
-    radial-gradient(circle at 2% 58%, rgba(247, 205, 222, 0.56) 0, rgba(247, 205, 222, 0) 31%),
-    radial-gradient(circle at 100% 76%, rgba(255, 225, 188, 0.58) 0, rgba(255, 225, 188, 0) 32%),
-    linear-gradient(155deg, #f8f5fc 0%, #f1f8f5 42%, #f8f3f6 72%, #fcf3eb 100%);
+    radial-gradient(circle at 92% 4%, rgba(215, 209, 238, 0.36), transparent 32%),
+    radial-gradient(circle at 4% 76%, rgba(216, 231, 224, 0.34), transparent 30%),
+    linear-gradient(160deg, #faf8f4 0%, #f5f2ed 52%, #f8f5f0 100%);
   color: var(--c-text, #292737);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: var(--fs-body, 28rpx);
@@ -102,26 +100,26 @@ page::-webkit-scrollbar {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  border: 1rpx solid rgba(255, 255, 255, 0.82);
-  border-radius: var(--r-card, 32rpx);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.58));
+  border: 1rpx solid rgba(255, 255, 255, 0.92);
+  border-radius: var(--r-card, 30rpx);
+  background: linear-gradient(145deg, rgba(255, 254, 250, 0.96), rgba(255, 253, 248, 0.84));
   box-shadow:
-    0 18rpx 56rpx var(--c-shadow, rgba(92, 77, 132, 0.10)),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(22rpx);
-  -webkit-backdrop-filter: blur(22rpx);
+    0 18rpx 48rpx var(--c-shadow, rgba(68, 61, 76, 0.08)),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18rpx);
+  -webkit-backdrop-filter: blur(18rpx);
 }
 
 .card {
   box-sizing: border-box;
-  border: 1rpx solid rgba(255, 255, 255, 0.82);
-  border-radius: var(--r-card, 32rpx);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62));
+  border: 1rpx solid rgba(255, 255, 255, 0.92);
+  border-radius: var(--r-card, 30rpx);
+  background: linear-gradient(145deg, rgba(255, 254, 250, 0.96), rgba(255, 253, 248, 0.86));
   box-shadow:
-    0 16rpx 46rpx rgba(92, 77, 132, 0.08),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20rpx);
-  -webkit-backdrop-filter: blur(20rpx);
+    0 16rpx 40rpx var(--c-shadow, rgba(68, 61, 76, 0.08)),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16rpx);
+  -webkit-backdrop-filter: blur(16rpx);
 }
 
 .h-display {
@@ -140,7 +138,7 @@ page::-webkit-scrollbar {
 }
 
 .muted {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
 }
 
 .section-head {
@@ -158,7 +156,7 @@ page::-webkit-scrollbar {
 }
 
 .section-head__action {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 21rpx;
 }
 
@@ -173,10 +171,10 @@ page::-webkit-scrollbar {
 .segmented {
   display: flex;
   padding: 7rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.78);
+  border: 1rpx solid rgba(255, 255, 255, 0.86);
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.46);
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.74);
+  background: rgba(255, 254, 250, 0.72);
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.88);
 }
 
 .segmented__item {
@@ -187,16 +185,16 @@ page::-webkit-scrollbar {
   justify-content: center;
   height: 66rpx;
   border-radius: 999rpx;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 23rpx;
   font-weight: 500;
   transition: color 160ms ease, background 160ms ease;
 }
 
 .segmented__item--active {
-  background: rgba(255, 255, 255, 0.90);
+  background: rgba(255, 254, 250, 0.98);
   color: var(--c-text, #292737);
-  box-shadow: 0 8rpx 22rpx rgba(92, 77, 132, 0.09);
+  box-shadow: 0 8rpx 20rpx rgba(68, 61, 76, 0.08);
 }
 
 .segmented__item--active::after {
@@ -219,37 +217,37 @@ page::-webkit-scrollbar {
 }
 
 .primary-button {
-  border: 1rpx solid rgba(255, 255, 255, 0.26);
-  background: linear-gradient(135deg, #8c7cf0 0%, #7164df 55%, #5e9fcf 100%);
-  box-shadow: 0 16rpx 34rpx rgba(105, 91, 211, 0.24);
+  border: 1rpx solid rgba(255, 255, 255, 0.30);
+  background: linear-gradient(135deg, #8177ba 0%, #6f65a7 60%, #7f9e94 100%);
+  box-shadow: 0 15rpx 32rpx rgba(92, 82, 134, 0.22);
   color: #fff;
 }
 
 .secondary-button {
-  border: 1rpx solid rgba(113, 100, 223, 0.18);
-  background: rgba(255, 255, 255, 0.62);
-  color: var(--c-primary-deep, #665bd7);
+  border: 1rpx solid rgba(116, 106, 174, 0.16);
+  background: rgba(255, 254, 250, 0.82);
+  color: var(--c-primary-deep, #665c9c);
 }
 
 .danger-button {
   border: 1rpx solid rgba(223, 111, 125, 0.12);
   background: var(--c-danger-soft, #fce9ec);
-  color: var(--c-danger, #df6f7d);
+  color: var(--c-danger, #b96f78);
 }
 
 .soft-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: 22rpx;
+  background: rgba(255, 254, 250, 0.84);
   box-shadow:
-    0 8rpx 20rpx rgba(92, 77, 132, 0.08),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.88);
+    0 8rpx 18rpx rgba(68, 61, 76, 0.07),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.94);
 }
 
 .eyebrow {
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   font-size: 18rpx;
   font-weight: 600;
   letter-spacing: 4rpx;
@@ -284,8 +282,8 @@ page::-webkit-scrollbar {
   justify-content: center;
   border: 1rpx solid rgba(255, 255, 255, 0.78);
   border-radius: 30rpx;
-  background: linear-gradient(145deg, #eeeaff, #e5f7ef);
-  box-shadow: 0 9rpx 22rpx rgba(92, 77, 132, 0.07);
+  background: linear-gradient(145deg, #f0edf7, #eaf2ee);
+  box-shadow: 0 9rpx 20rpx rgba(68, 61, 76, 0.06);
 }
 
 .state-card--error .state-card__icon {
@@ -303,7 +301,7 @@ page::-webkit-scrollbar {
 .state-card__copy {
   max-width: 490rpx;
   margin-top: 7rpx;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 19rpx;
   line-height: 1.65;
 }
@@ -315,10 +313,10 @@ page::-webkit-scrollbar {
   justify-content: center;
   margin-top: 20rpx;
   padding: 0 24rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.78);
+  border: 1rpx solid rgba(255, 255, 255, 0.88);
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--c-primary-deep, #665bd7);
+  background: rgba(255, 254, 250, 0.86);
+  color: var(--c-primary-deep, #665c9c);
   font-size: 19rpx;
   font-weight: 600;
 }
@@ -371,7 +369,7 @@ page::-webkit-scrollbar {
   min-height: 54rpx;
   align-items: center;
   padding: 0 4rpx 0 10rpx;
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   flex-shrink: 0;
   font-size: 17rpx;
   font-weight: 600;

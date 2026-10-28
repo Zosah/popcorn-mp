@@ -1,0 +1,33 @@
+import type { ApiMediaAsset, ApiMediaPurpose } from '../types/api'
+import type { MediaGateway } from './media-gateway'
+
+export class DemoMediaGateway implements MediaGateway {
+  async upload(filePath: string, purpose: ApiMediaPurpose): Promise<ApiMediaAsset> {
+    const now = new Date().toISOString()
+    const id = `demo-media-${Date.now()}`
+    return {
+      id,
+      spaceId: 'demo-space',
+      purpose,
+      width: 0,
+      height: 0,
+      createdAt: now,
+      display: { url: filePath, expiresAt: '2099-12-31T23:59:59.000Z' },
+      thumb: { url: filePath, expiresAt: '2099-12-31T23:59:59.000Z' },
+    }
+  }
+
+  async get(mediaId: string): Promise<ApiMediaAsset> {
+    const now = new Date().toISOString()
+    return {
+      id: mediaId,
+      spaceId: 'demo-space',
+      purpose: 'journal',
+      width: 0,
+      height: 0,
+      createdAt: now,
+      display: { url: '', expiresAt: '2099-12-31T23:59:59.000Z' },
+      thumb: { url: '', expiresAt: '2099-12-31T23:59:59.000Z' },
+    }
+  }
+}

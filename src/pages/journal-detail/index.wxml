@@ -25,8 +25,11 @@
       </view>
     </view>
 
-    <block wx:if="{{entry.image}}">
-      <image class="journal-detail-image" src="{{entry.image.src}}" mode="aspectFill" />
+    <block wx:if="{{entry.image && entry.image.src}}">
+      <view class="journal-detail-photo" bindtap="onPreviewImage">
+        <image class="journal-detail-image" src="{{entry.image.src}}" mode="aspectFill" lazy-load />
+        <view class="journal-detail-photo__hint"><line-icon name="image" size="20" tone="white" /><text>轻触查看原图</text></view>
+      </view>
       <view wx:if="{{entry.image.caption}}" class="journal-detail-caption">{{entry.image.caption}}</view>
     </block>
 

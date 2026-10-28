@@ -73,8 +73,8 @@
         </view>
 
         <view class="entry__title">{{item.title}}</view>
-        <image wx:if="{{item.image}}" class="entry__photo" src="{{item.image.src}}" mode="aspectFill" />
-        <view wx:if="{{item.image && item.image.caption}}" class="entry__caption">{{item.image.caption}} · 公版艺术示例</view>
+        <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="entry__photo" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
+        <view wx:if="{{item.image && item.image.caption}}" class="entry__caption">{{item.image.caption}}</view>
         <view wx:if="{{item.content}}" class="entry__copy">{{item.content}}</view>
 
         <view class="entry__foot">

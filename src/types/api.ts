@@ -261,6 +261,8 @@ export interface ApiJournalItem {
   content: string
   category: ApiNoteCategory | ''
   visibility: ApiJournalVisibility
+  imageMediaId: string
+  imageCaption: string
   version: number
   createdBy: string
   authorName: string
@@ -275,6 +277,26 @@ export interface ApiJournalWriteRequest {
   content: string
   category: ApiNoteCategory | ''
   visibility: ApiJournalVisibility
+  imageMediaId: string
+  imageCaption: string
+}
+
+export type ApiMediaPurpose = 'journal' | 'avatar' | 'inventory' | 'menu' | 'other'
+
+export interface ApiSignedObject {
+  url: string
+  expiresAt: string
+}
+
+export interface ApiMediaAsset {
+  id: string
+  spaceId: string
+  purpose: ApiMediaPurpose
+  width: number
+  height: number
+  createdAt: string
+  display: ApiSignedObject
+  thumb: ApiSignedObject
 }
 
 export interface ApiJournalList {

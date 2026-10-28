@@ -23,16 +23,16 @@
     "pages/reminder-settings/index"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#f6f3fb",
+    "navigationBarBackgroundColor": "#f7f5f1",
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "时刻见",
-    "backgroundColor": "#f5f2fa",
+    "backgroundColor": "#f7f5f1",
     "backgroundTextStyle": "light"
   },
   "tabBar": {
-    "color": "#9497a6",
-    "selectedColor": "#5b6ee0",
-    "backgroundColor": "#fbfafe",
+    "color": "#8a8693",
+    "selectedColor": "#746aae",
+    "backgroundColor": "#fffefa",
     "borderStyle": "black",
     "list": [
       {

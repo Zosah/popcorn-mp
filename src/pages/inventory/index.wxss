@@ -38,8 +38,8 @@
   margin-left: 18rpx;
   padding: 0 23rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #8c7cf0, #6d63db 68%, #68accd);
-  box-shadow: 0 12rpx 28rpx rgba(105, 91, 211, 0.22);
+  background: linear-gradient(135deg, #8177ba, #6f65a7 68%, #7f9e94);
+  box-shadow: 0 12rpx 26rpx rgba(92, 82, 134, 0.20);
   color: #fff;
   gap: 7rpx;
   font-size: 21rpx;
@@ -49,8 +49,8 @@
 
 .inv-summary {
   padding: 28rpx 24rpx 22rpx;
-  border-radius: 40rpx;
-  background: linear-gradient(140deg, rgba(255, 255, 255, 0.86), rgba(230, 246, 239, 0.65) 56%, rgba(251, 234, 235, 0.68));
+  border-radius: 38rpx;
+  background: linear-gradient(145deg, rgba(255, 254, 250, 0.97), rgba(242, 246, 243, 0.90));
 }
 
 .inv-summary__glow {
@@ -63,7 +63,7 @@
   right: -20rpx;
   width: 290rpx;
   height: 290rpx;
-  background: radial-gradient(circle, rgba(174, 234, 212, 0.72), rgba(174, 234, 212, 0));
+  background: radial-gradient(circle, rgba(201, 223, 215, 0.40), rgba(201, 223, 215, 0));
 }
 
 .inv-summary__glow--peach {
@@ -71,7 +71,7 @@
   left: -80rpx;
   width: 280rpx;
   height: 280rpx;
-  background: radial-gradient(circle, rgba(248, 200, 209, 0.54), rgba(248, 200, 209, 0));
+  background: radial-gradient(circle, rgba(226, 210, 203, 0.34), rgba(226, 210, 203, 0));
 }
 
 .inv-summary__top,
@@ -87,7 +87,7 @@
 }
 
 .inv-summary__eyebrow {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 17rpx;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .inv-summary__headline text:first-child {
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   font-size: 62rpx;
   font-weight: 600;
   letter-spacing: -3rpx;
@@ -129,7 +129,7 @@
   display: grid;
   margin-top: 21rpx;
   padding-top: 18rpx;
-  border-top: 1rpx solid rgba(106, 98, 139, 0.10);
+  border-top: 1rpx solid rgba(87, 80, 93, 0.10);
   grid-template-columns: repeat(4, 1fr);
   gap: 10rpx;
 }
@@ -147,7 +147,7 @@
 
 .stat + .stat {
   padding-left: 17rpx;
-  border-left: 1rpx solid rgba(106, 98, 139, 0.09);
+  border-left: 1rpx solid rgba(87, 80, 93, 0.09);
 }
 
 .stat__value {
@@ -158,24 +158,24 @@
 }
 
 .stat--danger .stat__value {
-  color: var(--c-danger, #df6f7d);
+  color: var(--c-danger, #b96f78);
 }
 
 .stat--warm .stat__value {
-  color: var(--c-warning, #d99c3f);
+  color: var(--c-warning, #b98552);
 }
 
 .stat--mint .stat__value {
-  color: var(--c-success, #4ba98d);
+  color: var(--c-success, #638f80);
 }
 
 .stat--violet .stat__value {
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
 }
 
 .stat__label {
   margin-top: 8rpx;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 17rpx;
 }
 
@@ -198,7 +198,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 999rpx;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   flex: 1;
   font-size: 21rpx;
   font-weight: 500;
@@ -206,7 +206,7 @@
 
 .tab--active {
   background: rgba(255, 255, 255, 0.90);
-  box-shadow: 0 7rpx 20rpx rgba(92, 77, 132, 0.08);
+  box-shadow: 0 7rpx 20rpx rgba(68, 61, 76, 0.08);
   color: var(--c-text, #292737);
   font-weight: 600;
 }
@@ -228,9 +228,9 @@
 }
 
 .search--focused {
-  border-color: rgba(117, 105, 232, 0.28);
+  border-color: rgba(116, 106, 174, 0.28);
   background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 10rpx 26rpx rgba(92, 77, 132, 0.09);
+  box-shadow: 0 10rpx 26rpx rgba(68, 61, 76, 0.09);
 }
 
 .search__icon {
@@ -251,7 +251,7 @@
 }
 
 .search__placeholder {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
 }
 
 .search__clear {
@@ -260,7 +260,7 @@
   align-items: center;
   justify-content: flex-end;
   padding-left: 18rpx;
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   font-size: 18rpx;
   font-weight: 500;
 }
@@ -280,14 +280,14 @@
   border: 1rpx solid rgba(255, 255, 255, 0.76);
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.42);
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 18rpx;
 }
 
 .chip--active {
-  border-color: rgba(117, 105, 232, 0.20);
-  background: rgba(238, 234, 255, 0.86);
-  color: var(--c-primary-deep, #665bd7);
+  border-color: rgba(116, 106, 174, 0.20);
+  background: rgba(240, 237, 247, 0.86);
+  color: var(--c-primary-deep, #665c9c);
   font-weight: 600;
 }
 
@@ -324,7 +324,7 @@
 
 .group__count,
 .group__hint {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 17rpx;
 }
 

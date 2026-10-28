@@ -36,6 +36,8 @@ const apiJournal: ApiJournalItem = {
   content: '门禁卡放在玄关。',
   category: 'home',
   visibility: 'space',
+  imageMediaId: '',
+  imageCaption: '',
   version: 3,
   createdBy: 'user-1',
   authorName: '小满',
@@ -206,6 +208,8 @@ describe('HTTP 生活记录网关', () => {
       content: '风很舒服',
       category: '',
       visibility: 'space',
+      imageMediaId: '',
+      imageCaption: '',
     })
   })
 

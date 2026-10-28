@@ -19,7 +19,7 @@
   border: 1rpx solid rgba(255, 255, 255, 0.82);
   border-radius: 22rpx;
   background: rgba(255, 255, 255, 0.68);
-  box-shadow: 0 8rpx 20rpx rgba(92, 77, 132, 0.08);
+  box-shadow: 0 8rpx 20rpx rgba(68, 61, 76, 0.08);
 }
 
 .todo-form-head__title {
@@ -66,10 +66,10 @@
 }
 
 .kind-option--active {
-  border-color: rgba(117, 105, 232, 0.22);
+  border-color: rgba(116, 106, 174, 0.22);
   background: linear-gradient(145deg, rgba(241, 238, 255, 0.98), rgba(229, 247, 241, 0.82));
-  box-shadow: 0 10rpx 24rpx rgba(92, 77, 132, 0.08);
-  color: var(--c-primary-deep, #665bd7);
+  box-shadow: 0 10rpx 24rpx rgba(68, 61, 76, 0.08);
+  color: var(--c-primary-deep, #665c9c);
   font-weight: 600;
 }
 
@@ -79,7 +79,7 @@
   padding: 7rpx 13rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.44);
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 17rpx;
 }
 
@@ -91,7 +91,7 @@
 .todo-field {
   margin: 8rpx 0;
   padding: 16rpx 17rpx 13rpx;
-  border: 1rpx solid rgba(106, 98, 139, 0.06);
+  border: 1rpx solid rgba(87, 80, 93, 0.06);
   border-radius: 23rpx;
   background: rgba(247, 246, 252, 0.78);
 }
@@ -103,7 +103,7 @@
 .todo-field > text,
 .todo-field--stack > text {
   display: block;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 18rpx;
 }
 
@@ -147,7 +147,7 @@
   padding: 13rpx 15rpx;
   border-radius: 19rpx;
   background: rgba(255, 244, 226, 0.62);
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 17rpx;
 }
 
@@ -166,7 +166,7 @@
   padding: 5rpx 9rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.62);
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -186,14 +186,14 @@
   border: 1rpx solid rgba(255, 255, 255, 0.82);
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.45);
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 18rpx;
 }
 
 .meal-option--active {
-  border-color: rgba(117, 105, 232, 0.20);
-  background: rgba(238, 234, 255, 0.88);
-  color: var(--c-primary-deep, #665bd7);
+  border-color: rgba(116, 106, 174, 0.20);
+  background: rgba(240, 237, 247, 0.88);
+  color: var(--c-primary-deep, #665c9c);
   font-weight: 600;
 }
 
@@ -213,13 +213,13 @@
 }
 
 .todo-date-picker > view > text:first-child {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 18rpx;
 }
 
 .todo-date-picker > view > text:last-child {
   margin-top: 3rpx;
-  color: var(--c-faint, #bbb8c8);
+  color: var(--c-faint, #b7b2bb);
   font-size: 24rpx;
   font-weight: 600;
 }
@@ -232,7 +232,7 @@
   padding: 7rpx 11rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.60);
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   font-size: 17rpx;
 }
 
@@ -240,8 +240,8 @@
   display: inline-block;
   margin-top: 8rpx;
   padding-bottom: 2rpx;
-  border-bottom: 1rpx solid rgba(106, 98, 139, 0.18);
-  color: var(--c-muted, #9592a4);
+  border-bottom: 1rpx solid rgba(87, 80, 93, 0.18);
+  color: var(--c-muted, #8a8693);
   font-size: 17rpx;
 }
 
@@ -254,7 +254,7 @@
 
 .todo-form-delete {
   margin-top: 23rpx;
-  color: var(--c-danger, #df6f7d);
+  color: var(--c-danger, #b96f78);
   font-size: 19rpx;
   line-height: 1.5;
   text-align: center;
@@ -266,7 +266,7 @@
   gap: 14rpx;
   margin-top: 22rpx;
   padding: 22rpx 24rpx;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 20rpx;
 }
 
@@ -278,6 +278,6 @@
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.70);
-  color: var(--c-primary-deep, #665bd7);
+  color: var(--c-primary-deep, #665c9c);
   flex-shrink: 0;
 }

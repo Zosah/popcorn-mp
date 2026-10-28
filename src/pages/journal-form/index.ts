@@ -2,11 +2,14 @@ import { appConfig } from '../../config/env'
 import {
   DEMO_NOTE_CATEGORY_LABELS,
   type DemoJournalEntryInput,
+  type DemoJournalImage,
   type DemoJournalKind,
   type DemoJournalVisibility,
   type DemoNoteCategory,
 } from '../../domain/demo-journal'
 import { journalGateway } from '../../services/journal'
+import { mediaGateway } from '../../services/media'
+import { getMediaErrorMessage } from '../../services/media-gateway'
 import {
   getJournalErrorMessage,
   isJournalVersionConflict,
@@ -21,6 +24,7 @@ Page({
   data: {
     saving: false,
     loading: false,
+    imageUploading: false,
     loadError: '',
     editingEntryId: '',
     version: 0,
@@ -35,6 +39,7 @@ Page({
     categoryIndex: 0,
     categoryLabels: NOTE_CATEGORY_OPTIONS.map((item) => item.label),
     visibility: 'space' as DemoJournalVisibility,
+    image: null as DemoJournalImage | null,
     form: {
       title: '',
       content: '',
@@ -80,6 +85,7 @@ Page({
         category,
         categoryIndex,
         visibility: entry.visibility,
+        image: entry.image ?? null,
         form: {
           title: entry.title,
           content: entry.content,
@@ -137,6 +143,63 @@ Page({
     this.setData({ 'form.content': event.detail.value })
   },
 
+  onChooseImage() {
+    if (this.data.imageUploading) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (result) => {
+        const file = result.tempFiles[0]
+        if (!file) return
+        if (file.size > 10 * 1024 * 1024) {
+          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+          return
+        }
+        void this.uploadImage(file.tempFilePath, file.size)
+      },
+    })
+  },
+
+  async uploadImage(filePath: string, fileSize: number) {
+    this.setData({ imageUploading: true })
+    try {
+      const asset = await mediaGateway.upload(filePath, 'journal', fileSize)
+      this.setData({
+        image: {
+          mediaId: asset.id,
+          src: asset.display.url,
+          thumbSrc: asset.thumb.url,
+          caption: this.data.image?.caption ?? '',
+        },
+      })
+      wx.showToast({ title: '图片已准备好', icon: 'success' })
+    } catch (error) {
+      wx.showToast({
+        title: getMediaErrorMessage(error, '图片上传没有完成'),
+        icon: 'none',
+      })
+    } finally {
+      this.setData({ imageUploading: false })
+    }
+  },
+
+  onImageCaptionInput(event: { detail: { value: string } }) {
+    if (!this.data.image) return
+    this.setData({ 'image.caption': event.detail.value.slice(0, 120) })
+  },
+
+  onRemoveImage() {
+    if (this.data.imageUploading) return
+    this.setData({ image: null })
+  },
+
+  onPreviewImage() {
+    const src = this.data.image?.src
+    if (!src) return
+    wx.previewImage({ current: src, urls: [src] })
+  },
+
   onCategoryChange(event: { detail: { value: string } }) {
     const categoryIndex = Number(event.detail.value)
     const option = NOTE_CATEGORY_OPTIONS[categoryIndex]
@@ -151,7 +214,12 @@ Page({
   },
 
   async onSave() {
-    if (this.data.saving || this.data.loading || this.data.loadError) return
+    if (
+      this.data.saving ||
+      this.data.imageUploading ||
+      this.data.loading ||
+      this.data.loadError
+    ) return
     const title = this.data.form.title.trim()
     if (!title) {
       wx.showToast({ title: '先写一句标题吧', icon: 'none' })
@@ -172,7 +240,10 @@ Page({
       content: this.data.form.content,
       visibility: this.data.visibility,
       kind: this.data.kind,
+      imageMediaId: this.data.image?.mediaId ?? '',
+      imageCaption: this.data.image?.caption ?? '',
       ...(this.data.kind === 'note' ? { category: this.data.category } : {}),
+      ...(this.data.image ? { image: this.data.image } : {}),
     }
     try {
       if (this.data.editingEntryId) {

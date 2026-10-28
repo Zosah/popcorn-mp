@@ -37,6 +37,31 @@
   </view>
 
   <view class="section-head">
+    <text class="section-head__title">配一张图</text>
+    <text class="section-head__action">可选 · 最大 10 MiB</text>
+  </view>
+  <view class="journal-image-card glass-card">
+    <view wx:if="{{image && image.src}}" class="journal-image-preview" bindtap="onPreviewImage">
+      <image src="{{image.src}}" mode="aspectFill" />
+      <view class="journal-image-preview__badge"><line-icon name="image" size="20" tone="white" /><text>轻触查看</text></view>
+    </view>
+    <view wx:elif="{{imageUploading}}" class="journal-image-placeholder journal-image-placeholder--loading">
+      <view class="journal-image-placeholder__icon"><line-icon name="image" size="32" tone="accent" /></view>
+      <text>正在把照片安放好…</text>
+      <text>图片会压缩后保存到私有空间</text>
+    </view>
+    <view wx:else class="journal-image-placeholder" bindtap="onChooseImage">
+      <view class="journal-image-placeholder__icon"><line-icon name="image" size="34" tone="accent" /></view>
+      <text>从相册选一张，或现在拍</text>
+      <text>原图只在当前空间可见，列表会加载轻量缩略图</text>
+    </view>
+    <view wx:if="{{image}}" class="journal-image-tools">
+      <input value="{{image.caption}}" maxlength="120" placeholder="给这张图写一句说明（可选）" bindinput="onImageCaptionInput" />
+      <view class="journal-image-remove" catchtap="onRemoveImage">移除</view>
+    </view>
+  </view>
+
+  <view class="section-head">
     <text class="section-head__title">谁可以看到</text>
   </view>
   <view class="visibility-grid">
@@ -50,6 +75,6 @@
     </view>
   </view>
 
-  <button class="primary-button journal-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="white" /><text>{{saveText}}</text></button>
+  <button class="primary-button journal-save" loading="{{saving || imageUploading}}" disabled="{{saving || imageUploading}}" bindtap="onSave"><line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="white" /><text>{{saveText}}</text></button>
   </block>
 </view>

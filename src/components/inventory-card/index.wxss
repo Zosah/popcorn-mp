@@ -2,7 +2,7 @@
   display: flex;
   min-height: 112rpx;
   align-items: center;
-  border-bottom: 1rpx solid rgba(106, 98, 139, 0.09);
+  border-bottom: 1rpx solid rgba(87, 80, 93, 0.09);
 }
 
 .row:last-child {
@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 20rpx;
-  background: rgba(238, 234, 255, 0.68);
+  background: rgba(240, 237, 247, 0.68);
   flex-shrink: 0;
 }
 
@@ -39,7 +39,7 @@
 .row__meta {
   overflow: hidden;
   margin-top: 5rpx;
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 18rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -53,7 +53,7 @@
 }
 
 .row__history {
-  color: var(--c-muted, #9592a4);
+  color: var(--c-muted, #8a8693);
   font-size: 18rpx;
 }
 
@@ -61,7 +61,7 @@
   width: 9rpx;
   height: 9rpx;
   margin-left: 13rpx;
-  border-top: 1rpx solid var(--c-faint, #bbb8c8);
-  border-right: 1rpx solid var(--c-faint, #bbb8c8);
+  border-top: 1rpx solid var(--c-faint, #b7b2bb);
+  border-right: 1rpx solid var(--c-faint, #b7b2bb);
   transform: rotate(45deg);
 }

@@ -9,11 +9,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'assets/lucide-icons')
 const outputDir = path.join(root, 'src/images/icons')
 const tones = {
-  faint: '#c6c9d6',
-  muted: '#9497a6',
-  ink: '#22242e',
-  accent: '#5b6ee0',
-  danger: '#e8695c',
+  faint: '#bbb7c1',
+  muted: '#8a8693',
+  ink: '#292737',
+  accent: '#746aae',
+  danger: '#b96f78',
   white: '#ffffff',
 }
 

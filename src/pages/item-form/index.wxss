@@ -230,8 +230,8 @@
   margin-top: 19rpx;
   padding: 13rpx 21rpx;
   border-radius: 999rpx;
-  background: rgba(238, 234, 255, 0.88);
-  color: var(--c-primary-deep, #665bd7);
+  background: rgba(240, 237, 247, 0.88);
+  color: var(--c-primary-deep, #665c9c);
   font-size: 20rpx;
   font-weight: 600;
 }

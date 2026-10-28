@@ -62,6 +62,12 @@ Page({
     navigateBackOrTab('/pages/journal/index')
   },
 
+  onPreviewImage() {
+    const src = this.data.entry?.image?.src
+    if (!src) return
+    wx.previewImage({ current: src, urls: [src] })
+  },
+
   onEdit() {
     if (!this.data.entry) return
     wx.navigateTo({

@@ -17,7 +17,9 @@ export const DEMO_NOTE_CATEGORY_LABELS: Record<DemoNoteCategory, string> = {
 }
 
 export interface DemoJournalImage {
+  mediaId?: string
   src: string
+  thumbSrc?: string
   caption?: string
 }
 
@@ -27,6 +29,9 @@ export interface DemoJournalEntryInput {
   visibility: DemoJournalVisibility
   kind?: DemoJournalKind
   category?: DemoNoteCategory
+  imageMediaId?: string
+  imageCaption?: string
+  image?: DemoJournalImage
 }
 
 export interface DemoJournalEntry extends DemoJournalEntryInput {
@@ -124,6 +129,16 @@ export function createDemoJournalEntry(
     title: input.title,
     content: input.content,
     visibility: input.visibility,
+    ...(input.image
+      ? {
+          image: {
+            ...input.image,
+            ...(input.imageCaption?.trim()
+              ? { caption: input.imageCaption.trim() }
+              : { caption: '' }),
+          },
+        }
+      : {}),
     kindLabel: '',
     authorName,
     visibilityLabel: '',
@@ -153,6 +168,16 @@ export function updateDemoJournalEntry(
     title: input.title,
     content: input.content,
     visibility: input.visibility,
+    ...(input.image
+      ? {
+          image: {
+            ...input.image,
+            ...(input.imageCaption?.trim()
+              ? { caption: input.imageCaption.trim() }
+              : { caption: '' }),
+          },
+        }
+      : { image: undefined }),
     updatedAt: new Date(nowMs).toISOString(),
   })
 }

@@ -1,6 +1,7 @@
 import {
   formatDemoJournalEntry,
   type DemoJournalEntryInput,
+  type DemoJournalImage,
   type DemoJournalKind,
   type DemoJournalVisibility,
   type DemoNoteCategory,
@@ -13,6 +14,7 @@ import type {
   ApiJournalWriteRequest,
 } from '../types/api'
 import { requestApiResponse } from './http'
+import { mediaGateway } from './media'
 import {
   JournalGatewayError,
   type JournalGateway,
@@ -47,7 +49,7 @@ export class HttpJournalGateway implements JournalGateway {
         items.push(...page.data.items)
         if (!page.data.nextCursor) {
           for (const item of items) this.rememberVersion(item)
-          return items.map(toJournalItem)
+          return Promise.all(items.map((item) => toJournalItem(item, 'thumb')))
         }
         cursor = page.data.nextCursor
       }
@@ -81,7 +83,7 @@ export class HttpJournalGateway implements JournalGateway {
         { token: context.token },
       ))
       this.rememberResponseETag(id, response)
-      return toJournalItem(response.data)
+      return toJournalItem(response.data, 'display')
     } catch (error) {
       if (error instanceof TransportError && error.code === 'NOT_FOUND') return null
       throw toGatewayError(error)
@@ -102,7 +104,7 @@ export class HttpJournalGateway implements JournalGateway {
         },
       ))
       this.rememberResponseETag(response.data.id, response)
-      return toJournalItem(response.data)
+      return toJournalItem(response.data, 'display')
     } catch (error) {
       throw toGatewayError(error)
     }
@@ -129,7 +131,7 @@ export class HttpJournalGateway implements JournalGateway {
         },
       ))
       this.rememberResponseETag(id, response)
-      return toJournalItem(response.data)
+      return toJournalItem(response.data, 'display')
     } catch (error) {
       throw this.writeError(error, id)
     }
@@ -219,9 +221,13 @@ function journalItemPath(spaceId: string, entryId: string): string {
   return `/spaces/${encodeURIComponent(spaceId)}/journals/${encodeURIComponent(entryId)}`
 }
 
-function toJournalItem(item: ApiJournalItem): JournalItem {
+async function toJournalItem(
+  item: ApiJournalItem,
+  variant: 'display' | 'thumb',
+): Promise<JournalItem> {
   const kind = normalizeKind(item.kind)
   const category = kind === 'note' ? normalizeCategory(item.category) : undefined
+  const image = await resolveJournalImage(item, variant)
   const formatted = formatDemoJournalEntry({
     id: item.id,
     kind,
@@ -238,12 +244,34 @@ function toJournalItem(item: ApiJournalItem): JournalItem {
     dateLabel: '',
     timeLabel: '',
     createdAt: item.createdAt,
+    ...(image ? { image } : {}),
     ...(wasEdited(item.createdAt, item.updatedAt) ? { updatedAt: item.updatedAt } : {}),
   })
   return {
     ...formatted,
     version: item.version,
     createdBy: item.createdBy,
+  }
+}
+
+async function resolveJournalImage(
+  item: ApiJournalItem,
+  variant: 'display' | 'thumb',
+): Promise<DemoJournalImage | undefined> {
+  const mediaId = item.imageMediaId || ''
+  if (!mediaId) return undefined
+  const caption = item.imageCaption || ''
+  try {
+    const asset = await mediaGateway.get(mediaId)
+    return {
+      mediaId,
+      src: variant === 'thumb' ? asset.thumb.url : asset.display.url,
+      thumbSrc: asset.thumb.url,
+      ...(caption ? { caption } : {}),
+    }
+  } catch {
+    // 图片签名失败不阻塞文字内容；编辑页仍保留 mediaId，可重新加载或直接替换。
+    return { mediaId, src: '', ...(caption ? { caption } : {}) }
   }
 }
 
@@ -255,6 +283,8 @@ function toApiInput(input: DemoJournalEntryInput): ApiJournalWriteRequest {
     content: input.content.trim(),
     category: kind === 'note' ? normalizeCategory(input.category) : '',
     visibility: normalizeVisibility(input.visibility),
+    imageMediaId: input.image?.mediaId ?? input.imageMediaId ?? '',
+    imageCaption: input.imageCaption ?? input.image?.caption ?? '',
   }
 }
 
