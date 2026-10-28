@@ -146,3 +146,29 @@
   margin-top: 36rpx;
   gap: 10rpx;
 }
+
+.journal-form-head__storage {
+  margin-top: 12rpx;
+  color: var(--c-muted, #9592a4);
+  font-size: 20rpx;
+  line-height: 1.6;
+}
+
+.journal-form-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18rpx;
+  padding: 58rpx 34rpx;
+  margin-bottom: 24rpx;
+  color: var(--c-muted, #9592a4);
+  text-align: center;
+}
+
+.journal-form-state > view {
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  background: rgba(139, 121, 183, 0.12);
+  color: var(--c-accent, #8b79b7);
+  font-weight: 600;
+}

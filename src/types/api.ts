@@ -248,3 +248,43 @@ export interface ApiTodoSummary {
   completed: number
   pendingByKind: Record<ApiTodoKind, number>
 }
+
+export type ApiJournalKind = 'moment' | 'note'
+export type ApiJournalVisibility = 'space' | 'private'
+export type ApiNoteCategory = 'home' | 'health' | 'pet' | 'other'
+
+export interface ApiJournalItem {
+  id: string
+  spaceId: string
+  kind: ApiJournalKind
+  title: string
+  content: string
+  category: ApiNoteCategory | ''
+  visibility: ApiJournalVisibility
+  version: number
+  createdBy: string
+  authorName: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiJournalWriteRequest {
+  kind: ApiJournalKind
+  title: string
+  content: string
+  category: ApiNoteCategory | ''
+  visibility: ApiJournalVisibility
+}
+
+export interface ApiJournalList {
+  items: ApiJournalItem[]
+  nextCursor: string
+}
+
+export interface ApiJournalSummary {
+  total: number
+  moments: number
+  notes: number
+  private: number
+}

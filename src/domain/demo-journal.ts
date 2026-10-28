@@ -71,7 +71,7 @@ function visibilityLabel(visibility: DemoJournalVisibility): string {
   return visibility === 'space' ? '空间成员可见' : '仅自己可见'
 }
 
-function formatDemoJournalEntry(entry: DemoJournalEntry): DemoJournalEntry {
+export function formatDemoJournalEntry(entry: DemoJournalEntry): DemoJournalEntry {
   const {
     category: _category,
     categoryLabel: _categoryLabel,

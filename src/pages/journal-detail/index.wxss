@@ -94,3 +94,21 @@
   justify-content: center;
   margin-top: 20rpx;
 }
+
+.journal-detail-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18rpx;
+  padding: 66rpx 34rpx;
+  color: var(--c-muted, #9592a4);
+  text-align: center;
+}
+
+.journal-detail-state > view {
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  background: rgba(139, 121, 183, 0.12);
+  color: var(--c-accent, #8b79b7);
+  font-weight: 600;
+}

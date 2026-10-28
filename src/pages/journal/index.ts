@@ -1,12 +1,13 @@
+import { appConfig } from '../../config/env'
 import {
   DEMO_NOTE_CATEGORY_LABELS,
-  type DemoJournalEntry,
   type DemoNoteCategory,
 } from '../../domain/demo-journal'
+import { journalGateway } from '../../services/journal'
 import {
-  listDemoImportantNotes,
-  listDemoJournalMoments,
-} from '../../services/demo-journal'
+  getJournalErrorMessage,
+  type JournalItem,
+} from '../../services/journal-gateway'
 import { syncDemoTabBar } from '../../utils/demo-tab-bar'
 
 const NOTE_CATEGORY_ORDER: DemoNoteCategory[] = ['home', 'health', 'pet', 'other']
@@ -21,10 +22,10 @@ interface DemoNoteGroup {
   key: DemoNoteCategory
   label: string
   icon: string
-  entries: DemoJournalEntry[]
+  entries: JournalItem[]
 }
 
-function buildNoteGroups(entries: DemoJournalEntry[]): DemoNoteGroup[] {
+function buildNoteGroups(entries: JournalItem[]): DemoNoteGroup[] {
   return NOTE_CATEGORY_ORDER.map((category) => ({
     key: category,
     label: DEMO_NOTE_CATEGORY_LABELS[category],
@@ -36,20 +37,56 @@ function buildNoteGroups(entries: DemoJournalEntry[]): DemoNoteGroup[] {
 Page({
   data: {
     activeView: 'moments',
-    entries: [] as DemoJournalEntry[],
+    entries: [] as JournalItem[],
     noteGroups: [] as DemoNoteGroup[],
     notesCount: 0,
+    loading: true,
+    loadError: '',
+    syncState: appConfig.demoMode ? 'local' : 'pending',
+    syncText: appConfig.demoMode ? '只在本机' : '正在同步',
   },
 
   onShow() {
     syncDemoTabBar(this, 2)
-    const entries = listDemoJournalMoments()
-    const notes = listDemoImportantNotes()
+    void this.refresh()
+  },
+
+  async refresh() {
     this.setData({
-      entries,
-      noteGroups: buildNoteGroups(notes),
-      notesCount: notes.length,
+      loading: true,
+      loadError: '',
+      syncState: appConfig.demoMode ? 'local' : 'pending',
+      syncText: appConfig.demoMode ? '只在本机' : '正在同步',
     })
+    try {
+      const [moments, notes] = await Promise.all([
+        journalGateway.list({ kinds: ['moment'] }),
+        journalGateway.list({ kinds: ['note'] }),
+      ])
+      this.setData({
+        entries: moments,
+        noteGroups: buildNoteGroups(notes),
+        notesCount: notes.length,
+        loading: false,
+        syncState: appConfig.demoMode ? 'local' : 'synced',
+        syncText: appConfig.demoMode ? '只在本机' : '已同步',
+      })
+    } catch (error) {
+      const message = getJournalErrorMessage(error, '生活记录暂时没有加载出来')
+      this.setData({
+        loading: false,
+        loadError: message,
+        syncState: 'pending',
+        syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
+      })
+      if (this.data.entries.length || this.data.notesCount) {
+        wx.showToast({ title: message, icon: 'none' })
+      }
+    }
+  },
+
+  onRetryLoad() {
+    void this.refresh()
   },
 
   onSwitchView(event: { currentTarget: { dataset: { value: string } } }) {
@@ -66,5 +103,4 @@ Page({
     if (!id) return
     wx.navigateTo({ url: `/pages/journal-detail/index?id=${encodeURIComponent(id)}` })
   },
-
 })

@@ -4,7 +4,7 @@
       <view class="eyebrow">OUR LITTLE LIFE</view>
       <view class="journal-head__title">生活记录</view>
     </view>
-    <sync-badge state="local" text="本机记录" />
+    <sync-badge state="{{syncState}}" text="{{syncText}}" />
   </view>
 
   <view class="journal-hero glass-card" bindtap="onCreate">
@@ -36,7 +36,20 @@
   </view>
 
   <view wx:if="{{activeView === 'moments'}}" class="timeline">
-    <block wx:if="{{entries.length}}">
+    <view wx:if="{{loading && !entries.length}}" class="journal-empty glass-card">
+      <view class="journal-empty__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
+      <text class="journal-empty__title">正在把日子轻轻翻出来</text>
+      <text class="journal-empty__copy">稍等一下，马上就好。</text>
+    </view>
+
+    <view wx:elif="{{loadError && !entries.length}}" class="journal-empty glass-card">
+      <view class="journal-empty__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
+      <text class="journal-empty__title">暂时没有连上</text>
+      <text class="journal-empty__copy">{{loadError}}</text>
+      <view class="journal-empty__button" bindtap="onRetryLoad">重新加载</view>
+    </view>
+
+    <block wx:elif="{{entries.length}}">
       <view wx:for="{{entries}}" wx:key="id" class="entry glass-card" data-id="{{item.id}}" bindtap="onOpenEntry">
         <view class="entry__head">
           <view class="entry__date">
@@ -74,7 +87,20 @@
   </view>
 
   <view wx:else class="notes-view">
-    <block wx:if="{{noteGroups.length}}">
+    <view wx:if="{{loading && !notesCount}}" class="journal-empty glass-card">
+      <view class="journal-empty__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
+      <text class="journal-empty__title">正在整理重要记录</text>
+      <text class="journal-empty__copy">稍等一下，马上就好。</text>
+    </view>
+
+    <view wx:elif="{{loadError && !notesCount}}" class="journal-empty glass-card">
+      <view class="journal-empty__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
+      <text class="journal-empty__title">暂时没有连上</text>
+      <text class="journal-empty__copy">{{loadError}}</text>
+      <view class="journal-empty__button" bindtap="onRetryLoad">重新加载</view>
+    </view>
+
+    <block wx:elif="{{noteGroups.length}}">
       <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="notes-group">
         <view class="notes-group__head">
           <view>

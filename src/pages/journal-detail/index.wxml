@@ -1,36 +1,49 @@
-<view class="page-shell journal-detail-page" wx:if="{{entry}}">
+<view class="page-shell journal-detail-page">
   <view class="subpage-back" bindtap="onBack">← 返回记录</view>
 
-  <view class="journal-detail-head">
-    <view class="journal-detail-eyebrow">
-      <line-icon name="{{entry.kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="accent" />
-      <text>{{entry.authorName}} {{entry.kind === 'note' ? '归档于' : '写于'}} {{entry.dateLabel}} {{entry.timeLabel}}</text>
-    </view>
-    <view class="journal-detail-title">{{entry.title}}</view>
-    <view class="journal-detail-visibility">
-      <line-icon name="{{entry.visibility === 'private' ? 'lock' : 'users'}}" size="22" tone="muted" />
-      <text>{{entry.visibilityLabel}}</text>
-    </view>
+  <view wx:if="{{loading && !entry}}" class="journal-detail-state glass-card">
+    <line-icon name="notebook-tabs" size="36" tone="accent" />
+    <text>正在翻开这段记录…</text>
   </view>
 
-  <block wx:if="{{entry.image}}">
-    <image class="journal-detail-image" src="{{entry.image.src}}" mode="aspectFill" />
-    <view wx:if="{{entry.image.caption}}" class="journal-detail-caption">{{entry.image.caption}}</view>
+  <view wx:elif="{{loadError && !entry}}" class="journal-detail-state glass-card">
+    <line-icon name="circle-alert" size="36" tone="accent" />
+    <text>{{loadError}}</text>
+    <view bindtap="onRetryLoad">重新加载</view>
+  </view>
+
+  <block wx:elif="{{entry}}">
+    <view class="journal-detail-head">
+      <view class="journal-detail-eyebrow">
+        <line-icon name="{{entry.kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="accent" />
+        <text>{{entry.authorName}} {{entry.kind === 'note' ? '归档于' : '写于'}} {{entry.dateLabel}} {{entry.timeLabel}}</text>
+      </view>
+      <view class="journal-detail-title">{{entry.title}}</view>
+      <view class="journal-detail-visibility">
+        <line-icon name="{{entry.visibility === 'private' ? 'lock' : 'users'}}" size="22" tone="muted" />
+        <text>{{entry.visibilityLabel}}</text>
+      </view>
+    </view>
+
+    <block wx:if="{{entry.image}}">
+      <image class="journal-detail-image" src="{{entry.image.src}}" mode="aspectFill" />
+      <view wx:if="{{entry.image.caption}}" class="journal-detail-caption">{{entry.image.caption}}</view>
+    </block>
+
+    <view class="journal-detail-copy">{{entry.content || (entry.kind === 'note' ? '这份记录暂时没有更多文字。' : '这一刻没有留下更多文字。')}}</view>
+
+    <view class="journal-detail-meta">
+      <view class="journal-detail-meta__row"><text>类型</text><text>{{entry.kindLabel}}</text></view>
+      <view wx:if="{{entry.categoryLabel}}" class="journal-detail-meta__row"><text>归档</text><text>{{entry.categoryLabel}}</text></view>
+      <view class="journal-detail-meta__row"><text>记录于</text><text>{{entry.dateLabel}} {{entry.timeLabel}}</text></view>
+      <view wx:if="{{entry.updatedAt}}" class="journal-detail-meta__row"><text>状态</text><text>内容已更新</text></view>
+    </view>
+
+    <view class="journal-detail-actions">
+      <button class="primary-button" disabled="{{deleting}}" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑记录</text></button>
+      <button class="danger-button journal-detail-delete" loading="{{deleting}}" disabled="{{deleting}}" bindtap="onDelete"><line-icon name="circle-alert" size="23" tone="danger" /><text>删除记录</text></button>
+    </view>
+
+    <view class="journal-detail-sync"><sync-badge state="{{syncState}}" text="{{syncText}}" /></view>
   </block>
-
-  <view class="journal-detail-copy">{{entry.content || (entry.kind === 'note' ? '这份记录暂时没有更多文字。' : '这一刻没有留下更多文字。')}}</view>
-
-  <view class="journal-detail-meta">
-    <view class="journal-detail-meta__row"><text>类型</text><text>{{entry.kindLabel}}</text></view>
-    <view wx:if="{{entry.categoryLabel}}" class="journal-detail-meta__row"><text>归档</text><text>{{entry.categoryLabel}}</text></view>
-    <view class="journal-detail-meta__row"><text>记录于</text><text>{{entry.dateLabel}} {{entry.timeLabel}}</text></view>
-    <view wx:if="{{entry.updatedAt}}" class="journal-detail-meta__row"><text>状态</text><text>内容已更新</text></view>
-  </view>
-
-  <view class="journal-detail-actions">
-    <button class="primary-button" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑记录</text></button>
-    <button class="danger-button journal-detail-delete" bindtap="onDelete"><line-icon name="circle-alert" size="23" tone="danger" /><text>删除记录</text></button>
-  </view>
-
-  <view class="journal-detail-sync"><sync-badge state="local" text="本机记录 · 暂未跨设备同步" /></view>
 </view>

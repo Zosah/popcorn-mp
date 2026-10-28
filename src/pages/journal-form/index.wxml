@@ -4,8 +4,21 @@
   <view class="journal-form-head">
     <view class="journal-form-head__title">{{pageTitle}}</view>
     <view class="journal-form-head__copy">{{pageCopy}}</view>
+    <view class="journal-form-head__storage">{{storageCopy}}</view>
   </view>
 
+  <view wx:if="{{loading}}" class="journal-form-state glass-card">
+    <line-icon name="notebook-tabs" size="34" tone="accent" />
+    <text>正在把这段记录找回来…</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="journal-form-state glass-card">
+    <line-icon name="circle-alert" size="34" tone="accent" />
+    <text>{{loadError}}</text>
+    <view bindtap="onRetryLoad">重新加载</view>
+  </view>
+
+  <block wx:else>
   <view class="journal-form-card card">
     <view wx:if="{{kind === 'note'}}" class="journal-field">
       <text>归档位置</text>
@@ -15,11 +28,11 @@
     </view>
     <view class="journal-field">
       <text>一句话标题</text>
-      <input value="{{form.title}}" maxlength="40" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
+      <input value="{{form.title}}" maxlength="80" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
     </view>
     <view class="journal-field journal-field--last">
       <text>再多写一点</text>
-      <textarea value="{{form.content}}" maxlength="300" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" />
+      <textarea value="{{form.content}}" maxlength="5000" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" />
     </view>
   </view>
 
@@ -38,4 +51,5 @@
   </view>
 
   <button class="primary-button journal-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="white" /><text>{{saveText}}</text></button>
+  </block>
 </view>

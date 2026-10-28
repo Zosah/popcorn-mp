@@ -5,8 +5,8 @@ import {
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import type { InventorySummary } from '../../domain/inventory-query'
 import { buildPetCareCards, buildPetDailySummary } from '../../domain/demo-pet'
-import type { DemoJournalEntry } from '../../domain/demo-journal'
-import { listDemoJournalMoments } from '../../services/demo-journal'
+import { journalGateway } from '../../services/journal'
+import type { JournalItem } from '../../services/journal-gateway'
 import { inventoryGateway } from '../../services/inventory'
 import { listDemoMenuRecipes } from '../../services/demo-menu'
 import { listDemoTodoItems } from '../../services/demo-todo'
@@ -57,7 +57,7 @@ Page({
     inventoryError: '',
     today: '',
     dateParts: { day: '', month: '' },
-    recentEntries: [] as DemoJournalEntry[],
+    recentEntries: [] as JournalItem[],
     menuCount: 0,
     recordCount: 0,
     petCount: 0,
@@ -89,6 +89,12 @@ Page({
         '家庭库存暂时没有加载出来',
       )
     }
+    let moments = this.data.recentEntries
+    try {
+      moments = await journalGateway.list({ kinds: ['moment'] })
+    } catch {
+      // 首页保留上一次成功加载的记录，具体错误在生活记录页提示。
+    }
     const petState = getDemoPetState()
     const latestWeight = petState.weights[petState.weights.length - 1]
     const careCards = buildPetCareCards(petState.events, today)
@@ -105,7 +111,6 @@ Page({
           ? `${dueSoonCare.title} · ${dueSoonCare.statusLabel}`
           : '今天的吃喝拉撒已记录'
     const [, month = 1, day = 1] = today.split('-').map(Number)
-    const moments = listDemoJournalMoments()
     const todos = listDemoTodoItems()
     const pendingTodos = todos.filter((item) => !item.done)
     const travelTodos = pendingTodos.filter((item) => item.kind === 'travel')

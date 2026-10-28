@@ -25,14 +25,14 @@ export interface AppConfig {
 
 export const appConfig: AppConfig = {
   env: 'production',
-  version: '1.4.0',
+  version: '1.5.0',
   demoMode: false,
   apiBaseUrl: 'https://popcorn-api.simiway.cc',
   apiAuthMode: 'wechat',
   requestTimeoutMs: 10000,
 }
 
-/** 展示用版本号，例如「Demo 1.4.0」 */
+/** 展示用版本号，例如「Demo 1.5.0」 */
 export function formatVersionLabel(config: AppConfig = appConfig): string {
   return config.demoMode ? `Demo ${config.version}` : `v${config.version}`
 }

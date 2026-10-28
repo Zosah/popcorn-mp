@@ -7,12 +7,14 @@ import { resetDemoReminderSettings } from './demo-reminders'
 import { resetDemoSpaceName } from './demo-space'
 import { resetDemoTodoData } from './demo-todo'
 import { refreshInventoryGateway } from './inventory'
+import { refreshJournalGateway } from './journal'
 
 export function resetAllDemoData(): void {
   resetDemoInventory()
   refreshInventoryGateway()
   resetDemoPetData()
   resetDemoJournalData()
+  refreshJournalGateway()
   resetDemoMenuData()
   resetDemoReminderSettings()
   resetDemoSpaceName()
