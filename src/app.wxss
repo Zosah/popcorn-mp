@@ -40,10 +40,10 @@ page {
   --sp-2: 16rpx;
   --sp-3: 24rpx;
   --sp-4: 32rpx;
-  --fs-caption: 22rpx;
-  --fs-body: 28rpx;
-  --fs-title: 32rpx;
-  --fs-display: 54rpx;
+  --fs-caption: 26rpx;
+  --fs-body: 32rpx;
+  --fs-title: 36rpx;
+  --fs-display: 57rpx;
 }
 
 page {
@@ -56,7 +56,7 @@ page {
   background-image: none;
   color: var(--c-text, #2e2a28);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: var(--fs-body, 28rpx);
+  font-size: var(--fs-body, 32rpx);
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
@@ -128,7 +128,7 @@ page::-webkit-scrollbar {
 
 .h-display {
   color: var(--c-text, #2e2a28);
-  font-size: var(--fs-display, 54rpx);
+  font-size: var(--fs-display, 57rpx);
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -2rpx;
@@ -136,7 +136,7 @@ page::-webkit-scrollbar {
 
 .h-title {
   color: var(--c-text, #2e2a28);
-  font-size: var(--fs-title, 32rpx);
+  font-size: var(--fs-title, 36rpx);
   font-weight: 600;
   line-height: 1.4;
 }
@@ -154,14 +154,14 @@ page::-webkit-scrollbar {
 
 .section-head__title {
   color: var(--c-text, #2e2a28);
-  font-size: 27rpx;
+  font-size: 31rpx;
   font-weight: 600;
   letter-spacing: 0.5rpx;
 }
 
 .section-head__action {
   color: var(--c-muted, #8d8580);
-  font-size: 21rpx;
+  font-size: 25rpx;
 }
 
 /* 数据来源标识的统一摆放位置 */
@@ -190,7 +190,7 @@ page::-webkit-scrollbar {
   height: 66rpx;
   border-radius: 999rpx;
   color: var(--c-muted, #8d8580);
-  font-size: 23rpx;
+  font-size: 27rpx;
   font-weight: 500;
   transition: color 160ms ease, background 160ms ease;
 }
@@ -215,7 +215,7 @@ page::-webkit-scrollbar {
   margin: 0;
   border-radius: var(--r-btn, 999rpx);
   gap: 10rpx;
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: 600;
   letter-spacing: 0.5rpx;
 }
@@ -253,7 +253,7 @@ page::-webkit-scrollbar {
 
 .eyebrow {
   color: var(--c-primary, #2c4a52);
-  font-size: 18rpx;
+  font-size: 22rpx;
   font-weight: 600;
   letter-spacing: 4rpx;
   line-height: 1.4;
@@ -298,7 +298,7 @@ page::-webkit-scrollbar {
 .state-card__title {
   margin-top: 18rpx;
   color: var(--c-text, #2e2a28);
-  font-size: 26rpx;
+  font-size: 30rpx;
   font-weight: 600;
   line-height: 1.45;
 }
@@ -307,7 +307,7 @@ page::-webkit-scrollbar {
   max-width: 490rpx;
   margin-top: 7rpx;
   color: var(--c-muted, #8d8580);
-  font-size: 19rpx;
+  font-size: 23rpx;
   line-height: 1.65;
 }
 
@@ -322,7 +322,7 @@ page::-webkit-scrollbar {
   border-radius: 999rpx;
   background: rgba(255, 254, 250, 0.86);
   color: var(--c-primary, #2c4a52);
-  font-size: 19rpx;
+  font-size: 23rpx;
   font-weight: 600;
 }
 
@@ -359,13 +359,13 @@ page::-webkit-scrollbar {
 
 .state-banner__title {
   color: var(--c-text, #2e2a28);
-  font-size: 19rpx;
+  font-size: 23rpx;
   font-weight: 600;
 }
 
 .state-banner__copy {
   color: var(--c-text-2, #6b635c);
-  font-size: 16rpx;
+  font-size: 20rpx;
   line-height: 1.45;
 }
 
@@ -376,7 +376,7 @@ page::-webkit-scrollbar {
   padding: 0 4rpx 0 10rpx;
   color: var(--c-primary, #2c4a52);
   flex-shrink: 0;
-  font-size: 17rpx;
+  font-size: 21rpx;
   font-weight: 600;
 }
 

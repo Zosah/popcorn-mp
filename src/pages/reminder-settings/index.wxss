@@ -31,7 +31,7 @@
 .reminder-head__title {
   display: block;
   color: var(--reminder-ink);
-  font-size: 43rpx;
+  font-size: 46rpx;
   font-weight: 750;
   letter-spacing: -1.5rpx;
   line-height: 1.35;
@@ -42,7 +42,7 @@
   max-width: 510rpx;
   margin-top: 10rpx;
   color: var(--reminder-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.65;
 }
 
@@ -60,7 +60,7 @@
   box-shadow: 0 8rpx 20rpx rgba(82, 65, 48, 0.04);
   color: var(--reminder-ink);
   flex-shrink: 0;
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 650;
   line-height: 1;
 }
@@ -111,13 +111,13 @@
 
 .reminder-row__body text:first-child {
   color: var(--reminder-ink);
-  font-size: 25rpx;
+  font-size: 29rpx;
   font-weight: 650;
 }
 
 .reminder-row__body text:last-child {
   color: var(--reminder-ink-3);
-  font-size: 19rpx;
+  font-size: 23rpx;
   line-height: 1.45;
 }
 
@@ -136,13 +136,13 @@
 .reminder-row__time text:first-child {
   color: var(--reminder-ink-2);
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 25rpx;
+  font-size: 29rpx;
   font-weight: 700;
 }
 
 .reminder-row__time text:last-child {
   color: #c7beb5;
-  font-size: 30rpx;
+  font-size: 34rpx;
   font-weight: 300;
 }
 
@@ -155,14 +155,14 @@
 
 .reminder-section-head text:first-child {
   color: var(--reminder-ink);
-  font-size: 29rpx;
+  font-size: 33rpx;
   font-weight: 750;
   letter-spacing: -0.5rpx;
 }
 
 .reminder-section-head text:last-child {
   color: var(--reminder-ink-3);
-  font-size: 19rpx;
+  font-size: 23rpx;
 }
 
 .reminder-method {
@@ -175,7 +175,7 @@
 .reminder-method__copy {
   display: block;
   color: var(--reminder-ink-2);
-  font-size: 21rpx;
+  font-size: 25rpx;
   line-height: 1.8;
 }
 
@@ -200,7 +200,7 @@
 
 .reminder-method__tip text:last-child {
   color: #8a7a5e;
-  font-size: 19rpx;
+  font-size: 23rpx;
   line-height: 1.55;
 }
 
@@ -226,7 +226,7 @@
 .reminder-weekly__title {
   display: block;
   color: var(--reminder-ink);
-  font-size: 26rpx;
+  font-size: 30rpx;
   font-weight: 700;
 }
 
@@ -234,7 +234,7 @@
   display: block;
   margin-top: 5rpx;
   color: var(--reminder-ink-3);
-  font-size: 19rpx;
+  font-size: 23rpx;
 }
 
 .reminder-weekly__status {
@@ -243,7 +243,7 @@
   background: #eef5ef;
   color: #6f9f7d;
   flex-shrink: 0;
-  font-size: 16rpx;
+  font-size: 20rpx;
   font-weight: 650;
 }
 
@@ -274,7 +274,7 @@
 
 .reminder-weekly__stat text:first-child {
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 34rpx;
+  font-size: 38rpx;
   font-weight: 800;
   letter-spacing: -1rpx;
   line-height: 1.1;
@@ -287,7 +287,7 @@
 .reminder-weekly__stat text:last-child {
   margin-top: 5rpx;
   color: var(--reminder-ink-2);
-  font-size: 18rpx;
+  font-size: 22rpx;
 }
 
 .reminder-footnote {
@@ -301,6 +301,6 @@
 .reminder-footnote text {
   color: var(--reminder-ink-3);
   flex: 1;
-  font-size: 18rpx;
+  font-size: 22rpx;
   line-height: 1.65;
 }

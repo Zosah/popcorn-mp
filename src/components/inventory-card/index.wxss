@@ -30,7 +30,7 @@
 .row__name {
   overflow: hidden;
   color: var(--c-text, #2e2a28);
-  font-size: 27rpx;
+  font-size: 31rpx;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -40,7 +40,7 @@
   overflow: hidden;
   margin-top: 5rpx;
   color: var(--c-muted, #8d8580);
-  font-size: 19rpx;
+  font-size: 23rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -54,7 +54,7 @@
 
 .row__history {
   color: var(--c-muted, #8d8580);
-  font-size: 19rpx;
+  font-size: 23rpx;
 }
 
 .row__chevron {

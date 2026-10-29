@@ -21,7 +21,7 @@
 }
 
 .inv-top__title {
-  font-size: 42rpx;
+  font-size: 45rpx;
   font-weight: 700;
   letter-spacing: -1rpx;
   line-height: 1.2;
@@ -30,7 +30,7 @@
 .inv-top__sub {
   margin-top: 8rpx;
   color: var(--inv-ink-3);
-  font-size: 22rpx;
+  font-size: 26rpx;
 }
 
 .inv-add {
@@ -42,7 +42,7 @@
   background: var(--inv-deep);
   color: #fff;
   gap: 7rpx;
-  font-size: 24rpx;
+  font-size: 28rpx;
   font-weight: 600;
 }
 
@@ -77,7 +77,7 @@
 
 .inv-stat__value {
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 43rpx;
+  font-size: 46rpx;
   font-weight: 700;
   letter-spacing: -1rpx;
   line-height: 1.1;
@@ -85,7 +85,7 @@
 
 .inv-stat__label {
   color: var(--inv-ink-2);
-  font-size: 21rpx;
+  font-size: 25rpx;
 }
 
 .inv-stat--danger .inv-stat__value { color: var(--inv-red); }
@@ -104,7 +104,7 @@
   position: relative;
   padding: 15rpx 0 17rpx;
   color: var(--inv-ink-3);
-  font-size: 24rpx;
+  font-size: 28rpx;
   font-weight: 500;
 }
 
@@ -146,7 +146,7 @@
   height: 76rpx;
   color: var(--inv-ink);
   flex: 1;
-  font-size: 25rpx;
+  font-size: 29rpx;
 }
 
 .inv-search__placeholder {
@@ -155,7 +155,7 @@
 
 .inv-search__clear {
   color: var(--inv-deep);
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 600;
 }
 
@@ -180,7 +180,7 @@
   border-radius: 999rpx;
   background: #fffefa;
   color: var(--inv-ink-2);
-  font-size: 21rpx;
+  font-size: 25rpx;
   white-space: nowrap;
 }
 
@@ -209,7 +209,7 @@
 }
 
 .inv-group__title {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: 700;
   letter-spacing: -0.5rpx;
 }
@@ -224,7 +224,7 @@
 .inv-group__count,
 .inv-group__hint {
   color: var(--inv-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
 }
 
 .inv-group__list {
@@ -263,7 +263,7 @@
 
 .inv-state__title {
   margin-top: 18rpx;
-  font-size: 27rpx;
+  font-size: 31rpx;
   font-weight: 700;
 }
 
@@ -271,7 +271,7 @@
   max-width: 500rpx;
   margin-top: 8rpx;
   color: var(--inv-ink-3);
-  font-size: 21rpx;
+  font-size: 25rpx;
   line-height: 1.7;
 }
 
@@ -284,7 +284,7 @@
   border-radius: 999rpx;
   background: var(--inv-deep);
   color: #fff;
-  font-size: 22rpx;
+  font-size: 26rpx;
   font-weight: 600;
 }
 
@@ -307,17 +307,17 @@
 }
 
 .inv-banner__body text:first-child {
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 700;
 }
 
 .inv-banner__body text:last-child {
   color: var(--inv-ink-2);
-  font-size: 18rpx;
+  font-size: 22rpx;
 }
 
 .inv-banner__action {
   color: var(--inv-red);
-  font-size: 20rpx;
+  font-size: 24rpx;
   font-weight: 700;
 }

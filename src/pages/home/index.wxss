@@ -135,7 +135,7 @@
   display: block;
   color: var(--home-ink-2);
   font-family: Georgia, "Songti SC", serif;
-  font-size: 25rpx;
+  font-size: 29rpx;
   font-style: italic;
   letter-spacing: 0.8rpx;
 }
@@ -159,7 +159,7 @@
 
 .home-hero__word--top {
   color: var(--home-blue);
-  font-size: 59rpx;
+  font-size: 60rpx;
 }
 
 .home-hero__word--mid,
@@ -185,7 +185,7 @@
   width: 386rpx;
   margin-top: 25rpx;
   color: #5d554e;
-  font-size: 23rpx;
+  font-size: 27rpx;
   line-height: 1.76;
 }
 
@@ -304,14 +304,14 @@
 .home-stats__compact-main {
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--home-ink);
-  font-size: 29rpx;
+  font-size: 33rpx;
   font-weight: 800;
   letter-spacing: -1rpx;
 }
 
 .home-stats__compact-sub {
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
 }
 
 .home-stats__card {
@@ -336,7 +336,7 @@
 .home-stat__number {
   color: var(--home-ink);
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 46rpx;
+  font-size: 49rpx;
   font-weight: 700;
   letter-spacing: -1.2rpx;
   line-height: 1;
@@ -345,7 +345,7 @@
 .home-stat__label {
   margin-top: 9rpx;
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.2;
 }
 
@@ -360,7 +360,7 @@
   background: var(--home-deep);
   color: #fff;
   flex: 0 0 auto;
-  font-size: 35rpx;
+  font-size: 39rpx;
   font-weight: 700;
 }
 
@@ -398,21 +398,21 @@
 
 .home-state__title {
   color: var(--home-ink);
-  font-size: 23rpx;
+  font-size: 27rpx;
   font-weight: 600;
 }
 
 .home-state__copy {
   margin-top: 4rpx;
   color: var(--home-ink-2);
-  font-size: 21rpx;
+  font-size: 25rpx;
   line-height: 1.5;
 }
 
 .home-state__action {
   color: var(--home-red);
   flex: 0 0 auto;
-  font-size: 22rpx;
+  font-size: 26rpx;
   font-weight: 600;
 }
 
@@ -440,7 +440,7 @@
 .home-today-card__day {
   color: var(--home-ink);
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 64rpx;
+  font-size: 65rpx;
   font-weight: 800;
   letter-spacing: -4rpx;
   line-height: 1;
@@ -453,14 +453,14 @@
 
 .home-today-card__date-copy text:first-child {
   color: var(--home-ink);
-  font-size: 22rpx;
+  font-size: 26rpx;
   font-weight: 600;
 }
 
 .home-today-card__date-copy text:last-child {
   margin-top: 3rpx;
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
 }
 
 .home-today-card__tag {
@@ -471,7 +471,7 @@
   background: var(--home-paper-2);
   color: var(--home-ink-2);
   gap: 9rpx;
-  font-size: 20rpx;
+  font-size: 24rpx;
 }
 
 .home-today-card__tag-dot {
@@ -484,7 +484,7 @@
 .home-today-card__title {
   display: block;
   color: var(--home-ink);
-  font-size: 29rpx;
+  font-size: 33rpx;
   font-weight: 700;
   line-height: 1.45;
 }
@@ -492,7 +492,7 @@
 .home-today-card__empty-title {
   display: block;
   color: var(--home-ink);
-  font-size: 29rpx;
+  font-size: 33rpx;
   font-weight: 700;
 }
 
@@ -501,7 +501,7 @@
   margin-top: 10rpx;
   overflow: hidden;
   color: #4a423c;
-  font-size: 25rpx;
+  font-size: 29rpx;
   line-height: 1.9;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -515,7 +515,7 @@
   padding-top: 18rpx;
   border-top: 1rpx solid var(--home-line);
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
   gap: 14rpx;
 }
 
@@ -539,19 +539,19 @@
 .home-section-head__title {
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--home-ink);
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 800;
   letter-spacing: -0.8rpx;
 }
 
 .home-section-head__meta {
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
 }
 
 .home-section-head__action {
   color: var(--home-blue);
-  font-size: 20rpx;
+  font-size: 24rpx;
   font-weight: 600;
 }
 
@@ -610,7 +610,7 @@
 
 .home-near-row__title {
   color: var(--home-ink);
-  font-size: 26rpx;
+  font-size: 30rpx;
   font-weight: 600;
 }
 
@@ -618,7 +618,7 @@
   overflow: hidden;
   margin-top: 6rpx;
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.5;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -635,13 +635,13 @@
 .home-near-row__right text:first-child {
   color: var(--home-ink-2);
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 600;
 }
 
 .home-near-row__right text:last-child {
   color: var(--home-blue);
-  font-size: 20rpx;
+  font-size: 24rpx;
   font-weight: 600;
 }
 
@@ -706,7 +706,7 @@
 .home-tool__label {
   width: 100%;
   color: var(--home-ink-2);
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 500;
   line-height: 1;
   text-align: center;
@@ -727,7 +727,7 @@
   background: var(--home-red);
   box-shadow: 0 2rpx 6rpx rgba(228, 119, 140, 0.34);
   color: #fff;
-  font-size: 17rpx;
+  font-size: 21rpx;
   font-weight: 700;
   line-height: 1;
 }
@@ -781,7 +781,7 @@
 .home-recent-row__title {
   overflow: hidden;
   color: var(--home-ink);
-  font-size: 25rpx;
+  font-size: 29rpx;
   font-weight: 600;
   line-height: 1.4;
   text-overflow: ellipsis;
@@ -792,7 +792,7 @@
   overflow: hidden;
   margin-top: 6rpx;
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.55;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -801,14 +801,14 @@
 .home-recent-row__meta {
   margin-top: 7rpx;
   color: #b4ada7;
-  font-size: 18rpx;
+  font-size: 22rpx;
 }
 
 .home-recent-row__date {
   color: var(--home-ink-3);
   flex: 0 0 auto;
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 17rpx;
+  font-size: 21rpx;
   line-height: 1.4;
   text-align: right;
 }
@@ -840,7 +840,7 @@
 .home-empty__title {
   margin-top: 18rpx;
   color: var(--home-ink);
-  font-size: 27rpx;
+  font-size: 31rpx;
   font-weight: 700;
 }
 
@@ -848,7 +848,7 @@
   max-width: 480rpx;
   margin-top: 8rpx;
   color: var(--home-ink-3);
-  font-size: 21rpx;
+  font-size: 25rpx;
   line-height: 1.65;
 }
 
@@ -858,7 +858,7 @@
   border-radius: 999rpx;
   background: var(--home-deep);
   color: #fff;
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 600;
 }
 
@@ -866,7 +866,7 @@
   display: block;
   margin: 36rpx 0 0;
   color: var(--home-ink-3);
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.7;
   text-align: center;
 }

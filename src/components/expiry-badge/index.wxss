@@ -1,7 +1,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  font-size: 21rpx;
+  font-size: 25rpx;
   font-weight: 400;
   white-space: nowrap;
 }
