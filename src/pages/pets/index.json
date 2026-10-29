@@ -2,6 +2,7 @@
   "navigationBarTitleText": "宠物照护",
   "usingComponents": {
     "sync-badge": "/components/sync-badge/index",
-    "line-icon": "/components/line-icon/index"
+    "line-icon": "/components/line-icon/index",
+    "app-tab-bar": "/components/app-tab-bar/index"
   }
 }

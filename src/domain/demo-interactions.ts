@@ -2,12 +2,15 @@ import type { InventoryLifecycleStatus } from './inventory'
 
 export type DemoBackIntent =
   | { method: 'navigateBack'; delta: number }
-  | { method: 'switchTab'; url: DemoTabPath }
+  | { method: 'relaunch'; url: DemoTabPath }
 
 export type DemoTabPath =
   | '/pages/home/index'
   | '/pages/inventory/index'
   | '/pages/journal/index'
+  | '/pages/pets/index'
+  | '/pages/todo/index'
+  | '/pages/menu/index'
   | '/pages/profile/index'
 
 export type InventoryViewMode = 'active' | 'history'
@@ -24,7 +27,7 @@ export interface InventoryLifecycleAction {
 }
 
 /**
- * 生成页面返回意图：有上一页时返回上一页，否则回到指定 Tab。
+ * 生成页面返回意图：有上一页时返回上一页，否则回到指定根页面。
  */
 export function resolveDemoBackIntent(
   pageStackDepth: number,
@@ -32,7 +35,7 @@ export function resolveDemoBackIntent(
 ): DemoBackIntent {
   return pageStackDepth > 1
     ? { method: 'navigateBack', delta: 1 }
-    : { method: 'switchTab', url: fallbackTab }
+    : { method: 'relaunch', url: fallbackTab }
 }
 
 /**

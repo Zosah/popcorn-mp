@@ -14,9 +14,9 @@ describe('resolveDemoBackIntent', () => {
     })
   })
 
-  it('直接打开子页且没有上一页时回到指定 Tab', () => {
+  it('直接打开子页且没有上一页时回到指定根页面', () => {
     expect(resolveDemoBackIntent(1, '/pages/inventory/index')).toEqual({
-      method: 'switchTab',
+      method: 'relaunch',
       url: '/pages/inventory/index',
     })
   })

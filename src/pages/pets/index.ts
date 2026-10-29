@@ -166,6 +166,19 @@ Page({
     }>,
   },
 
+  onLoad(options: Record<string, string | undefined>) {
+    const section = options.section
+    if (
+      section === 'profile' ||
+      section === 'care' ||
+      section === 'calendar' ||
+      section === 'daily' ||
+      section === 'supplies'
+    ) {
+      this.setData({ activeSection: section })
+    }
+  },
+
   onShow() {
     this.loadState(getDemoPetState())
     this.loadPetTabs()

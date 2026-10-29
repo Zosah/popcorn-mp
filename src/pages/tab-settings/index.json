@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "底部导航",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index"
+  }
+}

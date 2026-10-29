@@ -44,12 +44,12 @@ const tabTargets = [
 ]
 
 for (const [name, url] of tabTargets) {
-  await miniProgram.switchTab(url)
+  await miniProgram.reLaunch(url)
   await miniProgram.pageScrollTo(0)
   await capture(name)
 }
 
-const journal = await miniProgram.switchTab('/pages/journal/index')
+const journal = await miniProgram.reLaunch('/pages/journal/index')
 await journal.callMethod('onSwitchView', {
   currentTarget: { dataset: { value: 'notes' } },
 })

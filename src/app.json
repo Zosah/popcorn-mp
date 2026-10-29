@@ -20,7 +20,8 @@
     "pages/todo-form/index",
     "pages/space/index",
     "pages/invite/index",
-    "pages/reminder-settings/index"
+    "pages/reminder-settings/index",
+    "pages/tab-settings/index"
   ],
   "window": {
     "navigationBarBackgroundColor": "#fdfbf7",
@@ -28,38 +29,6 @@
     "navigationBarTitleText": "时刻见",
     "backgroundColor": "#fdfbf7",
     "backgroundTextStyle": "light"
-  },
-  "tabBar": {
-    "color": "#8d8580",
-    "selectedColor": "#2c4a52",
-    "backgroundColor": "#fffefa",
-    "borderStyle": "black",
-    "list": [
-      {
-        "pagePath": "pages/home/index",
-        "text": "家",
-        "iconPath": "images/icons/house-faint.png",
-        "selectedIconPath": "images/icons/house-accent.png"
-      },
-      {
-        "pagePath": "pages/inventory/index",
-        "text": "库存",
-        "iconPath": "images/icons/package-faint.png",
-        "selectedIconPath": "images/icons/package-accent.png"
-      },
-      {
-        "pagePath": "pages/journal/index",
-        "text": "记录",
-        "iconPath": "images/icons/notebook-tabs-faint.png",
-        "selectedIconPath": "images/icons/notebook-tabs-accent.png"
-      },
-      {
-        "pagePath": "pages/profile/index",
-        "text": "我的",
-        "iconPath": "images/icons/user-round-faint.png",
-        "selectedIconPath": "images/icons/user-round-accent.png"
-      }
-    ]
   },
   "sitemapLocation": "sitemap.json"
 }

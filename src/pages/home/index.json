@@ -4,6 +4,7 @@
   "navigationBarTextStyle": "black",
   "backgroundColor": "#fdfbf7",
   "usingComponents": {
-    "line-icon": "/components/line-icon/index"
+    "line-icon": "/components/line-icon/index",
+    "app-tab-bar": "/components/app-tab-bar/index"
   }
 }

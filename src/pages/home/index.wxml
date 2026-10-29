@@ -116,9 +116,44 @@
       </block>
     </view>
 
+    <view class="home-tools-wrap">
+      <view class="home-tools-head">
+        <text>今天想做什么</text>
+        <text>常用入口</text>
+      </view>
+      <view class="home-tools">
+        <view class="home-tool home-tool--primary" hover-class="home-tool--pressed" bindtap="onOpenJournal">
+          <view class="home-tool__icon home-tool__icon--primary">
+            <line-icon name="pen-line" size="31" tone="white" />
+          </view>
+          <text class="home-tool__label">写一条</text>
+        </view>
+        <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenTodo">
+          <view class="home-tool__icon home-tool__icon--green">
+            <line-icon name="list-todo" size="31" tone="ink" />
+          </view>
+          <text class="home-tool__label">待办</text>
+          <view wx:if="{{todoPendingCount}}" class="home-tool__badge">{{todoPendingCount > 9 ? '9+' : todoPendingCount}}</view>
+        </view>
+        <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenMenu">
+          <view class="home-tool__icon home-tool__icon--gold">
+            <line-icon name="utensils" size="31" tone="ink" />
+          </view>
+          <text class="home-tool__label">吃什么</text>
+        </view>
+        <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenPets">
+          <view class="home-tool__icon home-tool__icon--pink">
+            <line-icon name="paw-print" size="31" tone="ink" />
+          </view>
+          <text class="home-tool__label">宠物</text>
+          <view wx:if="{{petPendingCount}}" class="home-tool__badge">{{petPendingCount > 9 ? '9+' : petPendingCount}}</view>
+        </view>
+      </view>
+    </view>
+
     <view class="home-section-head">
       <text class="home-section-head__title">家里的近况</text>
-      <text class="home-section-head__meta">4 个维度</text>
+      <text class="home-section-head__meta">3 个维度</text>
     </view>
 
     <view class="home-near-card">
@@ -163,82 +198,61 @@
           <text>定这顿 ›</text>
         </view>
       </view>
-
-      <view class="home-near-row" hover-class="home-row--pressed" data-target="pets" bindtap="onOpenNearby">
-        <view class="home-near-row__icon home-near-row__icon--pink">
-          <line-icon name="paw-print" size="34" tone="ink" />
-        </view>
-        <view class="home-near-row__body">
-          <text class="home-near-row__title">宠物照护</text>
-          <text class="home-near-row__copy">{{petSnapshot.careNotice}}</text>
-        </view>
-        <view class="home-near-row__right">
-          <text>{{petSnapshot.name}} · {{petSnapshot.weight}} kg</text>
-          <text>记一次 ›</text>
-        </view>
-      </view>
     </view>
 
-    <view class="home-tools">
-      <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenJournal">
-        <view class="home-tool__icon home-tool__icon--blue">
-          <line-icon name="pen-line" size="32" tone="ink" />
-        </view>
-        <text class="home-tool__label">写一条</text>
-      </view>
-      <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenTodo">
-        <view class="home-tool__icon home-tool__icon--green">
-          <line-icon name="list-todo" size="32" tone="ink" />
-        </view>
-        <text class="home-tool__label">待办</text>
-        <view wx:if="{{todoPendingCount}}" class="home-tool__badge">{{todoPendingCount > 9 ? '9+' : todoPendingCount}}</view>
-      </view>
-      <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenMenu">
-        <view class="home-tool__icon home-tool__icon--gold">
-          <line-icon name="utensils" size="32" tone="ink" />
-        </view>
-        <text class="home-tool__label">吃什么</text>
-      </view>
-      <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenPets">
-        <view class="home-tool__icon home-tool__icon--pink">
-          <line-icon name="paw-print" size="32" tone="ink" />
-        </view>
-        <text class="home-tool__label">宠物</text>
-        <view wx:if="{{petPendingCount}}" class="home-tool__badge">{{petPendingCount > 9 ? '9+' : petPendingCount}}</view>
-      </view>
+    <view class="home-section-head home-section-head--pets">
+      <text class="home-section-head__title">宠物动态</text>
+      <text class="home-section-head__action" bindtap="onOpenPets">全部动态 ›</text>
     </view>
 
-    <view class="home-section-head home-section-head--recent">
-      <text class="home-section-head__title">最近的我们</text>
-      <text class="home-section-head__action" bindtap="onOpenJournal">全部 {{journalTotal}} 篇</text>
-    </view>
-
-    <view wx:if="{{recentEntries.length}}" class="home-recent-card">
-      <view
-        wx:for="{{recentEntries}}"
-        wx:key="id"
-        class="home-recent-row"
-        hover-class="home-row--pressed"
-        data-id="{{item.id}}"
-        bindtap="onOpenEntry"
-      >
-        <view class="home-recent-row__mark"><line-icon name="notebook-tabs" size="35" tone="ink" /></view>
-        <view class="home-recent-row__body">
-          <text class="home-recent-row__title">{{item.title}}</text>
-          <text class="home-recent-row__copy">{{item.content || item.dateLabel}}</text>
-          <text class="home-recent-row__meta">{{item.authorName}} · {{item.dateLabel}} {{item.timeLabel}}</text>
+    <view class="home-pet-card">
+      <view class="home-pet-summary" hover-class="home-row--pressed" bindtap="onOpenPets">
+        <view class="home-pet-summary__avatar">
+          <line-icon name="paw-print" size="35" tone="pink" />
         </view>
-        <text class="home-recent-row__date">{{item.day}} {{item.month}}</text>
+        <view class="home-pet-summary__body">
+          <text class="home-pet-summary__name">{{petSnapshot.name}}</text>
+          <text class="home-pet-summary__status">{{petSnapshot.status}} · {{petSnapshot.careNotice}}</text>
+        </view>
+        <view class="home-pet-summary__weight">
+          <text>{{petSnapshot.weight}}</text>
+          <text>kg</text>
+        </view>
       </view>
-    </view>
 
-    <view wx:else class="home-empty">
-      <view class="home-empty__mark"><line-icon name="notebook-tabs" size="42" tone="ink" /></view>
-      <text class="home-empty__title">今天还没有落下一笔</text>
-      <text class="home-empty__copy">写一句也好。以后回头看，普通的一天也会发光。</text>
-      <view class="home-empty__action" bindtap="onOpenJournal">写第一条记录</view>
+      <view wx:if="{{petActivities.length}}" class="home-pet-feed">
+        <view
+          wx:for="{{petActivities}}"
+          wx:key="id"
+          class="home-pet-activity"
+          hover-class="home-row--pressed"
+          data-event-id="{{item.eventId}}"
+          data-section="{{item.target}}"
+          bindtap="onOpenPetActivity"
+        >
+          <view class="home-pet-activity__icon home-pet-activity__icon--{{item.tone}}">
+            <line-icon name="{{item.icon}}" size="29" tone="{{item.tone}}" />
+          </view>
+          <view class="home-pet-activity__body">
+            <view class="home-pet-activity__top">
+              <text class="home-pet-activity__title">{{item.title}}</text>
+              <text class="home-pet-activity__date">{{item.dateLabel}}</text>
+            </view>
+            <text class="home-pet-activity__copy">{{item.copy}}</text>
+            <text class="home-pet-activity__tag">{{item.typeLabel}}</text>
+          </view>
+          <text class="home-pet-activity__arrow">›</text>
+        </view>
+      </view>
+
+      <view wx:else class="home-pet-empty">
+        <text>还没有宠物动态</text>
+        <text>记一次体重、洗护或今天的照护，这里就会更新。</text>
+        <view bindtap="onOpenPets">去记一条</view>
+      </view>
     </view>
 
     <text class="home-footer-copy">把普通日子里的记录、家务、计划和陪伴，安放在一起。</text>
   </view>
+  <app-tab-bar active="home" />
 </view>

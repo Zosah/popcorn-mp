@@ -208,4 +208,5 @@
     </view>
     <view class="supply-tip">点击条目，可以改成正在用、爱吃、吃过、种草或拔草。</view>
   </block>
+  <app-tab-bar active="pets" />
 </view>

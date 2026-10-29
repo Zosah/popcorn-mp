@@ -2,6 +2,7 @@ import {
   resolveDemoBackIntent,
   type DemoTabPath,
 } from '../domain/demo-interactions'
+import { openAppRoot } from './app-navigation'
 
 export function navigateBackOrTab(fallbackTab: DemoTabPath): void {
   const intent = resolveDemoBackIntent(getCurrentPages().length, fallbackTab)
@@ -9,5 +10,5 @@ export function navigateBackOrTab(fallbackTab: DemoTabPath): void {
     wx.navigateBack({ delta: intent.delta })
     return
   }
-  wx.switchTab({ url: intent.url })
+  openAppRoot(intent.url)
 }

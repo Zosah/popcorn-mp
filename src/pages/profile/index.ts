@@ -1,5 +1,9 @@
 import { appConfig, formatVersionLabel } from '../../config/env'
 import { hydrateAuthState, type AuthState } from '../../services/auth'
+import {
+  getAppTabConfig,
+  resolveAppTabItems,
+} from '../../services/app-tab-config'
 import { resetAllDemoData } from '../../services/demo-reset'
 import { getDemoSpaceName } from '../../services/demo-space'
 import { todoGateway } from '../../services/todo'
@@ -7,6 +11,7 @@ import {
   getTodoErrorMessage,
   type TodoSummary,
 } from '../../services/todo-gateway'
+import { openAppRoot } from '../../utils/app-navigation'
 import { createRequestGate } from '../../utils/request-control'
 
 const profileRequestGate = createRequestGate()
@@ -32,6 +37,7 @@ Page({
     todoTotalCount: 0,
     todoProgress: 0,
     todoLoading: false,
+    tabBarSummary: '家 / 宠物 / 记录 / 我的',
     lastTodoSummary: null as TodoSummary | null,
     showResetDemo: appConfig.demoMode,
   },
@@ -84,6 +90,11 @@ Page({
       if (activeSummary && todoError) summaryText += ' · 同步失败'
     }
     const isApiAccount = auth.source === 'api'
+    const tabBarSummary = resolveAppTabItems(
+      getAppTabConfig(auth.user?.id || auth.activeSpaceId || 'guest'),
+    )
+      .map((item) => item.label)
+      .join(' / ')
     this.setData({
       spaceName: auth.spaceName,
       isLoggedIn,
@@ -115,6 +126,7 @@ Page({
       todoTotalCount: totalCount,
       todoProgress: totalCount ? Math.round((completedCount / totalCount) * 100) : 0,
       todoLoading: false,
+      tabBarSummary,
     })
   },
 
@@ -127,11 +139,15 @@ Page({
   },
 
   onOpenTodo() {
-    wx.navigateTo({ url: '/pages/todo/index' })
+    openAppRoot('/pages/todo/index')
   },
 
   onOpenReminders() {
     wx.navigateTo({ url: '/pages/reminder-settings/index' })
+  },
+
+  onOpenTabSettings() {
+    wx.navigateTo({ url: '/pages/tab-settings/index' })
   },
 
   onOpenInvite() {

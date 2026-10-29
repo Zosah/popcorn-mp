@@ -107,4 +107,5 @@
       <text>记一件要做的事</text>
     </button>
   </view>
+  <app-tab-bar active="todo" />
 </view>

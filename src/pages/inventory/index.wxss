@@ -8,7 +8,7 @@
   --inv-orange: #d98a45;
   --inv-gold: #c28b23;
   --inv-red: #d85f78;
-  padding: 34rpx 36rpx calc(46rpx + env(safe-area-inset-bottom));
+  padding: 34rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
   background: var(--inv-paper);
   color: var(--inv-ink);
 }

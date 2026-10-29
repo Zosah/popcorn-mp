@@ -4,6 +4,7 @@ import {
   buildPetCareCards,
   buildPetCalendar,
   buildPetDailySummary,
+  buildPetHomeActivities,
   buildPetTimeline,
   filterPetSupplies,
   formatPetAge,
@@ -31,6 +32,30 @@ describe('宠物档案领域逻辑', () => {
     const second = timeline[1]
     if (!first || !second) throw new Error('宠物时间线示例不足')
     expect(first.occurredOn >= second.occurredOn).toBe(true)
+  })
+})
+
+describe('首页宠物动态', () => {
+  it('把今日照护、最近体重和照护事件整理成倒序动态', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const activities = buildPetHomeActivities(state, '2026-08-27', 3)
+
+    expect(activities.map((item) => item.typeLabel)).toEqual([
+      '日常',
+      '外出',
+      '体重',
+    ])
+    expect(activities[0]?.title).toBe('今天的照护已记录')
+    expect(activities[2]?.copy).toContain('3.8 kg')
+  })
+
+  it('没有照护数据时返回空动态', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    state.events = []
+    state.weights = []
+    state.dailyLogs = []
+
+    expect(buildPetHomeActivities(state, '2026-08-27')).toEqual([])
   })
 })
 

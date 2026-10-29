@@ -89,4 +89,5 @@
     <view class="menu-empty__copy">先收一道常做的菜，下次不知道吃什么时就有答案了。</view>
     <view class="menu-empty__action" bindtap="onCreate">添加第一道菜单</view>
   </view>
+  <app-tab-bar active="menu" />
 </view>

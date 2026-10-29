@@ -4,6 +4,7 @@
   "usingComponents": {
     "inventory-card": "/components/inventory-card/index",
     "sync-badge": "/components/sync-badge/index",
-    "line-icon": "/components/line-icon/index"
+    "line-icon": "/components/line-icon/index",
+    "app-tab-bar": "/components/app-tab-bar/index"
   }
 }

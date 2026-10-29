@@ -5,7 +5,12 @@ import {
 } from '../../domain/home'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import { buildDemoAvatarText, type DemoAvatarTone } from '../../domain/demo-auth'
-import { buildPetCareCards, buildPetDailySummary } from '../../domain/demo-pet'
+import {
+  buildPetCareCards,
+  buildPetDailySummary,
+  buildPetHomeActivities,
+  type PetHomeActivity,
+} from '../../domain/demo-pet'
 import { journalGateway } from '../../services/journal'
 import type { JournalItem } from '../../services/journal-gateway'
 import { hydrateAuthState } from '../../services/auth'
@@ -16,6 +21,7 @@ import { getDemoPetState } from '../../services/demo-pet'
 import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { openAppRoot } from '../../utils/app-navigation'
 import { createRequestGate } from '../../utils/request-control'
 
 interface HomeMemberView {
@@ -28,6 +34,11 @@ interface HomeHeadline {
   top: string
   middle: string
   bottom: string
+}
+
+interface HomePetActivity extends PetHomeActivity {
+  dateLabel: string
+  tone: 'blue' | 'green' | 'pink'
 }
 
 const EMPTY_SNAPSHOT: HomeSnapshot = {
@@ -62,6 +73,19 @@ function isCreatedToday(entry: JournalItem | null, today: string): boolean {
   return !Number.isNaN(timestamp) && getShanghaiDateOnly(timestamp) === today
 }
 
+function formatPetActivityDate(value: string, today: string): string {
+  if (!value) return ''
+  if (value === today) return '今天'
+  const todayMs = Date.parse(`${today}T00:00:00+08:00`)
+  const valueMs = Date.parse(`${value}T00:00:00+08:00`)
+  if (Number.isNaN(todayMs) || Number.isNaN(valueMs)) return value
+  const days = Math.round((todayMs - valueMs) / 86400000)
+  if (days === 1) return '昨天'
+  if (days > 1 && days < 7) return `${days} 天前`
+  const [, month, day] = value.split('-')
+  return month && day ? `${Number(month)}月${Number(day)}日` : value
+}
+
 Page({
   data: {
     snapshot: EMPTY_SNAPSHOT,
@@ -75,6 +99,8 @@ Page({
     todoPendingCount: 0,
     todoSummary: '旅行、计划、健身、吃什么和账单',
     petPendingCount: 0,
+    petActivities: [] as HomePetActivity[],
+    petActivityCount: 0,
     hasLoadedInventory: false,
     hasLoadedMoments: false,
     hasLoadedTodos: false,
@@ -142,6 +168,13 @@ Page({
     const overdueCare = careCards.find((item) => item.status === 'overdue')
     const dueSoonCare = careCards.find((item) => item.status === 'due-soon')
     const dailySummary = buildPetDailySummary(petState.dailyLogs, today)
+    const petActivities = buildPetHomeActivities(petState, today, 3).map(
+      (item): HomePetActivity => ({
+        ...item,
+        dateLabel: formatPetActivityDate(item.occurredOn, today),
+        tone: item.target === 'daily' ? 'green' : item.target === 'event' ? 'pink' : 'blue',
+      }),
+    )
     const pendingDaily = dailySummary.find((item) => !item.done)
     const careNotice = overdueCare
       ? `${overdueCare.title} · ${overdueCare.statusLabel}`
@@ -207,6 +240,8 @@ Page({
           : '目前都做完了，可以再记一件')
         : this.data.hasLoadedTodos ? this.data.todoSummary : todoError,
       petPendingCount: (overdueCare || dueSoonCare ? 1 : 0) + (pendingDaily ? 1 : 0),
+      petActivities,
+      petActivityCount: petState.events.length + petState.weights.length + petState.dailyLogs.length,
       hasLoadedInventory:
         this.data.hasLoadedInventory || inventoryResult.status === 'fulfilled',
       hasLoadedMoments:
@@ -245,12 +280,6 @@ Page({
     })
   },
 
-  onOpenEntry(event: { currentTarget: { dataset: { id?: string } } }) {
-    const id = event.currentTarget.dataset.id
-    if (!id) return
-    wx.navigateTo({ url: `/pages/journal-detail/index?id=${encodeURIComponent(id)}` })
-  },
-
   onOpenNearby(event: { currentTarget: { dataset: { target?: string } } }) {
     switch (event.currentTarget.dataset.target) {
       case 'inventory':
@@ -271,19 +300,33 @@ Page({
   },
 
   onOpenInventory() {
-    wx.switchTab({ url: '/pages/inventory/index' })
+    openAppRoot('/pages/inventory/index')
   },
 
   onOpenJournal() {
-    wx.switchTab({ url: '/pages/journal/index' })
+    openAppRoot('/pages/journal/index')
   },
 
   onOpenTodo() {
-    wx.navigateTo({ url: '/pages/todo/index' })
+    openAppRoot('/pages/todo/index')
   },
 
   onOpenProfile() {
-    wx.switchTab({ url: '/pages/profile/index' })
+    openAppRoot('/pages/profile/index')
+  },
+
+  onOpenPetActivity(event: {
+    currentTarget: { dataset: { eventId?: string; section?: string } }
+  }) {
+    const { eventId, section } = event.currentTarget.dataset
+    if (eventId) {
+      wx.navigateTo({
+        url: `/pages/pet-event-detail/index?id=${encodeURIComponent(eventId)}`,
+      })
+      return
+    }
+    const targetSection = section === 'daily' ? 'daily' : 'profile'
+    openAppRoot(`/pages/pets/index?section=${targetSection}`)
   },
 
   onOpenReminders() {
@@ -291,10 +334,10 @@ Page({
   },
 
   onOpenPets() {
-    wx.navigateTo({ url: '/pages/pets/index' })
+    openAppRoot('/pages/pets/index')
   },
 
   onOpenMenu() {
-    wx.navigateTo({ url: '/pages/menu/index' })
+    openAppRoot('/pages/menu/index')
   },
 })

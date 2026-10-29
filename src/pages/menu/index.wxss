@@ -6,7 +6,7 @@
   --menu-line: #ebe5da;
   --menu-deep: #2c4a52;
   --menu-gold: #c28b23;
-  padding: 28rpx 36rpx calc(70rpx + env(safe-area-inset-bottom));
+  padding: 28rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
   background: var(--menu-paper);
   color: var(--menu-ink);
 }

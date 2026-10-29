@@ -16,6 +16,7 @@ import {
 } from '../../services/space-gateway'
 import type { ApiInvitePreview } from '../../types/api'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { openAppRoot } from '../../utils/app-navigation'
 
 type InviteStatus = DemoInviteStatus | 'expired' | 'used' | 'error'
 
@@ -138,7 +139,7 @@ Page({
   },
 
   onGoHome() {
-    wx.switchTab({ url: '/pages/home/index' })
+    openAppRoot('/pages/home/index')
   },
 
   async applyCode(value: string) {

@@ -55,6 +55,12 @@
       <view class="profile-row__body"><text>提醒设置</text><text>临期、宠物、每周回顾</text></view>
       <view class="profile-row__arrow">›</view>
     </view>
+    <view class="profile-row" bindtap="onOpenTabSettings">
+      <view class="profile-row__icon profile-row__icon--green"><line-icon name="house" size="26" tone="green" /></view>
+      <view class="profile-row__body"><text>底部导航</text><text>{{tabBarSummary}}</text></view>
+      <view class="profile-row__tag">可自定义</view>
+      <view class="profile-row__arrow">›</view>
+    </view>
     <view class="profile-row" bindtap="onOpenInvite">
       <view class="profile-row__icon profile-row__icon--gold"><line-icon name="users" size="26" tone="gold" /></view>
       <view class="profile-row__body"><text>成员与邀请</text><text>{{spaceName}} · 邀请家人一起生活</text></view>
@@ -75,4 +81,5 @@
       <view class="profile-demo__danger" bindtap="onResetDemo">重置 Demo 数据</view>
     </view>
   </view>
+  <app-tab-bar active="profile" />
 </view>

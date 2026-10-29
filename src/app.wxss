@@ -77,14 +77,14 @@ page::-webkit-scrollbar {
   color: transparent;
 }
 
-/* 原生 TabBar 由微信管理安全区，页面只保留内容收尾留白。 */
+/* 自定义底栏固定在视口底部，根页面统一预留安全区与底栏高度。 */
 .tab-page {
   position: relative;
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 34rpx 36rpx 48rpx;
+  padding: 34rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
 }
 
 .page-shell {
@@ -93,7 +93,7 @@ page::-webkit-scrollbar {
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 28rpx 36rpx calc(160rpx + env(safe-area-inset-bottom));
+  padding: 28rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
 }
 
 .subpage-back {

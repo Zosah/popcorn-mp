@@ -121,6 +121,17 @@ export interface PetCalendarCell {
   eventCount: number
 }
 
+export interface PetHomeActivity {
+  id: string
+  title: string
+  copy: string
+  occurredOn: string
+  typeLabel: string
+  icon: string
+  target: 'event' | 'profile' | 'daily'
+  eventId?: string
+}
+
 export const PET_EVENT_LABELS: Record<PetEventType, string> = {
   vaccine: '疫苗',
   neuter: '绝育',
@@ -222,6 +233,84 @@ export function buildPetTimeline(state: DemoPetState): PetTimelineItem[] {
       right.occurredOn.localeCompare(left.occurredOn) ||
       right.id.localeCompare(left.id),
   )
+}
+
+export function buildPetHomeActivities(
+  state: DemoPetState,
+  today: string,
+  limit = 3,
+): PetHomeActivity[] {
+  const activities: PetHomeActivity[] = []
+  const todayLogs = state.dailyLogs
+    .filter((log) => getShanghaiDateOnly(Date.parse(log.recordedAt)) === today)
+    .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
+
+  if (todayLogs.length) {
+    const labels = Array.from(
+      new Set(todayLogs.map((log) => PET_DAILY_LOG_LABELS[log.type])),
+    )
+    activities.push({
+      id: `daily-summary-${today}`,
+      title: '今天的照护已记录',
+      copy: `${labels.join('、')} · ${todayLogs.length} 条记录`,
+      occurredOn: today,
+      typeLabel: '日常',
+      icon: 'heart-pulse',
+      target: 'daily',
+    })
+  }
+
+  const weights = [...state.weights].sort((left, right) =>
+    left.recordedOn.localeCompare(right.recordedOn),
+  )
+  const latestWeight = weights[weights.length - 1]
+  if (latestWeight) {
+    const previousWeight = weights[weights.length - 2]
+    const delta = previousWeight
+      ? Number(latestWeight.value) - Number(previousWeight.value)
+      : null
+    activities.push({
+      id: latestWeight.id,
+      title: `${state.profile.name}更新了体重`,
+      copy:
+        delta === null || Math.abs(delta) < 0.05
+          ? `现在 ${latestWeight.value} kg`
+          : `现在 ${latestWeight.value} kg · 较上次 ${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`,
+      occurredOn: latestWeight.recordedOn,
+      typeLabel: '体重',
+      icon: 'chart-no-axes-column',
+      target: 'profile',
+    })
+  }
+
+  const latestEvent = [...state.events].sort((left, right) =>
+    right.occurredOn.localeCompare(left.occurredOn),
+  )[0]
+  if (latestEvent) {
+    activities.push({
+      id: latestEvent.id,
+      title: latestEvent.title,
+      copy: latestEvent.note || PET_EVENT_LABELS[latestEvent.type],
+      occurredOn: latestEvent.occurredOn,
+      typeLabel: PET_EVENT_LABELS[latestEvent.type],
+      icon:
+        latestEvent.type === 'grooming'
+          ? 'droplets'
+          : latestEvent.type === 'vaccine'
+            ? 'droplet'
+            : 'paw-print',
+      target: 'event',
+      eventId: latestEvent.id,
+    })
+  }
+
+  return activities
+    .sort(
+      (left, right) =>
+        right.occurredOn.localeCompare(left.occurredOn) ||
+        right.id.localeCompare(left.id),
+    )
+    .slice(0, Math.max(0, limit))
 }
 
 export function buildPetCareCards(

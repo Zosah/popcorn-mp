@@ -121,4 +121,5 @@
       <view class="journal-state__action" bindtap="onCreate">存一份记录</view>
     </view>
   </view>
+  <app-tab-bar active="journal" />
 </view>

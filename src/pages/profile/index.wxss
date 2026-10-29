@@ -7,7 +7,7 @@
   --profile-deep: #2c4a52;
   --profile-green: #6f9f7d;
   --profile-red: #d85f78;
-  padding: 34rpx 36rpx 50rpx;
+  padding: 34rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
   background: var(--profile-paper);
   color: var(--profile-ink);
 }
@@ -56,6 +56,7 @@
 .profile-row__icon--blue { background: #eaf1f7; }
 .profile-row__icon--pink { background: #fcedf0; }
 .profile-row__icon--gold { background: #fbf3e1; }
+.profile-row__icon--green { background: #eef5ef; }
 .profile-row__icon--grey { background: #f6f1e9; }
 .profile-row__body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3rpx; }
 .profile-row__body text:first-child { font-size: 28rpx; font-weight: 600; }

@@ -1,0 +1,100 @@
+<view class="tab-settings-page">
+  <view class="tab-settings-hero">
+    <view class="tab-settings-hero__copy">
+      <text class="tab-settings-hero__eyebrow">MY HOME BAR</text>
+      <text class="tab-settings-hero__title">把常用的，放到手边</text>
+      <text class="tab-settings-hero__intro">首页和「我的」固定不动。中间两个位置，可以换成你每天最常用的功能。</text>
+    </view>
+    <view class="tab-settings-hero__art">
+      <view class="tab-settings-hero__sun"></view>
+      <view class="tab-settings-hero__paw"><line-icon name="paw-print" size="44" tone="pink" /></view>
+      <view class="tab-settings-hero__house"><line-icon name="house" size="36" tone="blue" /></view>
+    </view>
+  </view>
+
+  <view class="tab-settings-preview">
+    <view class="tab-settings-preview__head">
+      <text>当前底栏</text>
+      <text>自动保存</text>
+    </view>
+    <view class="tab-settings-preview__bar">
+      <view wx:for="{{previewItems}}" wx:key="id" class="tab-settings-preview__item">
+        <view class="tab-settings-preview__icon tab-settings-preview__icon--{{item.tone}}">
+          <line-icon name="{{item.icon}}" size="25" tone="ink" />
+        </view>
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tab-settings-section-head">
+    <text>选择位置</text>
+    <text>第 2、3 个位置可修改</text>
+  </view>
+  <view class="tab-settings-slots">
+    <view
+      wx:for="{{slots}}"
+      wx:key="slot"
+      class="tab-settings-slot {{editingSlot === item.slot ? 'tab-settings-slot--active' : ''}}"
+      data-slot="{{item.slot}}"
+      bindtap="onSelectSlot"
+    >
+      <view class="tab-settings-slot__label">{{item.positionLabel}}</view>
+      <view class="tab-settings-slot__main">
+        <view class="tab-settings-slot__icon tab-settings-slot__icon--{{item.tone}}">
+          <line-icon name="{{item.icon}}" size="30" tone="ink" />
+        </view>
+        <view class="tab-settings-slot__body">
+          <text>{{item.label}}</text>
+          <text>{{item.description}}</text>
+        </view>
+      </view>
+      <view class="tab-settings-slot__edit">{{editingSlot === item.slot ? '正在选择' : '更换'}}</view>
+    </view>
+  </view>
+
+  <view class="tab-settings-section-head">
+    <text>可选功能</text>
+    <text>{{editingSlot === 'slot2' ? '正在设置第二个位置' : '正在设置第三个位置'}}</text>
+  </view>
+  <view
+    wx:for="{{candidateGroups}}"
+    wx:key="key"
+    class="tab-settings-candidate-group"
+  >
+    <view class="tab-settings-candidate-group__head">
+      <text>{{item.title}}</text>
+      <text>{{item.hint}}</text>
+    </view>
+    <view class="tab-settings-options">
+      <view
+        wx:for="{{item.items}}"
+        wx:for-item="option"
+        wx:key="id"
+        class="tab-settings-option {{option.selected ? 'tab-settings-option--selected' : ''}} {{option.disabled ? 'tab-settings-option--disabled' : ''}}"
+        data-id="{{option.id}}"
+        bindtap="onChooseCandidate"
+      >
+        <view class="tab-settings-option__icon tab-settings-option__icon--{{option.tone}}">
+          <line-icon name="{{option.icon}}" size="30" tone="ink" />
+        </view>
+        <view class="tab-settings-option__body">
+          <view class="tab-settings-option__title-row">
+            <text>{{option.label}}</text>
+            <text wx:if="{{option.stateLabel}}" class="tab-settings-option__tag">{{option.stateLabel}}</text>
+          </view>
+          <text class="tab-settings-option__copy">{{option.description}}</text>
+        </view>
+        <view class="tab-settings-option__check">
+          <line-icon wx:if="{{option.selected}}" name="circle-check" size="27" tone="green" />
+          <line-icon wx:else name="plus" size="24" tone="faint" />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tab-settings-note">
+    <line-icon name="circle-alert" size="24" tone="orange" />
+    <text>同一功能只能放在一个位置。设置会跟随当前账号保存在这台设备上。</text>
+  </view>
+</view>
