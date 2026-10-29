@@ -7,7 +7,7 @@
   --journal-deep: #2c4a52;
   --journal-blue: #5b8fb9;
   --journal-red: #d85f78;
-  padding: 34rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
+  padding: 34rpx 36rpx calc(158rpx + env(safe-area-inset-bottom));
   background: var(--journal-paper);
   color: var(--journal-ink);
 }

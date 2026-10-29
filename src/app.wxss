@@ -84,7 +84,7 @@ page::-webkit-scrollbar {
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 34rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
+  padding: 34rpx 36rpx calc(158rpx + env(safe-area-inset-bottom));
 }
 
 .page-shell {
@@ -93,7 +93,7 @@ page::-webkit-scrollbar {
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 28rpx 36rpx calc(190rpx + env(safe-area-inset-bottom));
+  padding: 28rpx 36rpx calc(158rpx + env(safe-area-inset-bottom));
 }
 
 .subpage-back {

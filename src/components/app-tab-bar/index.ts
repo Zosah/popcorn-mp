@@ -18,6 +18,7 @@ Component({
   data: {
     items: [] as AppTabItem[],
     activeId: '',
+    pendingId: '',
   },
 
   lifetimes: {
@@ -29,6 +30,9 @@ Component({
   pageLifetimes: {
     show() {
       this.refresh()
+    },
+    hide() {
+      this.clearPending()
     },
   },
 
@@ -42,6 +46,7 @@ Component({
       const currentPage = pages[pages.length - 1]
       this.setData({
         items,
+        pendingId: '',
         activeId: resolveActiveAppTabItemId(
           items,
           currentPage?.route ?? '',
@@ -56,12 +61,24 @@ Component({
     }) {
       const id = event.currentTarget.dataset.id
       const data = this.data as unknown as {
-        active: string
+        pendingId: string
         items: AppTabItem[]
       }
       const item = data.items.find((candidate) => candidate.id === id)
       if (!item) return
-      openAppRoot(item.path)
+      // 切页动画期间锁住整个底栏，避免连续点击触发重复导航。
+      if (data.pendingId) return
+      this.setData({ pendingId: id || '' }, () => {
+        openAppRoot(item.path, () => {
+          if (id === this.data.pendingId) {
+            this.setData({ pendingId: '' })
+          }
+        })
+      })
+    },
+
+    clearPending() {
+      if (this.data.pendingId) this.setData({ pendingId: '' })
     },
   },
 })

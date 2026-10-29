@@ -7,7 +7,7 @@
   --todo-deep: #2c4a52;
   --todo-green: #6f9f7d;
   --todo-red: #d85f78;
-  padding: 28rpx 36rpx calc(302rpx + env(safe-area-inset-bottom));
+  padding: 28rpx 36rpx calc(252rpx + env(safe-area-inset-bottom));
   background: var(--todo-paper);
   color: var(--todo-ink);
 }
@@ -90,5 +90,5 @@
 .todo-state__action { margin-top: 20rpx; padding: 14rpx 24rpx; border-radius: 999rpx; background: var(--todo-deep); color: #fff; font-size: 25rpx; font-weight: 600; }
 
 .todo-bottom-space { height: 128rpx; }
-.todo-action-bar { position: fixed; right: 36rpx; bottom: calc(144rpx + env(safe-area-inset-bottom)); left: 36rpx; z-index: 20; }
+.todo-action-bar { position: fixed; right: 36rpx; bottom: calc(120rpx + env(safe-area-inset-bottom)); left: 36rpx; z-index: 20; }
 .todo-add { display: flex; width: 100%; height: 78rpx; align-items: center; justify-content: center; border: 0; border-radius: 999rpx; background: var(--todo-deep); box-shadow: 0 12rpx 24rpx rgba(44, 74, 82, 0.18); color: #fff; gap: 9rpx; font-size: 28rpx; font-weight: 700; line-height: 78rpx; }

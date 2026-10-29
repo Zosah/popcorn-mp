@@ -130,7 +130,7 @@
 
 .tab-settings-preview__bar {
   display: flex;
-  height: 102rpx;
+  height: 92rpx;
   align-items: center;
   margin-top: 17rpx;
   padding: 8rpx;
@@ -143,7 +143,7 @@
 .tab-settings-preview__item {
   display: flex;
   min-width: 0;
-  height: 84rpx;
+  height: 76rpx;
   align-items: center;
   justify-content: center;
   border-radius: 25rpx;
@@ -156,8 +156,8 @@
 
 .tab-settings-preview__icon {
   display: flex;
-  width: 40rpx;
-  height: 40rpx;
+  width: 37rpx;
+  height: 37rpx;
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
