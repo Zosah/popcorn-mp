@@ -6,8 +6,8 @@
   --reminder-ink-3: #a69e96;
   --reminder-line: #ebe5da;
   --reminder-deep: #2c4a52;
-  width: calc(100vw + 2px);
-  max-width: calc(100vw + 2px);
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
   padding: 32rpx 36rpx calc(90rpx + env(safe-area-inset-bottom));

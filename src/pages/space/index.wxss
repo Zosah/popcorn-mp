@@ -10,8 +10,8 @@
   --space-green: #6f9f7d;
   --space-orange: #d98a45;
   --space-pink: #d87592;
-  width: calc(100vw + 2px);
-  max-width: calc(100vw + 2px);
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
   padding: 32rpx 36rpx calc(88rpx + env(safe-area-inset-bottom));
