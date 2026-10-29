@@ -1,53 +1,66 @@
 <view class="page-shell menu-detail-page" wx:if="{{recipe}}">
-  <view class="subpage-back" bindtap="onBack">← 返回菜单</view>
-
-  <view class="menu-detail-head">
-    <view class="menu-detail-head__top">
-      <view class="menu-detail-title">{{recipe.title}}</view>
-      <view class="menu-detail-edit" bindtap="onEdit"><line-icon name="pen-line" size="21" tone="ink" /><text>编辑</text></view>
+  <view class="md-top">
+    <view class="md-top__main">
+      <view class="md-top__title">{{recipe.title}}</view>
+      <view class="md-top__sub">{{recipe.cookingMinutes}} 分钟 · {{recipe.servings}} 人份</view>
     </view>
-    <view class="menu-detail-copy">{{recipe.description || '还没有写下这道菜的介绍。'}}</view>
-    <view class="sync-row"><sync-badge state="local" text="本机菜单 · 暂未跨设备同步" /></view>
+    <view class="md-edit" bindtap="onEdit"><line-icon name="pen-line" size="19" tone="ink" /><text>编辑</text></view>
   </view>
 
-  <view wx:if="{{recipe.image}}" class="menu-hero">
-    <image class="menu-hero__image" src="{{recipe.image.src}}" mode="aspectFill" />
-    <view class="menu-hero__footer">
-      <view class="menu-hero__info">
-        <view class="menu-hero__time"><line-icon name="clock-3" size="22" tone="muted" /><text>预计 {{recipe.cookingMinutes}} 分钟</text></view>
-        <text>{{recipe.servings}} 人份 · 家常菜单</text>
+  <view wx:if="{{recipe.image}}" class="md-hero">
+    <image class="md-hero__image" src="{{recipe.image.src}}" mode="aspectFill" />
+    <view class="md-hero__shade"></view>
+    <view class="md-hero__copy">
+      <view class="md-hero__title">{{recipe.title}}</view>
+      <view class="md-hero__meta">{{recipe.cookingMinutes}} 分钟 · {{recipe.servings}} 人份</view>
+    </view>
+  </view>
+  <view wx:else class="md-hero md-hero--plain">
+    <line-icon name="soup" size="55" tone="gold" />
+    <view class="md-hero__copy">
+      <view class="md-hero__title">{{recipe.title}}</view>
+      <view class="md-hero__meta">家常菜单 · {{recipe.cookingMinutes}} 分钟</view>
+    </view>
+  </view>
+
+  <view wx:if="{{recipe.description}}" class="md-intro">{{recipe.description}}</view>
+
+  <view class="md-section-head">
+    <view>
+      <text>准备食材</text>
+      <text>{{readyCount}} / {{recipe.ingredients.length}} 已备好</text>
+    </view>
+    <view class="md-stepper">
+      <text data-delta="-1" bindtap="onChangeServings">−</text>
+      <text>{{recipe.servings}} 人份</text>
+      <text data-delta="1" bindtap="onChangeServings">＋</text>
+    </view>
+  </view>
+
+  <view class="md-ingredients">
+    <view wx:for="{{recipe.ingredients}}" wx:key="id" class="md-ingredient {{item.ready ? 'md-ingredient--ready' : ''}}" data-id="{{item.id}}" bindtap="onToggleIngredient">
+      <view class="md-ingredient__check">{{item.ready ? '✓' : ''}}</view>
+      <view class="md-ingredient__body">
+        <text>{{item.name}}</text>
+        <text>{{item.source || '来源未填写'}}</text>
       </view>
-      <text wx:if="{{recipe.image.caption}}" class="menu-hero__credit">{{recipe.image.caption}}</text>
+      <view class="md-ingredient__amount">{{item.amount}}</view>
     </view>
   </view>
 
-  <view wx:else class="menu-hero menu-hero--plain">
-    <view class="menu-hero__time"><line-icon name="clock-3" size="22" tone="muted" /><text>预计 {{recipe.cookingMinutes}} 分钟</text></view>
-    <text>{{recipe.servings}} 人份 · 家常菜单</text>
+  <view class="md-section-head">
+    <view><text>做法</text><text>{{recipe.steps.length}} 个步骤</text></view>
   </view>
-
-  <view class="menu-section-head">
-    <view><text>准备食材</text><text>{{readyCount}} / {{recipe.ingredients.length}} 已备好</text></view>
-    <view class="serving-stepper"><text data-delta="-1" bindtap="onChangeServings">−</text><text>{{recipe.servings}} 人份</text><text data-delta="1" bindtap="onChangeServings">＋</text></view>
-  </view>
-
-  <view class="ingredient-list">
-    <view wx:for="{{recipe.ingredients}}" wx:key="id" class="ingredient-row" data-id="{{item.id}}" bindtap="onToggleIngredient">
-      <view class="ingredient-check {{item.ready ? 'ingredient-check--ready' : ''}}">{{item.ready ? '✓' : ''}}</view>
-      <view class="ingredient-body"><text>{{item.name}}</text><text>{{item.source || '来源未填写'}}</text></view>
-      <view class="ingredient-amount">{{item.amount}}</view>
+  <view class="md-steps">
+    <view wx:for="{{recipe.steps}}" wx:key="id" class="md-step">
+      <view class="md-step__number">{{index + 1}}</view>
+      <view class="md-step__body"><text>{{item.title}}</text><text>{{item.description}}</text></view>
     </view>
   </view>
 
-  <view class="menu-section-head"><view><text>做法</text><text>{{recipe.steps.length}} 个步骤</text></view></view>
-  <view class="step-list">
-    <view wx:for="{{recipe.steps}}" wx:key="id">
-      <text>0{{index + 1}}</text>
-      <view><text>{{item.title}}</text><text>{{item.description}}</text></view>
-    </view>
-  </view>
-
-  <button class="primary-button menu-start" bindtap="onStartCooking"><line-icon name="flame" size="28" tone="white" /><text>看看能不能开火</text></button>
-  <button class="danger-button menu-delete" bindtap="onDelete"><line-icon name="circle-alert" size="23" tone="danger" /><text>删除这份菜单</text></button>
-  <view class="menu-detail-sync"><sync-badge state="local" text="食材勾选仅保存在本机" /></view>
+  <button class="md-start" bindtap="onStartCooking">
+    <line-icon name="flame" size="23" tone="white" />
+    <text>开始做饭 · 看看还差什么</text>
+  </button>
+  <button class="md-delete" bindtap="onDelete">删除这份菜单</button>
 </view>

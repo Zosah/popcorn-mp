@@ -1,7 +1,9 @@
 {
   "navigationBarTitleText": "时刻见",
+  "navigationBarBackgroundColor": "#fdfbf7",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#fdfbf7",
   "usingComponents": {
-    "sync-badge": "/components/sync-badge/index",
     "line-icon": "/components/line-icon/index"
   }
 }

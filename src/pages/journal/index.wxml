@@ -1,140 +1,124 @@
 <view class="tab-page journal-page">
-  <view class="journal-head">
-    <view>
-      <view class="eyebrow">OUR LITTLE LIFE</view>
-      <view class="journal-head__title">生活记录</view>
+  <view class="journal-top">
+    <view class="journal-top__main">
+      <view class="journal-top__title">生活记录</view>
+      <view class="journal-top__sub">{{entries.length + notesCount}} 篇 · 把普通的日子留下</view>
     </view>
-    <sync-badge state="{{syncState}}" text="{{syncText}}" />
+    <view class="journal-write" bindtap="onCreate">
+      <line-icon name="plus" size="23" tone="white" />
+      <text>写</text>
+    </view>
   </view>
 
-  <view class="journal-hero glass-card" bindtap="onCreate">
-    <view class="journal-hero__glow"></view>
-    <view class="journal-hero__copy">
-      <view class="journal-hero__label">{{activeView === 'notes' ? 'IMPORTANT NOTES' : 'MY DIARY'}}</view>
-      <view class="journal-hero__title">{{activeView === 'notes' ? '把重要的事，妥帖收好' : '日子，慢慢记'}}</view>
-      <view class="journal-hero__desc">{{activeView === 'notes' ? '证件、家规和照护资料，需要时总能找到。' : '重要的不是每天都有故事，是我们记得一起过过这些天。'}}</view>
-      <view class="journal-hero__button">
-        <text>{{activeView === 'notes' ? '存一份记录' : '写一笔今天'}}</text>
-        <line-icon name="{{activeView === 'notes' ? 'file-text' : 'pen-line'}}" size="24" tone="white" />
+  <scroll-view class="journal-filters" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="journal-filters__row">
+      <view wx:for="{{filterOptions}}" wx:key="key" class="journal-filter {{activeFilter === item.key ? 'journal-filter--active' : ''}}" data-value="{{item.key}}" bindtap="onSelectFilter">
+        <text>{{item.label}}</text>
+        <text>{{item.count}}</text>
       </view>
     </view>
-    <view class="journal-hero__visual">
-      <image class="journal-hero__image" src="../../images/demo-flowers.jpg" mode="aspectFill" />
-      <view class="journal-hero__pin"><line-icon name="heart-pulse" size="22" tone="accent" /></view>
+  </scroll-view>
+
+  <view wx:if="{{loadError && (entries.length || notesCount)}}" class="journal-banner">
+    <line-icon name="circle-alert" size="22" tone="danger" />
+    <view class="journal-banner__body">
+      <text>记录刷新没完成</text>
+      <text>先保留已经读到的内容，稍后可以再试。</text>
     </view>
+    <view class="journal-banner__action" bindtap="onRetryLoad">重试</view>
   </view>
 
-  <view class="journal-tabs glass-card">
-    <view class="journal-tab {{activeView === 'moments' ? 'journal-tab--active' : ''}}" data-value="moments" bindtap="onSwitchView">
-      <text>生活点滴</text>
-      <text>{{entries.length}}</text>
-    </view>
-    <view class="journal-tab {{activeView === 'notes' ? 'journal-tab--active' : ''}}" data-value="notes" bindtap="onSwitchView">
-      <text>重要记录</text>
-      <text>{{notesCount}}</text>
-    </view>
-  </view>
-
-  <view wx:if="{{loadError && (entries.length || notesCount)}}" class="state-banner state-banner--warm glass-card journal-state-banner">
-    <view class="state-banner__icon"><line-icon name="circle-alert" size="24" tone="accent" /></view>
-    <view class="state-banner__body">
-      <text class="state-banner__title">记录刷新没完成</text>
-      <text class="state-banner__copy">先保留已经读到的内容，稍后可以再试。</text>
-    </view>
-    <view class="state-banner__action" bindtap="onRetryLoad">重新加载</view>
-  </view>
-
-  <view wx:if="{{activeView === 'moments'}}" class="timeline">
-    <view wx:if="{{loading && !entries.length}}" class="state-card state-card--loading glass-card">
-      <view class="state-card__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
-      <view class="state-card__title">正在把日子轻轻翻出来</view>
-      <view class="state-card__copy">稍等一下，马上就好。</view>
+  <block wx:if="{{activeView === 'moments'}}">
+    <view wx:if="{{loading && !entries.length}}" class="journal-state">
+      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="notebook-tabs" size="34" tone="blue" /></view>
+      <view class="journal-state__title">正在把日子轻轻翻出来</view>
+      <view class="journal-state__copy">稍等一下，马上就好。</view>
     </view>
 
-    <view wx:elif="{{loadError && !entries.length}}" class="state-card state-card--error glass-card">
-      <view class="state-card__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
-      <view class="state-card__title">暂时没有连上</view>
-      <view class="state-card__copy">{{loadError}}</view>
-      <view class="state-card__action" bindtap="onRetryLoad">重新加载</view>
+    <view wx:elif="{{loadError && !entries.length}}" class="journal-state">
+      <view class="journal-state__icon journal-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+      <view class="journal-state__title">暂时没有连上</view>
+      <view class="journal-state__copy">{{loadError}}</view>
+      <view class="journal-state__action" bindtap="onRetryLoad">重新加载</view>
     </view>
 
-    <block wx:elif="{{entries.length}}">
-      <view wx:for="{{entries}}" wx:key="id" class="entry glass-card" data-id="{{item.id}}" bindtap="onOpenEntry">
-        <view class="entry__head">
-          <view class="entry__date">
-            <text>{{item.day}}</text>
-            <text>{{item.monthLabel}}</text>
-          </view>
-          <view class="entry__meta">
-            <text>{{item.authorName}}</text>
-            <text>{{item.timeLabel}}{{item.updatedAt ? ' · 已编辑' : ''}}</text>
-          </view>
-          <view class="entry__more">•••</view>
-        </view>
-
-        <view class="entry__title">{{item.title}}</view>
-        <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="entry__photo" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
-        <view wx:if="{{item.image && item.image.caption}}" class="entry__caption">{{item.image.caption}}</view>
-        <view wx:if="{{item.content}}" class="entry__copy">{{item.content}}</view>
-
-        <view class="entry__foot">
-          <view class="entry__visibility">
-            <line-icon name="{{item.visibility === 'private' ? 'lock' : 'users'}}" size="20" tone="muted" />
-            <text>{{item.visibilityLabel}}</text>
-          </view>
-          <view class="entry__open">翻开看看 →</view>
+    <view wx:elif="{{entries.length}}" class="journal-timeline">
+      <view wx:for="{{entries}}" wx:key="id" class="journal-entry journal-entry--tone{{index % 4}}" data-id="{{item.id}}" bindtap="onOpenEntry">
+        <view class="journal-entry__dot"></view>
+        <view class="journal-entry__meta">{{item.monthLabel}}{{item.day}} · {{item.timeLabel}} · {{item.authorName}}</view>
+        <view class="journal-entry__title">{{item.title}}</view>
+        <view wx:if="{{item.content}}" class="journal-entry__copy">{{item.content}}</view>
+        <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="journal-entry__photo" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
+        <view wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</view>
+        <view class="journal-entry__tags">
+          <text class="journal-entry__tag">{{item.visibilityLabel}}</text>
+          <text wx:if="{{item.updatedAt}}" class="journal-entry__tag journal-entry__tag--warm">已编辑</text>
         </view>
       </view>
-    </block>
-
-    <view wx:else class="state-card glass-card">
-      <view class="state-card__icon"><line-icon name="notebook-tabs" size="38" tone="accent" /></view>
-      <view class="state-card__title">还没有留下记录</view>
-      <view class="state-card__copy">写下一句话，平常的一天也会有一个落点。</view>
-      <view class="state-card__action" bindtap="onCreate">记下第一笔</view>
-    </view>
-  </view>
-
-  <view wx:else class="notes-view">
-    <view wx:if="{{loading && !notesCount}}" class="state-card state-card--loading glass-card">
-      <view class="state-card__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
-      <view class="state-card__title">正在整理重要记录</view>
-      <view class="state-card__copy">稍等一下，马上就好。</view>
     </view>
 
-    <view wx:elif="{{loadError && !notesCount}}" class="state-card state-card--error glass-card">
-      <view class="state-card__icon"><line-icon name="circle-alert" size="38" tone="accent" /></view>
-      <view class="state-card__title">暂时没有连上</view>
-      <view class="state-card__copy">{{loadError}}</view>
-      <view class="state-card__action" bindtap="onRetryLoad">重新加载</view>
+    <view wx:else class="journal-state">
+      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="pen-line" size="34" tone="blue" /></view>
+      <view class="journal-state__title">还没有留下记录</view>
+      <view class="journal-state__copy">写下一句话，平常的一天也会有一个落点。</view>
+      <view class="journal-state__action" bindtap="onCreate">记下第一笔</view>
     </view>
 
-    <block wx:elif="{{noteGroups.length}}">
-      <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="notes-group">
-        <view class="notes-group__head">
-          <view>
-            <line-icon name="{{group.icon}}" size="24" tone="accent" />
+    <view wx:if="{{noteGroups.length}}" class="journal-notes-preview">
+      <view class="journal-section-head">
+        <text>重要记录</text>
+        <text>长期保存的资料</text>
+      </view>
+      <view class="journal-note-groups">
+        <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-group" data-value="{{group.key}}" bindtap="onSelectFilter">
+          <view class="journal-note-group__icon journal-note-group__icon--{{group.key}}"><line-icon name="{{group.icon}}" size="28" tone="{{group.key === 'health' ? 'pink' : group.key === 'pet' ? 'gold' : 'blue'}}" /></view>
+          <view class="journal-note-group__body">
             <text>{{group.label}}</text>
+            <text>{{group.entries.length}} 项资料</text>
           </view>
+          <view class="journal-note-group__arrow">›</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="journal-notes-view">
+    <view wx:if="{{loading && !notesCount}}" class="journal-state">
+      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="file-text" size="34" tone="blue" /></view>
+      <view class="journal-state__title">正在整理重要记录</view>
+      <view class="journal-state__copy">稍等一下，马上就好。</view>
+    </view>
+
+    <view wx:elif="{{loadError && !notesCount}}" class="journal-state">
+      <view class="journal-state__icon journal-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+      <view class="journal-state__title">暂时没有连上</view>
+      <view class="journal-state__copy">{{loadError}}</view>
+      <view class="journal-state__action" bindtap="onRetryLoad">重新加载</view>
+    </view>
+
+    <block wx:elif="{{visibleNoteGroups.length}}">
+      <view wx:for="{{visibleNoteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-section">
+        <view class="journal-section-head">
+          <view class="journal-section-head__title"><line-icon name="{{group.icon}}" size="23" tone="blue" /><text>{{group.label}}</text></view>
           <text>{{group.entries.length}} 项</text>
         </view>
-        <view class="notes-list glass-card">
-          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="note-row" data-id="{{entry.id}}" bindtap="onOpenEntry">
-            <view class="note-row__main">
-              <text class="note-row__title">{{entry.title}}</text>
-              <text class="note-row__copy">{{entry.content}}</text>
-              <text class="note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
+        <view class="journal-note-list">
+          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="journal-note-row" data-id="{{entry.id}}" bindtap="onOpenEntry">
+            <view class="journal-note-row__body">
+              <text class="journal-note-row__title">{{entry.title}}</text>
+              <text class="journal-note-row__copy">{{entry.content}}</text>
+              <text class="journal-note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
             </view>
-            <view class="note-row__arrow">›</view>
+            <view class="journal-note-row__arrow">›</view>
           </view>
         </view>
       </view>
     </block>
-    <view wx:else class="state-card glass-card">
-      <view class="state-card__icon"><line-icon name="file-text" size="38" tone="accent" /></view>
-      <view class="state-card__title">还没有重要记录</view>
-      <view class="state-card__copy">把证件信息、家规、照护资料收在这里，需要时随时能找到。</view>
-      <view class="state-card__action" bindtap="onCreate">存一份记录</view>
+    <view wx:else class="journal-state">
+      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="file-text" size="34" tone="blue" /></view>
+      <view class="journal-state__title">这里还没有资料</view>
+      <view class="journal-state__copy">把证件、家规和照护资料收在这里，需要时随时能找到。</view>
+      <view class="journal-state__action" bindtap="onCreate">存一份记录</view>
     </view>
   </view>
 </view>

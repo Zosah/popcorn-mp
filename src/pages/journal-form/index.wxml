@@ -1,80 +1,97 @@
 <view class="page-shell journal-form-page">
-  <view class="subpage-back" bindtap="onBack">← 返回记录</view>
-
-  <view class="journal-form-head">
-    <view class="journal-form-head__title">{{pageTitle}}</view>
-    <view class="journal-form-head__copy">{{pageCopy}}</view>
-    <view class="journal-form-head__storage">{{storageCopy}}</view>
+  <view class="journal-hero">
+    <view class="journal-hero__mark"><line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="30" tone="blue" /></view>
+    <view class="journal-hero__body">
+      <view class="eyebrow">LIFE JOURNAL</view>
+      <view class="journal-hero__title">{{pageTitle}}</view>
+      <view class="journal-hero__copy">{{pageCopy}}</view>
+      <view class="journal-hero__storage"><line-icon name="lock" size="18" tone="muted" /><text>{{storageCopy}}</text></view>
+    </view>
   </view>
 
-  <view wx:if="{{loading}}" class="journal-form-state glass-card">
-    <line-icon name="notebook-tabs" size="34" tone="accent" />
-    <text>正在把这段记录找回来…</text>
+  <view wx:if="{{loading}}" class="journal-state paper-card">
+    <view class="journal-state__mark"><line-icon name="notebook-tabs" size="34" tone="blue" /></view>
+    <view class="journal-state__title">正在把这段记录找回来</view>
+    <view class="journal-state__copy">稍等一下，马上就好。</view>
   </view>
 
-  <view wx:elif="{{loadError}}" class="journal-form-state glass-card">
-    <line-icon name="circle-alert" size="34" tone="accent" />
-    <text>{{loadError}}</text>
-    <view bindtap="onRetryLoad">重新加载</view>
+  <view wx:elif="{{loadError}}" class="journal-state journal-state--error paper-card">
+    <view class="journal-state__mark"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="journal-state__title">这条记录暂时没打开</view>
+    <view class="journal-state__copy">{{loadError}}</view>
+    <view class="journal-state__action" bindtap="onRetryLoad">重新加载</view>
   </view>
 
   <block wx:else>
-  <view class="journal-form-card card">
-    <view wx:if="{{kind === 'note'}}" class="journal-field">
-      <text>归档位置</text>
-      <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
-        <view class="journal-category-picker"><line-icon name="folder" size="24" tone="muted" /><text>{{categoryLabels[categoryIndex]}} ›</text></view>
-      </picker>
-    </view>
-    <view class="journal-field">
-      <text>一句话标题</text>
-      <input value="{{form.title}}" maxlength="80" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
-    </view>
-    <view class="journal-field journal-field--last">
-      <text>再多写一点</text>
-      <textarea value="{{form.content}}" maxlength="5000" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" />
-    </view>
-  </view>
+    <view class="paper-card journal-editor">
+      <view wx:if="{{kind === 'note'}}" class="journal-field">
+        <text class="journal-label">归档位置</text>
+        <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <view class="journal-picker">
+            <view class="journal-picker__value"><line-icon name="folder" size="22" tone="gold" /><text>{{categoryLabels[categoryIndex]}}</text></view>
+            <text class="journal-picker__arrow">›</text>
+          </view>
+        </picker>
+      </view>
 
-  <view class="section-head">
-    <text class="section-head__title">配一张图</text>
-    <text class="section-head__action">可选 · 最大 10 MiB</text>
-  </view>
-  <view class="journal-image-card glass-card">
-    <view wx:if="{{image && image.src}}" class="journal-image-preview" bindtap="onPreviewImage">
-      <image src="{{image.src}}" mode="aspectFill" />
-      <view class="journal-image-preview__badge"><line-icon name="image" size="20" tone="white" /><text>轻触查看</text></view>
-    </view>
-    <view wx:elif="{{imageUploading}}" class="journal-image-placeholder journal-image-placeholder--loading">
-      <view class="journal-image-placeholder__icon"><line-icon name="image" size="32" tone="accent" /></view>
-      <text>正在把照片安放好…</text>
-      <text>图片会压缩后保存到私有空间</text>
-    </view>
-    <view wx:else class="journal-image-placeholder" bindtap="onChooseImage">
-      <view class="journal-image-placeholder__icon"><line-icon name="image" size="34" tone="accent" /></view>
-      <text>从相册选一张，或现在拍</text>
-      <text>原图只在当前空间可见，列表会加载轻量缩略图</text>
-    </view>
-    <view wx:if="{{image}}" class="journal-image-tools">
-      <input value="{{image.caption}}" maxlength="120" placeholder="给这张图写一句说明（可选）" bindinput="onImageCaptionInput" />
-      <view class="journal-image-remove" catchtap="onRemoveImage">移除</view>
-    </view>
-  </view>
+      <view class="journal-field">
+        <text class="journal-label">一句话标题</text>
+        <input class="journal-input journal-input--title" value="{{form.title}}" maxlength="80" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
+      </view>
 
-  <view class="section-head">
-    <text class="section-head__title">谁可以看到</text>
-  </view>
-  <view class="visibility-grid">
-    <view class="visibility-card {{visibility === 'space' ? 'visibility-card--active' : ''}}" data-value="space" bindtap="onVisibilityChange">
-      <view class="visibility-card__title"><line-icon name="users" size="24" tone="{{visibility === 'space' ? 'ink' : 'muted'}}" /><text>一起看</text></view>
-      <text class="visibility-card__copy">当前空间的成员</text>
+      <view class="journal-field journal-field--last">
+        <view class="journal-label-row"><text class="journal-label">再多写一点</text><text class="journal-count">随笔</text></view>
+        <textarea class="journal-textarea" value="{{form.content}}" maxlength="5000" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" />
+      </view>
     </view>
-    <view class="visibility-card {{visibility === 'private' ? 'visibility-card--active' : ''}}" data-value="private" bindtap="onVisibilityChange">
-      <view class="visibility-card__title"><line-icon name="lock" size="24" tone="{{visibility === 'private' ? 'ink' : 'muted'}}" /><text>只给自己</text></view>
-      <text class="visibility-card__copy">保留一点小秘密</text>
-    </view>
-  </view>
 
-  <button class="primary-button journal-save" loading="{{saving || imageUploading}}" disabled="{{saving || imageUploading}}" bindtap="onSave"><line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="white" /><text>{{saveText}}</text></button>
+    <view class="journal-section-head">
+      <view><text>配一张图</text><text>让记忆有颜色</text></view>
+      <text>可选 · 10 MiB 内</text>
+    </view>
+
+    <view class="paper-card journal-image-card">
+      <view wx:if="{{image && image.src}}" class="journal-image-preview" bindtap="onPreviewImage">
+        <image src="{{image.src}}" mode="aspectFill" />
+        <view class="journal-image-preview__badge"><line-icon name="image" size="19" tone="white" /><text>轻触查看</text></view>
+      </view>
+      <view wx:elif="{{imageUploading}}" class="journal-image-empty journal-image-empty--loading">
+        <view class="journal-image-empty__mark"><line-icon name="image" size="32" tone="blue" /></view>
+        <text>正在把照片安放好</text>
+        <text>图片会压缩后保存到私有空间</text>
+      </view>
+      <view wx:else class="journal-image-empty" bindtap="onChooseImage">
+        <view class="journal-image-empty__mark"><line-icon name="image" size="34" tone="blue" /></view>
+        <text>从相册选一张，或现在拍</text>
+        <text>原图只在当前空间可见</text>
+      </view>
+
+      <view wx:if="{{image}}" class="journal-image-tools">
+        <input value="{{image.caption}}" maxlength="120" placeholder="给这张图写一句说明（可选）" bindinput="onImageCaptionInput" />
+        <view class="journal-image-remove" catchtap="onRemoveImage">移除</view>
+      </view>
+    </view>
+
+    <view class="journal-section-head">
+      <view><text>谁可以看到</text><text>按这一刻的需要来</text></view>
+    </view>
+
+    <view class="visibility-grid">
+      <view class="visibility-card {{visibility === 'space' ? 'visibility-card--active' : ''}}" data-value="space" bindtap="onVisibilityChange">
+        <view class="visibility-card__top"><line-icon name="users" size="25" tone="{{visibility === 'space' ? 'ink' : 'muted'}}" /><view class="visibility-card__check"><line-icon name="check" size="17" tone="white" /></view></view>
+        <text class="visibility-card__title">一起看</text>
+        <text class="visibility-card__copy">当前空间的成员</text>
+      </view>
+      <view class="visibility-card {{visibility === 'private' ? 'visibility-card--active' : ''}}" data-value="private" bindtap="onVisibilityChange">
+        <view class="visibility-card__top"><line-icon name="lock" size="25" tone="{{visibility === 'private' ? 'ink' : 'muted'}}" /><view class="visibility-card__check"><line-icon name="check" size="17" tone="white" /></view></view>
+        <text class="visibility-card__title">只给自己</text>
+        <text class="visibility-card__copy">保留一点小秘密</text>
+      </view>
+    </view>
+
+    <button class="primary-button journal-save" loading="{{saving || imageUploading}}" disabled="{{saving || imageUploading}}" bindtap="onSave">
+      <line-icon name="{{kind === 'note' ? 'file-text' : 'pen-line'}}" size="24" tone="white" />
+      <text>{{saveText}}</text>
+    </button>
   </block>
 </view>

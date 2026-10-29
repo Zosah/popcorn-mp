@@ -36,7 +36,7 @@ import {
 } from '../../services/demo-pet'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
-type PetSection = 'profile' | 'care' | 'supplies'
+type PetSection = 'profile' | 'care' | 'calendar' | 'daily' | 'supplies'
 type SupplyFilter = PetSupplyCategory | 'all'
 
 const EMPTY_PROFILE: DemoPetProfile = {
@@ -113,7 +113,13 @@ Page({
     homeOnLabel: '',
     neuteredOnLabel: '',
     latestWeight: '—',
-    weightBars: [] as number[],
+    weightPoints: [] as Array<{
+      value: string
+      dateLabel: string
+      height: number
+      active: boolean
+    }>,
+    weightTrendLabel: '',
     timeline: [] as Array<
       ReturnType<typeof buildPetTimeline>[number] & {
         iconName: string
@@ -193,11 +199,27 @@ Page({
     })
     const weights = state.weights.slice(-6)
     const values = weights.map((item) => Number(item.value))
-    const min = Math.min(...values, 0)
-    const max = Math.max(...values, 1)
-    const weightBars = values.map((value) =>
-      Math.round(42 + ((value - min) / Math.max(max - min, 0.1)) * 48),
-    )
+    const min = Math.min(...values)
+    const max = Math.max(...values)
+    const spread = Math.max(max - min, 0.1)
+    const weightPoints = weights.map((item, index) => ({
+      value: item.value,
+      dateLabel: formatShortDate(item.recordedOn),
+      height: Math.round(30 + ((Number(item.value) - min) / spread) * 58),
+      active: index === weights.length - 1,
+    }))
+    const latestValue = weights[weights.length - 1]
+    const previousValue = weights[weights.length - 2]
+    const weightDelta =
+      latestValue && previousValue
+        ? Number(latestValue.value) - Number(previousValue.value)
+        : null
+    const weightTrendLabel =
+      weightDelta === null
+        ? '还没有上一次记录'
+        : Math.abs(weightDelta) < 0.05
+          ? '和上次持平'
+          : `较上次 ${weightDelta > 0 ? '+' : ''}${weightDelta.toFixed(1)} kg`
     const todayDailyLogs = state.dailyLogs.filter(
       (item) => getShanghaiDateOnly(Date.parse(item.recordedAt)) === today,
     )
@@ -210,8 +232,9 @@ Page({
       birthdayLabel: formatShortDate(state.profile.birthday),
       homeOnLabel: formatShortDate(state.profile.homeOn),
       neuteredOnLabel: formatShortDate(state.profile.neuteredOn),
-      latestWeight: weights[weights.length - 1]?.value ?? '—',
-      weightBars,
+      latestWeight: latestValue?.value ?? '—',
+      weightPoints,
+      weightTrendLabel,
       timeline,
       careCards: buildPetCareCards(state.events, today),
       careTimeline: timeline

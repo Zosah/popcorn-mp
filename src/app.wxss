@@ -1,34 +1,37 @@
 /*
- * 「时刻见」设计 token（v6 暖纸生活手帐）
- * 暖纸底、低饱和薰衣草与鼠尾草、半实色玻璃卡片；照片负责叙事，界面只做安静的承载。
+ * 「时刻见」设计 token（v7 纸感生活手帐）
+ * 墨青负责秩序，纸底与领域马卡龙负责温度；不再使用紫色作为主识别色。
  */
 page {
-  --c-primary: #746aae;
-  --c-primary-deep: #665c9c;
-  --c-primary-soft: #eeebf7;
-  --c-accent: #746aae;
-  --c-accent-2: #7a9f91;
-  --c-accent-3: #b88b79;
-  --c-accent-soft: #f0edf7;
-  --c-mint-soft: #eaf2ee;
-  --c-peach-soft: #f5ece8;
-  --c-warm-soft: #f4eee2;
-  --c-bg: #f7f5f1;
-  --c-surface: rgba(255, 254, 250, 0.90);
-  --c-surface-strong: rgba(255, 254, 250, 0.97);
-  --c-text: #292737;
-  --c-text-2: #615f70;
-  --c-muted: #8a8693;
-  --c-faint: #b7b2bb;
-  --c-line: rgba(87, 80, 93, 0.10);
-  --c-line-strong: rgba(87, 80, 93, 0.17);
-  --c-success: #638f80;
-  --c-success-soft: #eaf3ef;
-  --c-warning: #b98552;
-  --c-warning-soft: #f7eee1;
-  --c-danger: #b96f78;
-  --c-danger-soft: #f7e9eb;
-  --c-shadow: rgba(68, 61, 76, 0.08);
+  --c-primary: #2c4a52;
+  --c-primary-deep: #243d44;
+  --c-primary-soft: #e8eeef;
+  --c-accent: #2c4a52;
+  --c-accent-2: #9bc4a6;
+  --c-accent-3: #f0a868;
+  --c-accent-soft: #e8eeef;
+  --c-mint-soft: #eef5ef;
+  --c-peach-soft: #fdf0e4;
+  --c-warm-soft: #fbf3e1;
+  --c-blue-soft: #eaf1f7;
+  --c-pink-soft: #fcedf0;
+  --c-bg: #fdfbf7;
+  --c-paper-2: #f6f1e9;
+  --c-surface: rgba(255, 254, 250, 0.94);
+  --c-surface-strong: #fffefa;
+  --c-text: #2e2a28;
+  --c-text-2: #6b635c;
+  --c-muted: #8d8580;
+  --c-faint: #a69e96;
+  --c-line: #ebe5da;
+  --c-line-strong: #ddd5c8;
+  --c-success: #6f9f7d;
+  --c-success-soft: #eef5ef;
+  --c-warning: #b78024;
+  --c-warning-soft: #fbf3e1;
+  --c-danger: #d85f78;
+  --c-danger-soft: #fcebee;
+  --c-shadow: rgba(82, 65, 48, 0.07);
   --r-card: 30rpx;
   --r-card-lg: 40rpx;
   --r-btn: 999rpx;
@@ -49,12 +52,9 @@ page {
   min-height: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
-  background-color: #f7f5f1;
-  background-image:
-    radial-gradient(circle at 92% 4%, rgba(215, 209, 238, 0.36), transparent 32%),
-    radial-gradient(circle at 4% 76%, rgba(216, 231, 224, 0.34), transparent 30%),
-    linear-gradient(160deg, #faf8f4 0%, #f5f2ed 52%, #f8f5f0 100%);
-  color: var(--c-text, #292737);
+  background-color: #fdfbf7;
+  background-image: none;
+  color: var(--c-text, #2e2a28);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: var(--fs-body, 28rpx);
   line-height: 1.5;
@@ -80,6 +80,8 @@ page::-webkit-scrollbar {
 /* 原生 TabBar 由微信管理安全区，页面只保留内容收尾留白。 */
 .tab-page {
   position: relative;
+  width: calc(100vw + 2px);
+  max-width: calc(100vw + 2px);
   min-height: 100vh;
   box-sizing: border-box;
   padding: 34rpx 36rpx 48rpx;
@@ -87,6 +89,8 @@ page::-webkit-scrollbar {
 
 .page-shell {
   position: relative;
+  width: calc(100vw + 2px);
+  max-width: calc(100vw + 2px);
   min-height: 100vh;
   box-sizing: border-box;
   padding: 28rpx 36rpx calc(160rpx + env(safe-area-inset-bottom));
@@ -102,7 +106,7 @@ page::-webkit-scrollbar {
   box-sizing: border-box;
   border: 1rpx solid rgba(255, 255, 255, 0.92);
   border-radius: var(--r-card, 30rpx);
-  background: linear-gradient(145deg, rgba(255, 254, 250, 0.96), rgba(255, 253, 248, 0.84));
+  background: linear-gradient(145deg, rgba(255, 254, 250, 0.98), rgba(253, 251, 247, 0.94));
   box-shadow:
     0 18rpx 48rpx var(--c-shadow, rgba(68, 61, 76, 0.08)),
     inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
@@ -114,7 +118,7 @@ page::-webkit-scrollbar {
   box-sizing: border-box;
   border: 1rpx solid rgba(255, 255, 255, 0.92);
   border-radius: var(--r-card, 30rpx);
-  background: linear-gradient(145deg, rgba(255, 254, 250, 0.96), rgba(255, 253, 248, 0.86));
+  background: linear-gradient(145deg, rgba(255, 254, 250, 0.98), rgba(253, 251, 247, 0.94));
   box-shadow:
     0 16rpx 40rpx var(--c-shadow, rgba(68, 61, 76, 0.08)),
     inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
@@ -123,7 +127,7 @@ page::-webkit-scrollbar {
 }
 
 .h-display {
-  color: var(--c-text, #292737);
+  color: var(--c-text, #2e2a28);
   font-size: var(--fs-display, 54rpx);
   font-weight: 600;
   line-height: 1.25;
@@ -131,14 +135,14 @@ page::-webkit-scrollbar {
 }
 
 .h-title {
-  color: var(--c-text, #292737);
+  color: var(--c-text, #2e2a28);
   font-size: var(--fs-title, 32rpx);
   font-weight: 600;
   line-height: 1.4;
 }
 
 .muted {
-  color: var(--c-muted, #8a8693);
+  color: var(--c-muted, #8d8580);
 }
 
 .section-head {
@@ -149,14 +153,14 @@ page::-webkit-scrollbar {
 }
 
 .section-head__title {
-  color: var(--c-text, #292737);
+  color: var(--c-text, #2e2a28);
   font-size: 27rpx;
   font-weight: 600;
   letter-spacing: 0.5rpx;
 }
 
 .section-head__action {
-  color: var(--c-muted, #8a8693);
+  color: var(--c-muted, #8d8580);
   font-size: 21rpx;
 }
 
@@ -185,7 +189,7 @@ page::-webkit-scrollbar {
   justify-content: center;
   height: 66rpx;
   border-radius: 999rpx;
-  color: var(--c-muted, #8a8693);
+  color: var(--c-muted, #8d8580);
   font-size: 23rpx;
   font-weight: 500;
   transition: color 160ms ease, background 160ms ease;
@@ -193,7 +197,7 @@ page::-webkit-scrollbar {
 
 .segmented__item--active {
   background: rgba(255, 254, 250, 0.98);
-  color: var(--c-text, #292737);
+  color: var(--c-text, #2e2a28);
   box-shadow: 0 8rpx 20rpx rgba(68, 61, 76, 0.08);
 }
 
@@ -218,15 +222,16 @@ page::-webkit-scrollbar {
 
 .primary-button {
   border: 1rpx solid rgba(255, 255, 255, 0.30);
-  background: linear-gradient(135deg, #8177ba 0%, #6f65a7 60%, #7f9e94 100%);
-  box-shadow: 0 15rpx 32rpx rgba(92, 82, 134, 0.22);
-  color: #fff;
+  background: var(--c-primary, #2c4a52);
+  box-shadow: 0 15rpx 32rpx rgba(44, 74, 82, 0.18);
+  color: #fffefa;
 }
 
 .secondary-button {
-  border: 1rpx solid rgba(116, 106, 174, 0.16);
-  background: rgba(255, 254, 250, 0.82);
-  color: var(--c-primary-deep, #665c9c);
+  border: 1rpx solid var(--c-line, #ebe5da);
+  background: rgba(255, 254, 250, 0.92);
+  box-shadow: 0 8rpx 20rpx rgba(82, 65, 48, 0.04);
+  color: var(--c-primary, #2c4a52);
 }
 
 .danger-button {
@@ -247,7 +252,7 @@ page::-webkit-scrollbar {
 }
 
 .eyebrow {
-  color: var(--c-primary-deep, #665c9c);
+  color: var(--c-primary, #2c4a52);
   font-size: 18rpx;
   font-weight: 600;
   letter-spacing: 4rpx;
@@ -282,7 +287,7 @@ page::-webkit-scrollbar {
   justify-content: center;
   border: 1rpx solid rgba(255, 255, 255, 0.78);
   border-radius: 30rpx;
-  background: linear-gradient(145deg, #f0edf7, #eaf2ee);
+  background: linear-gradient(145deg, #eaf1f7, #eef5ef);
   box-shadow: 0 9rpx 20rpx rgba(68, 61, 76, 0.06);
 }
 
@@ -292,7 +297,7 @@ page::-webkit-scrollbar {
 
 .state-card__title {
   margin-top: 18rpx;
-  color: var(--c-text, #292737);
+  color: var(--c-text, #2e2a28);
   font-size: 26rpx;
   font-weight: 600;
   line-height: 1.45;
@@ -301,7 +306,7 @@ page::-webkit-scrollbar {
 .state-card__copy {
   max-width: 490rpx;
   margin-top: 7rpx;
-  color: var(--c-muted, #8a8693);
+  color: var(--c-muted, #8d8580);
   font-size: 19rpx;
   line-height: 1.65;
 }
@@ -316,7 +321,7 @@ page::-webkit-scrollbar {
   border: 1rpx solid rgba(255, 255, 255, 0.88);
   border-radius: 999rpx;
   background: rgba(255, 254, 250, 0.86);
-  color: var(--c-primary-deep, #665c9c);
+  color: var(--c-primary, #2c4a52);
   font-size: 19rpx;
   font-weight: 600;
 }
@@ -353,13 +358,13 @@ page::-webkit-scrollbar {
 }
 
 .state-banner__title {
-  color: var(--c-text, #292737);
+  color: var(--c-text, #2e2a28);
   font-size: 19rpx;
   font-weight: 600;
 }
 
 .state-banner__copy {
-  color: var(--c-text-2, #615f70);
+  color: var(--c-text-2, #6b635c);
   font-size: 16rpx;
   line-height: 1.45;
 }
@@ -369,7 +374,7 @@ page::-webkit-scrollbar {
   min-height: 54rpx;
   align-items: center;
   padding: 0 4rpx 0 10rpx;
-  color: var(--c-primary-deep, #665c9c);
+  color: var(--c-primary, #2c4a52);
   flex-shrink: 0;
   font-size: 17rpx;
   font-weight: 600;

@@ -1,83 +1,91 @@
-<view class="page-shell form-page">
-  <view class="subpage-back" bindtap="onBack">← 返回库存</view>
-
-  <view class="page-head">
-    <view class="page-head__title">{{itemId ? '改一改这条记录' : '记一件家里的东西'}}</view>
-    <view class="page-head__copy">名称最重要，其余信息想起来再补也可以。</view>
+<view class="page-shell item-form-page">
+  <view class="form-hero">
+    <view class="form-hero__icon"><line-icon name="package" size="30" tone="orange" /></view>
+    <view class="form-hero__body">
+      <view class="eyebrow">HOME INVENTORY</view>
+      <view class="form-hero__title">{{itemId ? '改一改这条记录' : '记一件家里的东西'}}</view>
+      <view class="form-hero__copy">名称最重要，其余信息想起来再补也可以。</view>
+    </view>
   </view>
 
-  <view wx:if="{{loading}}" class="form-state card">正在打开这件物品…</view>
-  <view wx:elif="{{loadError}}" class="form-state form-state--error card">
-    <view class="form-state__icon"><line-icon name="circle-alert" size="34" tone="accent" /></view>
+  <view wx:if="{{loading}}" class="form-state paper-card">正在打开这件物品…</view>
+  <view wx:elif="{{loadError}}" class="form-state form-state--error paper-card">
+    <view class="form-state__icon"><line-icon name="circle-alert" size="34" tone="danger" /></view>
     <view class="form-state__title">物品信息暂时没连上</view>
     <view class="form-state__copy">{{loadError}}</view>
     <view class="form-state__action" bindtap="onRetryLoad">重新加载</view>
   </view>
 
   <block wx:else>
-  <view class="form-card card">
-    <view class="field field--name">
-      <text class="field__label">物品名称 <text class="required">*</text></text>
-      <input class="field__input" value="{{form.name}}" maxlength="40" placeholder="例如：鲜牛奶" bindinput="onNameInput" />
+    <view class="form-section paper-card">
+      <view class="form-field form-field--lead">
+        <text class="form-label">物品名称 <text class="form-required">*</text></text>
+        <input class="form-input form-input--lead" value="{{form.name}}" maxlength="40" placeholder="例如：鲜牛奶" bindinput="onNameInput" />
+      </view>
+
+      <view class="form-grid">
+        <view class="form-field">
+          <text class="form-label">分类</text>
+          <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="form-picker">
+              <view class="form-picker__selection"><line-icon name="{{categoryIconNames[categoryIndex]}}" size="23" tone="orange" /><text>{{categoryLabels[categoryIndex]}}</text></view>
+              <text class="form-picker__arrow">›</text>
+            </view>
+          </picker>
+        </view>
+        <view class="form-field">
+          <text class="form-label">存放位置</text>
+          <picker range="{{locationLabels}}" value="{{locationIndex}}" bindchange="onLocationChange">
+            <view class="form-picker">
+              <view class="form-picker__selection"><line-icon name="{{locationIconNames[locationIndex]}}" size="23" tone="blue" /><text>{{locationLabels[locationIndex]}}</text></view>
+              <text class="form-picker__arrow">›</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="form-grid form-grid--compact">
+        <view class="form-field">
+          <text class="form-label">数量</text>
+          <input class="form-input" type="digit" value="{{form.quantity}}" bindinput="onQuantityInput" />
+        </view>
+        <view class="form-field">
+          <text class="form-label">单位</text>
+          <input class="form-input" value="{{form.unit}}" maxlength="8" bindinput="onUnitInput" />
+        </view>
+      </view>
     </view>
 
-    <view class="field-grid">
-      <view class="field field--half">
-        <text class="field__label">分类</text>
-        <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
-          <view class="picker-value">
-            <view class="picker-value__selection"><line-icon name="{{categoryIconNames[categoryIndex]}}" size="24" tone="muted" /><text>{{categoryLabels[categoryIndex]}}</text></view>
-            <text>›</text>
+    <view class="form-section paper-card">
+      <view class="form-switch-row">
+        <view class="form-switch-row__copy">
+          <view class="form-label">设置有效期</view>
+          <view class="form-hint">开启后会出现在临期提醒中</view>
+        </view>
+        <switch checked="{{hasExpiry}}" color="#2c4a52" bindchange="onExpiryToggle" />
+      </view>
+
+      <view wx:if="{{hasExpiry}}" class="form-field">
+        <text class="form-label">有效期</text>
+        <picker mode="date" value="{{form.expiresOn}}" bindchange="onExpiryChange">
+          <view class="form-picker form-picker--date">
+            <text>{{form.expiresOn || '选择日期'}}</text>
+            <line-icon name="calendar-days" size="23" tone="blue" />
           </view>
         </picker>
       </view>
-      <view class="field field--half">
-        <text class="field__label">存放位置</text>
-        <picker range="{{locationLabels}}" value="{{locationIndex}}" bindchange="onLocationChange">
-          <view class="picker-value">
-            <view class="picker-value__selection"><line-icon name="{{locationIconNames[locationIndex]}}" size="24" tone="muted" /><text>{{locationLabels[locationIndex]}}</text></view>
-            <text>›</text>
-          </view>
-        </picker>
+
+      <view class="form-field form-field--last">
+        <text class="form-label">备注</text>
+        <textarea class="form-textarea" value="{{form.note}}" maxlength="200" placeholder="可选，写点容易忘记的信息" bindinput="onNoteInput" />
       </view>
     </view>
 
-    <view class="field-grid field-grid--last">
-      <view class="field field--quantity">
-        <text class="field__label">数量</text>
-        <input class="field__input" type="digit" value="{{form.quantity}}" bindinput="onQuantityInput" />
-      </view>
-      <view class="field field--unit">
-        <text class="field__label">单位</text>
-        <input class="field__input" value="{{form.unit}}" maxlength="8" bindinput="onUnitInput" />
-      </view>
+    <view class="form-footer">
+      <button class="primary-button form-submit" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+        <line-icon name="{{itemId ? 'pen-line' : 'plus'}}" size="24" tone="white" />
+        <text>{{itemId ? '保存修改' : '添加到库存'}}</text>
+      </button>
     </view>
-  </view>
-
-  <view class="form-card form-card--optional card">
-    <view class="switch-row">
-      <view>
-        <view class="field__label">设置有效期</view>
-        <view class="switch-row__hint">开启后会出现在临期提醒中</view>
-      </view>
-      <switch checked="{{hasExpiry}}" color="#5b6ee0" bindchange="onExpiryToggle" />
-    </view>
-
-    <view wx:if="{{hasExpiry}}" class="field field--expiry">
-      <text class="field__label">有效期</text>
-      <picker mode="date" value="{{form.expiresOn}}" bindchange="onExpiryChange">
-        <view class="picker-value picker-value--date">{{form.expiresOn || '选择日期'}} <text>›</text></view>
-      </picker>
-    </view>
-
-    <view class="field field--note">
-      <text class="field__label">备注</text>
-      <textarea class="field__textarea" value="{{form.note}}" maxlength="200" placeholder="可选，写点容易忘记的信息" bindinput="onNoteInput" />
-    </view>
-  </view>
-
-  <view class="form-footer">
-    <button class="primary-button" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="{{itemId ? 'pen-line' : 'plus'}}" size="24" tone="white" /><text>{{itemId ? '保存修改' : '添加到库存'}}</text></button>
-  </view>
   </block>
 </view>

@@ -1,116 +1,78 @@
 <view class="tab-page profile-page">
   <view class="profile-top">
-    <view>
-      <view class="profile-top__eyebrow">MY LITTLE HOME</view>
-      <view class="profile-top__title">我的</view>
-    </view>
-    <sync-badge state="{{syncBadgeState}}" text="{{syncBadgeText}}" />
+    <view class="profile-top__title">我的</view>
+    <view class="profile-top__more" bindtap="onOpenAuth">•••</view>
   </view>
 
-  <view class="identity glass-card {{isLoggedIn ? '' : 'identity--guest'}}" bindtap="onOpenAuth">
-    <view class="identity__glow identity__glow--one"></view>
-    <view class="identity__glow identity__glow--two"></view>
-    <view class="identity__avatar-wrap">
-      <view class="identity__avatar identity__avatar--{{avatarTone}}">{{avatarText}}</view>
-      <view class="identity__status {{isLoggedIn ? '' : 'identity__status--guest'}}"></view>
-    </view>
-    <view class="identity__body">
-      <view class="identity__name">{{displayName}}</view>
-      <view class="identity__meta">{{identityMeta}}</view>
-      <view class="identity__tags">
+  <view class="profile-identity {{isLoggedIn ? '' : 'profile-identity--guest'}}" bindtap="onOpenAuth">
+    <view class="profile-identity__avatar profile-identity__avatar--{{avatarTone}}">{{avatarText}}</view>
+    <view class="profile-identity__body">
+      <view class="profile-identity__name">{{displayName}}</view>
+      <view class="profile-identity__meta">{{identityMeta}}</view>
+      <view class="profile-identity__tags">
         <text>{{identityBadge}}</text>
         <text>{{spaceName}}</text>
       </view>
     </view>
-    <view class="identity__mark"><line-icon name="{{isLoggedIn ? 'check' : 'user-round'}}" size="28" tone="accent" /></view>
+    <view class="profile-identity__edit">{{isLoggedIn ? '编辑' : '登录'}}</view>
   </view>
 
-  <view class="section-head">
-    <text class="section-head__title">我的安排</text>
-    <text class="section-head__action">{{todoLoading ? '同步中' : todoPendingCount ? todoPendingCount + ' 件待做' : '已清空'}}</text>
-  </view>
-
-  <view class="todo-focus glass-card {{todoLoading ? 'todo-focus--loading' : ''}}" bindtap="onOpenTodo">
-    <view class="todo-focus__icon"><line-icon name="list-todo" size="35" tone="accent" /></view>
-    <view class="todo-focus__main">
-      <view class="todo-focus__head">
-        <view>
-          <view class="todo-focus__title">待办与小计划</view>
-          <view class="todo-focus__copy">{{todoSummary}}</view>
-        </view>
-        <view class="todo-focus__count">{{todoPendingCount}}<text>待做</text></view>
-      </view>
-      <view class="todo-focus__progress">
-        <view class="todo-focus__track"><view class="todo-focus__fill" style="width: {{todoProgress}}%;"></view></view>
-        <text>{{todoLoading ? '正在同步最新进度' : todoCompletedCount + ' / ' + todoTotalCount + ' 已完成'}}</text>
-      </view>
+  <view class="profile-progress" bindtap="onOpenTodo">
+    <view class="profile-progress__ring" style="background: conic-gradient(#6f9f7d {{todoProgress}}%, #ebe5da 0);">
+      <view class="profile-progress__inner">{{todoProgress}}%</view>
     </view>
-    <view class="todo-focus__arrow">›</view>
-  </view>
-
-  <view class="profile-duo">
-    <view class="profile-tile profile-tile--mint glass-card" bindtap="onOpenSpace">
-      <view class="profile-tile__icon"><line-icon name="users" size="31" tone="accent" /></view>
-      <view class="profile-tile__label">我们的家</view>
-      <view class="profile-tile__value">{{spaceName}}</view>
-      <view class="profile-tile__copy">{{spaceMembersCopy}}</view>
+    <view class="profile-progress__body">
+      <view class="profile-progress__title">我的待办进度</view>
+      <view class="profile-progress__copy">{{todoLoading ? '正在同步最新进度' : todoCompletedCount + ' / ' + todoTotalCount + ' 项已完成'}}</view>
+      <view class="profile-progress__summary">{{todoSummary}}</view>
     </view>
-    <view class="profile-tile profile-tile--peach glass-card" bindtap="onOpenInvite">
-      <view class="profile-tile__icon"><line-icon name="ticket" size="31" tone="accent" /></view>
-      <view class="profile-tile__label">邀请家人</view>
-      <view class="profile-tile__value">一起加入</view>
-      <view class="profile-tile__copy">用邀请码连接彼此</view>
+    <view class="profile-progress__arrow">›</view>
+  </view>
+
+  <view class="profile-section-head">
+    <text>共同空间</text>
+    <text bindtap="onOpenSpace">管理</text>
+  </view>
+  <view class="profile-space" bindtap="onOpenSpace">
+    <view class="profile-space__icon"><line-icon name="house" size="31" tone="blue" /></view>
+    <view class="profile-space__body">
+      <view class="profile-space__name">{{spaceName}}</view>
+      <view class="profile-space__meta">{{spaceMembersCopy}}</view>
     </view>
+    <view class="profile-space__arrow">›</view>
   </view>
 
-  <view class="section-head">
-    <text class="section-head__title">小小的设置</text>
-    <text class="section-head__action">按自己的节奏</text>
-  </view>
-
-  <view class="profile-settings glass-card">
+  <view class="profile-section-head"><text>设置</text><text>按自己的节奏</text></view>
+  <view class="profile-settings">
     <view class="profile-row" bindtap="onOpenAuth">
-      <view class="profile-row__icon profile-row__icon--violet"><line-icon name="user-round" size="27" tone="accent" /></view>
-      <view class="profile-row__body">
-        <view class="profile-row__title">账号与登录</view>
-        <view class="profile-row__meta">{{accountMeta}}</view>
-      </view>
+      <view class="profile-row__icon profile-row__icon--blue"><line-icon name="user-round" size="26" tone="blue" /></view>
+      <view class="profile-row__body"><text>账号与登录</text><text>{{accountMeta}}</text></view>
       <view class="profile-row__tag">{{accountTag}}</view>
-      <view class="profile-row__chevron"></view>
+      <view class="profile-row__arrow">›</view>
     </view>
     <view class="profile-row" bindtap="onOpenReminders">
-      <view class="profile-row__icon profile-row__icon--violet"><line-icon name="bell" size="27" tone="accent" /></view>
-      <view class="profile-row__body">
-        <view class="profile-row__title">到期提醒</view>
-        <view class="profile-row__meta">有东西快到期时，轻轻提醒</view>
-      </view>
-      <view class="profile-row__tag">即将支持</view>
-      <view class="profile-row__chevron"></view>
+      <view class="profile-row__icon profile-row__icon--pink"><line-icon name="bell" size="26" tone="pink" /></view>
+      <view class="profile-row__body"><text>提醒设置</text><text>临期、宠物、每周回顾</text></view>
+      <view class="profile-row__arrow">›</view>
     </view>
-    <view wx:if="{{showResetDemo}}" class="profile-row" bindtap="onResetDemo">
-      <view class="profile-row__icon profile-row__icon--rose"><line-icon name="rotate-ccw" size="27" tone="accent" /></view>
-      <view class="profile-row__body">
-        <view class="profile-row__title">恢复 Demo 初始数据</view>
-        <view class="profile-row__meta">清空本机修改，重新载入全部示例</view>
-      </view>
-      <view class="profile-row__chevron"></view>
+    <view class="profile-row" bindtap="onOpenInvite">
+      <view class="profile-row__icon profile-row__icon--gold"><line-icon name="users" size="26" tone="gold" /></view>
+      <view class="profile-row__body"><text>成员与邀请</text><text>{{spaceName}} · 邀请家人一起生活</text></view>
+      <view class="profile-row__arrow">›</view>
+    </view>
+    <view class="profile-row" bindtap="onOpenSpace">
+      <view class="profile-row__icon profile-row__icon--grey"><line-icon name="lock" size="25" tone="muted" /></view>
+      <view class="profile-row__body"><text>隐私与可见范围</text><text>默认只对空间成员可见</text></view>
+      <view class="profile-row__arrow">›</view>
     </view>
   </view>
 
-  <view class="profile-garden glass-card">
-    <view class="profile-garden__copy">
-      <view class="eyebrow">A NOTE FOR US</view>
-      <text>让家里的事，慢慢长出来。</text>
-      <view class="profile-garden__foot">
-        <text>公版植物版画 · 示例</text>
-        <text>把普通日子过成喜欢的样子</text>
-      </view>
+  <view class="profile-demo">
+    <view class="profile-demo__head"><text class="profile-demo__dot"></text><text>Demo · 数据存本机</text></view>
+    <view class="profile-demo__copy">库存、待办和记录已支持服务同步；菜单、宠物和提醒目前仍是本机示例。</view>
+    <view wx:if="{{showResetDemo}}" class="profile-demo__actions">
+      <view class="profile-demo__ghost" bindtap="onOpenInvite">邀请体验</view>
+      <view class="profile-demo__danger" bindtap="onResetDemo">重置 Demo 数据</view>
     </view>
-    <image class="profile-garden__image" src="../../images/demo-botanical.jpg" mode="aspectFill" />
-  </view>
-
-  <view class="profile-foot">
-    <text>时刻见</text>
-    <text>{{version}}</text>
   </view>
 </view>

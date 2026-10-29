@@ -1,125 +1,98 @@
 <view class="tab-page inventory-page">
-  <view class="inv-head">
-    <view class="inv-head__main">
-      <view class="eyebrow">HOME PANTRY</view>
-      <view class="inv-head__title">家里还有什么</view>
-      <view class="inv-head__meta">{{spaceName}} · 把每一样都照顾好</view>
+  <view class="inv-top">
+    <view class="inv-top__main">
+      <view class="inv-top__title">家庭库存</view>
+      <view class="inv-top__sub">{{spaceName}} · {{summary.total}} 件在库</view>
     </view>
     <view class="inv-add" bindtap="onAddItem">
-      <line-icon name="plus" size="23" tone="white" />
+      <line-icon name="plus" size="25" tone="white" />
       <text>添加</text>
     </view>
   </view>
 
-  <view class="inv-summary glass-card">
-    <view class="inv-summary__glow inv-summary__glow--mint"></view>
-    <view class="inv-summary__glow inv-summary__glow--peach"></view>
-    <view class="inv-summary__top">
-      <view>
-        <view class="inv-summary__eyebrow">家里今天</view>
-        <view class="inv-summary__headline">
-          <text>{{summary.total}}</text>
-          <text>件在库</text>
-        </view>
-      </view>
-      <view class="inv-summary__copy">
-        <text>{{summary.expired ? '先照顾快过期的东西' : '家里的节奏刚刚好'}}</text>
-        <sync-badge state="{{syncState}}" text="{{syncText}}" />
-      </view>
+  <view class="inv-stats">
+    <view class="inv-stat inv-stat--danger" data-value="expired" bindtap="onSelectExpiry">
+      <text class="inv-stat__value">{{summary.expired}}</text>
+      <text class="inv-stat__label">已过期</text>
     </view>
-
-    <view class="stats">
-      <view class="stat stat--danger" data-value="expired" bindtap="onSelectExpiry">
-        <text class="stat__value">{{summary.expired}}</text>
-        <text class="stat__label">已过期</text>
-      </view>
-      <view class="stat stat--warm" data-value="due" bindtap="onSelectExpiry">
-        <text class="stat__value">{{summary.dueWithin3Days}}</text>
-        <text class="stat__label">三天内</text>
-      </view>
-      <view class="stat stat--mint" data-value="normal" bindtap="onSelectExpiry">
-        <text class="stat__value">{{summary.normal}}</text>
-        <text class="stat__label">还安心</text>
-      </view>
-      <view class="stat stat--violet" data-value="all" bindtap="onSelectExpiry">
-        <text class="stat__value">{{summary.total}}</text>
-        <text class="stat__label">全部</text>
-      </view>
+    <view class="inv-stat inv-stat--warm" data-value="due" bindtap="onSelectExpiry">
+      <text class="inv-stat__value">{{summary.dueWithin3Days}}</text>
+      <text class="inv-stat__label">三天内</text>
+    </view>
+    <view class="inv-stat inv-stat--muted" data-value="none" bindtap="onSelectExpiry">
+      <text class="inv-stat__value">{{summary.none}}</text>
+      <text class="inv-stat__label">无有效期</text>
+    </view>
+    <view class="inv-stat inv-stat--ink" data-value="all" bindtap="onSelectExpiry">
+      <text class="inv-stat__value">{{summary.total}}</text>
+      <text class="inv-stat__label">全部</text>
     </view>
   </view>
 
-  <view class="inv-controls glass-card">
-    <view class="tabs">
-      <view class="tab {{viewMode === 'active' ? 'tab--active' : ''}}" data-value="active" bindtap="onSwitchView">正在库存</view>
-      <view class="tab {{viewMode === 'history' ? 'tab--active' : ''}}" data-value="history" bindtap="onSwitchView">历史记录</view>
-    </view>
-
-    <view class="search {{searchFocused ? 'search--focused' : ''}}">
-      <view class="search__icon"><line-icon name="search" size="27" tone="muted" /></view>
-      <input class="search__input" value="{{query}}" placeholder="找找家里的东西" placeholder-class="search__placeholder" bindinput="onSearchInput" bindfocus="onSearchFocus" bindblur="onSearchBlur" />
-      <text wx:if="{{query}}" class="search__clear" bindtap="onClearSearch">清除</text>
-    </view>
-
-    <scroll-view wx:if="{{viewMode === 'active'}}" class="chips" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="chips__row">
-        <view class="chip {{selectedExpiry === 'all' ? 'chip--active' : ''}}" data-value="all" bindtap="onSelectExpiry">全部</view>
-        <view class="chip {{selectedExpiry === 'expired' ? 'chip--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">已过期</view>
-        <view class="chip {{selectedExpiry === 'due' ? 'chip--active' : ''}}" data-value="due" bindtap="onSelectExpiry">三天内</view>
-        <view class="chip {{selectedExpiry === 'soon' ? 'chip--active' : ''}}" data-value="soon" bindtap="onSelectExpiry">七天内</view>
-        <view class="chip {{selectedExpiry === 'none' ? 'chip--active' : ''}}" data-value="none" bindtap="onSelectExpiry">无有效期</view>
-      </view>
-    </scroll-view>
+  <view class="inv-view-tabs">
+    <view class="inv-view-tab {{viewMode === 'active' ? 'inv-view-tab--active' : ''}}" data-value="active" bindtap="onSwitchView">正在库存</view>
+    <view class="inv-view-tab {{viewMode === 'history' ? 'inv-view-tab--active' : ''}}" data-value="history" bindtap="onSwitchView">历史记录</view>
   </view>
 
-  <view wx:if="{{loading && !hasLoaded}}" class="state-card state-card--loading glass-card inv-state">
-    <view class="state-card__icon"><line-icon name="book-open" size="38" tone="accent" /></view>
-    <view class="state-card__title">正在翻家里的清单</view>
-    <view class="state-card__copy">库存和有效期正在一起核对。</view>
+  <view class="inv-search {{searchFocused ? 'inv-search--focused' : ''}}">
+    <line-icon name="search" size="25" tone="muted" />
+    <input class="inv-search__input" value="{{query}}" placeholder="搜索物品" placeholder-class="inv-search__placeholder" bindinput="onSearchInput" bindfocus="onSearchFocus" bindblur="onSearchBlur" />
+    <text wx:if="{{query}}" class="inv-search__clear" bindtap="onClearSearch">清除</text>
   </view>
 
-  <view wx:elif="{{errorMessage && !hasResults}}" class="state-card state-card--error glass-card inv-state">
-    <view class="state-card__icon"><line-icon name="circle-alert" size="40" tone="accent" /></view>
-    <view class="state-card__title">库存暂时没连上</view>
-    <view class="state-card__copy">{{errorMessage}}</view>
-    <view class="state-card__action" bindtap="onRetry">
-      <line-icon name="rotate-ccw" size="20" tone="accent" />
-      <text>重新加载</text>
+  <scroll-view wx:if="{{viewMode === 'active'}}" class="inv-chips" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="inv-chips__row">
+      <view class="inv-chip {{selectedExpiry === 'all' ? 'inv-chip--active' : ''}}" data-value="all" bindtap="onSelectExpiry">全部 {{summary.total}}</view>
+      <view class="inv-chip {{selectedExpiry === 'expired' ? 'inv-chip--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">已过期 {{summary.expired}}</view>
+      <view class="inv-chip {{selectedExpiry === 'due' ? 'inv-chip--active' : ''}}" data-value="due" bindtap="onSelectExpiry">三天内 {{summary.dueWithin3Days}}</view>
+      <view class="inv-chip {{selectedExpiry === 'soon' ? 'inv-chip--active' : ''}}" data-value="soon" bindtap="onSelectExpiry">七天内 {{summary.soon}}</view>
+      <view class="inv-chip {{selectedExpiry === 'none' ? 'inv-chip--active' : ''}}" data-value="none" bindtap="onSelectExpiry">无有效期 {{summary.none}}</view>
     </view>
+  </scroll-view>
+
+  <view wx:if="{{loading && !hasLoaded}}" class="inv-state">
+    <view class="inv-state__icon inv-state__icon--orange"><line-icon name="book-open" size="34" tone="orange" /></view>
+    <view class="inv-state__title">正在翻家里的清单</view>
+    <view class="inv-state__copy">库存和有效期正在一起核对。</view>
+  </view>
+
+  <view wx:elif="{{errorMessage && !hasResults}}" class="inv-state">
+    <view class="inv-state__icon inv-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="inv-state__title">库存暂时没连上</view>
+    <view class="inv-state__copy">{{errorMessage}}</view>
+    <view class="inv-state__action" bindtap="onRetry">重新加载</view>
   </view>
 
   <block wx:else>
-    <view wx:if="{{errorMessage}}" class="state-banner state-banner--warm glass-card inv-state-banner">
-      <view class="state-banner__icon"><line-icon name="circle-alert" size="24" tone="accent" /></view>
-      <view class="state-banner__body">
-        <text class="state-banner__title">这次没有刷新完整</text>
-        <text class="state-banner__copy">先保留上次的清单，之后再试一次。</text>
+    <view wx:if="{{errorMessage}}" class="inv-banner">
+      <line-icon name="circle-alert" size="23" tone="danger" />
+      <view class="inv-banner__body">
+        <text>这次没有刷新完整</text>
+        <text>先保留上次的清单，之后再试一次。</text>
       </view>
-      <view class="state-banner__action" bindtap="onRetry">重新加载</view>
+      <view class="inv-banner__action" bindtap="onRetry">重试</view>
     </view>
 
     <block wx:if="{{hasResults}}">
-      <view wx:for="{{sections}}" wx:key="key" class="group">
-        <view class="group__head">
-          <view>
-            <text class="group__title">{{item.title}}</text>
-            <text class="group__count">{{item.items.length}} 件</text>
+      <view wx:for="{{sections}}" wx:key="key" class="inv-group">
+        <view class="inv-group__head">
+          <view class="inv-group__title-wrap">
+            <text class="inv-group__title inv-group__title--{{item.key}}">{{item.title}}</text>
+            <text class="inv-group__count">{{item.items.length}} 件</text>
           </view>
-          <text class="group__hint">{{item.hint}}</text>
+          <text class="inv-group__hint">{{item.hint}}</text>
         </view>
-        <view class="group__list glass-card">
+        <view class="inv-group__list">
           <inventory-card wx:for="{{item.items}}" wx:for-item="inventoryItem" wx:key="id" item="{{inventoryItem}}" bind:cardtap="onOpenItem" />
         </view>
       </view>
     </block>
 
-    <view wx:else class="state-card glass-card inv-state">
-      <view class="state-card__icon"><line-icon name="package" size="40" tone="accent" /></view>
-      <view class="state-card__title">{{viewMode === 'history' ? '还没有历史记录' : '这里没有找到东西'}}</view>
-      <view class="state-card__copy">{{viewMode === 'history' ? '用完、丢弃或归档的物品会出现在这里。' : '换个条件，或者把家里第一件物品记下来。'}}</view>
-      <view wx:if="{{viewMode === 'active'}}" class="state-card__action" bindtap="onAddItem">
-        <line-icon name="plus" size="20" tone="accent" />
-        <text>添加物品</text>
-      </view>
+    <view wx:else class="inv-state">
+      <view class="inv-state__icon inv-state__icon--orange"><line-icon name="package" size="36" tone="orange" /></view>
+      <view class="inv-state__title">{{viewMode === 'history' ? '还没有历史记录' : '这里没有找到东西'}}</view>
+      <view class="inv-state__copy">{{viewMode === 'history' ? '用完、丢弃或归档的物品会出现在这里。' : '换个条件，或者把家里第一件物品记下来。'}}</view>
+      <view wx:if="{{viewMode === 'active'}}" class="inv-state__action" bindtap="onAddItem">添加物品</view>
     </view>
   </block>
 </view>

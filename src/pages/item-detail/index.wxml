@@ -1,49 +1,76 @@
 <view class="page-shell detail-page">
-  <view wx:if="{{loading}}" class="detail-state card">正在打开这件物品…</view>
-  <view wx:elif="{{errorMessage}}" class="detail-state detail-state--error card">
-    <view class="detail-state__icon"><line-icon name="circle-alert" size="34" tone="accent" /></view>
+  <view wx:if="{{loading}}" class="detail-state">正在打开这件物品…</view>
+  <view wx:elif="{{errorMessage}}" class="detail-state">
+    <view class="detail-state__icon"><line-icon name="circle-alert" size="34" tone="danger" /></view>
     <view class="detail-state__title">详情暂时没连上</view>
     <view class="detail-state__copy">{{errorMessage}}</view>
     <view class="detail-state__action" bindtap="onRetry">重新加载</view>
   </view>
 
   <block wx:elif="{{item}}">
-  <view class="subpage-back" bindtap="onBack">← 返回库存</view>
-
-  <view class="detail-hero card">
-    <view class="detail-hero__icon"><line-icon name="{{item.iconName}}" size="36" tone="accent" /></view>
-    <view class="detail-hero__body">
-      <view class="detail-hero__name">{{item.name}}</view>
-      <view class="detail-hero__copy">{{item.categoryLabel}} · {{item.locationLabel}}</view>
-      <expiry-badge status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
+    <view class="detail-top">
+      <view class="detail-top__main">
+        <view class="detail-top__title">{{item.name}}</view>
+        <view class="detail-top__sub">{{item.categoryLabel}} · {{item.locationLabel}}</view>
+      </view>
+      <view class="detail-edit" bindtap="onEdit">
+        <line-icon name="pen-line" size="19" tone="ink" />
+        <text>编辑</text>
+      </view>
     </view>
-    <view class="edit-link" bindtap="onEdit"><line-icon name="pen-line" size="20" tone="ink" /><text>编辑</text></view>
-  </view>
 
-  <view class="section-head">
-    <text class="section-head__title">物品信息</text>
-  </view>
-  <view class="info-card card">
-    <view class="info-row"><text>数量</text><text>{{item.quantity}}{{item.unit}}</text></view>
-    <view class="info-row"><text>分类</text><text>{{item.categoryLabel}}</text></view>
-    <view class="info-row"><text>存放位置</text><text>{{item.locationLabel}}</text></view>
-    <view class="info-row"><text>有效期</text><text>{{item.expiresOn || '未设置'}}</text></view>
-    <view class="info-row"><text>当前状态</text><text>{{item.statusLabel}}</text></view>
-  </view>
-
-  <block wx:if="{{item.note}}">
-    <view class="section-head">
-      <text class="section-head__title">备注</text>
+    <view class="detail-hero">
+      <view class="detail-hero__icon"><line-icon name="{{item.iconName}}" size="42" tone="orange" /></view>
+      <view class="detail-hero__body">
+        <view class="detail-hero__name">{{item.name}}</view>
+        <view class="detail-hero__meta">{{item.quantity}}{{item.unit}} · {{item.locationLabel}}</view>
+      </view>
+      <view class="detail-hero__state">
+        <text>{{item.statusLabel}}</text>
+        <expiry-badge wx:if="{{item.status === 'active'}}" status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
+      </view>
     </view>
-    <view class="note-card card">{{item.note}}</view>
-  </block>
 
-  <view class="section-head">
-    <text class="section-head__title">快捷操作</text>
-  </view>
-  <view class="action-grid">
-    <button wx:for="{{item.actions}}" wx:key="key" class="secondary-button" data-status="{{item.nextStatus}}" bindtap="onChangeStatus">{{item.label}}</button>
-    <button class="danger-button" bindtap="onDelete">删除物品</button>
-  </view>
+    <view class="detail-section-head">
+      <text>物品信息</text>
+      <text>放在一起就不容易忘</text>
+    </view>
+    <view class="detail-info">
+      <view class="detail-info__row"><text>数量</text><text>{{item.quantity}}{{item.unit}}</text></view>
+      <view class="detail-info__row"><text>分类</text><text>{{item.categoryLabel}}</text></view>
+      <view class="detail-info__row"><text>存放位置</text><text>{{item.locationLabel}}</text></view>
+      <view class="detail-info__row"><text>有效期</text><text>{{item.expiresOn || '未设置'}}</text></view>
+      <view class="detail-info__row"><text>当前状态</text><text>{{item.statusLabel}}</text></view>
+    </view>
+
+    <block wx:if="{{item.note}}">
+      <view class="detail-section-head"><text>备注</text><text>留给之后的自己</text></view>
+      <view class="detail-note">{{item.note}}</view>
+    </block>
+
+    <view class="detail-section-head"><text>时间线</text><text>这件东西的足迹</text></view>
+    <view class="detail-timeline">
+      <view class="detail-timeline__item">
+        <view class="detail-timeline__dot detail-timeline__dot--orange"></view>
+        <view class="detail-timeline__date">最近更新</view>
+        <view class="detail-timeline__title">{{item.updatedAt}}</view>
+        <view class="detail-timeline__copy">当前状态：{{item.statusLabel}}</view>
+      </view>
+      <view class="detail-timeline__item">
+        <view class="detail-timeline__dot detail-timeline__dot--green"></view>
+        <view class="detail-timeline__date">有效期</view>
+        <view class="detail-timeline__title">{{item.expiresOn || '长期存放'}}</view>
+        <view class="detail-timeline__copy">{{item.expiry.label}}</view>
+      </view>
+    </view>
+
+    <view class="detail-section-head"><text>处理这件东西</text><text>先做最常用的一步</text></view>
+    <view class="detail-actions">
+      <button wx:for="{{item.actions}}" wx:key="key" class="detail-action detail-action--{{item.key}}" data-status="{{item.nextStatus}}" bindtap="onChangeStatus">
+        <line-icon name="{{item.key === 'discard' ? 'circle-alert' : item.key === 'archive' ? 'package' : 'check'}}" size="22" tone="{{item.key === 'discard' ? 'danger' : item.key === 'archive' ? 'orange' : 'white'}}" />
+        <text>{{item.label}}</text>
+      </button>
+    </view>
+    <button class="detail-delete" bindtap="onDelete">删除物品</button>
   </block>
 </view>

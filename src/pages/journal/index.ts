@@ -27,6 +27,17 @@ interface DemoNoteGroup {
   entries: JournalItem[]
 }
 
+interface JournalFilterView {
+  key: 'moments' | DemoNoteCategory
+  label: string
+  count: number
+}
+
+const NOTE_CATEGORY_LABELS: Record<DemoNoteCategory, string> = {
+  ...DEMO_NOTE_CATEGORY_LABELS,
+  other: '其他资料',
+}
+
 function buildNoteGroups(entries: JournalItem[]): DemoNoteGroup[] {
   return NOTE_CATEGORY_ORDER.map((category) => ({
     key: category,
@@ -41,7 +52,10 @@ Page({
     activeView: 'moments',
     entries: [] as JournalItem[],
     noteGroups: [] as DemoNoteGroup[],
+    visibleNoteGroups: [] as DemoNoteGroup[],
     notesCount: 0,
+    activeFilter: 'moments' as 'moments' | DemoNoteCategory,
+    filterOptions: [] as JournalFilterView[],
     loading: true,
     loadError: '',
     syncState: appConfig.demoMode ? 'local' : 'pending',
@@ -67,10 +81,21 @@ Page({
         journalGateway.list({ kinds: ['note'] }),
       ])
       if (!journalRequestGate.isCurrent(sequence)) return
+      const noteGroups = buildNoteGroups(notes)
+      const filterOptions: JournalFilterView[] = [
+        { key: 'moments', label: '生活点滴', count: moments.length },
+        ...NOTE_CATEGORY_ORDER.map((category) => ({
+          key: category,
+          label: NOTE_CATEGORY_LABELS[category],
+          count: notes.filter((entry) => (entry.category ?? 'other') === category).length,
+        })),
+      ]
       this.setData({
         entries: moments,
-        noteGroups: buildNoteGroups(notes),
+        noteGroups,
+        visibleNoteGroups: noteGroups,
         notesCount: notes.length,
+        filterOptions,
         loading: false,
         syncState: appConfig.demoMode ? 'local' : 'synced',
         syncText: appConfig.demoMode ? '只在本机' : '已同步',
@@ -96,6 +121,26 @@ Page({
 
   onSwitchView(event: { currentTarget: { dataset: { value: string } } }) {
     this.setData({ activeView: event.currentTarget.dataset.value })
+  },
+
+  onSelectFilter(event: {
+    currentTarget: { dataset: { value?: 'moments' | DemoNoteCategory } }
+  }) {
+    const value = event.currentTarget.dataset.value
+    if (!value) return
+    if (value === 'moments') {
+      this.setData({
+        activeView: 'moments',
+        activeFilter: value,
+        visibleNoteGroups: this.data.noteGroups,
+      })
+      return
+    }
+    this.setData({
+      activeView: 'notes',
+      activeFilter: value,
+      visibleNoteGroups: this.data.noteGroups.filter((group) => group.key === value),
+    })
   },
 
   onCreate() {

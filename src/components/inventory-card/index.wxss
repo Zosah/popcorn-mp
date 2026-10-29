@@ -2,7 +2,7 @@
   display: flex;
   min-height: 112rpx;
   align-items: center;
-  border-bottom: 1rpx solid rgba(87, 80, 93, 0.09);
+  border-bottom: 1rpx solid #ebe5da;
 }
 
 .row:last-child {
@@ -11,12 +11,12 @@
 
 .row__icon {
   display: flex;
-  width: 58rpx;
-  height: 58rpx;
+  width: 62rpx;
+  height: 62rpx;
   align-items: center;
   justify-content: center;
   border-radius: 20rpx;
-  background: rgba(240, 237, 247, 0.68);
+  background: #fdf0e4;
   flex-shrink: 0;
 }
 
@@ -24,14 +24,14 @@
   min-width: 0;
   margin-left: 16rpx;
   flex: 1;
-  padding: 17rpx 0;
+  padding: 18rpx 0;
 }
 
 .row__name {
   overflow: hidden;
-  color: var(--c-text, #292737);
-  font-size: 25rpx;
-  font-weight: 600;
+  color: var(--c-text, #2e2a28);
+  font-size: 27rpx;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -39,8 +39,8 @@
 .row__meta {
   overflow: hidden;
   margin-top: 5rpx;
-  color: var(--c-muted, #8a8693);
-  font-size: 18rpx;
+  color: var(--c-muted, #8d8580);
+  font-size: 19rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -53,15 +53,15 @@
 }
 
 .row__history {
-  color: var(--c-muted, #8a8693);
-  font-size: 18rpx;
+  color: var(--c-muted, #8d8580);
+  font-size: 19rpx;
 }
 
 .row__chevron {
-  width: 9rpx;
-  height: 9rpx;
-  margin-left: 13rpx;
-  border-top: 1rpx solid var(--c-faint, #b7b2bb);
-  border-right: 1rpx solid var(--c-faint, #b7b2bb);
+  width: 10rpx;
+  height: 10rpx;
+  margin-left: 15rpx;
+  border-top: 1.5rpx solid #c6bdb4;
+  border-right: 1.5rpx solid #c6bdb4;
   transform: rotate(45deg);
 }

@@ -1,52 +1,72 @@
 <view class="page-shell pet-event-form">
-  <view class="subpage-back" bindtap="onBack">← 返回宠物档案</view>
-
-  <view class="event-head">
-    <view class="event-head__title">{{pageTitle}}</view>
-    <view class="event-head__copy">日期和详细内容会成为时间线与提醒的依据。</view>
-  </view>
-
-  <view class="event-form-card card">
-    <view class="event-field">
-      <text>事件类型</text>
-      <picker range="{{eventTypeLabels}}" value="{{eventTypeIndex}}" bindchange="onTypeChange"><view class="event-field__picker"><line-icon name="{{eventTypeIconNames[eventTypeIndex]}}" size="22" tone="muted" /><text>{{eventTypeLabels[eventTypeIndex]}} ›</text></view></picker>
-    </view>
-    <view class="event-field">
-      <text>发生日期</text>
-      <picker mode="date" value="{{form.occurredOn}}" bindchange="onDateChange"><view>{{form.occurredOn}} ›</view></picker>
-    </view>
-    <view class="event-field event-field--stack">
-      <text>标题</text>
-      <input value="{{form.title}}" maxlength="40" placeholder="发生了什么" bindinput="onTitleInput" />
-    </view>
-    <view class="event-field event-field--stack">
-      <text>详细备注</text>
-      <textarea value="{{form.note}}" maxlength="300" placeholder="过程、结果、注意事项" bindinput="onNoteInput" />
+  <view class="event-hero">
+    <view class="event-hero__mark"><line-icon name="heart-pulse" size="30" tone="pink" /></view>
+    <view class="event-hero__body">
+      <view class="eyebrow">PET CARE NOTE</view>
+      <view class="event-hero__title">{{pageTitle}}</view>
+      <view class="event-hero__copy">日期和详细内容会成为{{petName || '它'}}时间线与提醒的依据。</view>
     </view>
   </view>
 
-  <view class="section-head">
-    <text class="section-head__title">补充信息</text>
-  </view>
-  <view class="event-form-card card">
+  <view class="paper-card event-card">
+    <view class="event-grid">
+      <view class="event-field">
+        <text class="event-label">事件类型</text>
+        <picker range="{{eventTypeLabels}}" value="{{eventTypeIndex}}" bindchange="onTypeChange">
+          <view class="event-picker">
+            <view class="event-picker__value"><line-icon name="{{eventTypeIconNames[eventTypeIndex]}}" size="21" tone="pink" /><text>{{eventTypeLabels[eventTypeIndex]}}</text></view>
+            <text class="event-picker__arrow">›</text>
+          </view>
+        </picker>
+      </view>
+      <view class="event-field">
+        <text class="event-label">发生日期</text>
+        <picker mode="date" value="{{form.occurredOn}}" bindchange="onDateChange">
+          <view class="event-picker">
+            <view class="event-picker__value"><line-icon name="calendar-days" size="21" tone="pink" /><text>{{form.occurredOn}}</text></view>
+            <text class="event-picker__arrow">›</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
     <view class="event-field event-field--stack">
-      <text>医院 / 门店 / 地点</text>
-      <input value="{{form.provider}}" maxlength="60" placeholder="可选" bindinput="onProviderInput" />
+      <text class="event-label">标题 <text class="event-required">*</text></text>
+      <input class="event-input event-input--lead" value="{{form.title}}" maxlength="40" placeholder="发生了什么" bindinput="onTitleInput" />
     </view>
-    <view class="event-field event-field--stack">
-      <text>费用</text>
-      <input type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" />
-    </view>
-    <view class="event-field">
-      <view><text>设置下次日期</text><text>用于月历预览</text></view>
-      <switch checked="{{hasNextDate}}" color="#5b6ee0" bindchange="onNextToggle" />
-    </view>
-    <view wx:if="{{hasNextDate}}" class="event-field event-field--last">
-      <text>下次日期</text>
-      <picker mode="date" value="{{form.nextOn}}" bindchange="onNextDateChange"><view>{{form.nextOn || '选择日期'}} ›</view></picker>
+
+    <view class="event-field event-field--stack event-field--last">
+      <text class="event-label">详细备注</text>
+      <textarea class="event-textarea" value="{{form.note}}" maxlength="300" placeholder="过程、结果、注意事项" bindinput="onNoteInput" />
     </view>
   </view>
 
-  <button class="primary-button event-save" bindtap="onSave"><line-icon name="pen-line" size="24" tone="white" /><text>{{saveText}}</text></button>
-  <view class="event-note">医疗信息只作家庭生活记录，不构成诊疗建议。</view>
+  <view class="event-section-head"><view><text>补充信息</text><text>想起来再补也可以</text></view></view>
+
+  <view class="paper-card event-card">
+    <view class="event-field event-field--stack">
+      <text class="event-label">医院 / 门店 / 地点</text>
+      <input class="event-input" value="{{form.provider}}" maxlength="60" placeholder="可选" bindinput="onProviderInput" />
+    </view>
+    <view class="event-field event-field--stack">
+      <text class="event-label">费用</text>
+      <input class="event-input" type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" />
+    </view>
+    <view class="event-switch">
+      <view class="event-switch__copy"><text>设置下次日期</text><text>用于月历预览和照护提醒</text></view>
+      <switch checked="{{hasNextDate}}" color="#2c4a52" bindchange="onNextToggle" />
+    </view>
+    <view wx:if="{{hasNextDate}}" class="event-field event-field--stack event-field--last">
+      <text class="event-label">下次日期</text>
+      <picker mode="date" value="{{form.nextOn}}" bindchange="onNextDateChange">
+        <view class="event-picker event-picker--date">
+          <view class="event-picker__value"><line-icon name="calendar-days" size="21" tone="pink" /><text>{{form.nextOn || '选择日期'}}</text></view>
+          <text class="event-picker__arrow">›</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <button class="primary-button event-save" bindtap="onSave"><line-icon name="pen-line" size="23" tone="white" /><text>{{saveText}}</text></button>
+  <view class="event-note"><line-icon name="circle-alert" size="17" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>
 </view>

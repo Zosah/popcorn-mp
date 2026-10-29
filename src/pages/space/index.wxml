@@ -1,47 +1,89 @@
 <view class="space-page">
   <view class="subpage-back" bindtap="onBack">← 返回我的</view>
 
-  <view class="space-head">
-    <view class="space-head__title-row">
-      <view class="space-head__title">{{spaceName}}</view>
-      <view wx:if="{{isOwner}}" class="space-head__edit" bindtap="onRename">改名</view>
+  <view class="space-hero">
+    <view class="space-hero__icon">
+      <line-icon name="house" size="46" tone="ink" />
     </view>
-    <view class="space-head__copy">{{spaceCreatedLabel}}</view>
+
+    <view class="space-hero__title-row">
+      <text class="space-hero__title">{{spaceName}}</text>
+      <view wx:if="{{isOwner}}" class="space-hero__edit" bindtap="onRename">改名</view>
+    </view>
+    <view class="space-hero__copy">{{spaceCreatedLabel}}</view>
+
+    <view class="space-stats">
+      <view class="space-stat">
+        <text class="space-stat__value space-stat__value--deep">{{memberCount}}</text>
+        <text class="space-stat__label">成员</text>
+      </view>
+      <view class="space-stat">
+        <text class="space-stat__value space-stat__value--green">{{spaceRole === 'owner' ? 'Owner' : 'Member'}}</text>
+        <text class="space-stat__label">我的身份</text>
+      </view>
+      <view class="space-stat">
+        <text class="space-stat__value space-stat__value--orange">7 天</text>
+        <text class="space-stat__label">邀请有效</text>
+      </view>
+    </view>
   </view>
 
-  <view class="space-stats card">
-    <view><text>{{memberCount}}</text><text>成员</text></view>
-    <view><text>{{spaceRole === 'owner' ? '创建者' : '成员'}}</text><text>我的身份</text></view>
-    <view><text>7 天</text><text>邀请有效</text></view>
+  <view class="space-section-head">
+    <view class="space-section-head__label">
+      <line-icon name="users" size="27" tone="blue" />
+      <text>一起生活的人</text>
+    </view>
+    <text>{{memberCount}} 位</text>
   </view>
 
-  <view class="space-section-head"><view class="space-section-head__label"><line-icon name="users" size="24" tone="muted" /><text>一起生活的人</text></view><text>{{memberCount}} 位</text></view>
-  <view class="member-list card">
+  <view class="member-list">
     <view wx:for="{{members}}" wx:key="userId" class="member-row">
-      <view class="member-row__initial member-row__initial--{{item.role}} member-row__initial--{{item.avatarTone}}">{{item.avatarText}}</view>
-      <view class="member-row__body"><text>{{item.nickname}}</text><text>{{item.meta}}</text></view>
-      <view class="member-row__role">{{item.roleLabel}}</view>
+      <image class="member-row__avatar" src="../../images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
+      <view class="member-row__body">
+        <view class="member-row__name-line">
+          <text>{{item.nickname}}</text>
+          <text class="member-row__role member-row__role--{{item.role}}">{{item.roleLabel}}</text>
+        </view>
+        <text class="member-row__meta">{{item.meta}}</text>
+      </view>
+      <text class="member-row__arrow" data-nickname="{{item.nickname}}" data-role="{{item.roleLabel}}" bindtap="onMemberInfo">›</text>
     </view>
   </view>
 
-  <view class="space-section-head space-section-head--spaced"><view class="space-section-head__label"><line-icon name="ticket" size="24" tone="muted" /><text>邀请一个人回家</text></view><text>一次性</text></view>
-  <view class="invite-sheet card">
+  <view class="space-section-head space-section-head--spaced">
+    <view class="space-section-head__label">
+      <line-icon name="ticket" size="27" tone="pink" />
+      <text>邀请一个人回家</text>
+    </view>
+    <text>一次性 · 7 天有效</text>
+  </view>
+
+  <view class="invite-sheet">
     <view class="invite-sheet__label">{{isDemoMode ? 'Demo 邀请码' : '空间邀请码'}}</view>
     <view class="invite-sheet__code">{{hasInvite ? inviteCode : (isOwner ? '点击生成' : '仅创建者可邀请')}}</view>
-    <view class="invite-sheet__copy">{{inviteExpiryLabel}}。邀请码只保存在服务端哈希中，明文仅在这里展示。</view>
+    <view class="invite-sheet__copy">{{inviteExpiryLabel}}。对方输入邀请码后，就能看到同一份生活。</view>
+
     <view wx:if="{{isOwner && !hasInvite}}" class="invite-sheet__actions invite-sheet__actions--single">
       <button class="primary-button" bindtap="onRefreshInvite">生成邀请码</button>
     </view>
     <view wx:if="{{isOwner && hasInvite}}" class="invite-sheet__actions">
-      <button class="secondary-button" bindtap="onCopyInvite">复制邀请码</button>
-      <button class="primary-button" open-type="share">微信分享</button>
+      <button class="invite-sheet__copy-button" bindtap="onCopyInvite">复制邀请码</button>
+      <button class="invite-sheet__share-button" open-type="share">微信分享</button>
     </view>
-    <view wx:if="{{isOwner && hasInvite}}" class="invite-sheet__preview" bindtap="onPreviewInvite">预览对方看到的页面 →</view>
-    <view wx:if="{{isOwner && hasInvite}}" class="invite-sheet__refresh" bindtap="onRefreshInvite">换一个邀请码</view>
+
+    <view wx:if="{{isOwner && hasInvite}}" class="invite-sheet__links">
+      <text bindtap="onPreviewInvite">预览对方看到的页面</text>
+      <text bindtap="onRefreshInvite">换一个邀请码</text>
+    </view>
   </view>
 
   <view class="privacy-note">
-    <view class="privacy-note__mark"><line-icon name="lock" size="22" tone="muted" /></view>
-    <view><text>空间默认不公开</text><text>{{isDemoMode ? 'Demo 数据只保存在当前设备。' : '服务端会校验会话、空间成员关系与 owner 权限。'}}</text></view>
+    <view class="privacy-note__mark">
+      <line-icon name="lock" size="25" tone="muted" />
+    </view>
+    <view class="privacy-note__body">
+      <text>空间默认不公开</text>
+      <text>{{isDemoMode ? 'Demo 数据只保存在当前设备。健康资料和宠物病历后续可单独设置可见范围。' : '服务端会校验会话、空间成员关系与 owner 权限；敏感资料可单独设置可见范围。'}}</text>
+    </view>
   </view>
 </view>

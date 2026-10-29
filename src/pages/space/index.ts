@@ -166,6 +166,19 @@ Page({
   onBack() {
     navigateBackOrTab('/pages/profile/index')
   },
+  onMemberInfo(event: {
+    currentTarget: { dataset: { nickname?: string; role?: string } }
+  }) {
+    const nickname = event.currentTarget.dataset.nickname || '空间成员'
+    const role = event.currentTarget.dataset.role || '成员'
+    wx.showModal({
+      title: nickname,
+      content: `当前身份：${role}。成员管理接口接入后，这里会提供移出与权限调整。`,
+      showCancel: false,
+      confirmText: '知道了',
+    })
+  },
+
 
   onRename() {
     if (!this.data.isOwner) {

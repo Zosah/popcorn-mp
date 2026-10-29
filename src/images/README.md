@@ -11,6 +11,10 @@
 | `demo-cat-dreaming.jpg` | 宠物页陪伴叙事 | 裁切压缩 |
 | `demo-menu-still-life.jpg` | 菜单版式示例 | 裁切压缩 |
 | `demo-botanical.jpg` | 我的页植物版画小景 | 裁切压缩 |
+| `home-cat-box.svg` | 首页「黑猫与纸箱」插画源文件 | 参考 HTML 原型 SVG 提取 |
+| `home-cat-box.png` | 首页「黑猫与纸箱」插画 | SVG 600 × 600 透明底导出 |
+| `avatars/avatar-*.svg` | 空间成员插画头像源文件 | 参考手账原型头像风格绘制 |
+| `avatars/avatar-*.png` | 空间成员插画头像 | SVG 192 × 192 导出 |
 | `ink-cat.png` | 宠物月历空日提示 | 去底、统一深赭色 |
 | `ink-pantry.png` | 库存空结果提示 | 去底、统一深赭色 |
 | `ink-letter.png` | 邀请页手札小景 | 提取墨迹、统一深赭色 |

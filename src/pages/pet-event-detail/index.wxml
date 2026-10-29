@@ -1,12 +1,14 @@
 <view class="page-shell pet-event-detail">
-  <view class="subpage-back" bindtap="onBack">← 返回{{petName}}的档案</view>
-
-  <view class="event-detail-head">
-    <view class="event-detail-head__title-row"><view class="event-detail-head__mark"><line-icon name="{{iconName}}" size="32" tone="accent" /></view><view class="event-detail-head__title">{{event.title}}</view></view>
-    <view class="event-detail-head__copy">{{event.occurredOn}} · {{typeLabel}}</view>
+  <view class="event-hero">
+    <view class="event-hero__mark"><line-icon name="{{iconName}}" size="32" tone="pink" /></view>
+    <view class="event-hero__body">
+      <view class="eyebrow">{{typeLabel}}</view>
+      <view class="event-hero__title">{{event.title}}</view>
+      <view class="event-hero__copy">{{event.occurredOn}} · 属于{{petName}}的照护记录</view>
+    </view>
   </view>
 
-  <view class="event-detail-card card">
+  <view class="paper-card event-detail-card">
     <view class="event-detail-row"><text>宠物</text><text>{{petName}}</text></view>
     <view class="event-detail-row"><text>类型</text><text>{{typeLabel}}</text></view>
     <view class="event-detail-row"><text>发生日期</text><text>{{event.occurredOn}}</text></view>
@@ -14,14 +16,14 @@
     <view wx:if="{{event.cost}}" class="event-detail-row"><text>费用</text><text>¥{{event.cost}}</text></view>
     <view wx:if="{{event.nextOn}}" class="event-detail-row"><text>下次计划</text><text>{{event.nextOn}}</text></view>
     <view class="event-detail-note">
-      <text>详细记录</text>
+      <view class="event-detail-note__label"><line-icon name="pen-line" size="18" tone="pink" /><text>详细记录</text></view>
       <text>{{event.note || '这次没有补充备注。'}}</text>
     </view>
   </view>
 
-  <view class="event-detail-actions">
+  <view class="event-actions">
     <button class="primary-button" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑事件</text></button>
-    <button class="danger-button event-delete" bindtap="onDelete"><line-icon name="circle-alert" size="23" tone="danger" /><text>删除事件</text></button>
+    <button class="danger-button event-delete" bindtap="onDelete"><line-icon name="circle-alert" size="22" tone="danger" /><text>删除事件</text></button>
   </view>
-  <view class="event-detail-tip"><line-icon name="circle-alert" size="18" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>
+  <view class="event-tip"><line-icon name="circle-alert" size="17" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>
 </view>

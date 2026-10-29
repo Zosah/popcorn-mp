@@ -1,97 +1,37 @@
 .menu-form-page {
-  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
+  --recipe-paper: #fdfbf7;
+  --recipe-ink: #2e2a28;
+  --recipe-ink-2: #6b635c;
+  --recipe-ink-3: #a69e96;
+  --recipe-line: #ebe5da;
+  --recipe-deep: #2c4a52;
+  --recipe-gold: #c28b23;
+  padding: 28rpx 36rpx calc(82rpx + env(safe-area-inset-bottom));
+  background: var(--recipe-paper);
+  color: var(--recipe-ink);
 }
 
-.menu-form-head {
-  padding: 8rpx 0 30rpx;
-}
+.recipe-head { display: flex; align-items: flex-start; padding: 10rpx 2rpx 30rpx; gap: 18rpx; }
+.recipe-head__mark { display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; border-radius: 24rpx; background: #fbf3e1; flex-shrink: 0; }
+.recipe-head__body { min-width: 0; flex: 1; }
+.eyebrow { color: #a8751e; font-size: 16rpx; font-weight: 700; letter-spacing: 4rpx; }
+.recipe-head__title { margin-top: 8rpx; font-size: 42rpx; font-weight: 700; letter-spacing: -1.4rpx; line-height: 1.3; }
+.recipe-head__copy { margin-top: 9rpx; color: var(--recipe-ink-2); font-size: 22rpx; line-height: 1.65; }
 
-.menu-form-head__title {
-  max-width: 620rpx;
-  color: var(--c-text, #22242e);
-  font-size: 46rpx;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -2rpx;
-}
-
-.menu-form-head__copy {
-  max-width: 610rpx;
-  margin-top: 12rpx;
-  color: var(--c-text-2, #5c5f6e);
-  font-size: 24rpx;
-  line-height: 1.65;
-}
-
-.menu-form-page .card {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.menu-form-card {
-  padding: 0;
-  border-top: 1rpx solid var(--c-line-strong, #d6d5e0);
-  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
-}
-
-.menu-field {
-  padding: 23rpx 0;
-  border-bottom: 1rpx solid var(--c-line, #e7e6ee);
-}
-
-.menu-field--last {
-  border-bottom: 0;
-}
-
-.menu-field > text {
-  display: block;
-  color: var(--c-muted, #9497a6);
-  font-size: 21rpx;
-}
-
-.menu-field input {
-  height: 66rpx;
-  margin-top: 5rpx;
-  color: var(--c-text, #22242e);
-  font-size: 29rpx;
-  font-weight: 500;
-}
-
-.menu-field input::placeholder,
-.menu-field textarea::placeholder {
-  color: #a8abba;
-  font-weight: 400;
-}
-
-.menu-field textarea {
-  width: 100%;
-  height: 250rpx;
-  box-sizing: border-box;
-  margin-top: 14rpx;
-  padding: 16rpx 0 16rpx 18rpx;
-  border-left: 1rpx solid var(--c-line-strong, #d6d5e0);
-  color: var(--c-text, #22242e);
-  font-size: 24rpx;
-  line-height: 1.7;
-}
-
-.menu-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.menu-form-grid .menu-field {
-  border-bottom: 0;
-}
-
-.menu-form-grid .menu-field + .menu-field {
-  padding-left: 24rpx;
-  border-left: 1rpx solid var(--c-line, #e7e6ee);
-}
-
-.menu-form-save {
-  width: 100%;
-  margin-top: 32rpx;
-  gap: 10rpx;
-}
+.paper-card { border: 1rpx solid var(--recipe-line); border-radius: 30rpx; background: #fffefa; box-shadow: 0 12rpx 30rpx rgba(82, 65, 48, 0.04); }
+.recipe-card { overflow: hidden; padding: 0 22rpx; }
+.recipe-field { padding: 20rpx 0; border-bottom: 1rpx solid var(--recipe-line); }
+.recipe-field--lead { padding-top: 24rpx; }
+.recipe-field--last { border-bottom: 0; }
+.recipe-field > text { display: block; color: var(--recipe-ink-3); font-size: 19rpx; font-weight: 500; letter-spacing: 0.4rpx; }
+.required { color: #d85f78; }
+.recipe-field input { height: 64rpx; color: var(--recipe-ink); font-size: 27rpx; font-weight: 600; }
+.recipe-field input::placeholder, .recipe-field textarea::placeholder { color: #b8b0a8; font-weight: 400; }
+.recipe-field textarea { width: 100%; height: 236rpx; box-sizing: border-box; margin-top: 10rpx; padding: 12rpx 2rpx; color: var(--recipe-ink); font-size: 23rpx; line-height: 1.75; }
+.recipe-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24rpx; }
+.recipe-grid .recipe-field { border-bottom: 0; }
+.recipe-grid .recipe-field + .recipe-field { border-left: 1rpx solid var(--recipe-line); padding-left: 24rpx; }
+.recipe-section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 32rpx 4rpx 13rpx; }
+.recipe-section-head text:first-child { font-size: 28rpx; font-weight: 700; letter-spacing: -0.5rpx; }
+.recipe-section-head text:last-child { color: var(--recipe-ink-3); font-size: 18rpx; }
+.recipe-save { width: 100%; margin-top: 30rpx; gap: 10rpx; }
