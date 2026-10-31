@@ -2,13 +2,17 @@ import { readStoredApiSession } from '../stores/session'
 import type {
   ApiReminderSettings,
   ApiReminderSettingsUpdateRequest,
+  ApiReminderSubscription,
+  ApiReminderSubscriptionWriteRequest,
 } from '../types/api'
 import { requestApiResponse } from './http'
 import {
   ReminderGatewayError,
   type ReminderGateway,
+  type ReminderAuthorizationStatus,
   type ReminderSettings,
   type ReminderSettingsInput,
+  type ReminderSubscription,
 } from './reminder-gateway'
 import { TransportError } from './transport'
 
@@ -61,6 +65,41 @@ export class HttpReminderGateway implements ReminderGateway {
       throw toGatewayError(error)
     }
   }
+
+  async getSubscription(): Promise<ReminderSubscription> {
+    const context = reminderContext()
+    try {
+      const response = await retryNetwork(() => requestApiResponse<ApiReminderSubscription>(
+        reminderSubscriptionPath(context.spaceId),
+        { token: context.token },
+      ))
+      return toReminderSubscription(response.data)
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
+
+  async recordSubscription(
+    status: ReminderAuthorizationStatus,
+  ): Promise<ReminderSubscription> {
+    const context = reminderContext()
+    const body: ApiReminderSubscriptionWriteRequest = { status }
+    const idempotencyKey = createSubscriptionIdempotencyKey()
+    try {
+      const response = await retryNetwork(() => requestApiResponse<ApiReminderSubscription>(
+        reminderSubscriptionPath(context.spaceId),
+        {
+          method: 'PUT',
+          token: context.token,
+          body,
+          headers: { 'Idempotency-Key': idempotencyKey },
+        },
+      ))
+      return toReminderSubscription(response.data)
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
 }
 
 function reminderContext(): ReminderContext {
@@ -81,6 +120,10 @@ function reminderSettingsPath(spaceId: string): string {
   return `/spaces/${encodeURIComponent(spaceId)}/reminder-settings`
 }
 
+function reminderSubscriptionPath(spaceId: string): string {
+  return `/spaces/${encodeURIComponent(spaceId)}/reminder-subscription`
+}
+
 function toReminderSettings(item: ApiReminderSettings): ReminderSettings {
   return {
     expiry: item.expiry,
@@ -92,8 +135,24 @@ function toReminderSettings(item: ApiReminderSettings): ReminderSettings {
   }
 }
 
+function toReminderSubscription(item: ApiReminderSubscription): ReminderSubscription {
+  return {
+    configured: item.configured,
+    templateId: item.templateId,
+    page: item.page,
+    status: item.status,
+    availableCount: item.availableCount,
+    lastStatusAt: item.lastStatusAt,
+    lastAcceptedAt: item.lastAcceptedAt,
+  }
+}
+
 function createIdempotencyKey(): string {
   return `reminder_update_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
+}
+
+function createSubscriptionIdempotencyKey(): string {
+  return `reminder_subscription_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
 }
 
 async function retryNetwork<T>(action: () => Promise<T>): Promise<T> {

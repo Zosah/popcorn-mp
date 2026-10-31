@@ -5,6 +5,8 @@ import {
 import {
   ReminderGatewayError,
   type ReminderGateway,
+  type ReminderAuthorizationStatus,
+  type ReminderSubscription,
   type ReminderSettings,
   type ReminderSettingsInput,
 } from './reminder-gateway'
@@ -30,5 +32,24 @@ export class DemoReminderGateway implements ReminderGateway {
       version: current.version + 1,
       updatedAt: new Date().toISOString(),
     })
+  }
+
+  async getSubscription(): Promise<ReminderSubscription> {
+    return {
+      configured: false,
+      templateId: '',
+      page: 'pages/reminder-settings/index',
+      status: 'none',
+      availableCount: 0,
+      lastStatusAt: null,
+      lastAcceptedAt: null,
+    }
+  }
+
+  async recordSubscription(_status: ReminderAuthorizationStatus): Promise<ReminderSubscription> {
+    throw new ReminderGatewayError(
+      'SUBSCRIPTION_NOT_CONFIGURED',
+      'Demo 模式不会调用微信订阅授权',
+    )
   }
 }

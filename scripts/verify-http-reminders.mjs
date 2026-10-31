@@ -13,6 +13,7 @@ const suffix = Date.now().toString(36).slice(-9)
 const ownerIdentity = `rmo${suffix}`
 const memberIdentity = `rmm${suffix}`
 const outsiderIdentity = `rmx${suffix}`
+const expectSubscriptionConfigured = process.env.EXPECT_SUBSCRIPTION_CONFIGURED === '1'
 const miniProgram = await automator.connect({ wsEndpoint })
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const runtimeErrors = []
@@ -116,6 +117,10 @@ async function assertNoHorizontalOverflow(page, label) {
 
 function reminderPath(spaceId) {
   return `/spaces/${encodeURIComponent(spaceId)}/reminder-settings`
+}
+
+function subscriptionPath(spaceId) {
+  return `/spaces/${encodeURIComponent(spaceId)}/reminder-subscription`
 }
 
 function input(overrides = {}) {
@@ -246,11 +251,83 @@ try {
   assert.equal(outsiderRead.data.code, 'NOT_FOUND')
   console.log('PASS 旧版本冲突、缺少 If-Match 与非空间成员权限边界')
 
+  const subscriptionInitial = await apiOk(subscriptionPath(spaceId), { token: owner.token })
+  if (!expectSubscriptionConfigured) {
+    assert.deepEqual(subscriptionInitial.data, {
+      configured: false,
+      templateId: '',
+      page: '',
+      status: 'none',
+      availableCount: 0,
+      lastStatusAt: null,
+      lastAcceptedAt: null,
+    })
+    const unconfiguredWrite = await apiRaw(subscriptionPath(spaceId), {
+      method: 'PUT',
+      token: owner.token,
+      headers: { 'Idempotency-Key': `reminder_subscription_unconfigured_${suffix}` },
+      body: { status: 'accept' },
+    })
+    assert.equal(unconfiguredWrite.status, 503)
+    assert.equal(unconfiguredWrite.data.code, 'SUBSCRIPTION_NOT_CONFIGURED')
+    console.log('PASS 模板未配置时仅返回安全状态，授权写入返回 503')
+  } else {
+    assert.equal(subscriptionInitial.data.configured, true)
+    assert.ok(subscriptionInitial.data.templateId)
+    assert.equal(subscriptionInitial.data.page, 'pages/reminder-settings/index')
+    assert.equal(subscriptionInitial.data.status, 'none')
+    assert.equal(subscriptionInitial.data.availableCount, 0)
+
+    const rejected = await apiOk(subscriptionPath(spaceId), {
+      method: 'PUT',
+      token: owner.token,
+      headers: { 'Idempotency-Key': `reminder_subscription_reject_${suffix}` },
+      body: { status: 'reject' },
+    })
+    assert.equal(rejected.data.status, 'reject')
+    assert.equal(rejected.data.availableCount, 0)
+    const rejectedAgain = await apiOk(subscriptionPath(spaceId), { token: owner.token })
+    assert.equal(rejectedAgain.data.status, 'reject')
+    assert.equal(rejectedAgain.data.availableCount, 0)
+
+    const acceptedOnce = await apiOk(subscriptionPath(spaceId), {
+      method: 'PUT',
+      token: owner.token,
+      headers: { 'Idempotency-Key': `reminder_subscription_accept_1_${suffix}` },
+      body: { status: 'accept' },
+    })
+    assert.equal(acceptedOnce.data.status, 'accept')
+    assert.equal(acceptedOnce.data.availableCount, 1)
+    assert.ok(acceptedOnce.data.lastAcceptedAt)
+
+    const acceptedTwice = await apiOk(subscriptionPath(spaceId), {
+      method: 'PUT',
+      token: owner.token,
+      headers: { 'Idempotency-Key': `reminder_subscription_accept_2_${suffix}` },
+      body: { status: 'accept' },
+    })
+    assert.equal(acceptedTwice.data.status, 'accept')
+    assert.equal(acceptedTwice.data.availableCount, 2)
+    const acceptedPersisted = await apiOk(subscriptionPath(spaceId), { token: owner.token })
+    assert.deepEqual(acceptedPersisted.data, acceptedTwice.data)
+
+    const memberSubscription = await apiOk(subscriptionPath(spaceId), { token: member.token })
+    assert.equal(memberSubscription.data.status, 'none')
+    assert.equal(memberSubscription.data.availableCount, 0)
+    const outsiderSubscription = await apiRaw(subscriptionPath(spaceId), { token: outsider.token })
+    assert.equal(outsiderSubscription.status, 404)
+    assert.equal(outsiderSubscription.data.code, 'NOT_FOUND')
+    console.log('PASS 订阅授权拒绝持久化、accept 累加、成员隔离与非成员权限边界')
+  }
+
   await setApiSession(owner.token, owner, ownerIdentity)
   let page = await open('/pages/reminder-settings/index')
   let pageData = await waitFor(async () => {
     const data = await page.data()
-    return !data.loading && data.settings?.version === 2 ? data : false
+    const subscriptionReady = expectSubscriptionConfigured
+      ? data.subscription?.configured === true && Boolean(data.subscription?.templateId)
+      : data.subscriptionLabel === '模板未配置'
+    return !data.loading && data.settings?.version === 2 && subscriptionReady ? data : false
   }, '提醒设置页面加载')
   assert.equal(pageData.mode, 'http')
   assert.equal(pageData.settings.expiry, false)
@@ -259,6 +336,31 @@ try {
   assert.equal(pageData.syncText, '已保存到空间')
   await assertNoHorizontalOverflow(page, '提醒设置页')
   await screenshot('loaded')
+  if (!expectSubscriptionConfigured) {
+    assert.equal(pageData.subscriptionLabel, '模板未配置')
+    assert.equal(pageData.subscriptionActionText, '暂不可授权')
+    console.log('PASS 页面在模板未配置时展示安全降级状态')
+  } else {
+    pageData = await waitFor(async () => {
+      const data = await page.data()
+      return !data.authorizing && data.subscription?.availableCount === 2 ? data : false
+    }, '页面读取订阅授权状态')
+    assert.equal(pageData.subscriptionLabel, '已授权 · 可发送 2 次')
+    await miniProgram.mockWxMethod('requestSubscribeMessage', {
+      [pageData.subscription.templateId]: 'accept',
+    })
+    await page.callMethod('onAuthorize')
+    pageData = await waitFor(async () => {
+      const data = await page.data()
+      return !data.authorizing && data.subscription?.availableCount === 3 ? data : false
+    }, '模拟微信授权后累加发送机会')
+    assert.equal(pageData.subscription.status, 'accept')
+    assert.equal(pageData.subscriptionErrorText, '')
+    assert.equal(pageData.subscriptionLabel, '已授权 · 可发送 3 次')
+    await miniProgram.restoreWxMethod('requestSubscribeMessage')
+    await screenshot('subscription-authorized')
+    console.log('PASS 页面调用微信授权并将 accept 真实回报服务端')
+  }
   console.log('PASS 开发者工具页面读取真实提醒设置')
 
   await page.callMethod('onToggle', {
@@ -336,6 +438,7 @@ try {
 } finally {
   try {
     await miniProgram.restoreWxMethod('showToast')
+    await miniProgram.restoreWxMethod('requestSubscribeMessage')
   } catch {
     // 未 mock 时忽略。
   }

@@ -14,9 +14,24 @@ export interface ReminderSettingsInput {
   reminderTime: string
 }
 
+export type ReminderAuthorizationStatus = 'accept' | 'reject' | 'ban' | 'filter'
+export type ReminderSubscriptionStatus = 'none' | ReminderAuthorizationStatus
+
+export interface ReminderSubscription {
+  configured: boolean
+  templateId: string
+  page: string
+  status: ReminderSubscriptionStatus
+  availableCount: number
+  lastStatusAt: string | null
+  lastAcceptedAt: string | null
+}
+
 export interface ReminderGateway {
   get(): Promise<ReminderSettings>
   update(input: ReminderSettingsInput, currentVersion: number): Promise<ReminderSettings>
+  getSubscription(): Promise<ReminderSubscription>
+  recordSubscription(status: ReminderAuthorizationStatus): Promise<ReminderSubscription>
 }
 
 export class ReminderGatewayError extends Error {
@@ -46,6 +61,8 @@ export function getReminderErrorMessage(error: unknown, fallback: string): strin
       return '网络不太稳定，请稍后再试'
     case 'NOT_FOUND':
       return '当前空间不可用，或设置记录已经不存在'
+    case 'SUBSCRIPTION_NOT_CONFIGURED':
+      return '服务端还没有配置微信订阅消息模板'
     case 'VALIDATION_FAILED':
     case 'PRECONDITION_REQUIRED':
       return error.message || '提醒设置还需要检查一下'

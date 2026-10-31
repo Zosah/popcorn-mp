@@ -11,8 +11,13 @@
         {{mode === 'demo' ? '先把偏好留在这台设备上。' : '每个空间成员各自设置，不覆盖对方。'}}
       </text>
     </view>
-    <button class="reminder-head__auth" bindtap="onAuthorize">
-      {{mode === 'demo' ? '本机说明' : '订阅说明'}}
+    <button
+      class="reminder-head__auth"
+      loading="{{authorizing}}"
+      disabled="{{authorizing || (!subscription.configured && !subscriptionErrorText)}}"
+      bindtap="onAuthorize"
+    >
+      {{mode === 'demo' ? '本机说明' : subscriptionActionText}}
     </button>
   </view>
 
@@ -110,17 +115,22 @@
       <text>{{mode === 'demo' ? '本机偏好' : '服务通知'}}</text>
     </view>
     <view class="reminder-method">
-      <text class="reminder-method__copy">
-        {{mode === 'demo'
-          ? 'Demo 模式只记录开关和时间，不会调用微信授权，也不会发送通知。'
-          : '偏好已经保存到当前空间。微信订阅消息模板与定时发送任务尚未配置，当前不会发送服务通知。'}}
-      </text>
+      <view class="reminder-subscription__head">
+        <view>
+          <text class="reminder-method__copy">{{subscriptionLabel}}</text>
+          <text class="reminder-subscription__detail">{{subscriptionDetail}}</text>
+        </view>
+        <text class="reminder-subscription__dot {{subscription.configured && subscription.availableCount > 0 ? 'reminder-subscription__dot--ready' : ''}}"></text>
+      </view>
+      <text wx:if="{{subscriptionErrorText}}" class="reminder-subscription__error">{{subscriptionErrorText}}</text>
       <view class="reminder-method__tip">
         <text class="reminder-method__dot"></text>
         <text>
           {{mode === 'demo'
             ? '切换 Demo 模式后，偏好会保留在这台设备'
-            : '后续接模板 ID 时，会在这里发起一次微信订阅授权'}}
+            : subscription.configured
+              ? '微信一次性订阅按次授权；服务端每日最多聚合发送一条，发送成功后消费一次机会。'
+              : '配置模板 ID 并开启 Worker 后，才具备真实发送能力。'}}
         </text>
       </view>
     </view>
@@ -156,7 +166,7 @@
     <view class="reminder-footnote">
       <line-icon name="lock" size="21" tone="muted" />
       <text wx:if="{{mode === 'demo'}}">Demo 模式：提醒偏好只保存在当前设备，不会上传服务端。</text>
-      <text wx:else>提醒偏好按“空间 + 个人”保存到服务端；微信订阅消息授权与发送能力仍待模板配置。</text>
+      <text wx:else>提醒偏好按“空间 + 个人”保存；当前状态只表示授权机会与服务端配置，不代表通知已经发送。</text>
     </view>
   </block>
 </view>

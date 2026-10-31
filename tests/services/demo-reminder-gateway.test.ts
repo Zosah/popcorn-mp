@@ -58,4 +58,16 @@ describe('Demo 提醒设置网关', () => {
       reminderTime: '20:30',
     }, 1)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' })
   })
+
+  it('Demo 模式明确返回模板未配置且不调用真实授权', async () => {
+    const gateway = new DemoReminderGateway()
+    await expect(gateway.getSubscription()).resolves.toMatchObject({
+      configured: false,
+      status: 'none',
+      availableCount: 0,
+    })
+    await expect(gateway.recordSubscription('accept')).rejects.toMatchObject({
+      code: 'SUBSCRIPTION_NOT_CONFIGURED',
+    })
+  })
 })

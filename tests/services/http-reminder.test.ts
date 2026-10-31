@@ -4,7 +4,11 @@ import { appConfig } from '../../src/config/env'
 import { HttpReminderGateway } from '../../src/services/http-reminder'
 import { ReminderGatewayError } from '../../src/services/reminder-gateway'
 import { clearApiSession, saveApiSession } from '../../src/stores/session'
-import type { ApiReminderSettings, ApiSession } from '../../src/types/api'
+import type {
+  ApiReminderSettings,
+  ApiReminderSubscription,
+  ApiSession,
+} from '../../src/types/api'
 
 const originalConfig = { ...appConfig }
 const createdAt = '2026-10-30T02:00:00Z'
@@ -36,6 +40,16 @@ const settings: ApiReminderSettings = {
   reminderTime: '07:05',
   version: 4,
   updatedAt: '2026-10-31T03:00:00Z',
+}
+
+const subscription: ApiReminderSubscription = {
+  configured: true,
+  templateId: 'template-1',
+  page: 'pages/reminder-settings/index',
+  status: 'accept',
+  availableCount: 2,
+  lastStatusAt: '2026-11-01T12:00:00Z',
+  lastAcceptedAt: '2026-11-01T12:00:00Z',
 }
 
 function succeed(
@@ -193,5 +207,42 @@ describe('HTTP 提醒设置网关', () => {
       name: ReminderGatewayError.name,
       code: 'VERSION_CONFLICT',
     } satisfies Partial<ReminderGatewayError>)
+  })
+
+  it('读取订阅模板配置和剩余发送机会', async () => {
+    vi.stubGlobal('wx', {
+      getStorageSync: (key: string) => storage.get(key) ?? '',
+      setStorageSync: (key: string, value: unknown) => storage.set(key, value),
+      removeStorageSync: (key: string) => storage.delete(key),
+      request: (options: WechatMiniprogram.RequestOption) => {
+        requests.push(options)
+        succeed(options, subscription)
+      },
+    })
+
+    const result = await new HttpReminderGateway().getSubscription()
+    expect(result).toEqual(subscription)
+    expect(requests[0]?.url).toBe(
+      'https://api.test/spaces/s_1234567890/reminder-subscription',
+    )
+    expect(requests[0]?.header?.Authorization).toBe('Bearer token-1')
+  })
+
+  it('回报微信授权结果时携带幂等键', async () => {
+    vi.stubGlobal('wx', {
+      getStorageSync: (key: string) => storage.get(key) ?? '',
+      setStorageSync: (key: string, value: unknown) => storage.set(key, value),
+      removeStorageSync: (key: string) => storage.delete(key),
+      request: (options: WechatMiniprogram.RequestOption) => {
+        requests.push(options)
+        succeed(options, { ...subscription, availableCount: 1 })
+      },
+    })
+
+    const result = await new HttpReminderGateway().recordSubscription('accept')
+    expect(result.availableCount).toBe(1)
+    expect(requests[0]?.method).toBe('PUT')
+    expect(requests[0]?.data).toEqual({ status: 'accept' })
+    expect(requests[0]?.header?.['Idempotency-Key']).toMatch(/^reminder_subscription_/)
   })
 })

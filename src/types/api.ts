@@ -522,3 +522,19 @@ export interface ApiReminderSettingsUpdateRequest {
   weeklyReview: boolean
   reminderTime: string
 }
+
+export type ApiReminderSubscriptionStatus = 'none' | 'accept' | 'reject' | 'ban' | 'filter'
+
+export interface ApiReminderSubscription {
+  configured: boolean
+  templateId: string
+  page: string
+  status: ApiReminderSubscriptionStatus
+  availableCount: number
+  lastStatusAt: string | null
+  lastAcceptedAt: string | null
+}
+
+export interface ApiReminderSubscriptionWriteRequest {
+  status: Exclude<ApiReminderSubscriptionStatus, 'none'>
+}
