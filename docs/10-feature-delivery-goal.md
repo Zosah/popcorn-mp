@@ -11,9 +11,9 @@
 - 本轮已完成：宠物档案软删除、删除后自动切换、最后一只删除后的空态、私有 COS 头像与生产宠物全链路验收。
 - 当前切片：宠物照护从页面创建、图片上传、体重/日常/周期照护/用品、首页摘要，到删除和刷新后的空态均已在生产真实微信会话闭环。
 - 验证结果：Go 全量测试与 `go vet` 通过；前端类型检查、35 个测试文件 / 204 项测试通过；生产真实微信覆盖宠物页面创建、私有 COS 头像 `200 image/jpeg`、业务回读、软删除关联清理、自动切换和空态持久化。
-- 发布状态：后端 `439381d` 已部署生产，新删除路由未鉴权返回 `401`，`healthz / readyz` 正常；前端 `1.14.0` 已完成生产验收，等待推送与上传微信后台。
+- 发布状态：后端 `439381d` 已部署生产，新删除路由未鉴权返回 `401`，`healthz / readyz` 正常；前端提交 `0e155f4` 已推送，`1.14.0` 已上传微信后台，包体 `1,832,112 Byte`（约 1.7 MB）。
 - 生产复验：`npm run verify:production-pet-ui` 已通过，截图 `shots/production-pet-ui-profile-empty.png`、`shots/production-pet-ui-profile-avatar.png`、`shots/production-pet-ui-care.png`、`shots/production-pet-ui-supplies.png`、`shots/production-pet-ui-home.png`、`shots/production-pet-ui-profile-deleted-switched.png`、`shots/production-pet-ui-profile-final-empty.png`。
-- 下一门槛：推送前端并上传 `1.14.0`，在微信公众平台设为体验版，完成真机图片、周期照护和双人共享验收。
+- 下一门槛：在微信公众平台将 `1.14.0` 设为体验版，完成真机图片、周期照护和双人共享验收。
 
 ## 1. 执行原则
 
@@ -105,7 +105,8 @@
 - ✅ 前端类型检查、35 个测试文件 / 204 项测试通过；Go 全量测试与 `go vet` 通过。
 - ✅ 后端提交 `439381d` 已部署生产且删除路由 `401` 验证通过；`healthz / readyz` 正常。
 - ✅ 生产截图：`shots/production-pet-ui-profile-empty.png`、`shots/production-pet-ui-profile-avatar.png`、`shots/production-pet-ui-care.png`、`shots/production-pet-ui-supplies.png`、`shots/production-pet-ui-home.png`、`shots/production-pet-ui-profile-deleted-switched.png`、`shots/production-pet-ui-profile-final-empty.png`。
-- ⏳ 上传并设置 `1.14.0` 体验版，完成真机弱网、周期照护、图片和双人共享验收。
+- ✅ 前端提交 `0e155f4` 已推送，`1.14.0` 已上传微信后台，包体 `1,832,112 Byte`（约 1.7 MB）。
+- ⏳ 在公众平台设置 `1.14.0` 体验版，完成真机弱网、周期照护、图片和双人共享验收。
 
 ### 旅行准备
 
@@ -181,4 +182,4 @@
 
 ### 下一阶段
 
-宠物照护已完成生产真实微信全链路验收，新增档案删除、自动切换、空态持久化和可重复脚本；`1.14.0` 待上传。下一步先上传并设置 `1.14.0` 体验版，完成真机图片、周期照护与双人共享验收，再继续为库存和待办补可重复的生产验收切片；微信订阅消息仍需模板 ID 后才能进入发送验收。
+宠物照护已完成生产真实微信全链路验收，新增档案删除、自动切换、空态持久化和可重复脚本；`1.14.0` 已上传微信后台。下一步在公众平台设为体验版，完成真机图片、周期照护与双人共享验收，再继续为库存和待办补可重复的生产验收切片；微信订阅消息仍需模板 ID 后才能进入发送验收。
