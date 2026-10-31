@@ -129,6 +129,33 @@ try {
 
   const tempImage = await writeTempImage(image)
   assert.ok(tempImage.size > 1000)
+
+  await miniProgram.evaluate(() => {
+    getApp().__journalGoalToast = null
+  })
+  await miniProgram.mockWxMethod('showToast', function (options) {
+    getApp().__journalGoalToast = options
+  })
+  await miniProgram.mockWxMethod('uploadFile', {
+    statusCode: 503,
+    data: JSON.stringify({ code: 'NETWORK_ERROR', message: '网络不稳定' }),
+    header: { 'content-type': 'application/json' },
+  })
+  try {
+    await form.callMethod('uploadImage', tempImage.filePath, tempImage.size)
+    const failedUpload = await waitFor(async () => {
+      const data = await form.data()
+      return !data.imageUploading && !data.image ? data : false
+    }, '生产生活记录图片上传失败回退')
+    const failedToast = await miniProgram.evaluate(() => getApp().__journalGoalToast)
+    assert.match(failedToast?.title ?? '', /检查网络/)
+    await screenshot('form-upload-failed')
+    console.log('PASS 图片上传失败后保留可编辑状态并提示检查网络')
+  } finally {
+    await miniProgram.restoreWxMethod('uploadFile').catch(() => undefined)
+    await miniProgram.restoreWxMethod('showToast').catch(() => undefined)
+  }
+
   await form.callMethod('uploadImage', tempImage.filePath, tempImage.size)
   const uploaded = await waitFor(async () => {
     const data = await form.data()
@@ -181,11 +208,30 @@ try {
     contentType: imageResponse.headers.get('content-type'),
   }))
 
-  const replaceForm = await open(`/pages/journal-form/index?id=${encodeURIComponent(created.id)}`)
+  await miniProgram.mockWxMethod('request', {
+    statusCode: 503,
+    data: { code: 'NETWORK_ERROR', message: '网络不稳定' },
+    header: { 'content-type': 'application/json' },
+  })
+  let replaceForm
+  try {
+    replaceForm = await open(`/pages/journal-form/index?id=${encodeURIComponent(created.id)}`)
+    const failedLoad = await waitFor(async () => {
+      const data = await replaceForm.data()
+      return !data.loading && data.loadError ? data : false
+    }, '图片替换编辑页弱网失败')
+    assert.match(failedLoad.loadError, /网络|稍后|没有加载/)
+    await screenshot('form-load-error')
+    console.log('PASS 编辑页弱网加载失败展示可重试错误态')
+  } finally {
+    await miniProgram.restoreWxMethod('request').catch(() => undefined)
+  }
+  await replaceForm.callMethod('onRetryLoad')
   await waitFor(async () => {
     const data = await replaceForm.data()
-    return !data.loading && data.version === created.version ? data : false
-  }, '图片替换编辑页加载')
+    return !data.loading && !data.loadError && data.version === created.version ? data : false
+  }, '图片替换编辑页重试恢复')
+  console.log('PASS 编辑页加载失败后手动重试恢复')
   const replacementImage = await writeTempImage(image)
   await replaceForm.callMethod('uploadImage', replacementImage.filePath, replacementImage.size)
   const replacementReady = await waitFor(async () => {
