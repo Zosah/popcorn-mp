@@ -8,45 +8,88 @@
     </view>
   </view>
 
-  <view class="recipe-card paper-card">
-    <view class="recipe-field recipe-field--lead">
-      <text>菜名 <text class="required">*</text></text>
-      <input value="{{form.title}}" maxlength="30" placeholder="例如：番茄牛腩" bindinput="onTitleInput" />
-    </view>
-    <view class="recipe-field">
-      <text>一句话介绍</text>
-      <input value="{{form.description}}" maxlength="80" placeholder="什么时候会想做这道菜" bindinput="onDescriptionInput" />
-    </view>
-    <view class="recipe-grid">
-      <view class="recipe-field">
-        <text>人份</text>
-        <input type="number" value="{{form.servings}}" placeholder="2" bindinput="onServingsInput" />
+  <view wx:if="{{loading}}" class="recipe-state paper-card">
+    <view class="recipe-state__mark"><line-icon name="soup" size="34" tone="gold" /></view>
+    <view class="recipe-state__title">正在把菜谱翻出来</view>
+    <view class="recipe-state__copy">稍等一下，马上就能继续整理。</view>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="recipe-state recipe-state--error paper-card">
+    <view class="recipe-state__mark"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="recipe-state__title">这份菜谱暂时没打开</view>
+    <view class="recipe-state__copy">{{loadError}}</view>
+    <view class="recipe-state__action" bindtap="onRetryLoad">重新加载</view>
+  </view>
+
+  <block wx:else>
+    <view class="recipe-card paper-card">
+      <view class="recipe-field recipe-field--lead">
+        <text>菜名 <text class="required">*</text></text>
+        <input value="{{form.title}}" maxlength="30" placeholder="例如：番茄牛腩" bindinput="onTitleInput" />
       </view>
       <view class="recipe-field">
-        <text>预计分钟</text>
-        <input type="number" value="{{form.cookingMinutes}}" placeholder="30" bindinput="onMinutesInput" />
+        <text>一句话介绍</text>
+        <input value="{{form.description}}" maxlength="80" placeholder="什么时候会想做这道菜" bindinput="onDescriptionInput" />
+      </view>
+      <view class="recipe-grid">
+        <view class="recipe-field">
+          <text>人份</text>
+          <input type="number" value="{{form.servings}}" placeholder="2" bindinput="onServingsInput" />
+        </view>
+        <view class="recipe-field">
+          <text>预计分钟</text>
+          <input type="number" value="{{form.cookingMinutes}}" placeholder="30" bindinput="onMinutesInput" />
+        </view>
       </view>
     </view>
-  </view>
 
-  <view class="recipe-section-head"><text>准备食材</text><text>每行一样</text></view>
-  <view class="recipe-card paper-card">
-    <view class="recipe-field recipe-field--stack recipe-field--last">
-      <text>用 | 分隔名称、用量、来源</text>
-      <textarea value="{{form.ingredientsText}}" maxlength="600" placeholder="牛腩 | 400g | 冰箱冷冻&#10;番茄 | 3 个 | 冰箱冷藏" bindinput="onIngredientsInput" />
+    <view class="recipe-section-head"><text>成品图片</text><text>可选 · 10 MiB 内</text></view>
+    <view class="paper-card recipe-image-card">
+      <view wx:if="{{image && image.src}}" class="recipe-image-preview" bindtap="onPreviewImage">
+        <image src="{{image.src}}" mode="aspectFill" />
+        <view class="recipe-image-preview__badge"><line-icon name="image" size="18" tone="white" /><text>轻触查看</text></view>
+      </view>
+      <view wx:elif="{{imageUploading}}" class="recipe-image-empty recipe-image-empty--loading">
+        <view class="recipe-image-empty__mark"><line-icon name="image" size="32" tone="blue" /></view>
+        <text>正在把菜品照片安放好</text>
+        <text>图片会压缩后保存到私有空间</text>
+      </view>
+      <view wx:elif="{{imageMediaId}}" class="recipe-image-empty" bindtap="onChooseImage">
+        <view class="recipe-image-empty__mark"><line-icon name="circle-alert" size="30" tone="orange" /></view>
+        <text>图片暂时无法预览</text>
+        <text>轻触可重新选择并替换当前图片</text>
+      </view>
+      <view wx:else class="recipe-image-empty" bindtap="onChooseImage">
+        <view class="recipe-image-empty__mark"><line-icon name="image" size="34" tone="blue" /></view>
+        <text>从相册选一张，或现在拍</text>
+        <text>原图只在当前空间可见</text>
+      </view>
+
+      <view wx:if="{{image || imageMediaId}}" class="recipe-image-tools">
+        <view class="recipe-image-tools__copy">这道菜有一张空间内可见的图片</view>
+        <view class="recipe-image-tools__remove" catchtap="onRemoveImage">移除图片</view>
+      </view>
     </view>
-  </view>
 
-  <view class="recipe-section-head"><text>做法步骤</text><text>每行一步</text></view>
-  <view class="recipe-card paper-card">
-    <view class="recipe-field recipe-field--stack recipe-field--last">
-      <text>用 | 分隔步骤名和说明</text>
-      <textarea value="{{form.stepsText}}" maxlength="900" placeholder="焯水 | 牛腩冷水下锅，煮开后洗净浮沫。&#10;炒香 | 番茄炒出汁，再放入牛腩。" bindinput="onStepsInput" />
+    <view class="recipe-section-head"><text>准备食材</text><text>每行一样</text></view>
+    <view class="recipe-card paper-card">
+      <view class="recipe-field recipe-field--stack recipe-field--last">
+        <text>用 | 分隔名称、用量、来源</text>
+        <textarea value="{{form.ingredientsText}}" maxlength="600" placeholder="{{ingredientPlaceholder}}" bindinput="onIngredientsInput" />
+      </view>
     </view>
-  </view>
 
-  <button class="primary-button recipe-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
-    <line-icon name="utensils" size="24" tone="white" />
-    <text>{{saveText}}</text>
-  </button>
+    <view class="recipe-section-head"><text>做法步骤</text><text>每行一步</text></view>
+    <view class="recipe-card paper-card">
+      <view class="recipe-field recipe-field--stack recipe-field--last">
+        <text>用 | 分隔步骤名和说明</text>
+        <textarea value="{{form.stepsText}}" maxlength="900" placeholder="{{stepPlaceholder}}" bindinput="onStepsInput" />
+      </view>
+    </view>
+
+    <button class="primary-button recipe-save" loading="{{saving || imageUploading}}" disabled="{{saving || imageUploading}}" bindtap="onSave">
+      <line-icon name="utensils" size="24" tone="white" />
+      <text>{{saveText}}</text>
+    </button>
+  </block>
 </view>

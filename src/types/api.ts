@@ -310,3 +310,64 @@ export interface ApiJournalSummary {
   notes: number
   private: number
 }
+
+export interface ApiMenuIngredient {
+  id: string
+  name: string
+  amount: string
+  source: string
+  ready: boolean
+  sortOrder: number
+}
+
+export interface ApiMenuStep {
+  id: string
+  title: string
+  description: string
+  sortOrder: number
+}
+
+export interface ApiMenuIngredientWriteRequest {
+  id?: string
+  name: string
+  amount?: string
+  source?: string
+}
+
+export interface ApiMenuStepWriteRequest {
+  id?: string
+  title?: string
+  description?: string
+}
+
+export interface ApiMenuWriteRequest {
+  title: string
+  description: string
+  servings: number
+  cookingMinutes: number
+  imageMediaId: string
+  ingredients: ApiMenuIngredientWriteRequest[]
+  steps: ApiMenuStepWriteRequest[]
+}
+
+export interface ApiMenuRecipe {
+  id: string
+  spaceId: string
+  title: string
+  description: string
+  servings: number
+  cookingMinutes: number
+  imageMediaId: string
+  ingredients: ApiMenuIngredient[]
+  steps: ApiMenuStep[]
+  version: number
+  createdBy: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiMenuRecipeList {
+  items: ApiMenuRecipe[]
+  nextCursor: string
+}

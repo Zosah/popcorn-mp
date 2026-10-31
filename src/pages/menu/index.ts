@@ -1,28 +1,72 @@
-import type { DemoMenuRecipe } from '../../domain/demo-menu'
-import { listDemoMenuRecipes } from '../../services/demo-menu'
+import { menuGateway } from '../../services/menu'
+import {
+  getMenuErrorMessage,
+  type MenuRecipe,
+} from '../../services/menu-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { createRequestGate } from '../../utils/request-control'
+
+type MenuTab = 'today' | 'all' | 'week'
+
+const menuRequestGate = createRequestGate()
 
 Page({
   data: {
-    recipes: [] as DemoMenuRecipe[],
-    activeTab: 'today' as 'today' | 'all' | 'week',
-    recommended: null as DemoMenuRecipe | null,
+    recipes: [] as MenuRecipe[],
+    activeTab: 'today' as MenuTab,
+    recommended: null as MenuRecipe | null,
     recommendedIndex: 0,
     fastCount: 0,
+    loading: true,
+    loadError: '',
   },
 
   onShow() {
-    const recipes = listDemoMenuRecipes()
+    void this.refresh()
+  },
+
+  async refresh() {
+    const sequence = menuRequestGate.begin()
+    const hasExistingData = this.data.recipes.length > 0
     this.setData({
-      recipes,
-      recommended: recipes[0] ?? null,
-      recommendedIndex: 0,
-      fastCount: recipes.filter((recipe) => recipe.cookingMinutes <= 30).length,
+      loading: !hasExistingData,
+      loadError: '',
     })
+    try {
+      const recipes = await menuGateway.list()
+      if (!menuRequestGate.isCurrent(sequence)) return
+      const currentRecommendedId = this.data.recommended?.id
+      const foundIndex = currentRecommendedId
+        ? recipes.findIndex((recipe) => recipe.id === currentRecommendedId)
+        : -1
+      const recommendedIndex = foundIndex >= 0 ? foundIndex : 0
+      this.setData({
+        recipes,
+        recommended: recipes[recommendedIndex] ?? null,
+        recommendedIndex,
+        fastCount: recipes.filter((recipe) => recipe.cookingMinutes <= 30).length,
+        loading: false,
+        loadError: '',
+      })
+    } catch (error) {
+      if (!menuRequestGate.isCurrent(sequence)) return
+      const message = getMenuErrorMessage(error, '菜单暂时没有加载出来')
+      this.setData({
+        loading: false,
+        loadError: message,
+      })
+      if (this.data.recipes.length) {
+        wx.showToast({ title: message, icon: 'none' })
+      }
+    }
+  },
+
+  onRetryLoad() {
+    void this.refresh()
   },
 
   onSwitchTab(event: {
-    currentTarget: { dataset: { value?: 'today' | 'all' | 'week' } }
+    currentTarget: { dataset: { value?: MenuTab } }
   }) {
     const value = event.currentTarget.dataset.value
     if (value) this.setData({ activeTab: value })

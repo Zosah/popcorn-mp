@@ -30,6 +30,7 @@ export interface DemoMenuRecipe extends DemoMenuRecipeInput {
   image?: {
     src: string
     caption?: string
+    mediaId?: string
   }
 }
 

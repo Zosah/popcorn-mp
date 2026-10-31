@@ -1,9 +1,9 @@
 # MVP 实施与部署基线
 
-> 最后更新：2026-10-29
+> 最后更新：2026-10-31
 > 状态：已确认的 0→1 实施基线。后续架构、代码和部署变更应优先更新本文，避免仅存在于对话中。
 
-当前进度：前端 v1.6 已完成四个核心入口、v5「柔光玻璃生活手帐」视觉、主要生活模块的完整交互，并将一级导航切换为微信原生底部栏。后端账号、空间、邀请、库存、待办和生活记录接口均已完成，并通过真实 MySQL、Go 测试、HTTP 接口和前端网关测试：微信/模拟登录、可撤销 Session、资料保存、默认空间、成员列表、单次邀请码、库存 CRUD、待办 CRUD、生活记录 CRUD、公开/私密可见范围、生命周期、软删除恢复、筛选分页、摘要、乐观锁、幂等、前端版本冲突和网络异常兜底均已打通。库存、待办与生活记录已接入真实 HTTP Gateway，并支持空间成员跨用户共享；菜单、宠物和提醒仍保留本机 Demo。数据库每日备份、SHA-256 校验、空库恢复验证和可选 COS 上传已落地；用户图片已接入私有 COS。当前用户、空间、待办、库存、生活记录和媒体 ID 已统一为 12 位短 ID，生产迁移与接口冒烟通过；真机弱网仍待验收。
+当前进度：前端 v1.8.1 已按最新 Figma Make 重构完成四个核心入口与主要二级页面，统一为 v9「暖奶油手帐」视觉：奶油纸底、珊瑚强调、鼠尾草绿、宋体标题、白色玻璃卡片和贴底自定义导航；首页「今天 / 家里 / 宠物」三段、生活记录「全部 / 生活点滴 / 重要记录」与待办、个人中心均已通过开发者工具截图验收。后端账号、空间、邀请、库存、待办、生活记录和菜单接口均已完成，并通过真实 MySQL、Go 测试、HTTP 接口和前端网关测试：微信/模拟登录、可撤销 Session、资料保存、默认空间、成员列表、单次邀请码、库存 CRUD、待办 CRUD、生活记录 CRUD、菜单 CRUD、公开/私密可见范围、生命周期、软删除恢复、筛选分页、摘要、乐观锁、幂等、前端版本冲突和网络异常兜底均已打通。库存、待办、生活记录与菜单已接入真实 HTTP Gateway，并支持空间成员跨用户共享；宠物和提醒仍保留本机 Demo。菜单已额外通过真实开发者工具 UI 自动化验收：选图后上传私有 COS、保存图片关联、列表与详情展示、首页摘要、人份与食材状态写回、网络错误重试、409 版本冲突恢复、软删除清理全部通过。数据库每日备份、SHA-256 校验、空库恢复验证和可选 COS 上传已落地；用户图片已接入私有 COS。当前用户、空间、待办、库存、生活记录、菜单和媒体 ID 已统一为 12 位短 ID，生产迁移与接口冒烟通过；菜单元数据与图片上传待完成生产部署后的公网复验，全部核心模块仍需体验版真机弱网验收。
 
 ## 1. 当前资源与约束
 
@@ -156,6 +156,9 @@ MVP 只建立以下表：
 - `t_space_members`：空间成员和角色。
 - `t_space_invites`：单次邀请、哈希、过期和接受状态。
 - `t_inventory_items`：库存内容、生命周期、日期、乐观锁和软删除。
+- `t_menu_recipes`：空间内菜谱主表、成品图片媒体 ID、人份、烹饪时间、乐观锁和软删除。
+- `t_menu_ingredients`：菜谱食材、用量、来源、备齐状态和稳定排序。
+- `t_menu_steps`：菜谱步骤、说明和稳定排序。
 - `t_idempotency_keys`：写接口幂等重放。
 
 关键约定：
@@ -166,7 +169,9 @@ MVP 只建立以下表：
 - 到期状态实时计算，不存为生命周期状态。
 - 数量使用 `DECIMAL(12,3)`，API 使用十进制字符串。
 - `version` 用于防止多人编辑时静默覆盖。
-- 库存删除使用 `deleted_at` 软删除。
+- 库存与菜单删除使用 `deleted_at` 软删除。
+- 菜单编辑时前端回传已有食材/步骤 ID，服务端复用记录并保留食材备齐状态。
+- 菜单 `imageMediaId` 为可选媒体 ID：更新时不传表示保留原图，显式传空字符串表示清空图片；媒体必须属于当前空间，禁止跨空间引用。
 
 MySQL 接入约束：
 
@@ -206,6 +211,15 @@ POST   /spaces/{spaceId}/inventory/items/{itemId}/consume
 POST   /spaces/{spaceId}/inventory/items/{itemId}/discard
 POST   /spaces/{spaceId}/inventory/items/{itemId}/archive
 POST   /spaces/{spaceId}/inventory/items/{itemId}/restore
+
+GET    /spaces/{spaceId}/menu-recipes
+POST   /spaces/{spaceId}/menu-recipes
+GET    /spaces/{spaceId}/menu-recipes/{recipeId}
+PUT    /spaces/{spaceId}/menu-recipes/{recipeId}
+DELETE /spaces/{spaceId}/menu-recipes/{recipeId}
+PUT    /spaces/{spaceId}/menu-recipes/{recipeId}/servings
+POST   /spaces/{spaceId}/menu-recipes/{recipeId}/ingredients/{ingredientId}/ready
+POST   /spaces/{spaceId}/menu-recipes/{recipeId}/ingredients/{ingredientId}/unready
 ```
 
 - JSON 字段统一使用 `camelCase`。
@@ -233,7 +247,8 @@ wx.login()
 - 401 后客户端最多自动重新登录一次。
 - AppSecret、数据库密码和会话 Token 不写入仓库或日志。
 - 登录和邀请接口需要基础限流。
-- 所有库存查询必须绑定经过鉴权的 `space_id`。
+- 所有库存与菜单查询必须绑定经过鉴权的 `space_id`。
+- 菜单图片在上传完成后仅保存 `mediaId`，展示时由服务端签发短时效私有 COS URL；签名失败不阻塞菜谱文字保存。
 
 ## 9. 发布与回滚
 
@@ -273,7 +288,10 @@ Pull Request
 8. ✅ 待办后端：CRUD、准备清单、完成/重开、账单自动完成、摘要、幂等、乐观锁和软删除。
 9. ✅ 待办前端：HTTP Gateway、自动游标翻页、冲突刷新、同步状态和双账号开发者工具验收。
 10. ✅ 生活记录：后端权限、游标分页、幂等、乐观锁和软删除；前端 Gateway、同步状态与双模式页面。
-11. 后续加固：真机弱网、限流、日志脱敏、COS 完整恢复演练和稳定性验收。
+11. ✅ 前端体验重构：Figma Make 视觉落地、自定义底栏、跨页面设计 token 统一、二级页面和横向溢出验收。
+12. ✅ 菜单/今天吃什么闭环：后端 CRUD、人份、食材备齐、权限、幂等、乐观锁和软删除；前端 Demo/HTTP 双模式、图片上传、真实 HTTP 与开发者工具 UI 自动化验收均已完成。
+13. 待发布验收：提交并部署菜单后端，验证生产迁移、公网接口和生产 COS；恢复生产配置后上传体验版并完成真机验收。
+14. 后续加固：真机弱网、限流、日志脱敏、COS 完整恢复演练和稳定性验收。
 
 ## 12. 下一步需要核对的外部信息
 
@@ -298,7 +316,7 @@ Pull Request
 6. 重复提交不会创建重复库存、待办、生活记录或重复接受邀请。
 7. 多人并发编辑时返回冲突，不静默覆盖。
 8. 会话失效后客户端最多自动重登一次。
-9. 真机通过 HTTPS 完成登录、空间、库存、待办、生活记录和邀请闭环。
+9. 真机通过 HTTPS 完成登录、空间、库存、待办、生活记录、菜单与邀请闭环，包括私有 COS 图片上传和展示。
 10. GitHub Actions 能测试、构建、发布 production 并支持回滚。
 11. 数据库完成一次真实的 COS 备份恢复演练。
 12. 日志不出现 AppSecret、会话 Token 和 openid 明文。

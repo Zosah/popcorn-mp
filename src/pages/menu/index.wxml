@@ -10,6 +10,21 @@
     </view>
   </view>
 
+  <view wx:if="{{loading}}" class="menu-loading">
+    <view class="menu-loading__dot"></view>
+    <view class="menu-loading__dot"></view>
+    <view class="menu-loading__dot"></view>
+    <text>正在翻菜谱本…</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="menu-empty menu-empty--error">
+    <view class="menu-empty__icon"><line-icon name="circle-alert" size="34" tone="orange" /></view>
+    <view class="menu-empty__title">菜单没加载出来</view>
+    <view class="menu-empty__copy">{{loadError}}</view>
+    <view class="menu-empty__action" bindtap="onRetryLoad">再试一次</view>
+  </view>
+
+  <block wx:else>
   <view class="menu-tabs">
     <view class="menu-tab {{activeTab === 'today' ? 'menu-tab--active' : ''}}" data-value="today" bindtap="onSwitchTab">今天</view>
     <view class="menu-tab {{activeTab === 'all' ? 'menu-tab--active' : ''}}" data-value="all" bindtap="onSwitchTab">常做的</view>
@@ -24,7 +39,7 @@
       </view>
       <view class="menu-recommend__main">
         <view class="menu-recommend__thumb">
-          <image wx:if="{{recommended.image}}" src="{{recommended.image.src}}" mode="aspectFill" />
+          <image wx:if="{{recommended.image && recommended.image.src}}" src="{{recommended.image.src}}" mode="aspectFill" />
           <line-icon wx:else name="soup" size="42" tone="gold" />
         </view>
         <view class="menu-recommend__body">
@@ -70,7 +85,7 @@
     <view class="menu-list">
       <view wx:for="{{recipes}}" wx:key="id" class="menu-card" data-id="{{item.id}}" bindtap="onOpenRecipe">
         <view class="menu-card__media">
-          <image wx:if="{{item.image}}" src="{{item.image.src}}" mode="aspectFill" />
+          <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFill" />
           <line-icon wx:else name="soup" size="36" tone="gold" />
         </view>
         <view class="menu-card__body">
@@ -89,5 +104,6 @@
     <view class="menu-empty__copy">先收一道常做的菜，下次不知道吃什么时就有答案了。</view>
     <view class="menu-empty__action" bindtap="onCreate">添加第一道菜单</view>
   </view>
+  </block>
   <app-tab-bar active="menu" />
 </view>

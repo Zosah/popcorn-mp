@@ -1,6 +1,5 @@
 import {
   buildHomeSnapshotFromSummary,
-  type HomeDayPeriod,
   type HomeSnapshot,
 } from '../../domain/home'
 import { getShanghaiDateOnly } from '../../domain/expiry'
@@ -15,7 +14,8 @@ import { journalGateway } from '../../services/journal'
 import type { JournalItem } from '../../services/journal-gateway'
 import { hydrateAuthState } from '../../services/auth'
 import { inventoryGateway } from '../../services/inventory'
-import { listDemoMenuRecipes } from '../../services/demo-menu'
+import { menuGateway } from '../../services/menu'
+import { getMenuErrorMessage } from '../../services/menu-gateway'
 import { listApiSpaceMembers } from '../../services/space-gateway'
 import { getDemoPetState } from '../../services/demo-pet'
 import { todoGateway } from '../../services/todo'
@@ -28,12 +28,6 @@ interface HomeMemberView {
   userId: string
   avatarText: string
   avatarTone: DemoAvatarTone
-}
-
-interface HomeHeadline {
-  top: string
-  middle: string
-  bottom: string
 }
 
 interface HomePetActivity extends PetHomeActivity {
@@ -53,19 +47,6 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
 }
 
 const homeRequestGate = createRequestGate()
-
-function buildHomeHeadline(period: HomeDayPeriod): HomeHeadline {
-  switch (period) {
-    case 'late-night':
-      return { top: 'STILL', middle: 'SOFT', bottom: 'TONIGHT' }
-    case 'morning':
-      return { top: 'CALM', middle: 'FRESH', bottom: 'MORNING' }
-    case 'evening':
-      return { top: 'WARM', middle: 'QUIET', bottom: 'TONIGHT' }
-    default:
-      return { top: 'CALM', middle: 'SLOW', bottom: 'TODAY' }
-  }
-}
 
 function isCreatedToday(entry: JournalItem | null, today: string): boolean {
   if (!entry) return false
@@ -94,6 +75,10 @@ Page({
     latestEntryIsToday: false,
     recentEntries: [] as JournalItem[],
     journalTotal: 0,
+    todoTotalCount: 0,
+    todoCompletedCount: 0,
+    homeTab: 'today' as 'today' | 'home' | 'pet',
+    greetingName: '你',
     menuCount: 0,
     menuSummary: '还没有收藏菜单，先收一道常做的菜。',
     todoPendingCount: 0,
@@ -104,6 +89,7 @@ Page({
     hasLoadedInventory: false,
     hasLoadedMoments: false,
     hasLoadedTodos: false,
+    hasLoadedMenu: false,
     spaceName: '我们的家',
     spaceMemberCopy: '登录后加入空间',
     spaceMembers: [] as HomeMemberView[],
@@ -113,23 +99,46 @@ Page({
       weight: '3.8',
       careNotice: '照护记录都还好',
     },
-    headlineTop: 'CALM',
-    headlineMiddle: 'SLOW',
-    headlineBottom: 'TODAY',
     todayDay: '—',
     todayMonthLabel: '',
-    homeDocked: false,
+    // 有需要处理的事项时才渲染提醒行；没有就不占位，避免首页被"一切正常"撑长
+    hasUrgentItems: false,
+    reminderCount: 0,
+    reminderCopy: '',
+    // 自定义导航下，状态栏高度与胶囊按钮占位都要自己让，
+    // 否则页眉的日期会压到刘海、黑猫会被右上角的「•••⊙」盖住。
+    statusBarHeight: 20,
+    navBarRight: 0,
+    // 胶囊底部到屏幕顶部的距离，页眉从这里往下排，确保不出血
+    navBarHeight: 44,
+  },
+
+  onLoad() {
+    this.measureNavBar()
+  },
+
+  /**
+   * 量出状态栏与右上角胶囊按钮的真实位置。
+   * 不同机型（刘海屏 / 灵动岛 / 直角屏）高度差别很大，写死会在真机上错位。
+   */
+  measureNavBar() {
+    try {
+      const windowInfo = wx.getWindowInfo()
+      const statusBarHeight = windowInfo.statusBarHeight || 20
+      // 胶囊按钮是微信保留的，只能测量不能隐藏
+      const menu = wx.getMenuButtonBoundingClientRect()
+      // 页眉右边界要给胶囊让位：胶囊左边缘再往左留一点呼吸
+      const navBarRight = windowInfo.windowWidth - menu.left + 20
+      const navBarHeight = menu.bottom - statusBarHeight + 8
+      this.setData({ statusBarHeight, navBarRight, navBarHeight })
+    } catch {
+      // 低版本基础库拿不到胶囊信息时，退回一组安全的默认值
+      this.setData({ statusBarHeight: 20, navBarRight: 96, navBarHeight: 44 })
+    }
   },
 
   onShow() {
     void this.loadSnapshot()
-  },
-
-  onPageScroll(event: { scrollTop: number }) {
-    const nextDocked = event.scrollTop > 285
-    if (nextDocked !== this.data.homeDocked) {
-      this.setData({ homeDocked: nextDocked })
-    }
   },
 
   async loadSnapshot() {
@@ -138,10 +147,11 @@ Page({
     const today = getShanghaiDateOnly(nowMs)
 
     const auth = await hydrateAuthState()
-    const [inventoryResult, momentsResult, todoResult, membersResult] = await Promise.allSettled([
+    const [inventoryResult, momentsResult, todoResult, menuResult, membersResult] = await Promise.allSettled([
       inventoryGateway.summary(today),
       journalGateway.list({ kinds: ['moment'] }),
       todoGateway.summary(),
+      menuGateway.list(),
       auth.source === 'api' && auth.activeSpaceId
         ? listApiSpaceMembers(auth.activeSpaceId)
         : Promise.resolve(null),
@@ -185,8 +195,12 @@ Page({
           : '今天的吃喝拉撒已记录'
     const pendingTodoCount = todoSummary?.pending ?? 0
     const pendingTravelCount = todoSummary?.pendingByKind.travel ?? 0
-    const menuRecipes = listDemoMenuRecipes()
-    const latestMenu = menuRecipes[0]
+    const petPendingCount = (overdueCare || dueSoonCare ? 1 : 0) + (pendingDaily ? 1 : 0)
+    const menuRecipes = menuResult.status === 'fulfilled' ? menuResult.value : null
+    const latestMenu = menuRecipes?.[0]
+    const menuError = menuResult.status === 'rejected'
+      ? getMenuErrorMessage(menuResult.reason, '菜单暂时没有同步过来')
+      : ''
     const fallbackMember: HomeMemberView = auth.user
       ? {
           userId: auth.user.id,
@@ -217,10 +231,21 @@ Page({
     const snapshot = inventoryResult.status === 'fulfilled'
       ? buildHomeSnapshotFromSummary(inventoryResult.value, nowMs)
       : this.data.snapshot
-    const headline = buildHomeHeadline(snapshot.period)
     const [, monthValue, dayValue] = today.split('-').map(Number)
     const month = monthValue || 1
     const day = dayValue || 1
+
+    const reminderCount =
+      (snapshot.inventoryNoticeCount > 0 ? 1 : 0)
+      + (pendingTodoCount > 0 ? 1 : 0)
+      + (petPendingCount > 0 ? 1 : 0)
+    const reminderCopy = [
+      snapshot.inventoryNoticeCount > 0
+        ? `${snapshot.inventoryNoticeCount} 件库存临期`
+        : '',
+      pendingTodoCount > 0 ? `${pendingTodoCount} 件待办没完成` : '',
+      petPendingCount > 0 ? `${petState.profile.name}还有照护没记录` : '',
+    ].filter(Boolean).join(' · ')
 
     this.setData({
       snapshot,
@@ -229,17 +254,22 @@ Page({
       latestEntryIsToday: isCreatedToday(latestEntry, today),
       recentEntries: moments.slice(0, 3),
       journalTotal: moments.length,
-      menuCount: menuRecipes.length,
-      menuSummary: latestMenu
-        ? `最近收着「${latestMenu.title}」，${latestMenu.cookingMinutes} 分钟`
-        : '还没有收藏菜单，先收一道常做的菜。',
+      todoTotalCount: todoSummary?.total ?? this.data.todoTotalCount,
+      todoCompletedCount: todoSummary?.completed ?? this.data.todoCompletedCount,
+      greetingName: auth.user?.nickname?.slice(0, 4) || '你',
+      menuCount: menuRecipes?.length ?? this.data.menuCount,
+      menuSummary: menuRecipes
+        ? (latestMenu
+          ? `最近收着「${latestMenu.title}」，${latestMenu.cookingMinutes} 分钟`
+          : '还没有收藏菜单，先收一道常做的菜。')
+        : (this.data.hasLoadedMenu ? this.data.menuSummary : menuError),
       todoPendingCount: pendingTodoCount,
       todoSummary: todoSummary
         ? (pendingTodoCount
           ? `${pendingTodoCount} 件还没做${pendingTravelCount ? ` · ${pendingTravelCount} 个旅行准备` : ''}`
           : '目前都做完了，可以再记一件')
         : this.data.hasLoadedTodos ? this.data.todoSummary : todoError,
-      petPendingCount: (overdueCare || dueSoonCare ? 1 : 0) + (pendingDaily ? 1 : 0),
+      petPendingCount,
       petActivities,
       petActivityCount: petState.events.length + petState.weights.length + petState.dailyLogs.length,
       hasLoadedInventory:
@@ -248,6 +278,8 @@ Page({
         this.data.hasLoadedMoments || momentsResult.status === 'fulfilled',
       hasLoadedTodos:
         this.data.hasLoadedTodos || todoResult.status === 'fulfilled',
+      hasLoadedMenu:
+        this.data.hasLoadedMenu || menuResult.status === 'fulfilled',
       spaceName: auth.spaceName,
       spaceMemberCopy: auth.isLoggedIn ? `${spaceMembers.length} 位成员` : '登录后加入空间',
       spaceMembers,
@@ -257,16 +289,36 @@ Page({
         weight: latestWeight?.value ?? '—',
         careNotice,
       },
-      headlineTop: headline.top,
-      headlineMiddle: headline.middle,
-      headlineBottom: headline.bottom,
       todayDay: String(day),
       todayMonthLabel: `${month}月`,
+      // 库存预警 / 待办未完成 / 宠物待照护，任一存在才显示提醒行
+      hasUrgentItems:
+        snapshot.inventoryNoticeCount > 0
+        || pendingTodoCount > 0
+        || (overdueCare !== undefined || dueSoonCare !== undefined || pendingDaily !== undefined),
+      reminderCount,
+      reminderCopy,
     })
   },
 
   onRetryInventory() {
     void this.loadSnapshot()
+  },
+
+  onSelectHomeTab(event: {
+    currentTarget: { dataset: { value?: 'today' | 'home' | 'pet' } }
+  }) {
+    const value = event.currentTarget.dataset.value
+    if (!value || value === this.data.homeTab) return
+    this.setData({ homeTab: value })
+  },
+
+  onOpenMoment() {
+    if (this.data.latestEntry) {
+      this.onOpenTodayRecord()
+      return
+    }
+    this.onOpenJournal()
   },
 
   onOpenTodayRecord() {
@@ -277,6 +329,17 @@ Page({
     }
     wx.navigateTo({
       url: `/pages/journal-detail/index?id=${encodeURIComponent(latestEntry.id)}`,
+    })
+  },
+
+  onOpenRecord(event: { currentTarget: { dataset: { id?: string } } }) {
+    const id = event.currentTarget.dataset.id
+    if (!id) {
+      this.onOpenJournal()
+      return
+    }
+    wx.navigateTo({
+      url: `/pages/journal-detail/index?id=${encodeURIComponent(id)}`,
     })
   },
 
