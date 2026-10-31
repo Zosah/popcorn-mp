@@ -260,6 +260,81 @@
   font-weight: 700;
 }
 
+/* ---------- 空档案 ---------- */
+.pet-empty-state {
+  display: flex;
+  min-height: calc(100vh - 176rpx - env(safe-area-inset-bottom));
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80rpx 72rpx 190rpx;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.pet-empty-state__art {
+  position: relative;
+  width: 232rpx;
+  height: 206rpx;
+  margin-bottom: 38rpx;
+}
+
+.pet-empty-state__ear {
+  position: absolute;
+  top: 8rpx;
+  width: 0;
+  height: 0;
+  border-right: 42rpx solid transparent;
+  border-bottom: 66rpx solid #9ca29a;
+  border-left: 42rpx solid transparent;
+}
+
+.pet-empty-state__ear--left { left: 24rpx; transform: rotate(-14deg); }
+.pet-empty-state__ear--right { right: 24rpx; transform: rotate(14deg); }
+
+.pet-empty-state__face {
+  position: absolute;
+  top: 52rpx;
+  left: 22rpx;
+  display: flex;
+  width: 188rpx;
+  height: 148rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 48% 48% 42% 42%;
+  background: #9ca29a;
+  box-shadow:
+    inset 0 -16rpx 0 rgba(67, 69, 66, 0.06),
+    0 20rpx 40rpx -28rpx rgba(52, 61, 51, 0.5);
+}
+
+.pet-empty-state__title {
+  margin-top: 12rpx;
+  font-family: var(--font-serif);
+  font-size: 42rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.pet-empty-state__copy {
+  max-width: 540rpx;
+  margin-top: 16rpx;
+  color: var(--pet-ink-2);
+  font-size: 24rpx;
+  line-height: 1.75;
+}
+
+.pet-empty-state__button {
+  width: 360rpx;
+  margin-top: 38rpx;
+  border-radius: 999rpx;
+  background: var(--pet-deep);
+  color: #fff;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 82rpx;
+}
+
 .pet-stats {
   position: absolute;
   right: 30rpx;
@@ -761,6 +836,51 @@
   font-size: 23rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ---------- 删除档案 ---------- */
+.profile-danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28rpx;
+  padding: 22rpx;
+  border: 1rpx solid #e9ddd7;
+  border-radius: 24rpx;
+  background: rgba(255, 250, 247, 0.8);
+  gap: 24rpx;
+}
+
+.profile-danger-zone > view {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.profile-danger-zone > view text:first-child {
+  color: #7f514a;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.profile-danger-zone > view text:last-child {
+  margin-top: 5rpx;
+  color: var(--pet-ink-3);
+  font-size: 19rpx;
+  line-height: 1.5;
+}
+
+.profile-danger-zone button {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 18rpx;
+  border: 1rpx solid #dcc8c0;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #9a514a;
+  font-size: 20rpx;
+  line-height: 58rpx;
 }
 
 .profile-editor {

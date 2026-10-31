@@ -42,14 +42,14 @@ type SupplyFilter = PetSupplyCategory | 'all'
 
 const EMPTY_PROFILE: DemoPetProfile = {
   id: '',
-  name: '糯米',
+  name: '',
   species: 'cat',
-  breed: '英国短毛猫',
+  breed: '',
   sex: 'female',
   birthday: '',
   homeOn: '',
   neuteredOn: null,
-  status: '精神不错',
+  status: '',
   version: 1,
   avatarMediaId: '',
   avatarUrl: '',
@@ -109,6 +109,7 @@ function formatDailyTime(value: string): string {
 Page({
   data: {
     activeSection: 'profile' as PetSection,
+    hasActivePet: false,
     loading: true,
     syncing: false,
     errorText: '',
@@ -255,6 +256,15 @@ Page({
     const active = activePetFrom(collection)
     this.setData({ petStates: collection.pets })
     if (!active) {
+      this.setData({
+        hasActivePet: false,
+        petState: EMPTY_PET_STATE,
+        profile: EMPTY_PROFILE,
+        profileDraft: EMPTY_PROFILE,
+        profileInitial: '',
+        editingProfile: false,
+        petTabs: [],
+      })
       this.loadPetTabs(collection)
       return
     }
@@ -270,7 +280,7 @@ Page({
           pet.profile.id === state.profile.id ? state : pet,
         )
       : [...this.data.petStates, state]
-    this.setData({ petStates: pets, syncState: 'synced' })
+    this.setData({ petStates: pets, syncState: 'synced', hasActivePet: true })
     this.loadState(state)
     this.loadPetTabs()
   },
@@ -376,6 +386,7 @@ Page({
         : 0
 
     this.setData({
+      hasActivePet: true,
       petState: state,
       profile: state.profile,
       profileInitial: state.profile.name.slice(0, 1),
@@ -602,6 +613,44 @@ Page({
       '档案已更新',
     )
     this.setData({ editingProfile: false })
+  },
+
+  onDeletePet() {
+    const profile = this.data.profile
+    if (!profile.id || this.data.syncing) return
+    wx.showModal({
+      title: '删除宠物档案',
+      content: '档案、照护记录和用品记录会一起移除；已上传的照片暂不物理删除。',
+      confirmText: '继续',
+      confirmColor: '#b86757',
+      success: (first) => {
+        if (!first.confirm) return
+        wx.showModal({
+          title: `确认删除${profile.name}？`,
+          content: '删除后无法在页面恢复，请确认这只伙伴的档案不再需要。',
+          confirmText: '确认删除',
+          confirmColor: '#b86757',
+          success: async (second) => {
+            if (!second.confirm) return
+            this.setData({ syncing: true, syncState: 'pending', errorText: '' })
+            try {
+              await petGateway.remove(profile.id, profile.version ?? 1)
+              await this.refreshPetData()
+              wx.showToast({ title: '宠物档案已删除', icon: 'success' })
+            } catch (error) {
+              const message = getPetErrorMessage(error, '宠物档案没有删除成功')
+              this.setData({ errorText: message, syncState: 'local' })
+              wx.showToast({ title: message, icon: 'none' })
+              if (error instanceof PetGatewayError && error.code === 'VERSION_CONFLICT') {
+                await this.refreshPetData()
+              }
+            } finally {
+              this.setData({ syncing: false })
+            }
+          },
+        })
+      },
+    })
   },
 
   onRecordWeight() {

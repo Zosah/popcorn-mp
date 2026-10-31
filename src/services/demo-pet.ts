@@ -65,7 +65,7 @@ function saveDemoPetStore(store: DemoPetStore): DemoPetStore {
 
 export function getDemoPetStore(): DemoPetStore {
   const stored = wx.getStorageSync<DemoPetStore | ''>(STORAGE_KEY)
-  if (stored && typeof stored === 'object' && Array.isArray(stored.pets) && stored.pets.length) {
+  if (stored && typeof stored === 'object' && Array.isArray(stored.pets)) {
     const normalized = cloneStore(stored)
     if (!normalized.pets.some((item) => item.profile.id === normalized.activePetId)) {
       normalized.activePetId = normalized.pets[0]?.profile.id ?? ''
@@ -91,10 +91,10 @@ export function resetDemoPetData(): DemoPetStore {
 
 export function getDemoPetState(): DemoPetState {
   const store = getDemoPetStore()
-  return cloneState(
-    store.pets.find((item) => item.profile.id === store.activePetId) ??
-      store.pets[0]!,
-  )
+  const active = store.pets.find((item) => item.profile.id === store.activePetId)
+    ?? store.pets[0]
+  if (!active) throw new Error('还没有宠物档案')
+  return cloneState(active)
 }
 
 export function listDemoPetProfiles(): DemoPetProfile[] {
@@ -170,6 +170,21 @@ export function updateDemoPetProfile(
     version: (state.profile.version ?? 1) + 1,
   }
   return saveDemoPetState(state)
+}
+
+export function removeDemoPet(id: string): DemoPetStore {
+  const store = getDemoPetStore()
+  const nextPets = store.pets.filter((item) => item.profile.id !== id)
+  if (nextPets.length === store.pets.length) {
+    throw new Error('宠物档案不存在')
+  }
+  const nextActive = nextPets.some((item) => item.profile.id === store.activePetId)
+    ? store.activePetId
+    : nextPets[0]?.profile.id ?? ''
+  return saveDemoPetStore({
+    activePetId: nextActive,
+    pets: nextPets,
+  })
 }
 
 export function addDemoPetEvent(input: {

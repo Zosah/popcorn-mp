@@ -117,6 +117,28 @@ export class HttpPetGateway implements PetGateway {
     }
   }
 
+  async remove(petId: string, currentVersion: number): Promise<void> {
+    const context = petContext()
+    try {
+      await retryNetwork(() => requestApiResponse<void>(
+        petPath(context.spaceId, petId),
+        {
+          method: 'DELETE',
+          token: context.token,
+          headers: {
+            'If-Match': ifMatch(currentVersion),
+            'Idempotency-Key': createIdempotencyKey('pet-delete'),
+          },
+        },
+      ))
+      if (String(wx.getStorageSync(ACTIVE_PET_STORAGE_KEY) || '') === petId) {
+        wx.removeStorageSync(ACTIVE_PET_STORAGE_KEY)
+      }
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
+
   async createEvent(petId: string, input: PetEventInput): Promise<DemoPetState> {
     return this.writePet('event-create', `${petPath(petContext().spaceId, petId)}/events`, 'POST', toEventRequest(input))
   }

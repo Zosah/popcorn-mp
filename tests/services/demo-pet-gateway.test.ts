@@ -103,4 +103,22 @@ describe('Demo 宠物网关', () => {
       version: (supply.version ?? 1) + 1,
     })
   })
+
+  it('删除当前宠物后切换剩余档案，最后一只删除后保持空状态', async () => {
+    const gateway = new DemoPetGateway()
+    const initial = await gateway.list()
+    const first = initial.pets[0]
+    const second = initial.pets[1]
+    if (!first || !second) throw new Error('缺少演示宠物')
+
+    await gateway.remove(first.profile.id, first.profile.version ?? 1)
+    let remaining = await gateway.list()
+    expect(remaining.pets.map((item) => item.profile.id)).not.toContain(first.profile.id)
+    expect(remaining.activePetId).toBe(second.profile.id)
+
+    await gateway.remove(second.profile.id, second.profile.version ?? 1)
+    remaining = await gateway.list()
+    expect(remaining.pets).toEqual([])
+    expect(remaining.activePetId).toBe('')
+  })
 })

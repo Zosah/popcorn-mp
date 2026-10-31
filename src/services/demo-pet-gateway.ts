@@ -11,6 +11,7 @@ import {
   addDemoPetSupply,
   addDemoPetWeight,
   getDemoPetStore,
+  removeDemoPet,
   removeDemoPetEvent,
   switchDemoPet,
   updateDemoPetEvent,
@@ -94,6 +95,13 @@ export class DemoPetGateway implements PetGateway {
     }
     assertVersion(pet.profile.version, currentVersion)
     return updateDemoPetProfile(input)
+  }
+
+  async remove(petId: string, currentVersion: number): Promise<void> {
+    const pet = collection().pets.find((item) => item.profile.id === petId)
+    if (!pet) throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    assertVersion(pet.profile.version, currentVersion)
+    removeDemoPet(petId)
   }
 
   async createEvent(petId: string, input: PetEventInput): Promise<DemoPetState> {

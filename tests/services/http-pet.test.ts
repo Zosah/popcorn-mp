@@ -188,6 +188,10 @@ describe('HTTP 宠物网关', () => {
           succeed(options, { ...apiPet, name: '糯米团', version: 4 }, 200, { etag: '"4"' })
           return
         }
+        if (url.endsWith('/pets/e_1234567890') && method === 'DELETE') {
+          succeed(options, undefined, 204)
+          return
+        }
         if (url.endsWith('/pets/e_1234567890/events') && method === 'POST') {
           succeed(options, {
             ...apiPet,
@@ -348,6 +352,20 @@ describe('HTTP 宠物网关', () => {
     const request = requests.find((item) => item.method === 'DELETE')
     expect(request?.header?.['If-Match']).toBe('"2"')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_event-delete_/)
+  })
+
+  it('删除宠物档案使用档案版本并清理活动缓存', async () => {
+    storage.set('popcorn_active_pet_id', apiPet.id)
+    const gateway = new HttpPetGateway()
+    await gateway.remove(apiPet.id, apiPet.version)
+
+    const request = requests.find(
+      (item) => item.method === 'DELETE'
+        && String(item.url).endsWith('/pets/e_1234567890'),
+    )
+    expect(request?.header?.['If-Match']).toBe('"3"')
+    expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_pet-delete_/)
+    expect(storage.has('popcorn_active_pet_id')).toBe(false)
   })
 
   it('网络失败自动重试一次', async () => {

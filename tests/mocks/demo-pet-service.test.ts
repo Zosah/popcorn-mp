@@ -8,6 +8,7 @@ import {
   getDemoPetEvent,
   getDemoPetState,
   listDemoPetProfiles,
+  removeDemoPet,
   removeDemoPetEvent,
   switchDemoPet,
   updateDemoPetEvent,
@@ -88,5 +89,14 @@ describe('宠物本地多档案存储', () => {
 
     removeDemoPetEvent(original.id)
     expect(getDemoPetEvent(original.id)).toBeNull()
+  })
+
+  it('删除全部档案后不会自动重新播种演示宠物', () => {
+    getDemoPetStore()
+    for (const profile of listDemoPetProfiles()) removeDemoPet(profile.id)
+
+    const store = getDemoPetStore()
+    expect(store.pets).toEqual([])
+    expect(store.activePetId).toBe('')
   })
 })

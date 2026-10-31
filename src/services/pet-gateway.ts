@@ -68,6 +68,7 @@ export interface PetGateway {
     input: PetProfileInput,
     currentVersion: number,
   ): Promise<DemoPetState>
+  remove(petId: string, currentVersion: number): Promise<void>
   createEvent(petId: string, input: PetEventInput): Promise<DemoPetState>
   updateEvent(
     petId: string,

@@ -1,4 +1,5 @@
 <view class="pets-page">
+  <block wx:if="{{hasActivePet}}">
   <view class="pet-hero pet-hero--{{profile.species}}">
     <view class="pet-hero__top">
       <view class="pet-hero__copy">
@@ -156,6 +157,10 @@
         <view><text>到家</text><text class="pet-profile-facts__value">{{homeOnLabel}}</text></view>
         <view><text>{{profile.neuteredOn ? '绝育' : '绝育情况'}}</text><text class="pet-profile-facts__value">{{profile.neuteredOn ? neuteredOnLabel : '未绝育'}}</text></view>
       </view>
+      <view class="profile-danger-zone">
+        <view><text>删除宠物档案</text><text>同时移除照护与用品记录，照片暂不物理删除</text></view>
+        <button bindtap="onDeletePet">删除{{profile.name}}的档案</button>
+      </view>
     </block>
 
     <block wx:elif="{{activeSection === 'care'}}">
@@ -255,6 +260,22 @@
       </view>
       <view class="supply-tip">点击条目，可以改成正在用、爱吃、吃过、种草或拔草。</view>
     </block>
+  </view>
+
+  </block>
+
+  <view wx:else class="pet-empty-state">
+    <view class="pet-empty-state__art">
+      <view class="pet-empty-state__ear pet-empty-state__ear--left"></view>
+      <view class="pet-empty-state__ear pet-empty-state__ear--right"></view>
+      <view class="pet-empty-state__face"><line-icon name="heart" size="34" tone="green" /></view>
+    </view>
+    <text class="pet-eyebrow">PET CARE</text>
+    <view class="pet-empty-state__title">{{loading ? '正在同步宠物照护…' : '还没有宠物档案'}}</view>
+    <view wx:if="{{errorText}}" class="pet-empty-state__copy">{{errorText}}</view>
+    <view wx:else class="pet-empty-state__copy">添加第一只伙伴，把疫苗、体重、日常和喜欢的东西慢慢记下来。</view>
+    <button wx:if="{{errorText}}" class="pet-empty-state__button" bindtap="onRetry">重新加载</button>
+    <button wx:elif="{{!loading}}" class="pet-empty-state__button" bindtap="onAddPet">添加第一只伙伴</button>
   </view>
 
   <app-tab-bar active="pets" />
