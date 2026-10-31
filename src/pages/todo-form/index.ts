@@ -10,6 +10,10 @@ import {
   type DemoTodoInput,
   type DemoTodoKind,
 } from '../../domain/demo-todo'
+import {
+  formatTodoDateDisplay,
+  getTodoTodayKey,
+} from '../../domain/todo-date'
 import { todoGateway } from '../../services/todo'
 import {
   getTodoErrorMessage,
@@ -78,22 +82,6 @@ function kindAllowed(value: string | undefined): value is DemoTodoKind {
   return DEMO_TODO_KIND_OPTIONS.some((option) => option.value === value)
 }
 
-function todayKey(): string {
-  const date = new Date()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-function formatDateDisplay(value: string): string {
-  if (!value) return '选择日期'
-  const parts = value.split('-').map(Number)
-  if (parts.length !== 3) return value
-  const [year, month, day] = parts
-  if (!year || !month || !day) return value
-  return `${year}年${month}月${day}日`
-}
-
 function backToTodo(): void {
   if (getCurrentPages().length > 1) {
     wx.navigateBack()
@@ -158,13 +146,13 @@ Page({
     const kind = kindAllowed(options.kind) ? options.kind : 'plan'
     const defaultDate =
       kind === 'fitness' || kind === 'meal' || kind === 'expense'
-        ? todayKey()
+        ? getTodoTodayKey()
         : ''
     this.setData({
       'form.kind': kind,
       'form.title': (options.title ?? '').trim(),
       'form.dueDate': defaultDate,
-      dateDisplay: formatDateDisplay(defaultDate),
+      dateDisplay: formatTodoDateDisplay(defaultDate),
     })
     this.applyKindCopy(kind)
   },
@@ -185,7 +173,7 @@ Page({
         currentChecklist: item.checklist,
         pageTitle: '把这件事再整理一下',
         saveText: '保存修改',
-        dateDisplay: formatDateDisplay(item.dueDate),
+        dateDisplay: formatTodoDateDisplay(item.dueDate),
         form: {
           kind: item.kind,
           title: item.title,
@@ -263,7 +251,7 @@ Page({
     const value = event.detail.value
     this.setData({
       'form.dueDate': value,
-      dateDisplay: formatDateDisplay(value),
+      dateDisplay: formatTodoDateDisplay(value),
     })
   },
 
@@ -392,7 +380,7 @@ Page({
     if (!this.data.itemId || this.data.saving) return
     wx.showModal({
       title: '删除这条记录？',
-      content: '删除后无法恢复。',
+      content: '删除后会从你们的共同空间隐藏。',
       confirmText: '删除',
       confirmColor: '#e8695c',
       success: (result) => {

@@ -13,7 +13,7 @@
 
   <view class="todo-progress">
     <view class="todo-progress__body">
-      <text class="todo-progress__eyebrow">本周进度</text>
+      <text class="todo-progress__eyebrow">共同进度</text>
       <view class="todo-progress__title">一起完成了 {{completedCount}} 件事</view>
       <view class="todo-progress__copy">{{pendingCount ? '还剩 ' + pendingCount + ' 件，慢慢来就好' : '目前都做完了，可以再记一件'}}</view>
     </view>
@@ -51,10 +51,10 @@
 
   <view class="todo-list-heading">
     <view>
-      <text class="todo-list-heading__eyebrow">{{activeKind === 'all' ? '今天' : '当前分类'}}</text>
+      <text class="todo-list-heading__eyebrow">{{activeKind === 'all' ? '共同清单' : '当前分类'}}</text>
       <text class="todo-list-heading__title">{{activeLabel}}</text>
     </view>
-    <text>{{pendingCount}} 项未完成</text>
+    <text>{{visiblePendingCount}} 项未完成</text>
   </view>
 
   <view wx:if="{{loading && !items.length}}" class="todo-state">

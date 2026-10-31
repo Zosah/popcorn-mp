@@ -12,6 +12,10 @@ import {
   type TodoItem,
   type TodoSummary,
 } from '../../services/todo-gateway'
+import {
+  formatTodoDateLabel,
+  isTodoOverdue,
+} from '../../domain/todo-date'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { createRequestGate } from '../../utils/request-control'
 
@@ -67,44 +71,12 @@ const ALL_FILTER: TodoFilterView = {
 
 const todoRequestGate = createRequestGate()
 
-function localDateKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function parseDateKey(value: string): Date | undefined {
-  const parts = value.split('-').map(Number)
-  if (parts.length !== 3) return undefined
-  const [year, month, day] = parts
-  if (!year || !month || !day) return undefined
-  return new Date(year, month - 1, day)
-}
-
-function formatDateLabel(value: string): string {
-  if (!value) return ''
-  const date = parseDateKey(value)
-  if (!date) return value
-
-  const today = new Date()
-  const todayKey = localDateKey(today)
-  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
-  if (value === todayKey) return '今天'
-  if (value === localDateKey(tomorrow)) return '明天'
-
-  const prefix = date.getFullYear() === today.getFullYear()
-    ? ''
-    : `${date.getFullYear()}年`
-  return `${prefix}${date.getMonth() + 1}月${date.getDate()}日`
-}
-
 function formatAmount(amount: number): string {
   return amount > 0 ? `¥${amount.toFixed(2)}` : '未记金额'
 }
 
-function itemMeta(item: TodoItem): string {
-  const dateLabel = formatDateLabel(item.dueDate)
+function itemMeta(item: TodoItem, includeDate = true): string {
+  const dateLabel = includeDate ? formatTodoDateLabel(item.dueDate) : ''
   switch (item.kind) {
     case 'travel': {
       const parts = [
@@ -138,13 +110,13 @@ function itemMeta(item: TodoItem): string {
     }
     case 'plan':
     default:
-      return dateLabel || '找时间慢慢做'
+      return dateLabel || (item.dueDate ? '按计划推进' : '待安排')
   }
 }
 
 function itemToView(item: TodoItem): TodoItemView {
   const checklistDone = item.checklist.filter((entry) => entry.done).length
-  const dateLabel = formatDateLabel(item.dueDate)
+  const dateLabel = formatTodoDateLabel(item.dueDate)
   return {
     id: item.id,
     kind: item.kind,
@@ -157,9 +129,9 @@ function itemToView(item: TodoItem): TodoItemView {
     done: item.done,
     version: item.version,
     amount: item.amount,
-    meta: itemMeta(item),
+    meta: itemMeta(item, false),
     dateLabel,
-    overdue: !item.done && Boolean(item.dueDate) && item.dueDate < localDateKey(new Date()),
+    overdue: isTodoOverdue(item.dueDate, item.done),
     checklist: item.checklist.map((entry, index) => ({
       id: entry.id,
       text: entry.text,
@@ -226,6 +198,7 @@ Page({
     syncState: appConfig.demoMode ? 'local' : 'pending',
     syncText: appConfig.demoMode ? '只在本机' : '正在同步',
     pendingCount: 0,
+    visiblePendingCount: 0,
     completedCount: 0,
     totalCount: 0,
     progressPercent: 0,
@@ -332,6 +305,7 @@ Page({
       allItems: items,
       summary,
       pendingCount: summary.pending,
+      visiblePendingCount: visibleItems.filter((item) => !item.done).length,
       completedCount: summary.completed,
       totalCount: summary.total,
       progressPercent,
@@ -348,7 +322,7 @@ Page({
             progressText: travelTotal
               ? `已完成 ${travelDone} / ${travelTotal} 项准备`
               : travel.dueDate
-                ? `计划于 ${formatDateLabel(travel.dueDate)} 出发`
+                ? `计划于 ${formatTodoDateLabel(travel.dueDate)} 出发`
                 : '还没有添加准备清单',
           }
         : null,
@@ -464,7 +438,7 @@ Page({
         if (!item) return
         wx.showModal({
           title: '删除这条待办？',
-          content: '删除后无法恢复。',
+          content: '删除后会从你们的共同空间隐藏。',
           confirmText: '删除',
           confirmColor: '#e8695c',
           success: (modal) => {
