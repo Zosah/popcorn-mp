@@ -8,9 +8,9 @@
 
 - 状态：进行中（active）。
 - 当前焦点：把每个功能按“设计 → 前后端实现 → 数据库迁移 → 私有 COS → 生产部署与真实联调 → 自动化验收 → 体验版上传”推进到可验收状态。
-- 本轮已完成：自定义底栏跨设备、跨空间同步，覆盖数据库、HTTP 接口、Demo / HTTP 双模式、本机快照、弱网降级和 UI 自动化。
-- 当前切片：后端迁移 11 新增 `t_app_tab_settings`；配置按“空间 + 用户”隔离，首次 GET 懒创建 `pets + journal`，PUT 使用 `If-Match`、`Idempotency-Key` 和 `409 VERSION_CONFLICT`。
-- 验证结果：Go 全量测试与 `go vet` 通过；前端类型检查、35 个测试文件 / 201 项测试通过；真实 HTTP + 开发者工具 UI 自动化覆盖双用户隔离、双空间隔离、幂等重放、旧版本冲突、权限边界、设置保存、首页跳转、个人中心摘要和错误恢复。
+- 本轮已完成：自定义底栏跨设备、跨空间同步；生活记录生产图片上传、私密记录、列表/详情回读与软删除清理。
+- 当前切片：为带图片功能补齐可重复的生产 UI 验收，菜单与生活记录均使用真实微信会话验证 `前端选图 → 私有 COS → 保存 → 签名展示 → 清理`。
+- 验证结果：Go 全量测试与 `go vet` 通过；前端类型检查、35 个测试文件 / 201 项测试通过；本地真实 HTTP 覆盖双用户/双空间隔离、幂等、冲突和权限；生产真实微信覆盖底栏同步、菜单图片和生活记录图片全链路。
 - 发布状态：后端 `ab19ea3` 已部署生产，迁移 11 与 `t_app_tab_settings` 已核验；前端 `3f17308` 已推送，`1.13.0` 已上传微信后台，包体 `1,826,043 Byte`（约 1.7 MB）。
 - 生产复验：真实微信会话已通过登录、底栏读取、页面保存、清缓存后服务端恢复、首页底栏和个人中心摘要联动；截图 `shots/wechat-production-auth.png`、`shots/wechat-production-app-tabs-loaded.png`、`shots/wechat-production-app-tabs-saved.png`、`shots/wechat-production-home-tabs.png`、`shots/wechat-production-profile-tabs.png`。
 - 下一门槛：在微信公众平台将 `1.13.0` 设为体验版，完成真机跨设备、切空间和弱网验收；本切片没有图片，不涉及 COS。
@@ -46,7 +46,7 @@
 | --- | --- | --- | --- |
 | 1 | 菜单 / 今天吃什么 | 🔄 生产 COS 闭环完成，待真机验收 | CRUD、人份、食材备齐、私有 COS、共享与冲突 |
 | 2 | 宠物照护 | 🔄 `1.12.0` 已上传，待真机验收 | 档案、体重、事件、日历、四类周期照护、私有 COS 图片 |
-| 3 | 生活记录 | ✅ 后端与基础图片闭环 | 补充体验版真机弱网验收和删除后媒体清理 |
+| 3 | 生活记录 | 🔄 生产图片/私密记录闭环，待真机验收 | 弱网、双人可见范围与删除后媒体治理 |
 | 4 | 家庭库存 | ✅ 后端闭环 | 补充体验版真机弱网验收与临期提醒边界 |
 | 5 | 待办与小计划 | 🔄 五类场景生产联调完成，待真机验收 | 小计划、旅行准备、健身、今天吃什么、账单 |
 | 6 | 登录、空间与邀请 | 🔄 `1.11.1` 体验版已上传 | 真机微信登录、邀请分享、成员退出和多用户复验 |
@@ -160,6 +160,8 @@
 - ✅ 统一路径继续使用 `popcorn/prod/media/spaces/{spaceId}/{mediaId}_display.jpg` 和 `..._thumb.jpg`；业务表只保存 `mediaId`。
 - ✅ 菜单图片：小程序前端真实上传、签名展示、创建菜谱、幂等重放、回读、替换、移除、软删除全部通过。
 - ✅ 生活记录图片：上传 `purpose=journal`、创建记录、列表与详情图片展示、幂等重放、软删除全部通过；截图为 `shots/journal-cos-production-list-vwlm85s.png`、`shots/journal-cos-production-detail-vwlm85s.png`。
+- ✅ 新增可重复生产验收脚本 `npm run verify:production-journal-ui`：真实微信会话创建私密重要记录、上传图片、列表缩略图、详情原图、签名地址 `200 image/jpeg` 和软删除清理全部通过。
+- ✅ 生活记录生产截图：`shots/production-journal-ui-form-empty.png`、`shots/production-journal-ui-form-uploaded.png`、`shots/production-journal-ui-list-loaded.png`、`shots/production-journal-ui-detail-loaded.png`。
 - ✅ 宠物头像：上传 `purpose=avatar`、创建档案、列表回读和页面头像展示通过；截图 `shots/pet-cos-production-vwlp9ms.png`；验收宠物已软删除。
 - ✅ display / thumb 两个签名地址均返回 `200 image/jpeg`，COS 主机为 `popcorn-1302154647.cos.ap-guangzhou.myqcloud.com`。
 - ℹ️ 按当前设计，用户图片暂不物理删除；业务数据删除不清理 COS 对象，后续通过生命周期与恢复策略统一治理。
@@ -177,4 +179,4 @@
 
 ### 下一阶段
 
-自定义底栏已完成本地真实 HTTP、生产真实微信与私有 COS 回归验收，后端 `ab19ea3` 已部署，前端 `3f17308` 与生产验收脚本 `955f727` 已推送，`1.13.0` 已上传微信后台。下一步将 `1.13.0` 设为体验版并完成真机跨设备、切空间和弱网验收；随后继续按功能清单推进下一项，微信订阅消息仍需模板 ID 后才能进入发送验收。
+自定义底栏已完成本地真实 HTTP、生产真实微信与私有 COS 回归验收，生活记录也新增了生产图片与私密记录全链路脚本；`1.13.0` 已上传微信后台。下一步将 `1.13.0` 设为体验版并完成真机跨设备、切空间、弱网与双人可见范围验收，同时继续为宠物、库存和待办补可重复的生产验收切片；微信订阅消息仍需模板 ID 后才能进入发送验收。

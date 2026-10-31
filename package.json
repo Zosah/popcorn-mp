@@ -20,7 +20,8 @@
     "verify:http-pet-ui": "node scripts/verify-http-pet-ui.mjs",
     "verify:http-reminders": "node scripts/verify-http-reminders.mjs",
     "verify:http-app-tabs": "node scripts/verify-http-app-tabs.mjs",
-    "verify:production-menu-ui": "node scripts/verify-production-menu-ui.mjs"
+    "verify:production-menu-ui": "node scripts/verify-production-menu-ui.mjs",
+    "verify:production-journal-ui": "node scripts/verify-production-journal-ui.mjs"
   },
   "repository": {
     "type": "git",
