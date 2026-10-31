@@ -13,7 +13,7 @@
 - 本地验证：前端类型检查通过；38 个测试文件 / 220 项测试通过；后端 `gofmt`、`go vet`、`go test ./...` 与 `go test -race ./...` 通过。
 - 生产验证：`npm run verify:production-avatar-ui` 已覆盖真实微信会话、`purpose=avatar`、私有 COS 路径与签名 URL、保存回读、替换、移除、无头像昵称首字回退、跨空间头像引用拒绝，并在 `finally` 中恢复验收前头像。
 - 当前截图：`shots/production-avatar-ui-auth-uploaded.png`、`shots/production-avatar-ui-account.png`、`shots/production-avatar-ui-profile.png`、`shots/production-avatar-ui-home-members.png`、`shots/production-avatar-ui-space-members.png`、`shots/production-avatar-ui-invite.png`、`shots/production-avatar-ui-account-cleared.png`、`shots/production-avatar-ui-profile-fallback.png`。
-- 发布状态：后端 `6e960c0` 已推送并部署生产，迁移 13 已应用，`healthz / readyz` 正常；前端 `1.18.0` 已上传微信后台，包体 `1,852,683 Byte`（约 1.8 MB），待提交推送、设为体验版并完成真机验收。
+- 发布状态：后端 `6e960c0` 已推送并部署生产，迁移 13 已应用，`healthz / readyz` 正常；前端 `d1f7ed7` 已提交并推送，`1.18.0` 已上传微信后台，包体 `1,852,683 Byte`（约 1.8 MB），待设为体验版并完成真机验收。
 - 下一门槛：完成 `1.18.0` 前端提交推送，在公众平台设为体验版；真机复验上传、替换、移除、杀进程重进后的头像状态。GitHub Actions 自动部署结果仍需在网页端确认（本机无可用的已授权 GitHub CLI）。
 
 ## 1. 执行原则
@@ -243,7 +243,8 @@ Demo 模式：
 - ✅ 已完成头像接入后的个人中心空间卡片尺寸约束修复；重新生成并复核 `shots/production-avatar-ui-profile.png` 与 `shots/production-avatar-ui-profile-fallback.png`。
 - ✅ 后端 `6e960c0` 已部署生产，迁移 13 已应用，`healthz / readyz` 正常。
 - ✅ 前端 `1.18.0` 已上传微信后台，包体 `1,852,683 Byte`（约 1.8 MB）。
-- ⏳ 待完成前端提交推送、设为体验版，以及真机上传、替换、移除和重进检查。
+- ✅ 前端提交 `d1f7ed7` 已提交并推送。
+- ⏳ 待设为体验版，以及真机上传、替换、移除和重进检查。
 
 ### 登录、空间与邀请
 
