@@ -16,7 +16,7 @@ const suffix = Date.now().toString(36).slice(-8)
 const petName = `验收团子${suffix.slice(-3)}`
 const backupPetName = `验收备份${suffix.slice(-3)}`
 const image = await readFile(new URL('../src/images/demo-menu-still-life.jpg', import.meta.url))
-const miniProgram = await automator.connect({ wsEndpoint })
+let miniProgram = await automator.connect({ wsEndpoint })
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const token = await miniProgram.callWxMethod('getStorageSync', tokenKey)
@@ -98,11 +98,43 @@ async function deletePetForCleanup(petId) {
   }
 }
 
+async function withTimeout(promise, timeoutMs, label) {
+  let timer
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label}超时（${timeoutMs}ms）`)), timeoutMs)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+async function reconnectMiniProgram() {
+  await miniProgram.disconnect().catch(() => undefined)
+  miniProgram = await automator.connect({ wsEndpoint })
+}
+
 async function open(url) {
-  const page = await miniProgram.reLaunch(url)
-  await wait(500)
-  if (!page) throw new Error(`页面打开失败：${url}`)
-  return page
+  let lastError
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const page = await withTimeout(miniProgram.reLaunch(url), 15000, `打开 ${url}`)
+      await wait(500)
+      if (!page) throw new Error(`页面打开失败：${url}`)
+      return page
+    } catch (error) {
+      lastError = error
+      console.error(`WARN 页面打开失败，第 ${attempt} 次：${url}`, error)
+      if (attempt < 2) {
+        await reconnectMiniProgram()
+        await wait(1000)
+      }
+    }
+  }
+  throw lastError
 }
 
 async function waitFor(check, label, timeoutMs = 30000) {
