@@ -8,13 +8,13 @@
 
 - 状态：进行中（active）。
 - Goal 模式：这不是一次性计划。每轮从功能清单中只取一个切片，按固定门槛推进；未达到 Definition of Done 就继续留在当前切片，不跳到下一个功能。
-- 当前焦点：完成“微信提醒订阅 + 每日聚合提醒”的生产部署、真实环境联调和体验版上传。
+- 当前焦点：微信提醒订阅 + 每日聚合提醒已完成代码、生产部署、生产安全态联调和 `1.17.0` 体验版上传；等待真实模板与真机通知送达验收。
 - 本轮已完成：后端 access token 缓存、订阅授权状态、每日聚合 Worker、失败重试、订阅失效回收、数据库迁移 12、OpenAPI 和前端真实授权 UI。
 - 本地验证：模板未配置与模板已配置两态均通过；授权 `accept` 累加、`reject` 持久化、成员隔离、非成员 404、模拟微信授权回调、页面加载、冲突恢复和错误重试均通过。
 - 验证结果：前端类型检查通过；36 个测试文件 / 213 项测试通过；后端 `gofmt`、`go vet`、`go test` 与 `go test -race` 通过。
-- 本轮截图：`shots/reminders-http-loaded.png`、`shots/reminders-http-subscription-authorized.png`、`shots/reminders-http-saved.png`、`shots/reminders-http-conflict-recovered.png`、`shots/reminders-http-error-state.png`。
-- 发布状态：代码尚未提交、推送、生产部署或上传体验版；真实模板 ID 尚未提供，生产 Worker 必须保持关闭。
-- 下一门槛：后端提交并部署，生产 HTTPS 验证 `configured=false` 安全降级；随后上传新版体验版。真实发送验收等待模板 ID、字段 key 和生产 AppID 对齐后再开启 Worker。
+- 本轮截图：`shots/reminders-http-loaded.png`、`shots/reminders-http-subscription-authorized.png`、`shots/reminders-http-saved.png`、`shots/reminders-http-conflict-recovered.png`、`shots/reminders-http-error-state.png`、`shots/production-reminder-ui-unconfigured.png`。
+- 发布状态：后端 `45382b8` 已推送并部署生产，迁移 12 已应用；前端 `0523bf4` 已推送，`1.17.0` 已上传微信后台。真实模板 ID 尚未提供，生产 Worker 保持关闭。
+- 下一门槛：在公众平台将 `1.17.0` 设为体验版并完成页面真机检查。真实发送验收等待模板 ID、字段 key 和生产 AppID 对齐后，再按“配置模板但关闭 Worker → 真机授权 → 检查发送机会 → 开启 Worker → 验证送达与失效回收”推进。
 
 ## 1. 执行原则
 
@@ -55,7 +55,7 @@
 | 5 | 待办与小计划 | 🔄 `1.16.0` 已上传，待真机验收 | 小计划、旅行准备、健身、今天吃什么、账单、冲突恢复 |
 | 6 | 登录、空间与邀请 | 🔄 `1.11.1` 体验版已上传 | 真机微信登录、邀请分享、成员退出和多用户复验 |
 | 7 | 首页与底部导航 | 🔄 `1.13.0` 已上传，待真机验收 | 首页摘要、宠物动态、自定义底栏、本机快照与跨设备同步 |
-| 8 | 提醒与设置 | 🔄 后端与授权 UI 已完成，待部署、体验版和真实模板发送验收 | 偏好持久化、微信订阅授权、每日聚合、失败重试、失效回收 |
+| 8 | 提醒与设置 | 🔄 `1.17.0` 已上传，待真机与真实模板送达验收 | 偏好持久化、微信订阅授权、每日聚合、失败重试、失效回收 |
 
 ## 4. 每个功能的执行流水线
 
@@ -146,15 +146,20 @@
 
 - ✅ 后端新增 `t_reminder_settings`，按“空间 + 用户”隔离偏好。
 - ✅ `GET /spaces/{spaceId}/reminder-settings` 首次读取懒创建默认设置；`PUT` 使用 `If-Match` 与 `Idempotency-Key`。
-- ✅ 新增迁移 12：`t_reminder_subscriptions` 与 `t_reminder_deliveries`，已应用到本地联调的 `db_popcorn_mp`。
+- ✅ 新增迁移 12：`t_reminder_subscriptions` 与 `t_reminder_deliveries`，已应用到生产 `db_popcorn_mp`。
 - ✅ `GET/PUT /spaces/{spaceId}/reminder-subscription` 已实现；模板未配置时 GET 返回 `configured=false`，PUT 返回 `503 SUBSCRIPTION_NOT_CONFIGURED`。
 - ✅ 微信订阅授权支持 `accept/reject/ban/filter`；`accept` 累加发送机会，发送成功才消费一次。
 - ✅ 每日聚合 Worker 已接入启动流程，生产默认关闭；同一空间、用户、模板每天最多一条，失败 5 分钟后重试，最多 3 次，订阅失效时清零机会。
 - ✅ 前端真实 `wx.requestSubscribeMessage` 授权、状态卡片、模板未配置降级、授权失败提示和错误重试已完成。
 - ✅ 本地未配置与已配置两态 UI 自动化通过，截图见当前 Goal 状态。
 - ✅ 前端类型检查、36 个测试文件 / 213 项测试通过；后端 `gofmt`、`go vet`、`go test`、`go test -race` 与 OpenAPI YAML 解析通过。
-- ⏳ 后端尚未提交、推送和生产部署；前端尚未提交、推送和上传体验版。
+- ✅ 后端 `45382b8` 已提交、推送并部署生产；`healthz / readyz` 正常，迁移 12 已应用，生产 Worker 保持关闭。
+- ✅ 生产真实微信会话验证：GET 返回 `configured=false`，页面显示“模板未配置 / 暂不可授权”；PUT `accept` 返回 `503 SUBSCRIPTION_NOT_CONFIGURED`，发送机会仍为 0。
+- ✅ 新增可重复脚本 `npm run verify:production-reminder-ui`，同时检查生产 HTTPS、页面加载、同步状态、横向溢出和截图。
+- ✅ 生产截图：`shots/production-reminder-ui-unconfigured.png`。
+- ✅ 前端提交 `0523bf4` 已推送；`1.17.0` 已上传微信后台，包体 `1,840,159 Byte`（约 1.8 MB）。
 - ⏳ 真实模板 ID 与字段 key 尚未提供，生产 Worker 保持关闭；真实微信授权和通知送达尚不能验收。
+- ⏳ 在公众平台将 `1.17.0` 设为体验版，确认提醒页在真机上的标题、状态卡片和开关保存行为。
 
 ### 自定义底栏
 
@@ -200,4 +205,4 @@
 
 ### 下一阶段
 
-当前先收口微信提醒订阅：完成代码审查、提交、生产部署、HTTPS 安全降级验证和新版体验版上传。真实模板 ID 到位后，再按“配置模板但关闭 Worker → 真机授权 → 检查发送机会 → 开启 Worker → 验证送达与失效回收”的顺序完成最后一段闭环。之后按功能清单继续下一项，不把未验证的真实发送标记为完成。
+微信提醒订阅的代码、生产部署、HTTPS 安全降级验证和 `1.17.0` 体验版上传已经完成。真实模板 ID 到位后，再按“配置模板但关闭 Worker → 真机授权 → 检查发送机会 → 开启 Worker → 验证送达与失效回收”的顺序完成最后一段闭环。之后按功能清单继续下一项，不把未验证的真实发送标记为完成。
