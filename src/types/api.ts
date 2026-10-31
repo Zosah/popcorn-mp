@@ -371,3 +371,124 @@ export interface ApiMenuRecipeList {
   items: ApiMenuRecipe[]
   nextCursor: string
 }
+
+export interface ApiPetEvent {
+  id: string
+  petId: string
+  type: string
+  occurredOn: string
+  title: string
+  note: string
+  provider: string
+  cost: string
+  nextOn: string
+  version: number
+  createdBy: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiPetWeight {
+  id: string
+  petId: string
+  value: string
+  recordedOn: string
+  createdBy: string
+  createdAt: string
+}
+
+export interface ApiPetDailyLog {
+  id: string
+  petId: string
+  type: string
+  summary: string
+  note: string
+  recordedAt: string
+  createdBy: string
+  createdAt: string
+}
+
+export interface ApiPetSupply {
+  id: string
+  petId: string
+  category: string
+  name: string
+  status: string
+  note: string
+  recordedOn: string
+  version: number
+  createdBy: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiPet {
+  id: string
+  spaceId: string
+  name: string
+  species: string
+  breed: string
+  sex: string
+  birthday: string
+  homeOn: string
+  neuteredOn: string
+  status: string
+  avatarMediaId: string
+  version: number
+  createdBy: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
+  events: ApiPetEvent[]
+  weights: ApiPetWeight[]
+  dailyLogs: ApiPetDailyLog[]
+  supplies: ApiPetSupply[]
+}
+
+export interface ApiPetList {
+  items: ApiPet[]
+}
+
+export interface ApiPetProfileWriteRequest {
+  name: string
+  species: string
+  breed: string
+  sex: string
+  birthday: string
+  homeOn: string
+  neuteredOn: string
+  status: string
+  avatarMediaId: string
+}
+
+export interface ApiPetEventWriteRequest {
+  type: string
+  occurredOn: string
+  title: string
+  note: string
+  provider: string
+  cost: string
+  nextOn: string | null
+}
+
+export interface ApiPetWeightWriteRequest {
+  value: string
+  recordedOn: string
+}
+
+export interface ApiPetDailyLogWriteRequest {
+  type: string
+  summary: string
+  note: string
+  recordedAt: string
+}
+
+export interface ApiPetSupplyWriteRequest {
+  category: string
+  name: string
+  status: string
+  note: string
+  recordedOn: string
+}

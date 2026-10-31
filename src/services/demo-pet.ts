@@ -30,10 +30,18 @@ export interface DemoPetStore {
 function cloneState(state: DemoPetState): DemoPetState {
   const profile = state.profile as DemoPetProfile & { species?: PetSpecies }
   return {
-    profile: { ...profile, species: profile.species ?? 'cat' },
-    events: Array.isArray(state.events) ? state.events.map((item) => ({ ...item })) : [],
+    profile: {
+      ...profile,
+      species: profile.species ?? 'cat',
+      version: profile.version ?? 1,
+      avatarMediaId: profile.avatarMediaId ?? '',
+      avatarUrl: profile.avatarUrl ?? '',
+    },
+    events: Array.isArray(state.events)
+      ? state.events.map((item) => ({ ...item, version: item.version ?? 1 }))
+      : [],
     supplies: Array.isArray(state.supplies)
-      ? state.supplies.map((item) => ({ ...item }))
+      ? state.supplies.map((item) => ({ ...item, version: item.version ?? 1 }))
       : [],
     weights: Array.isArray(state.weights) ? state.weights.map((item) => ({ ...item })) : [],
     dailyLogs: Array.isArray(state.dailyLogs)
@@ -105,6 +113,7 @@ export function switchDemoPet(id: string): DemoPetState {
 export function addDemoPet(input: {
   name: string
   species: PetSpecies
+  profile?: Partial<DemoPetProfile>
 }): DemoPetState {
   const store = getDemoPetStore()
   const nowMs = Date.now()
@@ -126,6 +135,10 @@ export function addDemoPet(input: {
       homeOn: today,
       neuteredOn: null,
       status: '刚刚加入这个家',
+      version: 1,
+      avatarMediaId: '',
+      avatarUrl: '',
+      ...input.profile,
     },
     events: [],
     supplies: [],
@@ -148,10 +161,14 @@ function saveDemoPetState(state: DemoPetState): DemoPetState {
 }
 
 export function updateDemoPetProfile(
-  patch: Pick<DemoPetProfile, 'birthday' | 'homeOn' | 'neuteredOn'>,
+  patch: Partial<DemoPetProfile>,
 ): DemoPetState {
   const state = getDemoPetState()
-  state.profile = { ...state.profile, ...patch }
+  state.profile = {
+    ...state.profile,
+    ...patch,
+    version: (state.profile.version ?? 1) + 1,
+  }
   return saveDemoPetState(state)
 }
 
@@ -176,6 +193,7 @@ export function addDemoPetEvent(input: {
     cost: input.cost?.trim() ?? '',
     nextOn: input.nextOn ?? null,
     createdAt: new Date(nowMs).toISOString(),
+    version: 1,
   }
   state.events = [event, ...state.events]
   return saveDemoPetState(state)
@@ -210,6 +228,7 @@ export function updateDemoPetEvent(
           provider: input.provider?.trim() ?? '',
           cost: input.cost?.trim() ?? '',
           nextOn: input.nextOn ?? null,
+          version: (event.version ?? 1) + 1,
         }
       : event,
   )
@@ -237,6 +256,7 @@ export function addDemoPetSupply(input: {
     status: input.status,
     note: input.note?.trim() ?? '',
     recordedOn: getShanghaiDateOnly(nowMs),
+    version: 1,
   }
   state.supplies = [supply, ...state.supplies]
   return saveDemoPetState(state)
@@ -248,7 +268,9 @@ export function updateDemoPetSupplyStatus(
 ): DemoPetState {
   const state = getDemoPetState()
   state.supplies = state.supplies.map((item) =>
-    item.id === id ? { ...item, status } : item,
+    item.id === id
+      ? { ...item, status, version: (item.version ?? 1) + 1 }
+      : item,
   )
   return saveDemoPetState(state)
 }

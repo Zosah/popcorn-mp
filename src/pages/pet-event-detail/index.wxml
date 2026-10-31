@@ -1,5 +1,17 @@
 <view class="page-shell pet-event-detail">
-  <view class="event-hero">
+  <view wx:if="{{errorText}}" class="event-state event-state--error" bindtap="onRetry">
+    <line-icon name="circle-alert" size="34" tone="danger" />
+    <view class="event-state__copy"><text>暂时看不到这条记录</text><text>{{errorText}}</text></view>
+    <text class="event-state__action">重试</text>
+  </view>
+
+  <view wx:elif="{{loading}}" class="event-state">
+    <line-icon name="clock-3" size="32" tone="muted" />
+    <text>正在同步这条照护记录…</text>
+  </view>
+
+  <block wx:else>
+  <view wx:if="{{event}}" class="event-hero">
     <view class="event-hero__mark"><line-icon name="{{iconName}}" size="32" tone="pink" /></view>
     <view class="event-hero__body">
       <view class="eyebrow">{{typeLabel}}</view>
@@ -8,7 +20,7 @@
     </view>
   </view>
 
-  <view class="paper-card event-detail-card">
+  <view wx:if="{{event}}" class="paper-card event-detail-card">
     <view class="event-detail-row"><text>宠物</text><text>{{petName}}</text></view>
     <view class="event-detail-row"><text>类型</text><text>{{typeLabel}}</text></view>
     <view class="event-detail-row"><text>发生日期</text><text>{{event.occurredOn}}</text></view>
@@ -21,9 +33,10 @@
     </view>
   </view>
 
-  <view class="event-actions">
-    <button class="primary-button" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑事件</text></button>
-    <button class="danger-button event-delete" bindtap="onDelete"><line-icon name="circle-alert" size="22" tone="danger" /><text>删除事件</text></button>
+  <view wx:if="{{event}}" class="event-actions">
+    <button class="primary-button" disabled="{{deleting}}" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑事件</text></button>
+    <button class="danger-button event-delete" loading="{{deleting}}" disabled="{{deleting}}" bindtap="onDelete"><line-icon name="circle-alert" size="22" tone="danger" /><text>{{deleting ? '正在删除' : '删除事件'}}</text></button>
   </view>
   <view class="event-tip"><line-icon name="circle-alert" size="17" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>
+  </block>
 </view>

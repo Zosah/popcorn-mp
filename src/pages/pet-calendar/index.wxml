@@ -8,6 +8,9 @@
     </view>
   </view>
 
+  <view wx:if="{{errorText}}" class="calendar-sync-state calendar-sync-state--error"><text>{{errorText}}</text><text bindtap="onShow">点按重试</text></view>
+  <view wx:elif="{{loading}}" class="calendar-sync-state">正在同步照护月历…</view>
+
   <view class="paper-card calendar-card">
     <view class="calendar-nav">
       <view class="calendar-nav__button" bindtap="onPreviousMonth">‹</view>

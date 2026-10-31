@@ -10,6 +10,7 @@ import {
   buildPetTimeline,
   filterPetSupplies,
   formatPetAge,
+  formatPetWeight,
   getCurrentPetSupplies,
   getPetSupplyStatusLabel,
   PET_DAILY_LOG_LABELS,
@@ -22,18 +23,16 @@ import {
   type PetSupplyCategory,
   type PetSupplyStatus,
 } from '../../domain/demo-pet'
+import { mediaGateway } from '../../services/media'
+import { getMediaErrorMessage } from '../../services/media-gateway'
+import { petGateway } from '../../services/pet'
 import {
-  addDemoPet,
-  addDemoPetDailyLog,
-  addDemoPetEvent,
-  addDemoPetSupply,
-  addDemoPetWeight,
-  getDemoPetState,
-  listDemoPetProfiles,
-  switchDemoPet,
-  updateDemoPetProfile,
-  updateDemoPetSupplyStatus,
-} from '../../services/demo-pet'
+  activePetFrom,
+  getPetErrorMessage,
+  PetGatewayError,
+  toPetProfileInput,
+  type PetCollection,
+} from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 type PetSection = 'profile' | 'care' | 'calendar' | 'daily' | 'supplies'
@@ -49,6 +48,17 @@ const EMPTY_PROFILE: DemoPetProfile = {
   homeOn: '',
   neuteredOn: null,
   status: '精神不错',
+  version: 1,
+  avatarMediaId: '',
+  avatarUrl: '',
+}
+
+const EMPTY_PET_STATE: DemoPetState = {
+  profile: EMPTY_PROFILE,
+  events: [],
+  supplies: [],
+  weights: [],
+  dailyLogs: [],
 }
 
 const SUPPLY_CATEGORIES: Array<{
@@ -97,6 +107,13 @@ function formatDailyTime(value: string): string {
 Page({
   data: {
     activeSection: 'profile' as PetSection,
+    loading: true,
+    syncing: false,
+    errorText: '',
+    syncState: 'pending',
+    uploadingAvatar: false,
+    petState: EMPTY_PET_STATE,
+    petStates: [] as DemoPetState[],
     profile: EMPTY_PROFILE,
     profileInitial: '糯',
     petTabs: [] as Array<{
@@ -104,6 +121,7 @@ Page({
       name: string
       initial: string
       speciesLabel: string
+      avatarUrl: string
       selected: boolean
     }>,
     profileDraft: EMPTY_PROFILE,
@@ -196,12 +214,85 @@ Page({
   },
 
   onShow() {
-    this.loadState(getDemoPetState())
-    this.loadPetTabs()
+    void this.refreshPetData()
   },
 
   onBack() {
     navigateBackOrTab('/pages/home/index')
+  },
+
+  async refreshPetData(preferredPetId = '') {
+    this.setData({
+      loading: !this.data.petState.profile.id,
+      syncing: true,
+      syncState: 'pending',
+      errorText: '',
+    })
+    try {
+      let collection = await petGateway.list()
+      if (
+        preferredPetId
+        && collection.pets.some((pet) => pet.profile.id === preferredPetId)
+        && collection.activePetId !== preferredPetId
+      ) {
+        collection = await petGateway.setActivePet(preferredPetId)
+      }
+      this.applyCollection(collection)
+      this.setData({ syncState: 'synced' })
+    } catch (error) {
+      this.setData({
+        errorText: getPetErrorMessage(error, '宠物照护暂时没有同步过来'),
+        syncState: 'local',
+      })
+    } finally {
+      this.setData({ loading: false, syncing: false })
+    }
+  },
+
+  applyCollection(collection: PetCollection) {
+    const active = activePetFrom(collection)
+    this.setData({ petStates: collection.pets })
+    if (!active) {
+      this.loadPetTabs(collection)
+      return
+    }
+    this.loadState(active)
+    this.loadPetTabs(collection)
+  },
+
+  applyPetState(state: DemoPetState) {
+    const pets = this.data.petStates.some(
+      (pet) => pet.profile.id === state.profile.id,
+    )
+      ? this.data.petStates.map((pet) =>
+          pet.profile.id === state.profile.id ? state : pet,
+        )
+      : [...this.data.petStates, state]
+    this.setData({ petStates: pets, syncState: 'synced' })
+    this.loadState(state)
+    this.loadPetTabs()
+  },
+
+  async runPetMutation(
+    operation: () => Promise<DemoPetState>,
+    successText: string,
+  ): Promise<void> {
+    this.setData({ syncing: true, syncState: 'pending', errorText: '' })
+    try {
+      const state = await operation()
+      this.applyPetState(state)
+      wx.showToast({ title: successText, icon: 'success' })
+    } catch (error) {
+      const message = getPetErrorMessage(error, '这次没有保存成功')
+      this.setData({ errorText: message, syncState: 'local' })
+      wx.showToast({ title: message, icon: 'none' })
+    } finally {
+      this.setData({ syncing: false })
+    }
+  },
+
+  onRetry() {
+    void this.refreshPetData()
   },
 
   onSwitchSection(event: {
@@ -232,7 +323,7 @@ Page({
     const max = Math.max(...values)
     const spread = Math.max(max - min, 0.1)
     const weightPoints = weights.map((item, index) => ({
-      value: item.value,
+      value: formatPetWeight(item.value),
       dateLabel: formatShortDate(item.recordedOn),
       height: Math.round(30 + ((Number(item.value) - min) / spread) * 58),
       active: index === weights.length - 1,
@@ -283,6 +374,7 @@ Page({
         : 0
 
     this.setData({
+      petState: state,
       profile: state.profile,
       profileInitial: state.profile.name.slice(0, 1),
       profileDraft: { ...state.profile },
@@ -290,7 +382,7 @@ Page({
       birthdayLabel: formatShortDate(state.profile.birthday),
       homeOnLabel: formatShortDate(state.profile.homeOn),
       neuteredOnLabel: formatShortDate(state.profile.neuteredOn),
-      latestWeight: latestValue?.value ?? '—',
+      latestWeight: latestValue ? formatPetWeight(latestValue.value) : '—',
       companionDays,
       dailyDoneCount: dailySummary.filter((item) => item.done).length,
       nextCare: nextCareCard
@@ -331,28 +423,42 @@ Page({
     })
   },
 
-  loadPetTabs() {
-    const activeId = getDemoPetState().profile.id
+  loadPetTabs(collection?: PetCollection) {
+    const activeId = collection?.activePetId ?? this.data.petState.profile.id
+    const pets = collection?.pets ?? this.data.petStates
     const speciesLabels: Record<PetSpecies, string> = {
       cat: '猫咪',
       dog: '狗狗',
       other: '伙伴',
     }
     this.setData({
-      petTabs: listDemoPetProfiles().map((profile) => ({
+      petTabs: pets.map(({ profile }) => ({
         id: profile.id,
         name: profile.name,
         initial: profile.name.slice(0, 1),
         speciesLabel: speciesLabels[profile.species],
+        avatarUrl: profile.avatarUrl ?? '',
         selected: profile.id === activeId,
       })),
     })
   },
 
-  onSwitchPet(event: { currentTarget: { dataset: { id: string } } }) {
-    this.setData({ editingProfile: false, selectedSupplyCategory: 'all' })
-    this.loadState(switchDemoPet(event.currentTarget.dataset.id))
-    this.loadPetTabs()
+  async onSwitchPet(event: { currentTarget: { dataset: { id: string } } }) {
+    const id = event.currentTarget.dataset.id
+    if (!id || id === this.data.petState.profile.id) return
+    this.setData({ editingProfile: false, selectedSupplyCategory: 'all', syncing: true })
+    try {
+      const collection = await petGateway.setActivePet(id)
+      this.applyCollection(collection)
+      this.setData({ syncState: 'synced' })
+    } catch (error) {
+      wx.showToast({
+        title: getPetErrorMessage(error, '切换宠物没有成功'),
+        icon: 'none',
+      })
+    } finally {
+      this.setData({ syncing: false })
+    }
   },
 
   onChoosePet() {
@@ -385,12 +491,13 @@ Page({
           editable: true,
           placeholderText: '它叫什么名字？',
           confirmText: '加入这个家',
-          success: (result) => {
+          success: async (result) => {
             const name = result.content?.trim()
             if (!result.confirm || !name) return
-            this.loadState(addDemoPet({ name, species: selected.value }))
-            this.loadPetTabs()
-            wx.showToast({ title: `${name}已加入`, icon: 'success' })
+            await this.runPetMutation(
+              () => petGateway.createPet({ name, species: selected.value }),
+              `${name}已加入`,
+            )
           },
         })
       },
@@ -402,6 +509,50 @@ Page({
       editingProfile: !this.data.editingProfile,
       profileDraft: { ...this.data.profile },
     })
+  },
+
+  onChooseAvatar() {
+    if (this.data.uploadingAvatar) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: async (result) => {
+        const file = result.tempFiles[0]
+        if (!file) return
+        this.setData({ uploadingAvatar: true, errorText: '' })
+        try {
+          const asset = await mediaGateway.upload(
+            file.tempFilePath,
+            'avatar',
+            file.size,
+          )
+          const profile = this.data.profile
+          const updated = await petGateway.updateProfile(
+            profile.id,
+            {
+              ...toPetProfileInput(profile),
+              avatarMediaId: asset.id,
+            },
+            profile.version ?? 1,
+          )
+          this.applyPetState(updated)
+          wx.showToast({ title: '照片已更新', icon: 'success' })
+        } catch (error) {
+          const message = error instanceof PetGatewayError
+            ? getPetErrorMessage(error, '照片没有保存成功')
+            : getMediaErrorMessage(error, '照片没有上传成功')
+          this.setData({ errorText: message })
+          wx.showToast({ title: message, icon: 'none' })
+        } finally {
+          this.setData({ uploadingAvatar: false })
+        }
+      },
+    })
+  },
+
+  onAvatarError() {
+    this.setData({ 'profile.avatarUrl': '' })
   },
 
   onBirthdayChange(event: { detail: { value: string } }) {
@@ -424,7 +575,7 @@ Page({
     this.setData({ 'profileDraft.neuteredOn': event.detail.value })
   },
 
-  onSaveProfile() {
+  async onSaveProfile() {
     const draft = this.data.profileDraft
     const today = getShanghaiDateOnly(Date.now())
     if (!draft.birthday || draft.birthday > today) {
@@ -440,14 +591,15 @@ Page({
       return
     }
 
-    const state = updateDemoPetProfile({
-      birthday: draft.birthday,
-      homeOn: draft.homeOn,
-      neuteredOn: draft.neuteredOn,
-    })
+    await this.runPetMutation(
+      () => petGateway.updateProfile(
+        draft.id,
+        toPetProfileInput(draft),
+        draft.version ?? 1,
+      ),
+      '档案已更新',
+    )
     this.setData({ editingProfile: false })
-    this.loadState(state)
-    wx.showToast({ title: '档案已更新', icon: 'success' })
   },
 
   onRecordWeight() {
@@ -456,15 +608,20 @@ Page({
       editable: true,
       placeholderText: '输入体重，例如 3.9',
       confirmText: '保存',
-      success: (result) => {
+      success: async (result) => {
         if (!result.confirm) return
         const value = Number(result.content)
         if (!Number.isFinite(value) || value <= 0 || value > 100) {
           wx.showToast({ title: '请输入有效体重', icon: 'none' })
           return
         }
-        this.loadState(addDemoPetWeight(value.toFixed(1)))
-        wx.showToast({ title: '体重已记下', icon: 'success' })
+        await this.runPetMutation(
+          () => petGateway.addWeight(
+            this.data.petState.profile.id,
+            value.toFixed(1),
+          ),
+          '体重已记下',
+        )
       },
     })
   },
@@ -475,7 +632,7 @@ Page({
 
   onOpenEvent(event: { currentTarget: { dataset: { id: string } } }) {
     const id = event.currentTarget.dataset.id
-    if (!getDemoPetState().events.some((item) => item.id === id)) return
+    if (!this.data.petState.events.some((item) => item.id === id)) return
     wx.navigateTo({ url: `/pages/pet-event-detail/index?id=${id}` })
   },
 
@@ -492,10 +649,20 @@ Page({
       title,
       content: '确认今天已经完成？记录后会自动计算下一次日期。',
       confirmText: '完成并记录',
-      success: (result) => {
+      success: async (result) => {
         if (!result.confirm) return
-        this.loadState(addDemoPetEvent({ type, title, note: '' }))
-        wx.showToast({ title: '下次日期已更新', icon: 'success' })
+        await this.runPetMutation(
+          () => petGateway.createEvent(
+            this.data.petState.profile.id,
+            {
+              type,
+              title,
+              note: '',
+              occurredOn: getShanghaiDateOnly(Date.now()),
+            },
+          ),
+          '下次日期已更新',
+        )
       },
     })
   },
@@ -505,7 +672,7 @@ Page({
   }) {
     this.setData(
       { selectedSupplyCategory: event.currentTarget.dataset.value },
-      () => this.loadState(getDemoPetState()),
+      () => this.loadState(this.data.petState),
     )
   },
 
@@ -519,11 +686,16 @@ Page({
       editable: true,
       placeholderText: '写下这次的情况',
       confirmText: '记下来',
-      success: (result) => {
+      success: async (result) => {
         const summary = result.content?.trim()
         if (!result.confirm || !summary) return
-        this.loadState(addDemoPetDailyLog({ type, summary }))
-        wx.showToast({ title: '今日状态已更新', icon: 'success' })
+        await this.runPetMutation(
+          () => petGateway.addDailyLog(
+            this.data.petState.profile.id,
+            { type, summary },
+          ),
+          '今日状态已更新',
+        )
       },
     })
   },
@@ -549,17 +721,20 @@ Page({
             if (!nameResult.confirm || !name) return
             wx.showActionSheet({
               itemList: SUPPLY_STATUS_OPTIONS.map((item) => item.label),
-              success: (statusSelection) => {
+              success: async (statusSelection) => {
                 const status = SUPPLY_STATUS_OPTIONS[statusSelection.tapIndex]
                 if (!status) return
-                this.loadState(
-                  addDemoPetSupply({
-                    category: categoryValue,
-                    name,
-                    status: status.value,
-                  }),
+                await this.runPetMutation(
+                  () => petGateway.createSupply(
+                    this.data.petState.profile.id,
+                    {
+                      category: categoryValue,
+                      name,
+                      status: status.value,
+                    },
+                  ),
+                  '已加入集合',
                 )
-                wx.showToast({ title: '已加入集合', icon: 'success' })
               },
             })
           },
@@ -574,11 +749,19 @@ Page({
     const id = event.currentTarget.dataset.id
     wx.showActionSheet({
       itemList: SUPPLY_STATUS_OPTIONS.map((item) => item.label),
-      success: (selection) => {
+      success: async (selection) => {
         const status = SUPPLY_STATUS_OPTIONS[selection.tapIndex]
-        if (!status) return
-        this.loadState(updateDemoPetSupplyStatus(id, status.value))
-        wx.showToast({ title: `已标记为${status.label}`, icon: 'none' })
+        const supply = this.data.petState.supplies.find((item) => item.id === id)
+        if (!status || !supply) return
+        await this.runPetMutation(
+          () => petGateway.setSupplyStatus(
+            this.data.petState.profile.id,
+            id,
+            status.value,
+            supply.version ?? 1,
+          ),
+          `已标记为${status.label}`,
+        )
       },
     })
   },

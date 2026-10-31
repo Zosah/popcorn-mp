@@ -8,6 +8,7 @@ import {
   buildPetCareCards,
   buildPetDailySummary,
   buildPetHomeActivities,
+  formatPetWeight,
   type PetHomeActivity,
 } from '../../domain/demo-pet'
 import { journalGateway } from '../../services/journal'
@@ -16,8 +17,12 @@ import { hydrateAuthState } from '../../services/auth'
 import { inventoryGateway } from '../../services/inventory'
 import { menuGateway } from '../../services/menu'
 import { getMenuErrorMessage } from '../../services/menu-gateway'
+import { petGateway } from '../../services/pet'
+import {
+  activePetFrom,
+  getPetErrorMessage,
+} from '../../services/pet-gateway'
 import { listApiSpaceMembers } from '../../services/space-gateway'
-import { getDemoPetState } from '../../services/demo-pet'
 import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
@@ -90,6 +95,7 @@ Page({
     hasLoadedMoments: false,
     hasLoadedTodos: false,
     hasLoadedMenu: false,
+    hasLoadedPets: false,
     spaceName: '我们的家',
     spaceMemberCopy: '登录后加入空间',
     spaceMembers: [] as HomeMemberView[],
@@ -147,7 +153,14 @@ Page({
     const today = getShanghaiDateOnly(nowMs)
 
     const auth = await hydrateAuthState()
-    const [inventoryResult, momentsResult, todoResult, menuResult, membersResult] = await Promise.allSettled([
+    const [
+      inventoryResult,
+      momentsResult,
+      todoResult,
+      menuResult,
+      membersResult,
+      petResult,
+    ] = await Promise.allSettled([
       inventoryGateway.summary(today),
       journalGateway.list({ kinds: ['moment'] }),
       todoGateway.summary(),
@@ -155,6 +168,7 @@ Page({
       auth.source === 'api' && auth.activeSpaceId
         ? listApiSpaceMembers(auth.activeSpaceId)
         : Promise.resolve(null),
+      petGateway.list(),
     ])
     if (!homeRequestGate.isCurrent(sequence)) return
 
@@ -172,30 +186,43 @@ Page({
     const todoError = todoResult.status === 'rejected'
       ? getTodoErrorMessage(todoResult.reason, '待办暂时没有同步过来')
       : ''
-    const petState = getDemoPetState()
-    const latestWeight = petState.weights[petState.weights.length - 1]
-    const careCards = buildPetCareCards(petState.events, today)
+    const petState = petResult.status === 'fulfilled'
+      ? activePetFrom(petResult.value)
+      : null
+    const petError = petResult.status === 'rejected'
+      ? getPetErrorMessage(petResult.reason, '宠物照护暂时没有同步过来')
+      : ''
+    const latestWeight = petState?.weights[petState.weights.length - 1]
+    const careCards = petState ? buildPetCareCards(petState.events, today) : []
     const overdueCare = careCards.find((item) => item.status === 'overdue')
     const dueSoonCare = careCards.find((item) => item.status === 'due-soon')
-    const dailySummary = buildPetDailySummary(petState.dailyLogs, today)
-    const petActivities = buildPetHomeActivities(petState, today, 3).map(
+    const dailySummary = petState
+      ? buildPetDailySummary(petState.dailyLogs, today)
+      : []
+    const petActivities = petState ? buildPetHomeActivities(petState, today, 3).map(
       (item): HomePetActivity => ({
         ...item,
         dateLabel: formatPetActivityDate(item.occurredOn, today),
         tone: item.target === 'daily' ? 'green' : item.target === 'event' ? 'pink' : 'blue',
       }),
-    )
+    ) : this.data.petActivities
     const pendingDaily = dailySummary.find((item) => !item.done)
-    const careNotice = overdueCare
-      ? `${overdueCare.title} · ${overdueCare.statusLabel}`
-      : pendingDaily
-        ? `今天还没记录${pendingDaily.label}`
-        : dueSoonCare
-          ? `${dueSoonCare.title} · ${dueSoonCare.statusLabel}`
-          : '今天的吃喝拉撒已记录'
+    const careNotice = petError
+      ? petError
+      : petState
+        ? overdueCare
+          ? `${overdueCare.title} · ${overdueCare.statusLabel}`
+          : pendingDaily
+            ? `今天还没记录${pendingDaily.label}`
+            : dueSoonCare
+              ? `${dueSoonCare.title} · ${dueSoonCare.statusLabel}`
+              : '今天的吃喝拉撒已记录'
+        : '还没有宠物档案，先添加一位家庭成员'
     const pendingTodoCount = todoSummary?.pending ?? 0
     const pendingTravelCount = todoSummary?.pendingByKind.travel ?? 0
-    const petPendingCount = (overdueCare || dueSoonCare ? 1 : 0) + (pendingDaily ? 1 : 0)
+    const petPendingCount = petState
+      ? (overdueCare || dueSoonCare ? 1 : 0) + (pendingDaily ? 1 : 0)
+      : 0
     const menuRecipes = menuResult.status === 'fulfilled' ? menuResult.value : null
     const latestMenu = menuRecipes?.[0]
     const menuError = menuResult.status === 'rejected'
@@ -244,7 +271,7 @@ Page({
         ? `${snapshot.inventoryNoticeCount} 件库存临期`
         : '',
       pendingTodoCount > 0 ? `${pendingTodoCount} 件待办没完成` : '',
-      petPendingCount > 0 ? `${petState.profile.name}还有照护没记录` : '',
+      petPendingCount > 0 && petState ? `${petState.profile.name}还有照护没记录` : '',
     ].filter(Boolean).join(' · ')
 
     this.setData({
@@ -271,7 +298,9 @@ Page({
         : this.data.hasLoadedTodos ? this.data.todoSummary : todoError,
       petPendingCount,
       petActivities,
-      petActivityCount: petState.events.length + petState.weights.length + petState.dailyLogs.length,
+      petActivityCount: petState
+        ? petState.events.length + petState.weights.length + petState.dailyLogs.length
+        : this.data.petActivityCount,
       hasLoadedInventory:
         this.data.hasLoadedInventory || inventoryResult.status === 'fulfilled',
       hasLoadedMoments:
@@ -280,13 +309,15 @@ Page({
         this.data.hasLoadedTodos || todoResult.status === 'fulfilled',
       hasLoadedMenu:
         this.data.hasLoadedMenu || menuResult.status === 'fulfilled',
+      hasLoadedPets:
+        this.data.hasLoadedPets || petResult.status === 'fulfilled',
       spaceName: auth.spaceName,
       spaceMemberCopy: auth.isLoggedIn ? `${spaceMembers.length} 位成员` : '登录后加入空间',
       spaceMembers,
       petSnapshot: {
-        name: petState.profile.name,
-        status: petState.profile.status,
-        weight: latestWeight?.value ?? '—',
+        name: petState?.profile.name ?? (this.data.hasLoadedPets ? this.data.petSnapshot.name : '宠物'),
+        status: petState?.profile.status ?? (petError || '等待同步'),
+        weight: latestWeight ? formatPetWeight(latestWeight.value) : '—',
         careNotice,
       },
       todayDay: String(day),

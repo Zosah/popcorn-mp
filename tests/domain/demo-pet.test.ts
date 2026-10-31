@@ -8,6 +8,7 @@ import {
   buildPetTimeline,
   filterPetSupplies,
   formatPetAge,
+  formatPetWeight,
   getCurrentPetSupplies,
   getPetSupplyStatusLabel,
   shiftPetCalendarMonth,
@@ -19,6 +20,12 @@ describe('宠物档案领域逻辑', () => {
     expect(formatPetAge('2023-04-18', '2026-08-27')).toBe('3 岁 4 个月')
     expect(formatPetAge('2026-01-30', '2026-08-27')).toBe('6 个月')
     expect(formatPetAge('2023-08-27', '2026-08-27')).toBe('3 岁')
+  })
+
+  it('去掉体重接口固定精度带来的多余尾零', () => {
+    expect(formatPetWeight('4.100')).toBe('4.1')
+    expect(formatPetWeight('4.000')).toBe('4')
+    expect(formatPetWeight('—')).toBe('—')
   })
 
   it('把出生、到家与持续事件合并为倒序时间线', () => {

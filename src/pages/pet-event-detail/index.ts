@@ -1,41 +1,67 @@
-import { PET_EVENT_LABELS } from '../../domain/demo-pet'
-import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
 import {
-  getDemoPetEvent,
-  getDemoPetState,
-  removeDemoPetEvent,
-} from '../../services/demo-pet'
+  PET_EVENT_LABELS,
+  type DemoPetEvent,
+} from '../../domain/demo-pet'
+import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
+import { petGateway } from '../../services/pet'
+import { getPetErrorMessage } from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 Page({
   data: {
     eventId: '',
+    petId: '',
     petName: '',
     typeLabel: '',
     iconName: 'heart-pulse',
-    event: null as ReturnType<typeof getDemoPetEvent>,
+    event: null as DemoPetEvent | null,
+    loading: true,
+    loaded: false,
+    deleting: false,
+    errorText: '',
   },
 
   onLoad(options: Record<string, string | undefined>) {
-    this.setData({ eventId: options.id ?? '' }, () => this.loadEvent())
+    this.setData({ eventId: options.id ?? '' }, () => void this.loadEvent())
   },
 
   onShow() {
-    if (this.data.eventId) this.loadEvent()
+    if (this.data.eventId && this.data.loaded) void this.loadEvent()
   },
 
-  loadEvent() {
-    const event = getDemoPetEvent(this.data.eventId)
-    if (!event) {
-      wx.showToast({ title: '这条事件不存在', icon: 'none' })
+  async loadEvent() {
+    if (!this.data.eventId) {
+      this.setData({
+        loading: false,
+        loaded: true,
+        errorText: '缺少事件编号，请返回重试',
+      })
       return
     }
-    this.setData({
-      petName: getDemoPetState().profile.name,
-      typeLabel: PET_EVENT_LABELS[event.type],
-      iconName: PET_EVENT_ICON_NAMES[event.type],
-      event,
-    })
+    this.setData({ loading: true, errorText: '' })
+    try {
+      const match = await petGateway.findEvent(this.data.eventId)
+      if (!match) {
+        this.setData({
+          event: null,
+          errorText: '这条事件已经不存在',
+        })
+        return
+      }
+      this.setData({
+        petId: match.pet.profile.id,
+        petName: match.pet.profile.name,
+        typeLabel: PET_EVENT_LABELS[match.event.type],
+        iconName: PET_EVENT_ICON_NAMES[match.event.type],
+        event: match.event,
+      })
+    } catch (error) {
+      this.setData({
+        errorText: getPetErrorMessage(error, '宠物事件暂时没有加载出来'),
+      })
+    } finally {
+      this.setData({ loading: false, loaded: true })
+    }
   },
 
   onBack() {
@@ -48,7 +74,12 @@ Page({
     })
   },
 
+  onRetry() {
+    void this.loadEvent()
+  },
+
   onDelete() {
+    if (!this.data.event || this.data.deleting) return
     wx.showModal({
       title: '删除这条事件？',
       content: '删除后，时间线和月历中的这条记录会同时消失。',
@@ -56,10 +87,29 @@ Page({
       confirmColor: '#e8695c',
       success: (result) => {
         if (!result.confirm) return
-        removeDemoPetEvent(this.data.eventId)
-        wx.showToast({ title: '事件已删除', icon: 'success' })
-        navigateBackOrTab('/pages/home/index')
+        void this.deleteEvent()
       },
     })
+  },
+
+  async deleteEvent() {
+    const event = this.data.event
+    if (!event || !this.data.petId) return
+    this.setData({ deleting: true, errorText: '' })
+    try {
+      await petGateway.removeEvent(
+        this.data.petId,
+        event.id,
+        event.version ?? 1,
+      )
+      wx.showToast({ title: '事件已删除', icon: 'success' })
+      navigateBackOrTab('/pages/home/index')
+    } catch (error) {
+      this.setData({
+        errorText: getPetErrorMessage(error, '宠物事件没有删除成功'),
+      })
+    } finally {
+      this.setData({ deleting: false })
+    }
   },
 })

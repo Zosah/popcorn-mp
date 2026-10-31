@@ -9,13 +9,17 @@
         </view>
         <view class="pet-hero__sub">{{profile.breed}} · {{ageLabel}}</view>
       </view>
-      <view class="pet-hero__action" bindtap="onAddPet">
-        <line-icon name="plus" size="24" tone="ink" />
+      <view class="pet-hero__actions">
+        <sync-badge state="{{syncState}}" text="{{uploadingAvatar ? '照片上传中' : (syncState === 'synced' ? '已同步' : syncState === 'pending' ? '同步中' : '本机')}}" />
+        <view class="pet-hero__action" bindtap="onAddPet">
+          <line-icon name="plus" size="24" tone="ink" />
+        </view>
       </view>
     </view>
 
-    <view class="pet-portrait">
-      <block wx:if="{{profile.species === 'cat'}}">
+    <view class="pet-portrait" bindtap="onChooseAvatar">
+      <image wx:if="{{profile.avatarUrl}}" class="pet-portrait__image" src="{{profile.avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+      <block wx:elif="{{profile.species === 'cat'}}">
         <view class="pet-cat__ear pet-cat__ear--left"></view>
         <view class="pet-cat__ear pet-cat__ear--right"></view>
         <view class="pet-cat__face">
@@ -27,7 +31,17 @@
         </view>
       </block>
       <view wx:else class="pet-portrait__initial">{{profileInitial}}</view>
+      <view class="pet-portrait__camera">
+        <line-icon name="image" size="18" tone="white" />
+        <text>{{uploadingAvatar ? '上传中' : '换照片'}}</text>
+      </view>
     </view>
+
+    <view wx:if="{{errorText}}" class="pet-load-state pet-load-state--error" bindtap="onRetry">
+      <text>{{errorText}}</text>
+      <text>点按重试</text>
+    </view>
+    <view wx:elif="{{loading}}" class="pet-load-state"><text>正在同步宠物照护…</text></view>
 
     <view class="pet-stats">
       <view>

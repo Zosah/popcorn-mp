@@ -1,6 +1,6 @@
 {
   "name": "popcorn-mp",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "private": true,
   "type": "module",
   "description": "我回来啦，把日子安放在一起。",
@@ -16,7 +16,8 @@
     "verify:http-b4": "node scripts/verify-http-b4.mjs",
     "verify:http-b5": "node scripts/verify-http-b5.mjs",
     "verify:http-menu": "node scripts/verify-http-menu.mjs",
-    "verify:http-menu-ui": "node scripts/verify-http-menu-ui.mjs"
+    "verify:http-menu-ui": "node scripts/verify-http-menu-ui.mjs",
+    "verify:http-pet-ui": "node scripts/verify-http-pet-ui.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,16 @@
 <view class="page-shell pet-event-form">
+  <view wx:if="{{loadErrorText}}" class="event-state event-state--error" bindtap="onRetry">
+    <line-icon name="circle-alert" size="34" tone="danger" />
+    <view class="event-state__copy"><text>表单暂时没有准备好</text><text>{{loadErrorText}}</text></view>
+    <text class="event-state__action">重试</text>
+  </view>
+
+  <view wx:elif="{{loading}}" class="event-state">
+    <line-icon name="clock-3" size="32" tone="muted" />
+    <text>正在同步宠物与事件资料…</text>
+  </view>
+
+  <block wx:else>
   <view class="event-hero">
     <view class="event-hero__mark"><line-icon name="heart-pulse" size="30" tone="pink" /></view>
     <view class="event-hero__body">
@@ -67,6 +79,8 @@
     </view>
   </view>
 
-  <button class="primary-button event-save" bindtap="onSave"><line-icon name="pen-line" size="23" tone="white" /><text>{{saveText}}</text></button>
+  <view wx:if="{{errorText}}" class="event-save-error"><line-icon name="circle-alert" size="20" tone="danger" /><text>{{errorText}}</text></view>
+  <button class="primary-button event-save" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave"><line-icon name="pen-line" size="23" tone="white" /><text>{{saving ? '正在保存' : saveText}}</text></button>
   <view class="event-note"><line-icon name="circle-alert" size="17" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>
+  </block>
 </view>

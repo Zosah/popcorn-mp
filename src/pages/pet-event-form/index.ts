@@ -4,12 +4,11 @@ import {
 } from '../../domain/demo-pet'
 import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import { petGateway } from '../../services/pet'
 import {
-  addDemoPetEvent,
-  getDemoPetEvent,
-  getDemoPetState,
-  updateDemoPetEvent,
-} from '../../services/demo-pet'
+  activePetFrom,
+  getPetErrorMessage,
+} from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 const EVENT_TYPES = Object.entries(PET_EVENT_LABELS).map(([value, label]) => ({
@@ -20,7 +19,16 @@ const EVENT_TYPES = Object.entries(PET_EVENT_LABELS).map(([value, label]) => ({
 Page({
   data: {
     petName: '',
+    petId: '',
     editingEventId: '',
+    editingEventVersion: 0,
+    requestedEventId: '',
+    requestedType: '',
+    requestedDate: '',
+    loading: true,
+    saving: false,
+    loadErrorText: '',
+    errorText: '',
     pageTitle: '记录一件事',
     saveText: '保存到时间线',
     eventTypeIndex: 0,
@@ -40,41 +48,75 @@ Page({
     },
   },
 
-  onLoad(options: Record<string, string | undefined>) {
-    const state = getDemoPetState()
-    const editingEvent = options.id ? getDemoPetEvent(options.id) : null
+  async onLoad(options: Record<string, string | undefined>) {
     const requestedType = options.type as PetEventType | undefined
     const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(options.date ?? '')
       ? options.date!
       : getShanghaiDateOnly(Date.now())
-    const selectedType = editingEvent?.type ?? requestedType
-    const eventTypeIndex = Math.max(
-      0,
-      EVENT_TYPES.findIndex((item) => item.value === selectedType),
-    )
-    const eventType = EVENT_TYPES[eventTypeIndex] ?? EVENT_TYPES[0]!
     this.setData({
-      petName: state.profile.name,
-      editingEventId: editingEvent?.id ?? '',
-      pageTitle: editingEvent ? '编辑这件事' : '记录一件事',
-      saveText: editingEvent ? '保存修改' : '保存到时间线',
-      eventTypeIndex,
-      hasNextDate: Boolean(editingEvent?.nextOn),
-      form: {
-        ...this.data.form,
-        type: eventType.value,
-        occurredOn: editingEvent?.occurredOn ?? requestedDate,
-        title: editingEvent?.title ?? `${eventType.label}记录`,
-        note: editingEvent?.note ?? '',
-        provider: editingEvent?.provider ?? '',
-        cost: editingEvent?.cost ?? '',
-        nextOn: editingEvent?.nextOn ?? '',
-      },
+      loading: true,
+      loadErrorText: '',
+      errorText: '',
+      requestedEventId: options.id ?? '',
+      requestedType: requestedType ?? '',
+      requestedDate,
     })
+    try {
+      const match = options.id
+        ? await petGateway.findEvent(options.id)
+        : null
+      let pet = match?.pet ?? null
+      if (!pet) {
+        const collection = await petGateway.list()
+        pet = activePetFrom(collection)
+      }
+      if (!pet) throw new Error('还没有宠物档案')
+      const editingEvent = match?.event ?? null
+      const selectedType = editingEvent?.type ?? requestedType
+      const eventTypeIndex = Math.max(
+        0,
+        EVENT_TYPES.findIndex((item) => item.value === selectedType),
+      )
+      const eventType = EVENT_TYPES[eventTypeIndex] ?? EVENT_TYPES[0]!
+      this.setData({
+        petName: pet.profile.name,
+        petId: pet.profile.id,
+        editingEventId: editingEvent?.id ?? '',
+        editingEventVersion: editingEvent?.version ?? 0,
+        pageTitle: editingEvent ? '编辑这件事' : '记录一件事',
+        saveText: editingEvent ? '保存修改' : '保存到时间线',
+        eventTypeIndex,
+        hasNextDate: Boolean(editingEvent?.nextOn),
+        form: {
+          ...this.data.form,
+          type: eventType.value,
+          occurredOn: editingEvent?.occurredOn ?? requestedDate,
+          title: editingEvent?.title ?? `${eventType.label}记录`,
+          note: editingEvent?.note ?? '',
+          provider: editingEvent?.provider ?? '',
+          cost: editingEvent?.cost ?? '',
+          nextOn: editingEvent?.nextOn ?? '',
+        },
+      })
+    } catch (error) {
+      this.setData({
+        loadErrorText: getPetErrorMessage(error, '宠物事件暂时没有加载出来'),
+      })
+    } finally {
+      this.setData({ loading: false })
+    }
   },
 
   onBack() {
     navigateBackOrTab('/pages/home/index')
+  },
+
+  onRetry() {
+    void this.onLoad({
+      id: this.data.requestedEventId || undefined,
+      type: this.data.requestedType || undefined,
+      date: this.data.requestedDate || undefined,
+    })
   },
 
   onTypeChange(event: { detail: { value: string } }) {
@@ -119,7 +161,7 @@ Page({
     this.setData({ 'form.nextOn': event.detail.value })
   },
 
-  onSave() {
+  async onSave() {
     const form = this.data.form
     if (!form.title.trim()) {
       wx.showToast({ title: '请填写事件标题', icon: 'none' })
@@ -151,15 +193,33 @@ Page({
       cost: form.cost,
       nextOn: this.data.hasNextDate ? form.nextOn : null,
     }
-    if (this.data.editingEventId) {
-      updateDemoPetEvent(this.data.editingEventId, input)
-    } else {
-      addDemoPetEvent(input)
+    if (!this.data.petId) {
+      wx.showToast({ title: '还没有宠物档案', icon: 'none' })
+      return
     }
-    wx.showToast({
-      title: this.data.editingEventId ? '修改已保存' : '事件已保存',
-      icon: 'success',
-    })
-    navigateBackOrTab('/pages/home/index')
+    this.setData({ saving: true, errorText: '' })
+    try {
+      if (this.data.editingEventId) {
+        await petGateway.updateEvent(
+          this.data.petId,
+          this.data.editingEventId,
+          input,
+          this.data.editingEventVersion,
+        )
+      } else {
+        await petGateway.createEvent(this.data.petId, input)
+      }
+      wx.showToast({
+        title: this.data.editingEventId ? '修改已保存' : '事件已保存',
+        icon: 'success',
+      })
+      navigateBackOrTab('/pages/home/index')
+    } catch (error) {
+      const message = getPetErrorMessage(error, '宠物事件没有保存成功')
+      this.setData({ errorText: message })
+      wx.showToast({ title: message, icon: 'none' })
+    } finally {
+      this.setData({ saving: false })
+    }
   },
 })

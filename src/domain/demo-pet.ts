@@ -40,6 +40,9 @@ export interface DemoPetProfile {
   homeOn: string
   neuteredOn: string | null
   status: string
+  version?: number
+  avatarMediaId?: string
+  avatarUrl?: string
 }
 
 export interface DemoPetEvent {
@@ -52,6 +55,7 @@ export interface DemoPetEvent {
   cost?: string
   nextOn?: string | null
   createdAt: string
+  version?: number
 }
 
 export interface DemoPetSupply {
@@ -61,6 +65,7 @@ export interface DemoPetSupply {
   status: PetSupplyStatus
   note: string
   recordedOn: string
+  version?: number
 }
 
 export interface DemoPetWeight {
@@ -201,6 +206,11 @@ export function formatPetAge(birthday: string, today: string): string {
   if (years === 0) return `${remainingMonths} 个月`
   if (remainingMonths === 0) return `${years} 岁`
   return `${years} 岁 ${remainingMonths} 个月`
+}
+
+export function formatPetWeight(value: string): string {
+  const weight = Number(value)
+  return Number.isFinite(weight) ? String(weight) : value
 }
 
 export function buildPetTimeline(state: DemoPetState): PetTimelineItem[] {
