@@ -1,258 +1,185 @@
-<view class="tab-page home-page">
+<view class="tab-page home">
+  <view
+    class="home-header"
+    style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
+  >
+    <view class="home-header__space" hover-class="tap-dim" bindtap="onOpenProfile">
+      <view class="home-header__name-row">
+        <text class="home-header__name">{{spaceName}}</text>
+        <text class="home-header__chevron">⌄</text>
+      </view>
+      <text class="home-header__date">{{snapshot.dateLabel}} · {{snapshot.weekdayLabel}}</text>
+    </view>
+
+    <view class="home-header__actions">
+      <view class="member-stack" aria-label="{{spaceMemberCopy}}" bindtap="onOpenProfile">
+        <view wx:for="{{spaceMembers}}" wx:if="{{index < 2}}" wx:key="userId" class="member-stack__item">
+          <image class="member-stack__image" src="/images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
+        </view>
+      </view>
+      <view class="header-bell" hover-class="tap-dim" bindtap="onOpenReminders" aria-label="提醒设置">
+        <line-icon name="bell" size="40" tone="ink" />
+        <view wx:if="{{hasUrgentItems}}" class="header-bell__dot"></view>
+      </view>
+    </view>
+  </view>
+
   <view class="home-hero">
-    <view class="home-hero__bg"></view>
-    <view class="home-hero__sun"></view>
-    <view class="home-hero__pink"></view>
-
-    <view class="home-hero__top">
-      <view class="home-members" aria-label="{{spaceName}} · {{spaceMemberCopy}}" bindtap="onOpenProfile">
-        <view class="home-members__stack">
-          <view
-            wx:for="{{spaceMembers}}"
-            wx:key="userId"
-            class="home-member"
-            aria-label="{{item.avatarText}}"
-          >
-            <image class="home-member__image" src="../../images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
-          </view>
-        </view>
-      </view>
-
-      <view class="home-hero__actions">
-        <view class="home-hero__action" bindtap="onOpenReminders">
-          <line-icon name="bell" size="30" tone="ink" />
-        </view>
-        <view class="home-hero__action" bindtap="onOpenProfile">
-          <line-icon name="user-round" size="30" tone="ink" />
-        </view>
-      </view>
-    </view>
-
     <view class="home-hero__copy">
-      <text class="home-hero__eyebrow">Dear diary,</text>
-      <view class="home-hero__headline">
-        <text class="home-hero__word home-hero__word--top">{{headlineTop}}</text>
-        <text class="home-hero__word home-hero__word--mid">{{headlineMid}}</text>
-        <text class="home-hero__word home-hero__word--bottom">{{headlineBottom}}</text>
-      </view>
-      <text class="home-hero__intro">今天 · {{snapshot.dateLabel}} {{snapshot.weekdayLabel}}，把心情、照片和普通的小事留在这里。</text>
+      <text class="home-hero__greeting">{{snapshot.salutation}}，{{greetingName}}</text>
+      <text class="home-hero__title">今天，也一起\n好好生活。</text>
     </view>
-
-    <view class="home-hero__art" aria-label="黑猫藏在纸箱里">
-      <view class="home-hero__art-halo"></view>
-      <image class="home-hero__illustration" src="../../images/home-cat-box.png" mode="aspectFit" />
-    </view>
-
-    <view class="home-hero__dots" aria-hidden="true">
-      <view class="home-hero__dot home-hero__dot--long"></view>
-      <view class="home-hero__dot"></view>
-      <view class="home-hero__dot"></view>
+    <view class="days-together">
+      <view class="days-together__dot"></view>
+      <text class="days-together__label">OUR DAYS</text>
+      <text class="days-together__number">{{journalTotal}}</text>
+      <text class="days-together__caption">篇共同记录</text>
     </view>
   </view>
 
-  <view class="home-stats {{homeDocked ? 'home-stats--docked' : ''}}">
-    <view class="home-stats__compact">
-      <text class="home-stats__compact-main">TODAY</text>
-      <text class="home-stats__compact-sub">{{snapshot.weekdayLabel}} · 第 {{journalTotal}} 篇</text>
+  <view class="function-glass">
+    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenJournal">
+      <view class="function-icon function-icon--peach">
+        <line-icon name="notebook-tabs" size="38" tone="danger" />
+      </view>
+      <text class="function-item__label">生活记录</text>
     </view>
-
-    <view class="home-stats__card">
-      <view class="home-stat">
-        <text class="home-stat__number">{{journalTotal}}</text>
-        <text class="home-stat__label">写了几篇</text>
+    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenInventory">
+      <view class="function-icon function-icon--butter">
+        <line-icon name="package" size="38" tone="gold" />
       </view>
-      <view class="home-stat">
-        <text class="home-stat__number">{{todoPendingCount}}</text>
-        <text class="home-stat__label">件还没做</text>
+      <text class="function-item__label">家庭库存</text>
+    </view>
+    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenTodo">
+      <view class="function-icon function-icon--mint">
+        <line-icon name="check" size="38" tone="green" />
       </view>
-      <view class="home-stat">
-        <text class="home-stat__number">{{snapshot.inventoryItemCount}}</text>
-        <text class="home-stat__label">件家当</text>
+      <text class="function-item__label">待办计划</text>
+    </view>
+    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenPets">
+      <view class="function-icon function-icon--cream">
+        <line-icon name="paw-print" size="38" tone="pink" />
       </view>
-      <view class="home-stats__go" hover-class="home-control--pressed" bindtap="onOpenJournal">→</view>
+      <text class="function-item__label">宠物照护</text>
     </view>
   </view>
 
-  <view class="home-content">
-    <view wx:if="{{inventoryError}}" class="home-state glass-card">
-      <view class="home-state__icon"><line-icon name="circle-alert" size="28" tone="ink" /></view>
-      <view class="home-state__body">
-        <text class="home-state__title">{{hasLoadedInventory ? '库存刷新没完成' : '家庭库存暂时没连上'}}</text>
-        <text class="home-state__copy">{{hasLoadedInventory ? '先保留上次的内容，稍后再试。' : inventoryError}}</text>
-      </view>
-      <text class="home-state__action" bindtap="onRetryInventory">重试</text>
+  <view class="scene-switch">
+    <view class="scene-switch__item {{homeTab === 'today' ? 'scene-switch__item--active' : ''}}" data-value="today" bindtap="onSelectHomeTab">今天</view>
+    <view class="scene-switch__item {{homeTab === 'home' ? 'scene-switch__item--active' : ''}}" data-value="home" bindtap="onSelectHomeTab">家里</view>
+    <view class="scene-switch__item {{homeTab === 'pet' ? 'scene-switch__item--active' : ''}}" data-value="pet" bindtap="onSelectHomeTab">{{petSnapshot.name}}</view>
+  </view>
+
+  <view wx:if="{{inventoryError}}" class="home-error">
+    <line-icon name="circle-alert" size="32" tone="danger" />
+    <view class="home-error__body">
+      <text class="home-error__title">{{hasLoadedInventory ? '库存刷新没完成' : '家庭库存暂时没连上'}}</text>
+      <text class="home-error__copy">{{hasLoadedInventory ? '先保留上次的内容，稍后再试。' : inventoryError}}</text>
     </view>
+    <text class="home-error__action" bindtap="onRetryInventory">重试</text>
+  </view>
 
-    <view class="home-today-card" hover-class="home-card--pressed" bindtap="onOpenTodayRecord">
-      <view class="home-today-card__head">
-        <view class="home-today-card__date">
-          <text class="home-today-card__day">{{latestEntry ? latestEntry.day : todayDay}}</text>
-          <view class="home-today-card__date-copy">
-            <text>{{latestEntry ? latestEntry.monthLabel : todayMonthLabel}} · {{snapshot.weekdayLabel}}</text>
-            <text>{{latestEntryIsToday ? '今天' : '最近一篇'}}</text>
-          </view>
-        </view>
-        <view class="home-today-card__tag">
-          <view class="home-today-card__tag-dot"></view>
-          <text>{{latestEntry ? latestEntry.kindLabel : '生活记录'}}</text>
-        </view>
+  <view wx:if="{{homeTab === 'today'}}" class="scene-card scene-card--today">
+    <view class="scene-card__orb scene-card__orb--one"></view>
+    <view class="scene-card__orb scene-card__orb--two"></view>
+    <view class="scene-card__top">
+      <view class="scene-icon"><line-icon name="check" size="44" tone="ink" /></view>
+      <view class="scene-count">{{todoCompletedCount}} / {{todoTotalCount}}</view>
+    </view>
+    <view class="scene-copy">
+      <text class="scene-kicker">TODAY · 一起完成</text>
+      <text class="scene-title">{{todoPendingCount ? '今天还有 ' + todoPendingCount + ' 件小事' : '今天的小事都完成了'}}</text>
+      <text class="scene-note">{{todoPendingCount ? '已经完成 ' + todoCompletedCount + ' 件，给今天留一点松弛感' : '把今天轻轻收好，剩下的时间留给自己'}}</text>
+    </view>
+    <view class="scene-preview">
+      <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="check" size="26" tone="white" /></view>
+      <view class="scene-preview__body">
+        <text class="scene-preview__title">{{todoSummary}}</text>
+        <text class="scene-preview__meta">待办与小计划 · 一起完成</text>
       </view>
+      <text class="scene-preview__time">今天</text>
+    </view>
+    <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenTodo">
+      <text>{{todoPendingCount ? '继续今天的计划' : '看看全部计划'}}</text>
+      <text class="scene-action__arrow">›</text>
+    </view>
+  </view>
 
-      <block wx:if="{{latestEntry}}">
-        <text class="home-today-card__title">{{latestEntry.title}}</text>
-        <text class="home-today-card__copy">{{latestEntry.content || '这一页只留下了一张照片。'}}</text>
-        <view class="home-today-card__foot">
-          <text>{{latestEntry.authorName}} · {{latestEntry.timeLabel}} · {{latestEntry.visibilityLabel}}</text>
-          <text class="home-today-card__action">翻开看看 ›</text>
-        </view>
-      </block>
+  <view wx:elif="{{homeTab === 'home'}}" class="scene-card scene-card--home">
+    <view class="scene-card__orb scene-card__orb--one"></view>
+    <view class="scene-card__orb scene-card__orb--two"></view>
+    <view class="scene-card__top">
+      <view class="scene-icon"><line-icon name="package" size="44" tone="green" /></view>
+      <view class="scene-count">{{snapshot.inventoryItemCount}} 件</view>
+    </view>
+    <view class="scene-copy">
+      <text class="scene-kicker">AT HOME · 家的状态</text>
+      <text class="scene-title">{{snapshot.inventoryNotice}}</text>
+      <text class="scene-note">{{menuSummary}}</text>
+    </view>
+    <view class="scene-preview">
+      <view class="scene-preview__icon"><line-icon name="clock-3" size="26" tone="gold" /></view>
+      <view class="scene-preview__body">
+        <text class="scene-preview__title">今天吃什么</text>
+        <text class="scene-preview__meta">{{menuCount}} 道收藏 · 去挑一道今天的菜</text>
+      </view>
+      <text class="scene-preview__time">去看</text>
+    </view>
+    <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenInventory">
+      <text>查看家庭库存</text>
+      <text class="scene-action__arrow">›</text>
+    </view>
+  </view>
+
+  <view wx:else class="scene-card scene-card--pet">
+    <view class="scene-card__orb scene-card__orb--one"></view>
+    <view class="scene-card__orb scene-card__orb--two"></view>
+    <view class="scene-card__top">
+      <view class="scene-icon"><line-icon name="paw-print" size="44" tone="pink" /></view>
+      <view class="scene-count">{{petSnapshot.weight}} kg</view>
+    </view>
+    <view class="scene-copy">
+      <text class="scene-kicker">PET · {{petSnapshot.name}}</text>
+      <text class="scene-title">{{petSnapshot.careNotice}}</text>
+      <text class="scene-note">{{petSnapshot.name}}今天状态：{{petSnapshot.status}}。吃喝拉撒、体重和照护都收在这里</text>
+    </view>
+    <view class="scene-preview">
+      <view class="scene-preview__icon"><line-icon name="paw-print" size="26" tone="pink" /></view>
+      <view class="scene-preview__body">
+        <text class="scene-preview__title">{{petActivities.length ? petActivities[0].title : '还没有宠物动态'}}</text>
+        <text class="scene-preview__meta">{{petActivities.length ? petActivities[0].copy : '记一次体重、洗护或今天的照护'}}</text>
+      </view>
+      <text class="scene-preview__time">{{petActivities.length ? petActivities[0].dateLabel : '去记录'}}</text>
+    </view>
+    <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenPets">
+      <text>记录今日照护</text>
+      <text class="scene-action__arrow">›</text>
+    </view>
+  </view>
+
+  <view class="moment-strip" hover-class="moment-strip--pressed" bindtap="onOpenMoment">
+    <view class="moment-thumb {{latestEntry && latestEntry.image ? 'moment-thumb--photo' : ''}}">
+      <image wx:if="{{latestEntry && latestEntry.image && (latestEntry.image.thumbSrc || latestEntry.image.src)}}" class="moment-thumb__photo" src="{{latestEntry.image.thumbSrc || latestEntry.image.src}}" mode="aspectFill" lazy-load />
       <block wx:else>
-        <text class="home-today-card__empty-title">今天还没有落下一笔</text>
-        <text class="home-today-card__copy">写一句也好。以后回头看，普通的一天也会发光。</text>
-        <view class="home-today-card__foot">
-          <text>照片、心情和普通的小事都可以</text>
-          <text class="home-today-card__action">写一条 ›</text>
-        </view>
+        <view class="moment-thumb__sun"></view>
+        <view class="moment-thumb__hill"></view>
       </block>
     </view>
-
-    <view class="home-tools-wrap">
-      <view class="home-tools-head">
-        <text>今天想做什么</text>
-        <text>常用入口</text>
-      </view>
-      <view class="home-tools">
-        <view class="home-tool home-tool--primary" hover-class="home-tool--pressed" bindtap="onOpenJournal">
-          <view class="home-tool__icon home-tool__icon--primary">
-            <line-icon name="pen-line" size="31" tone="white" />
-          </view>
-          <text class="home-tool__label">写一条</text>
-        </view>
-        <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenTodo">
-          <view class="home-tool__icon home-tool__icon--green">
-            <line-icon name="list-todo" size="31" tone="ink" />
-          </view>
-          <text class="home-tool__label">待办</text>
-          <view wx:if="{{todoPendingCount}}" class="home-tool__badge">{{todoPendingCount > 9 ? '9+' : todoPendingCount}}</view>
-        </view>
-        <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenMenu">
-          <view class="home-tool__icon home-tool__icon--gold">
-            <line-icon name="utensils" size="31" tone="ink" />
-          </view>
-          <text class="home-tool__label">吃什么</text>
-        </view>
-        <view class="home-tool" hover-class="home-tool--pressed" bindtap="onOpenPets">
-          <view class="home-tool__icon home-tool__icon--pink">
-            <line-icon name="paw-print" size="31" tone="ink" />
-          </view>
-          <text class="home-tool__label">宠物</text>
-          <view wx:if="{{petPendingCount}}" class="home-tool__badge">{{petPendingCount > 9 ? '9+' : petPendingCount}}</view>
-        </view>
-      </view>
+    <view class="moment-strip__body">
+      <text class="moment-strip__eyebrow">{{latestEntry ? (latestEntryIsToday ? '刚刚发生' : latestEntry.dateLabel) : '从今天开始'}}</text>
+      <text class="moment-strip__title">{{latestEntry ? latestEntry.title : '写下第一件小事'}}</text>
+      <text class="moment-strip__meta">{{latestEntry ? (latestEntry.authorName || '共同空间') + ' · ' + latestEntry.timeLabel : '生活记录会在这里出现'}}</text>
     </view>
-
-    <view class="home-section-head">
-      <text class="home-section-head__title">家里的近况</text>
-      <text class="home-section-head__meta">3 个维度</text>
-    </view>
-
-    <view class="home-near-card">
-      <view class="home-near-row" hover-class="home-row--pressed" data-target="inventory" bindtap="onOpenNearby">
-        <view class="home-near-row__icon home-near-row__icon--orange">
-          <line-icon name="package" size="34" tone="ink" />
-        </view>
-        <view class="home-near-row__body">
-          <text class="home-near-row__title">家庭库存</text>
-          <text class="home-near-row__copy">{{snapshot.inventoryNotice}}</text>
-        </view>
-        <view class="home-near-row__right">
-          <text>{{snapshot.inventoryItemCount}} 件</text>
-          <text>去{{snapshot.inventoryNoticeCount ? '处理' : '整理'}} ›</text>
-        </view>
-      </view>
-
-      <view class="home-near-row" hover-class="home-row--pressed" data-target="todo" bindtap="onOpenNearby">
-        <view class="home-near-row__icon home-near-row__icon--green">
-          <line-icon name="list-todo" size="34" tone="ink" />
-        </view>
-        <view class="home-near-row__body">
-          <text class="home-near-row__title">待办与小计划</text>
-          <text class="home-near-row__copy">{{todoSummary}}</text>
-        </view>
-        <view class="home-near-row__right">
-          <text>{{todoPendingCount}} 件未完成</text>
-          <text>看清单 ›</text>
-        </view>
-      </view>
-
-      <view class="home-near-row" hover-class="home-row--pressed" data-target="menu" bindtap="onOpenNearby">
-        <view class="home-near-row__icon home-near-row__icon--gold">
-          <line-icon name="utensils" size="34" tone="ink" />
-        </view>
-        <view class="home-near-row__body">
-          <text class="home-near-row__title">今天吃什么</text>
-          <text class="home-near-row__copy">{{menuSummary}}</text>
-        </view>
-        <view class="home-near-row__right">
-          <text>{{menuCount}} 份菜单</text>
-          <text>定这顿 ›</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="home-section-head home-section-head--pets">
-      <text class="home-section-head__title">宠物动态</text>
-      <text class="home-section-head__action" bindtap="onOpenPets">全部动态 ›</text>
-    </view>
-
-    <view class="home-pet-card">
-      <view class="home-pet-summary" hover-class="home-row--pressed" bindtap="onOpenPets">
-        <view class="home-pet-summary__avatar">
-          <line-icon name="paw-print" size="35" tone="pink" />
-        </view>
-        <view class="home-pet-summary__body">
-          <text class="home-pet-summary__name">{{petSnapshot.name}}</text>
-          <text class="home-pet-summary__status">{{petSnapshot.status}} · {{petSnapshot.careNotice}}</text>
-        </view>
-        <view class="home-pet-summary__weight">
-          <text>{{petSnapshot.weight}}</text>
-          <text>kg</text>
-        </view>
-      </view>
-
-      <view wx:if="{{petActivities.length}}" class="home-pet-feed">
-        <view
-          wx:for="{{petActivities}}"
-          wx:key="id"
-          class="home-pet-activity"
-          hover-class="home-row--pressed"
-          data-event-id="{{item.eventId}}"
-          data-section="{{item.target}}"
-          bindtap="onOpenPetActivity"
-        >
-          <view class="home-pet-activity__icon home-pet-activity__icon--{{item.tone}}">
-            <line-icon name="{{item.icon}}" size="29" tone="{{item.tone}}" />
-          </view>
-          <view class="home-pet-activity__body">
-            <view class="home-pet-activity__top">
-              <text class="home-pet-activity__title">{{item.title}}</text>
-              <text class="home-pet-activity__date">{{item.dateLabel}}</text>
-            </view>
-            <text class="home-pet-activity__copy">{{item.copy}}</text>
-            <text class="home-pet-activity__tag">{{item.typeLabel}}</text>
-          </view>
-          <text class="home-pet-activity__arrow">›</text>
-        </view>
-      </view>
-
-      <view wx:else class="home-pet-empty">
-        <text>还没有宠物动态</text>
-        <text>记一次体重、洗护或今天的照护，这里就会更新。</text>
-        <view bindtap="onOpenPets">去记一条</view>
-      </view>
-    </view>
-
-    <text class="home-footer-copy">把普通日子里的记录、家务、计划和陪伴，安放在一起。</text>
+    <text class="moment-strip__arrow">›</text>
   </view>
+
+  <view wx:if="{{hasUrgentItems}}" class="folded-summary" hover-class="folded-summary--pressed" bindtap="onOpenReminders">
+    <view class="folded-summary__copy">
+      <text class="folded-summary__title">{{reminderCount}} 条家庭提醒</text>
+      <text class="folded-summary__meta">{{reminderCopy}}</text>
+    </view>
+    <view class="folded-summary__action">查看 <text class="folded-summary__chevron">⌄</text></view>
+  </view>
+
   <app-tab-bar active="home" />
 </view>

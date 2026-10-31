@@ -8,18 +8,20 @@ import sharp from 'sharp'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'assets/lucide-icons')
 const outputDir = path.join(root, 'src/images/icons')
+// v8 墨绿单色：主色系全部收在同一个色相，领域色只压到低饱和的底色调。
+// 改动这里必须重跑 npm run icons:build，否则图标 PNG 不会更新。
 const tones = {
-  faint: '#b8b0a8',
-  muted: '#8d8580',
-  ink: '#2e2a28',
-  accent: '#2c4a52',
-  danger: '#d85f78',
+  faint: '#6b736d',
+  muted: '#5b665d',
+  ink: '#232a24',
+  accent: '#3d5c4a',
+  danger: '#a8564e',
   white: '#ffffff',
-  blue: '#5b8fb9',
-  green: '#789f84',
-  gold: '#c28b23',
-  orange: '#d98a45',
-  pink: '#d87592',
+  blue: '#587a62',
+  green: '#4a7358',
+  gold: '#8a6a1f',
+  orange: '#9a7250',
+  pink: '#a8564e',
 }
 
 await mkdir(outputDir, { recursive: true })

@@ -1,0 +1,17 @@
+<!-- 一碗饭：比 utensils 更直白地表达「吃什么」，也与本项目其余线性图标的 24 网格 / 2px 描边一致 -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M3 11h18" />
+  <path d="M4.5 11c0 4.4 3.4 7.5 7.5 7.5s7.5-3.1 7.5-7.5" />
+  <path d="M9 8c0-1.1.7-1.6.7-2.4 0-.6-.4-.9-.7-1.1" />
+  <path d="M13.5 8c0-1.1.7-1.6.7-2.4 0-.6-.4-.9-.7-1.1" />
+</svg>

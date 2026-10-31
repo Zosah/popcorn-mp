@@ -5,8 +5,7 @@ export interface AppRootPageLike {
 
 export type AppRootNavigationPlan =
   | { action: 'scroll-top' }
-  | { action: 'back'; delta: number }
-  | { action: 'open'; method: 'navigateTo' | 'redirectTo'; url: string }
+  | { action: 'relaunch'; url: string }
 
 function decodeQueryValue(value: string): string {
   try {
@@ -49,7 +48,6 @@ function pageMatches(
 export function resolveAppRootNavigation(
   pages: readonly AppRootPageLike[],
   url: string,
-  maxStackDepth = 8,
 ): AppRootNavigationPlan {
   const { normalizedUrl, path, query } = parseUrl(url)
   const currentPage = pages[pages.length - 1]
@@ -57,18 +55,9 @@ export function resolveAppRootNavigation(
     return { action: 'scroll-top' }
   }
 
-  const cachedIndex = pages.findIndex(
-    (page, index) => index < pages.length - 1 && pageMatches(page, path, query),
-  )
-  if (cachedIndex >= 0) {
-    return { action: 'back', delta: pages.length - 1 - cachedIndex }
-  }
-
-  return {
-    action: 'open',
-    method: pages.length >= maxStackDepth ? 'redirectTo' : 'navigateTo',
-    url: normalizedUrl,
-  }
+  // 根页面之间是平级切换，不再压入页面栈。
+  // reLaunch 不会把旧页面和旧底栏留在新页面下面，避免切页时出现双层叠加。
+  return { action: 'relaunch', url: normalizedUrl }
 }
 
 export function openAppRoot(
@@ -83,23 +72,9 @@ export function openAppRoot(
     return
   }
 
-  if (plan.action === 'back') {
-    wx.navigateBack({
-      delta: plan.delta,
-      success: () => onSettled?.(true),
-      fail: () => onSettled?.(false),
-    })
-    return
-  }
-
-  const options = {
+  wx.reLaunch({
     url: plan.url,
     success: () => onSettled?.(true),
     fail: () => onSettled?.(false),
-  }
-  if (plan.method === 'redirectTo') {
-    wx.redirectTo(options)
-    return
-  }
-  wx.navigateTo(options)
+  })
 }

@@ -2,7 +2,7 @@
   display: flex;
   min-height: 112rpx;
   align-items: center;
-  border-bottom: 1rpx solid #ebe5da;
+  border-bottom: 1rpx solid #e2e7df;
 }
 
 .row:last-child {
@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 20rpx;
-  background: #fdf0e4;
+  background: #f6ebe2;
   flex-shrink: 0;
 }
 
@@ -29,7 +29,7 @@
 
 .row__name {
   overflow: hidden;
-  color: var(--c-text, #2e2a28);
+  color: var(--c-text, #232a24);
   font-size: 31rpx;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -39,7 +39,7 @@
 .row__meta {
   overflow: hidden;
   margin-top: 5rpx;
-  color: var(--c-muted, #8d8580);
+  color: var(--c-muted, #5b665d);
   font-size: 23rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -53,7 +53,7 @@
 }
 
 .row__history {
-  color: var(--c-muted, #8d8580);
+  color: var(--c-muted, #5b665d);
   font-size: 23rpx;
 }
 

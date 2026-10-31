@@ -1,125 +1,167 @@
 <view class="tab-page journal-page">
   <view class="journal-top">
     <view class="journal-top__main">
-      <view class="journal-top__title">生活记录</view>
-      <view class="journal-top__sub">{{entries.length + notesCount}} 篇 · 把普通的日子留下</view>
+      <text class="journal-top__title">生活记录</text>
+      <text class="journal-top__sub">把想留住的，都放在这里</text>
     </view>
-    <view class="journal-write" bindtap="onCreate">
-      <line-icon name="plus" size="23" tone="white" />
-      <text>写</text>
+    <view class="journal-write" hover-class="tap-dim" bindtap="onCreate">
+      <line-icon name="pen-line" size="23" tone="ink" />
+      <text>新建</text>
     </view>
   </view>
 
-  <scroll-view class="journal-filters" scroll-x enhanced show-scrollbar="{{false}}">
-    <view class="journal-filters__row">
-      <view wx:for="{{filterOptions}}" wx:key="key" class="journal-filter {{activeFilter === item.key ? 'journal-filter--active' : ''}}" data-value="{{item.key}}" bindtap="onSelectFilter">
-        <text>{{item.label}}</text>
-        <text>{{item.count}}</text>
-      </view>
+  <view class="journal-segmented">
+    <view class="journal-segmented__item {{activeSection === 'all' ? 'journal-segmented__item--active' : ''}}" data-value="all" bindtap="onSelectSection">
+      <text>全部</text>
+      <text>{{entries.length + notesCount}}</text>
     </view>
-  </scroll-view>
+    <view class="journal-segmented__item {{activeSection === 'moments' ? 'journal-segmented__item--active' : ''}}" data-value="moments" bindtap="onSelectSection">
+      <text>生活点滴</text>
+      <text>{{entries.length}}</text>
+    </view>
+    <view class="journal-segmented__item {{activeSection === 'notes' ? 'journal-segmented__item--active' : ''}}" data-value="notes" bindtap="onSelectSection">
+      <text>重要记录</text>
+      <text>{{notesCount}}</text>
+    </view>
+  </view>
 
   <view wx:if="{{loadError && (entries.length || notesCount)}}" class="journal-banner">
     <line-icon name="circle-alert" size="22" tone="danger" />
     <view class="journal-banner__body">
       <text>记录刷新没完成</text>
-      <text>先保留已经读到的内容，稍后可以再试。</text>
+      <text>先保留已经读到的内容，稍后再试。</text>
     </view>
-    <view class="journal-banner__action" bindtap="onRetryLoad">重试</view>
+    <text class="journal-banner__action" bindtap="onRetryLoad">重试</text>
   </view>
 
   <block wx:if="{{activeView === 'moments'}}">
     <view wx:if="{{loading && !entries.length}}" class="journal-state">
-      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="notebook-tabs" size="34" tone="blue" /></view>
-      <view class="journal-state__title">正在把日子轻轻翻出来</view>
-      <view class="journal-state__copy">稍等一下，马上就好。</view>
+      <view class="journal-state__icon"><line-icon name="notebook-tabs" size="38" tone="green" /></view>
+      <text class="journal-state__title">正在把日子轻轻翻出来</text>
+      <text class="journal-state__copy">稍等一下，马上就好。</text>
     </view>
 
     <view wx:elif="{{loadError && !entries.length}}" class="journal-state">
-      <view class="journal-state__icon journal-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
-      <view class="journal-state__title">暂时没有连上</view>
-      <view class="journal-state__copy">{{loadError}}</view>
+      <view class="journal-state__icon journal-state__icon--danger"><line-icon name="circle-alert" size="38" tone="danger" /></view>
+      <text class="journal-state__title">暂时没有连上</text>
+      <text class="journal-state__copy">{{loadError}}</text>
       <view class="journal-state__action" bindtap="onRetryLoad">重新加载</view>
     </view>
 
     <view wx:elif="{{entries.length}}" class="journal-timeline">
-      <view wx:for="{{entries}}" wx:key="id" class="journal-entry journal-entry--tone{{index % 4}}" data-id="{{item.id}}" bindtap="onOpenEntry">
-        <view class="journal-entry__dot"></view>
-        <view class="journal-entry__meta">{{item.monthLabel}}{{item.day}} · {{item.timeLabel}} · {{item.authorName}}</view>
-        <view class="journal-entry__title">{{item.title}}</view>
-        <view wx:if="{{item.content}}" class="journal-entry__copy">{{item.content}}</view>
-        <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="journal-entry__photo" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
-        <view wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</view>
-        <view class="journal-entry__tags">
-          <text class="journal-entry__tag">{{item.visibilityLabel}}</text>
-          <text wx:if="{{item.updatedAt}}" class="journal-entry__tag journal-entry__tag--warm">已编辑</text>
+      <view wx:for="{{entries}}" wx:key="id" class="journal-entry journal-entry--tone{{index % 4}}" data-id="{{item.id}}" hover-class="journal-entry--pressed" bindtap="onOpenEntry">
+        <view class="journal-date">
+          <text class="journal-date__day">{{item.day}}</text>
+          <text class="journal-date__meta">{{item.monthLabel}}</text>
+          <text class="journal-date__meta">{{item.timeLabel}}</text>
+        </view>
+        <view class="journal-rail">
+          <view class="journal-rail__dot"></view>
+        </view>
+        <view class="journal-card {{item.visibility === 'private' ? 'journal-card--private' : ''}}">
+          <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="journal-entry__photo" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
+          <view class="journal-card__body">
+            <view class="journal-card__tags">
+              <text class="journal-tag journal-tag--peach">{{item.kindLabel}}</text>
+              <text wx:if="{{item.updatedAt}}" class="journal-tag">已编辑</text>
+            </view>
+            <text class="journal-entry__title">{{item.title}}</text>
+            <text wx:if="{{item.content}}" class="journal-entry__copy">{{item.content}}</text>
+            <text wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</text>
+            <view class="journal-entry__author">
+              <view class="journal-entry__avatar">{{item.authorName || '见'}}</view>
+              <text>{{item.authorName}} · {{item.visibilityLabel}}</text>
+            </view>
+          </view>
         </view>
       </view>
     </view>
 
     <view wx:else class="journal-state">
-      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="pen-line" size="34" tone="blue" /></view>
-      <view class="journal-state__title">还没有留下记录</view>
-      <view class="journal-state__copy">写下一句话，平常的一天也会有一个落点。</view>
+      <view class="journal-state__icon"><line-icon name="pen-line" size="38" tone="green" /></view>
+      <text class="journal-state__title">还没有留下记录</text>
+      <text class="journal-state__copy">写下一句话，平常的一天也会有一个落点。</text>
       <view class="journal-state__action" bindtap="onCreate">记下第一笔</view>
     </view>
 
-    <view wx:if="{{noteGroups.length}}" class="journal-notes-preview">
+    <view wx:if="{{activeSection === 'all' && noteGroups.length}}" class="journal-notes-preview">
       <view class="journal-section-head">
-        <text>重要记录</text>
-        <text>长期保存的资料</text>
+        <view>
+          <text class="journal-section-head__eyebrow">KEEP TOGETHER</text>
+          <text class="journal-section-head__title">重要记录</text>
+        </view>
+        <text class="journal-section-head__link" data-value="notes" bindtap="onSelectSection">查看全部</text>
       </view>
       <view class="journal-note-groups">
-        <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-group" data-value="{{group.key}}" bindtap="onSelectFilter">
-          <view class="journal-note-group__icon journal-note-group__icon--{{group.key}}"><line-icon name="{{group.icon}}" size="28" tone="{{group.key === 'health' ? 'pink' : group.key === 'pet' ? 'gold' : 'blue'}}" /></view>
+        <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-group" data-value="{{group.key}}" hover-class="tap-dim" bindtap="onSelectFilter">
+          <view class="journal-note-group__icon journal-note-group__icon--{{group.key}}">
+            <line-icon name="{{group.icon}}" size="28" tone="{{group.key === 'health' ? 'pink' : group.key === 'pet' ? 'gold' : 'green'}}" />
+          </view>
           <view class="journal-note-group__body">
             <text>{{group.label}}</text>
             <text>{{group.entries.length}} 项资料</text>
           </view>
-          <view class="journal-note-group__arrow">›</view>
+          <text class="journal-note-group__arrow">›</text>
         </view>
       </view>
     </view>
   </block>
 
   <view wx:else class="journal-notes-view">
+    <scroll-view class="journal-note-filters" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="journal-note-filters__row">
+        <view class="journal-note-filter {{activeFilter === 'moments' ? 'journal-note-filter--active' : ''}}" data-value="moments" bindtap="onSelectFilter">全部资料</view>
+        <block wx:for="{{filterOptions}}" wx:key="key">
+          <view wx:if="{{item.key !== 'moments'}}" class="journal-note-filter {{activeFilter === item.key ? 'journal-note-filter--active' : ''}}" data-value="{{item.key}}" bindtap="onSelectFilter">
+            <text>{{item.label}}</text>
+            <text>{{item.count}}</text>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+
     <view wx:if="{{loading && !notesCount}}" class="journal-state">
-      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="file-text" size="34" tone="blue" /></view>
-      <view class="journal-state__title">正在整理重要记录</view>
-      <view class="journal-state__copy">稍等一下，马上就好。</view>
+      <view class="journal-state__icon"><line-icon name="file-text" size="38" tone="green" /></view>
+      <text class="journal-state__title">正在整理重要记录</text>
+      <text class="journal-state__copy">稍等一下，马上就好。</text>
     </view>
 
     <view wx:elif="{{loadError && !notesCount}}" class="journal-state">
-      <view class="journal-state__icon journal-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
-      <view class="journal-state__title">暂时没有连上</view>
-      <view class="journal-state__copy">{{loadError}}</view>
+      <view class="journal-state__icon journal-state__icon--danger"><line-icon name="circle-alert" size="38" tone="danger" /></view>
+      <text class="journal-state__title">暂时没有连上</text>
+      <text class="journal-state__copy">{{loadError}}</text>
       <view class="journal-state__action" bindtap="onRetryLoad">重新加载</view>
     </view>
 
     <block wx:elif="{{visibleNoteGroups.length}}">
-      <view wx:for="{{visibleNoteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-section">
+      <view wx:for="{{visibleNoteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-section journal-note-section--{{group.key}}">
         <view class="journal-section-head">
-          <view class="journal-section-head__title"><line-icon name="{{group.icon}}" size="23" tone="blue" /><text>{{group.label}}</text></view>
-          <text>{{group.entries.length}} 项</text>
+          <view class="journal-section-head__title-row">
+            <view class="journal-section-head__icon"><line-icon name="{{group.icon}}" size="23" tone="{{group.key === 'health' ? 'pink' : group.key === 'pet' ? 'gold' : 'green'}}" /></view>
+            <text class="journal-section-head__title">{{group.label}}</text>
+          </view>
+          <text class="journal-section-head__count">{{group.entries.length}} 项</text>
         </view>
         <view class="journal-note-list">
-          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="journal-note-row" data-id="{{entry.id}}" bindtap="onOpenEntry">
+          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="journal-note-row" data-id="{{entry.id}}" hover-class="tap-dim" bindtap="onOpenEntry">
             <view class="journal-note-row__body">
               <text class="journal-note-row__title">{{entry.title}}</text>
               <text class="journal-note-row__copy">{{entry.content}}</text>
               <text class="journal-note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
             </view>
-            <view class="journal-note-row__arrow">›</view>
+            <text class="journal-note-row__arrow">›</text>
           </view>
         </view>
       </view>
     </block>
+
     <view wx:else class="journal-state">
-      <view class="journal-state__icon journal-state__icon--blue"><line-icon name="file-text" size="34" tone="blue" /></view>
-      <view class="journal-state__title">这里还没有资料</view>
-      <view class="journal-state__copy">把证件、家规和照护资料收在这里，需要时随时能找到。</view>
+      <view class="journal-state__icon"><line-icon name="file-text" size="38" tone="green" /></view>
+      <text class="journal-state__title">这里还没有资料</text>
+      <text class="journal-state__copy">把证件、家规和照护资料收在这里，需要时随时能找到。</text>
       <view class="journal-state__action" bindtap="onCreate">存一份记录</view>
     </view>
   </view>
+
   <app-tab-bar active="journal" />
 </view>

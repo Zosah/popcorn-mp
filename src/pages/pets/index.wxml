@@ -1,212 +1,247 @@
-<view class="page-shell pets-page">
-  <view class="pets-top">
-    <view class="pets-top__main">
-      <view class="pets-top__title">宠物照护</view>
-      <view class="pets-top__sub">{{petTabs.length}} 位伙伴 · {{profile.name}}</view>
+<view class="pets-page">
+  <view class="pet-hero pet-hero--{{profile.species}}">
+    <view class="pet-hero__top">
+      <view class="pet-hero__copy">
+        <text class="pet-eyebrow">我的宠物</text>
+        <view class="pet-hero__name-row" bindtap="onChoosePet">
+          <text class="pet-hero__name">{{profile.name}}</text>
+          <text class="pet-hero__chevron">⌄</text>
+        </view>
+        <view class="pet-hero__sub">{{profile.breed}} · {{ageLabel}}</view>
+      </view>
+      <view class="pet-hero__action" bindtap="onAddPet">
+        <line-icon name="plus" size="24" tone="ink" />
+      </view>
     </view>
-    <view class="pets-add" bindtap="onAddPet">
-      <line-icon name="plus" size="22" tone="white" />
-      <text>添加</text>
+
+    <view class="pet-portrait">
+      <block wx:if="{{profile.species === 'cat'}}">
+        <view class="pet-cat__ear pet-cat__ear--left"></view>
+        <view class="pet-cat__ear pet-cat__ear--right"></view>
+        <view class="pet-cat__face">
+          <view class="pet-cat__eye pet-cat__eye--left"></view>
+          <view class="pet-cat__eye pet-cat__eye--right"></view>
+          <view class="pet-cat__nose"></view>
+          <view class="pet-cat__whisker pet-cat__whisker--left"></view>
+          <view class="pet-cat__whisker pet-cat__whisker--right"></view>
+        </view>
+      </block>
+      <view wx:else class="pet-portrait__initial">{{profileInitial}}</view>
+    </view>
+
+    <view class="pet-stats">
+      <view>
+        <view class="pet-stats__value">{{latestWeight}}<text>kg</text></view>
+        <view class="pet-stats__label">当前体重</view>
+      </view>
+      <view>
+        <view class="pet-stats__value">{{companionDays}}</view>
+        <view class="pet-stats__label">天陪伴日</view>
+      </view>
+      <view>
+        <view class="pet-stats__value">{{timeline.length}}</view>
+        <view class="pet-stats__label">条成长记录</view>
+      </view>
     </view>
   </view>
 
-  <scroll-view class="pet-tabs" scroll-x enhanced show-scrollbar="{{false}}">
-    <view class="pet-tabs__row">
-      <view class="pet-tab {{activeSection === 'profile' ? 'pet-tab--active' : ''}}" data-value="profile" bindtap="onSwitchSection">档案</view>
-      <view class="pet-tab {{activeSection === 'care' ? 'pet-tab--active' : ''}}" data-value="care" bindtap="onSwitchSection">照护</view>
-      <view class="pet-tab {{activeSection === 'calendar' ? 'pet-tab--active' : ''}}" data-value="calendar" bindtap="onSwitchSection">月历</view>
-      <view class="pet-tab {{activeSection === 'daily' ? 'pet-tab--active' : ''}}" data-value="daily" bindtap="onSwitchSection">日常</view>
-      <view class="pet-tab {{activeSection === 'supplies' ? 'pet-tab--active' : ''}}" data-value="supplies" bindtap="onSwitchSection">用品</view>
-    </view>
-  </scroll-view>
+  <view class="pet-nav">
+    <view class="pet-nav__item {{activeSection === 'profile' ? 'pet-nav__item--active' : ''}}" data-value="profile" bindtap="onSwitchSection">档案</view>
+    <view class="pet-nav__item {{activeSection === 'care' ? 'pet-nav__item--active' : ''}}" data-value="care" bindtap="onSwitchSection">照护</view>
+    <view class="pet-nav__item {{activeSection === 'calendar' ? 'pet-nav__item--active' : ''}}" data-value="calendar" bindtap="onSwitchSection">月历</view>
+    <view class="pet-nav__item {{activeSection === 'daily' ? 'pet-nav__item--active' : ''}}" data-value="daily" bindtap="onSwitchSection">日常</view>
+    <view class="pet-nav__item {{activeSection === 'supplies' ? 'pet-nav__item--active' : ''}}" data-value="supplies" bindtap="onSwitchSection">用品</view>
+  </view>
 
-  <block wx:if="{{activeSection === 'profile'}}">
-    <scroll-view class="pet-switcher" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="pet-switcher__row">
-        <view wx:for="{{petTabs}}" wx:key="id" class="pet-switcher__item {{item.selected ? 'pet-switcher__item--active' : ''}}" data-id="{{item.id}}" bindtap="onSwitchPet">
-          <view class="pet-switcher__avatar">{{item.initial}}</view>
-          <text>{{item.name}}</text>
-        </view>
-        <view class="pet-switcher__add" bindtap="onAddPet">
-          <line-icon name="plus" size="22" tone="pink" />
-          <text>新伙伴</text>
-        </view>
+  <view class="pet-content">
+    <block wx:if="{{activeSection === 'profile'}}">
+      <view class="pet-section-head">
+        <view><text class="pet-eyebrow">今日照护</text><text class="pet-section-head__title">{{profile.name}}今天怎么样？</text></view>
+        <text>{{dailyDoneCount}} / 4</text>
       </view>
-    </scroll-view>
-
-    <view class="pet-profile-card">
-      <view class="pet-profile-card__top">
-        <view class="pet-avatar pet-avatar--{{profile.species}}">
-          <block wx:if="{{profile.species === 'cat'}}">
-            <view class="pet-ear pet-ear--left"></view>
-            <view class="pet-ear pet-ear--right"></view>
-          </block>
-          <text>{{profileInitial}}</text>
-        </view>
-        <view class="pet-profile-card__body">
-          <view class="pet-profile-card__name">{{profile.name}}</view>
-          <view class="pet-profile-card__meta">{{profile.breed}} · {{profile.sex === 'female' ? '女生' : '男生'}} · {{ageLabel}}</view>
-          <view class="pet-profile-card__status"><text></text>{{profile.status}}</view>
-        </view>
-        <view class="pet-profile-card__weight"><text>{{latestWeight}}</text><text>kg</text></view>
-      </view>
-      <view class="pet-milestones">
-        <view class="pet-milestone"><text>{{birthdayLabel}}</text><text>出生</text><view class="pet-milestone__dot pet-milestone__dot--green"></view></view>
-        <view class="pet-milestone"><text>{{homeOnLabel}}</text><text>到家</text><view class="pet-milestone__dot pet-milestone__dot--gold"></view></view>
-        <view class="pet-milestone"><text>{{neuteredOnLabel}}</text><text>{{profile.neuteredOn ? '绝育' : '未绝育'}}</text><view class="pet-milestone__dot pet-milestone__dot--pink"></view></view>
-      </view>
-    </view>
-
-    <view class="pet-section-head">
-      <text>体重变化</text>
-      <view bindtap="onRecordWeight">＋ 记录</view>
-    </view>
-    <view class="pet-weight">
-      <view class="pet-weight__chart">
-        <view wx:for="{{weightPoints}}" wx:key="index" class="pet-weight__column {{item.active ? 'pet-weight__column--active' : ''}}">
-          <text class="pet-weight__value">{{item.value}}</text>
-          <view class="pet-weight__track">
-            <view class="pet-weight__bar" style="height: {{item.height}}%;"></view>
+      <view class="daily-grid">
+        <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card {{item.done ? 'daily-card--done' : ''}}" data-type="{{item.type}}" bindtap="onAddDailyLog">
+          <view class="daily-card__visual">
+            <line-icon name="{{item.iconName}}" size="25" tone="{{item.done ? 'white' : 'green'}}" />
+            <view wx:if="{{item.done}}" class="daily-card__check"><line-icon name="check" size="10" tone="white" /></view>
           </view>
-          <text class="pet-weight__date">{{item.dateLabel}}</text>
+          <text class="daily-card__title">{{item.label}}</text>
+          <text class="daily-card__status">{{item.done ? '已记录' : '点按记录'}}</text>
         </view>
       </view>
-      <view class="pet-weight__hint">最近 {{weightPoints.length}} 次 · 当前 {{latestWeight}} kg · {{weightTrendLabel}}</view>
-    </view>
 
-    <view class="pet-section-head">
-      <text>成长时间线</text>
-      <view bindtap="onAddEvent">＋ 事件</view>
-    </view>
-    <view class="pet-timeline">
-      <view wx:for="{{timeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
-        <view class="pet-timeline__dot"></view>
-        <view class="pet-timeline__date">{{item.occurredOn}}</view>
-        <view class="pet-timeline__title">{{item.title}}</view>
-        <view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view>
+      <view wx:if="{{nextCare}}" class="next-care" bindtap="onOpenCalendar">
+        <view class="next-care__date"><text>{{nextCare.monthLabel}}</text><text class="next-care__day">{{nextCare.dayLabel}}</text></view>
+        <view class="next-care__body">
+          <text class="next-care__eyebrow">下一次照护</text>
+          <view class="next-care__title">{{nextCare.title}}</view>
+          <view class="next-care__meta">{{nextCare.meta}}</view>
+        </view>
+        <text class="next-care__arrow">›</text>
       </view>
-    </view>
 
-    <view class="pet-section-head">
-      <text>生活照片</text>
-      <text>示例插画</text>
-    </view>
-    <view class="pet-visual">
-      <image class="pet-visual__image" src="../../images/demo-cat-dreaming.jpg" mode="aspectFill" />
-      <view class="pet-visual__caption">陪伴不是大事，是每天的小事</view>
-    </view>
-
-    <view class="pet-section-head">
-      <text>基本档案</text>
-      <view bindtap="onToggleProfileEditor">{{editingProfile ? '取消编辑' : '编辑档案'}}</view>
-    </view>
-    <view wx:if="{{editingProfile}}" class="profile-editor">
-      <view class="profile-field"><text>出生日期</text><picker mode="date" value="{{profileDraft.birthday}}" bindchange="onBirthdayChange"><view>{{profileDraft.birthday || '选择日期'}} ›</view></picker></view>
-      <view class="profile-field"><text>到家日期</text><picker mode="date" value="{{profileDraft.homeOn}}" bindchange="onHomeDateChange"><view>{{profileDraft.homeOn || '选择日期'}} ›</view></picker></view>
-      <view class="profile-field"><text>是否绝育</text><switch checked="{{profileDraft.neuteredOn}}" color="#2c4a52" bindchange="onNeuteredToggle" /></view>
-      <view wx:if="{{profileDraft.neuteredOn}}" class="profile-field"><text>绝育日期</text><picker mode="date" value="{{profileDraft.neuteredOn}}" bindchange="onNeuteredDateChange"><view>{{profileDraft.neuteredOn}} ›</view></picker></view>
-      <button class="profile-editor__save" bindtap="onSaveProfile">保存档案</button>
-    </view>
-  </block>
-
-  <block wx:elif="{{activeSection === 'care'}}">
-    <view class="pet-intro">
-      <view class="pet-intro__icon pet-intro__icon--pink"><line-icon name="heart-pulse" size="27" tone="pink" /></view>
-      <view><text>持续记录，不靠记忆</text><text>体内驱虫按 90 天、体外驱虫按 30 天生成下一次日期。</text></view>
-    </view>
-
-    <view class="pet-section-head"><text>内外驱周期</text><view bindtap="onOpenCalendar">查看月历</view></view>
-    <view class="care-list">
-      <view wx:for="{{careCards}}" wx:key="type" class="care-card care-card--{{item.status}}">
-        <view class="care-card__top"><text>{{item.title}}</text><text>{{item.intervalLabel}}</text></view>
-        <view class="care-card__status">{{item.statusLabel}}</view>
-        <view class="care-card__meta"><text>上次 {{item.lastOn || '未记录'}}</text><text>下次 {{item.nextOn || '待记录'}}</text></view>
-        <button data-type="{{item.type}}" bindtap="onCompleteCare">今天完成一次</button>
+      <view class="pet-section-head">
+        <view><text class="pet-eyebrow">健康趋势</text><text class="pet-section-head__title">体重记录</text></view>
+        <view bindtap="onRecordWeight">新增记录</view>
       </view>
-    </view>
-
-    <view class="pet-section-head"><text>最近照护</text><view bindtap="onAddEvent">＋ 其他事件</view></view>
-    <view class="pet-timeline">
-      <view wx:for="{{careTimeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
-        <view class="pet-timeline__dot pet-timeline__dot--pink"></view>
-        <view class="pet-timeline__date">{{item.occurredOn}}</view>
-        <view class="pet-timeline__title">{{item.title}}</view>
-        <view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view>
-      </view>
-    </view>
-  </block>
-
-  <block wx:elif="{{activeSection === 'calendar'}}">
-    <view class="pet-calendar-card">
-      <view class="pet-calendar-card__eyebrow">CARE CALENDAR</view>
-      <view class="pet-calendar-card__title">{{profile.name}}的照护月历</view>
-      <view class="pet-calendar-card__copy">历史记录、下次计划和内外驱推算放在同一张月历里。</view>
-      <view class="pet-calendar-card__stats">
-        <view><text>{{careTimeline.length}}</text><text>最近照护记录</text></view>
-        <view><text>{{careCards.length}}</text><text>周期提醒</text></view>
-      </view>
-      <view class="pet-calendar-card__button" bindtap="onOpenCalendar">打开完整月历</view>
-    </view>
-    <view class="pet-section-head"><text>最近的日期</text><view bindtap="onAddEvent">＋ 记录事件</view></view>
-    <view class="pet-timeline">
-      <view wx:for="{{careTimeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
-        <view class="pet-timeline__dot"></view>
-        <view class="pet-timeline__date">{{item.occurredOn}}</view>
-        <view class="pet-timeline__title">{{item.title}}</view>
-        <view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view>
-      </view>
-    </view>
-  </block>
-
-  <block wx:elif="{{activeSection === 'daily'}}">
-    <view class="pet-section-head"><text>今天吃喝拉撒</text><text>点一下，就记一条</text></view>
-    <view class="daily-grid">
-      <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card {{item.done ? 'daily-card--done' : ''}}" data-type="{{item.type}}" bindtap="onAddDailyLog">
-        <view class="daily-card__top"><view class="daily-card__icon"><line-icon name="{{item.iconName}}" size="27" tone="green" /></view><text>{{item.count ? item.count + ' 次' : '未记'}}</text></view>
-        <view class="daily-card__title">{{item.label}}</view>
-        <view class="daily-card__summary">{{item.latestSummary}}</view>
-        <view class="daily-card__time">{{item.latestTime}} · ＋记录</view>
-      </view>
-    </view>
-
-    <view wx:if="{{recentDailyLogs.length}}" class="daily-recent">
-      <view class="pet-section-head"><text>今天的记录</text><text>{{recentDailyLogs.length}} 条</text></view>
-      <view class="daily-list">
-        <view wx:for="{{recentDailyLogs}}" wx:key="id" class="daily-row">
-          <view class="daily-row__icon"><line-icon name="{{item.iconName}}" size="23" tone="green" /></view>
-          <view class="daily-row__body"><text>{{item.summary}}</text><text>{{item.typeLabel}}</text></view>
-          <view class="daily-row__time">{{item.timeLabel}}</view>
+      <view class="pet-weight">
+        <view class="pet-weight__head">
+          <view><text>{{latestWeight}} kg</text><text>{{weightTrendLabel}}</text></view>
+          <text>近 {{weightPoints.length}} 次</text>
+        </view>
+        <view class="pet-weight__chart">
+          <view wx:for="{{weightPoints}}" wx:key="index" class="pet-weight__column {{item.active ? 'pet-weight__column--active' : ''}}">
+            <text class="pet-weight__value">{{item.value}}</text>
+            <view class="pet-weight__track"><view class="pet-weight__bar" style="height: {{item.height}}%;"></view></view>
+            <text class="pet-weight__date">{{item.dateLabel}}</text>
+          </view>
         </view>
       </view>
-    </view>
-  </block>
 
-  <block wx:else>
-    <view class="pet-section-head"><text>正在吃与正在用</text><view bindtap="onAddSupply">＋ 添加</view></view>
-    <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="current-supplies__row">
-        <view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply">
-          <view class="current-supply__label">{{item.categoryLabel}}</view>
-          <view class="current-supply__name">{{item.name}}</view>
-          <view class="current-supply__note">{{item.note || '正在使用'}}</view>
+      <view class="pet-section-head">
+        <view><text class="pet-eyebrow">{{profile.name}}的用品</text><text class="pet-section-head__title">最近在用</text></view>
+        <view data-value="supplies" bindtap="onSwitchSection">全部</view>
+      </view>
+      <view wx:if="{{featuredSupply}}" class="featured-supply" data-id="{{featuredSupply.id}}" bindtap="onChangeSupplyStatus">
+        <view class="featured-supply__icon"><line-icon name="{{featuredSupply.iconName}}" size="24" tone="gold" /></view>
+        <view class="featured-supply__body">
+          <view>{{featuredSupply.name}}</view>
+          <text>{{featuredSupply.categoryLabel}} · {{featuredSupply.note || '正在使用'}}</text>
+        </view>
+        <text class="featured-supply__tag">正在用</text>
+        <text class="featured-supply__arrow">›</text>
+      </view>
+      <view wx:else class="pet-empty-line" bindtap="onAddSupply">还没有用品，先记一件家里正在用的东西</view>
+
+      <view class="pet-section-head">
+        <view><text class="pet-eyebrow">成长时间线</text><text class="pet-section-head__title">最近的{{profile.name}}</text></view>
+        <view bindtap="onAddEvent">＋ 记录</view>
+      </view>
+      <view class="pet-timeline">
+        <view wx:for="{{timeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
+          <view class="pet-timeline__dot"></view>
+          <view class="pet-timeline__date">{{item.occurredOn}}</view>
+          <view class="pet-timeline__title">{{item.title}}</view>
+          <view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view>
         </view>
       </view>
-    </scroll-view>
 
-    <view class="pet-section-head"><text>用品集合</text><text>{{supplies.length}} 项</text></view>
-    <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="supply-filter__row">
-        <view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view>
+      <view class="pet-section-head">
+        <view><text class="pet-eyebrow">基本档案</text><text class="pet-section-head__title">关于{{profile.name}}</text></view>
+        <view bindtap="onToggleProfileEditor">{{editingProfile ? '取消编辑' : '编辑档案'}}</view>
       </view>
-    </scroll-view>
-    <view class="supply-list">
-      <view wx:for="{{supplies}}" wx:key="id" class="supply-row" data-id="{{item.id}}" bindtap="onChangeSupplyStatus">
-        <view class="supply-row__icon"><line-icon name="{{item.iconName}}" size="26" tone="gold" /></view>
-        <view class="supply-row__body"><text>{{item.name}}</text><text>{{item.categoryLabel}} · {{item.note || item.recordedOn}}</text></view>
-        <view class="supply-row__status supply-row__status--{{item.status}}">{{item.statusLabel}}</view>
+      <view wx:if="{{editingProfile}}" class="profile-editor">
+        <view class="profile-field"><text>出生日期</text><picker mode="date" value="{{profileDraft.birthday}}" bindchange="onBirthdayChange"><view>{{profileDraft.birthday || '选择日期'}} ›</view></picker></view>
+        <view class="profile-field"><text>到家日期</text><picker mode="date" value="{{profileDraft.homeOn}}" bindchange="onHomeDateChange"><view>{{profileDraft.homeOn || '选择日期'}} ›</view></picker></view>
+        <view class="profile-field"><text>是否绝育</text><switch checked="{{profileDraft.neuteredOn}}" color="#252b27" bindchange="onNeuteredToggle" /></view>
+        <view wx:if="{{profileDraft.neuteredOn}}" class="profile-field"><text>绝育日期</text><picker mode="date" value="{{profileDraft.neuteredOn}}" bindchange="onNeuteredDateChange"><view>{{profileDraft.neuteredOn}} ›</view></picker></view>
+        <button class="profile-editor__save" bindtap="onSaveProfile">保存档案</button>
       </view>
-    </view>
-    <view class="supply-tip">点击条目，可以改成正在用、爱吃、吃过、种草或拔草。</view>
-  </block>
+      <view wx:else class="pet-profile-facts">
+        <view><text>出生</text><text class="pet-profile-facts__value">{{birthdayLabel}}</text></view>
+        <view><text>到家</text><text class="pet-profile-facts__value">{{homeOnLabel}}</text></view>
+        <view><text>{{profile.neuteredOn ? '绝育' : '绝育情况'}}</text><text class="pet-profile-facts__value">{{profile.neuteredOn ? neuteredOnLabel : '未绝育'}}</text></view>
+      </view>
+    </block>
+
+    <block wx:elif="{{activeSection === 'care'}}">
+      <view class="pet-intro">
+        <view class="pet-intro__icon"><line-icon name="heart-pulse" size="27" tone="pink" /></view>
+        <view><text>持续记录，不靠记忆</text><text>体内驱虫按 90 天、体外驱虫按 30 天生成下一次日期。</text></view>
+      </view>
+      <view class="pet-section-head"><view><text class="pet-eyebrow">护理周期</text><text class="pet-section-head__title">内外驱虫</text></view><view bindtap="onOpenCalendar">查看月历</view></view>
+      <view class="care-list">
+        <view wx:for="{{careCards}}" wx:key="type" class="care-card care-card--{{item.status}}">
+          <view class="care-card__top"><text>{{item.title}}</text><text>{{item.intervalLabel}}</text></view>
+          <view class="care-card__status">{{item.statusLabel}}</view>
+          <view class="care-card__meta"><text>上次 {{item.lastOn || '未记录'}}</text><text>下次 {{item.nextOn || '待记录'}}</text></view>
+          <button data-type="{{item.type}}" bindtap="onCompleteCare">今天完成一次</button>
+        </view>
+      </view>
+      <view class="pet-section-head"><view><text class="pet-eyebrow">最近照护</text><text class="pet-section-head__title">照护时间线</text></view><view bindtap="onAddEvent">＋ 其他事件</view></view>
+      <view class="pet-timeline">
+        <view wx:for="{{careTimeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
+          <view class="pet-timeline__dot pet-timeline__dot--pink"></view>
+          <view class="pet-timeline__date">{{item.occurredOn}}</view>
+          <view class="pet-timeline__title">{{item.title}}</view>
+          <view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{activeSection === 'calendar'}}">
+      <view class="pet-calendar-card">
+        <text class="pet-eyebrow">CARE CALENDAR</text>
+        <view class="pet-calendar-card__title">{{profile.name}}的照护月历</view>
+        <view class="pet-calendar-card__copy">历史记录、下次计划和内外驱推算放在同一张月历里。</view>
+        <view class="pet-calendar-card__stats">
+          <view><text>{{careTimeline.length}}</text><text>最近照护记录</text></view>
+          <view><text>{{careCards.length}}</text><text>周期提醒</text></view>
+        </view>
+        <view class="pet-calendar-card__button" bindtap="onOpenCalendar">打开完整月历</view>
+      </view>
+      <view class="pet-section-head"><view><text class="pet-eyebrow">最近的日期</text><text class="pet-section-head__title">照护记录</text></view><view bindtap="onAddEvent">＋ 记录事件</view></view>
+      <view class="pet-timeline">
+        <view wx:for="{{careTimeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
+          <view class="pet-timeline__dot"></view>
+          <view class="pet-timeline__date">{{item.occurredOn}}</view>
+          <view class="pet-timeline__title">{{item.title}}</view>
+          <view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{activeSection === 'daily'}}">
+      <view class="pet-section-head"><view><text class="pet-eyebrow">今天吃喝拉撒</text><text class="pet-section-head__title">点一下，就记一条</text></view><text>{{dailyDoneCount}} / 4</text></view>
+      <view class="daily-grid">
+        <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card {{item.done ? 'daily-card--done' : ''}}" data-type="{{item.type}}" bindtap="onAddDailyLog">
+          <view class="daily-card__visual">
+            <line-icon name="{{item.iconName}}" size="25" tone="{{item.done ? 'white' : 'green'}}" />
+            <view wx:if="{{item.done}}" class="daily-card__check"><line-icon name="check" size="10" tone="white" /></view>
+          </view>
+          <text class="daily-card__title">{{item.label}}</text>
+          <text class="daily-card__status">{{item.done ? '已记录' : '点按记录'}}</text>
+        </view>
+      </view>
+      <view wx:if="{{recentDailyLogs.length}}" class="daily-recent">
+        <view class="pet-section-head"><view><text class="pet-eyebrow">今天的记录</text><text class="pet-section-head__title">照护明细</text></view><text>{{recentDailyLogs.length}} 条</text></view>
+        <view class="daily-list">
+          <view wx:for="{{recentDailyLogs}}" wx:key="id" class="daily-row">
+            <view class="daily-row__icon"><line-icon name="{{item.iconName}}" size="23" tone="green" /></view>
+            <view class="daily-row__body"><text>{{item.summary}}</text><text>{{item.typeLabel}}</text></view>
+            <text class="daily-row__time">{{item.timeLabel}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="pet-section-head"><view><text class="pet-eyebrow">正在吃与正在用</text><text class="pet-section-head__title">当前用品</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
+      <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="current-supplies__row">
+          <view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply">
+            <text class="current-supply__label">{{item.categoryLabel}}</text>
+            <view class="current-supply__name">{{item.name}}</view>
+            <view class="current-supply__note">{{item.note || '正在使用'}}</view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="pet-section-head"><view><text class="pet-eyebrow">用品集合</text><text class="pet-section-head__title">全部记录</text></view><text>{{supplies.length}} 项</text></view>
+      <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="supply-filter__row">
+          <view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view>
+        </view>
+      </scroll-view>
+      <view class="supply-list">
+        <view wx:for="{{supplies}}" wx:key="id" class="supply-row" data-id="{{item.id}}" bindtap="onChangeSupplyStatus">
+          <view class="supply-row__icon"><line-icon name="{{item.iconName}}" size="25" tone="gold" /></view>
+          <view class="supply-row__body"><text>{{item.name}}</text><text>{{item.categoryLabel}} · {{item.note || item.recordedOn}}</text></view>
+          <view class="supply-row__status supply-row__status--{{item.status}}">{{item.statusLabel}}</view>
+        </view>
+      </view>
+      <view class="supply-tip">点击条目，可以改成正在用、爱吃、吃过、种草或拔草。</view>
+    </block>
+  </view>
+
   <app-tab-bar active="pets" />
 </view>

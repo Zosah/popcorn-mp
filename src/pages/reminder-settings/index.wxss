@@ -1,11 +1,11 @@
 .reminder-page {
-  --reminder-paper: #fdfbf7;
-  --reminder-surface: #fffefa;
-  --reminder-ink: #2e2a28;
-  --reminder-ink-2: #6b635c;
-  --reminder-ink-3: #a69e96;
-  --reminder-line: #ebe5da;
-  --reminder-deep: #2c4a52;
+  --reminder-paper: var(--c-paper, #f8f7f4);
+  --reminder-surface: #ffffff;
+  --reminder-ink: var(--c-text, #252b27);
+  --reminder-ink-2: var(--c-text-2, #5f5a53);
+  --reminder-ink-3: var(--c-muted, #837f76);
+  --reminder-line: var(--c-line, #e9e6e1);
+  --reminder-deep: var(--c-primary, #252b27);
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
@@ -29,6 +29,7 @@
 }
 
 .reminder-head__title {
+  font-family: var(--font-serif);
   display: block;
   color: var(--reminder-ink);
   font-size: 46rpx;
@@ -57,7 +58,7 @@
   border: 1rpx solid var(--reminder-line);
   border-radius: 999rpx;
   background: var(--reminder-surface);
-  box-shadow: 0 8rpx 20rpx rgba(82, 65, 48, 0.04);
+  box-shadow: 0 8rpx 20rpx rgba(42, 62, 50, 0.04);
   color: var(--reminder-ink);
   flex-shrink: 0;
   font-size: 25rpx;
@@ -71,7 +72,7 @@
   border: 1rpx solid var(--reminder-line);
   border-radius: 34rpx;
   background: var(--reminder-surface);
-  box-shadow: 0 12rpx 34rpx rgba(82, 65, 48, 0.045);
+  box-shadow: 0 12rpx 34rpx rgba(42, 62, 50, 0.045);
 }
 
 .reminder-row {
@@ -96,10 +97,10 @@
   flex-shrink: 0;
 }
 
-.reminder-row__icon--orange { background: #fdf0e4; }
-.reminder-row__icon--pink { background: #fcedf0; }
-.reminder-row__icon--green { background: #eef5ef; }
-.reminder-row__icon--blue { background: #eaf1f7; }
+.reminder-row__icon--orange { background: var(--c-coral-soft, #f7e7e2); }
+.reminder-row__icon--pink { background: var(--c-coral-soft, #f7e7e2); }
+.reminder-row__icon--green { background: var(--c-sage-soft, #e2eee9); }
+.reminder-row__icon--blue { background: var(--c-sage-soft, #e2eee9); }
 
 .reminder-row__body {
   display: flex;
@@ -185,7 +186,7 @@
   margin-top: 15rpx;
   padding: 13rpx 15rpx;
   border-radius: 18rpx;
-  background: #fbf3e1;
+  background: var(--c-butter-soft, #f2e8cc);
   gap: 9rpx;
 }
 
@@ -240,15 +241,15 @@
 .reminder-weekly__status {
   padding: 5rpx 11rpx;
   border-radius: 999rpx;
-  background: #eef5ef;
-  color: #6f9f7d;
+  background: var(--c-sage-soft, #e2eee9);
+  color: var(--c-sage, #668478);
   flex-shrink: 0;
   font-size: 20rpx;
   font-weight: 650;
 }
 
 .reminder-weekly--off .reminder-weekly__status {
-  background: #f6f1e9;
+  background: var(--c-paper-2, #f1ede7);
   color: var(--reminder-ink-3);
 }
 
@@ -268,9 +269,9 @@
   flex-direction: column;
 }
 
-.reminder-weekly__stat--gold { background: #fbf3e1; }
-.reminder-weekly__stat--pink { background: #fcedf0; }
-.reminder-weekly__stat--blue { background: #eaf1f7; }
+.reminder-weekly__stat--gold { background: var(--c-butter-soft, #f2e8cc); }
+.reminder-weekly__stat--pink { background: var(--c-coral-soft, #f7e7e2); }
+.reminder-weekly__stat--blue { background: var(--c-sage-soft, #e2eee9); }
 
 .reminder-weekly__stat text:first-child {
   font-family: "Helvetica Neue", Arial, sans-serif;
@@ -280,9 +281,9 @@
   line-height: 1.1;
 }
 
-.reminder-weekly__stat--gold text:first-child { color: #c28b23; }
-.reminder-weekly__stat--pink text:first-child { color: #d87592; }
-.reminder-weekly__stat--blue text:first-child { color: #5b8fb9; }
+.reminder-weekly__stat--gold text:first-child { color: var(--c-warning, #a18448); }
+.reminder-weekly__stat--pink text:first-child { color: var(--c-primary-link, #b86757); }
+.reminder-weekly__stat--blue text:first-child { color: var(--c-sage, #668478); }
 
 .reminder-weekly__stat text:last-child {
   margin-top: 5rpx;

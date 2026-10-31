@@ -18,7 +18,7 @@
         <text>库存临期提醒</text>
         <text>有物品 3 天内到期时提醒</text>
       </view>
-      <switch checked="{{settings.expiry}}" color="#2c4a52" data-key="expiry" bindchange="onToggle" />
+      <switch checked="{{settings.expiry}}" color="#252b27" data-key="expiry" bindchange="onToggle" />
     </view>
 
     <view class="reminder-row">
@@ -29,7 +29,7 @@
         <text>宠物照护提醒</text>
         <text>驱虫、疫苗和每天的小任务</text>
       </view>
-      <switch checked="{{settings.petCare}}" color="#2c4a52" data-key="petCare" bindchange="onToggle" />
+      <switch checked="{{settings.petCare}}" color="#252b27" data-key="petCare" bindchange="onToggle" />
     </view>
 
     <view class="reminder-row">
@@ -40,7 +40,7 @@
         <text>每周回顾</text>
         <text>周日晚看看这一周的生活</text>
       </view>
-      <switch checked="{{settings.weeklyReview}}" color="#2c4a52" data-key="weeklyReview" bindchange="onToggle" />
+      <switch checked="{{settings.weeklyReview}}" color="#252b27" data-key="weeklyReview" bindchange="onToggle" />
     </view>
 
     <picker mode="time" value="{{settings.reminderTime}}" bindchange="onTimeChange">

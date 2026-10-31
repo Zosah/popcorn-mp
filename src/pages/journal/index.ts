@@ -50,6 +50,7 @@ function buildNoteGroups(entries: JournalItem[]): DemoNoteGroup[] {
 Page({
   data: {
     activeView: 'moments',
+    activeSection: 'all' as 'all' | 'moments' | 'notes',
     entries: [] as JournalItem[],
     noteGroups: [] as DemoNoteGroup[],
     visibleNoteGroups: [] as DemoNoteGroup[],
@@ -123,6 +124,27 @@ Page({
     this.setData({ activeView: event.currentTarget.dataset.value })
   },
 
+  onSelectSection(event: {
+    currentTarget: { dataset: { value?: 'all' | 'moments' | 'notes' } }
+  }) {
+    const value = event.currentTarget.dataset.value
+    if (!value) return
+    if (value === 'notes') {
+      this.setData({
+        activeSection: value,
+        activeView: 'notes',
+        visibleNoteGroups: this.data.noteGroups,
+      })
+      return
+    }
+    this.setData({
+      activeSection: value,
+      activeView: 'moments',
+      activeFilter: 'moments',
+      visibleNoteGroups: this.data.noteGroups,
+    })
+  },
+
   onSelectFilter(event: {
     currentTarget: { dataset: { value?: 'moments' | DemoNoteCategory } }
   }) {
@@ -130,6 +152,7 @@ Page({
     if (!value) return
     if (value === 'moments') {
       this.setData({
+        activeSection: 'all',
         activeView: 'moments',
         activeFilter: value,
         visibleNoteGroups: this.data.noteGroups,
@@ -137,6 +160,7 @@ Page({
       return
     }
     this.setData({
+      activeSection: 'notes',
       activeView: 'notes',
       activeFilter: value,
       visibleNoteGroups: this.data.noteGroups.filter((group) => group.key === value),

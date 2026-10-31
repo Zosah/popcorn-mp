@@ -2,10 +2,12 @@ import type { ApiMediaAsset, ApiMediaPurpose } from '../types/api'
 import type { MediaGateway } from './media-gateway'
 
 export class DemoMediaGateway implements MediaGateway {
+  private readonly cache = new Map<string, ApiMediaAsset>()
+
   async upload(filePath: string, purpose: ApiMediaPurpose): Promise<ApiMediaAsset> {
     const now = new Date().toISOString()
     const id = `demo-media-${Date.now()}`
-    return {
+    const asset: ApiMediaAsset = {
       id,
       spaceId: 'demo-space',
       purpose,
@@ -15,9 +17,13 @@ export class DemoMediaGateway implements MediaGateway {
       display: { url: filePath, expiresAt: '2099-12-31T23:59:59.000Z' },
       thumb: { url: filePath, expiresAt: '2099-12-31T23:59:59.000Z' },
     }
+    this.cache.set(id, asset)
+    return asset
   }
 
   async get(mediaId: string): Promise<ApiMediaAsset> {
+    const cached = this.cache.get(mediaId)
+    if (cached) return cached
     const now = new Date().toISOString()
     return {
       id: mediaId,

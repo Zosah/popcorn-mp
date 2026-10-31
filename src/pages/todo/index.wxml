@@ -1,12 +1,24 @@
 <view class="page-shell todo-page">
-  <view class="todo-top">
-    <view class="todo-top__main">
-      <view class="todo-top__title">待办与小计划</view>
-      <view class="todo-top__sub">{{pendingCount}} 项未完成 · 已完成 {{completedCount}} 项</view>
+  <view class="todo-head">
+    <view class="todo-head__body">
+      <text class="todo-eyebrow">一起生活</text>
+      <view class="todo-head__title">待办与小计划</view>
+      <view class="todo-head__sub">两个人的小事，也值得认真安排</view>
     </view>
-    <view class="todo-add-top" bindtap="onCreate">
-      <line-icon name="plus" size="22" tone="white" />
-      <text>新增</text>
+    <view class="todo-create" bindtap="onCreate">
+      <line-icon name="pen-line" size="19" tone="ink" />
+      <text>新建</text>
+    </view>
+  </view>
+
+  <view class="todo-progress">
+    <view class="todo-progress__body">
+      <text class="todo-progress__eyebrow">本周进度</text>
+      <view class="todo-progress__title">一起完成了 {{completedCount}} 件事</view>
+      <view class="todo-progress__copy">{{pendingCount ? '还剩 ' + pendingCount + ' 件，慢慢来就好' : '目前都做完了，可以再记一件'}}</view>
+    </view>
+    <view class="todo-progress__ring" style="background: conic-gradient(#c67d6d {{progressPercent}}%, rgba(255,255,255,.14) 0);">
+      <view class="todo-progress__inner">{{progressPercent}}<text>%</text></view>
     </view>
   </view>
 
@@ -20,20 +32,9 @@
   </scroll-view>
 
   <view wx:if="{{loadError && items.length}}" class="todo-banner">
-    <line-icon name="circle-alert" size="22" tone="danger" />
+    <line-icon name="circle-alert" size="21" tone="danger" />
     <view class="todo-banner__body"><text>这次没有刷新完整</text><text>先显示已经收好的内容，稍后再同步一次。</text></view>
     <view class="todo-banner__action" bindtap="onRetryLoad">重试</view>
-  </view>
-
-  <view class="todo-progress">
-    <view class="todo-progress__ring" style="background: conic-gradient(#2c4a52 {{progressPercent}}%, #ebe5da 0);">
-      <view class="todo-progress__inner">{{progressPercent}}%</view>
-    </view>
-    <view class="todo-progress__body">
-      <view class="todo-progress__title">本周完成 {{completedCount}} / {{totalCount}}</view>
-      <view class="todo-progress__copy">{{pendingCount ? '一件一件来，今天也可以只做一点点。' : '目前都做完了，可以再记一件。'}}</view>
-      <view wx:if="{{activeKind === 'expense'}}" class="todo-progress__expense">共同账本 {{expenseCount}} 笔 · {{expenseTotalLabel}}</view>
-    </view>
   </view>
 
   <view wx:if="{{activeKind === 'meal'}}" class="todo-meal">
@@ -44,13 +45,16 @@
     <view class="todo-meal__title">{{mealIdea}}</view>
     <view class="todo-meal__actions">
       <view class="todo-meal__ghost" bindtap="onShuffleMealIdea">再想想</view>
-      <view class="todo-meal__primary" bindtap="onUseMealIdea">就吃这个 · 生成待办</view>
+      <view class="todo-meal__primary" bindtap="onUseMealIdea">就吃这个</view>
     </view>
   </view>
 
-  <view class="todo-section-head">
-    <text>{{activeLabel}}</text>
-    <text>{{items.length}} 条</text>
+  <view class="todo-list-heading">
+    <view>
+      <text class="todo-list-heading__eyebrow">{{activeKind === 'all' ? '今天' : '当前分类'}}</text>
+      <text class="todo-list-heading__title">{{activeLabel}}</text>
+    </view>
+    <text>{{pendingCount}} 项未完成</text>
   </view>
 
   <view wx:if="{{loading && !items.length}}" class="todo-state">
@@ -70,7 +74,7 @@
     <view wx:for="{{items}}" wx:key="id" class="todo-item {{item.done ? 'todo-item--done' : ''}}" data-id="{{item.id}}" bindlongpress="onLongPressItem">
       <view class="todo-item__main" data-id="{{item.id}}" bindtap="onEditItem">
         <view class="todo-check todo-check--{{item.kind}} {{item.done ? 'todo-check--done' : ''}}" data-id="{{item.id}}" catchtap="onToggleItem">
-          <line-icon wx:if="{{item.done}}" name="check" size="16" tone="white" />
+          <line-icon wx:if="{{item.done}}" name="check" size="15" tone="white" />
         </view>
         <view class="todo-item__body">
           <view class="todo-item__title">{{item.title}}</view>
@@ -79,13 +83,12 @@
         </view>
         <view class="todo-item__right">
           <text wx:if="{{item.dateLabel}}" class="{{item.overdue ? 'todo-item__date todo-item__date--late' : 'todo-item__date'}}">{{item.overdue ? '已过期' : item.dateLabel}}</text>
-          <text class="todo-item__arrow">›</text>
         </view>
       </view>
       <view wx:if="{{item.checklist.length}}" class="todo-checklist">
         <view class="todo-checklist__head"><text>准备清单</text><text>{{item.checklistText}}</text></view>
         <view wx:for="{{item.checklist}}" wx:for-item="check" wx:key="id" class="todo-checklist__row {{check.done ? 'todo-checklist__row--done' : ''}}" data-parent-id="{{item.id}}" data-checklist-id="{{check.id}}" catchtap="onToggleChecklist">
-          <view class="todo-checklist__check"><line-icon wx:if="{{check.done}}" name="check" size="12" tone="white" /></view>
+          <view class="todo-checklist__check"><line-icon wx:if="{{check.done}}" name="check" size="11" tone="white" /></view>
           <text class="todo-checklist__number">{{check.number}}</text>
           <text class="todo-checklist__text">{{check.text}}</text>
         </view>
@@ -100,12 +103,36 @@
     <view class="todo-state__action" bindtap="onCreate">记下第一件事</view>
   </view>
 
-  <view class="todo-bottom-space"></view>
-  <view class="todo-action-bar">
-    <button class="todo-add" bindtap="onCreate">
-      <line-icon name="plus" size="21" tone="white" />
-      <text>记一件要做的事</text>
-    </button>
-  </view>
+  <block wx:if="{{travelHighlight}}">
+    <view class="todo-list-heading todo-list-heading--section">
+      <view><text class="todo-list-heading__eyebrow">计划正在发生</text><text class="todo-list-heading__title">进行中的计划</text></view>
+    </view>
+    <view class="todo-trip" data-id="{{travelHighlight.id}}" bindtap="onEditItem">
+      <view class="todo-trip__top">
+        <view class="todo-trip__icon"><line-icon name="plane" size="25" tone="green" /></view>
+        <view class="todo-trip__body">
+          <text class="todo-trip__tag">旅行准备</text>
+          <view class="todo-trip__title">{{travelHighlight.title}}</view>
+          <view class="todo-trip__meta">{{travelHighlight.meta}}</view>
+        </view>
+        <text class="todo-trip__arrow">›</text>
+      </view>
+      <view class="todo-trip__progress"><view style="width: {{travelHighlight.progress}}%;"></view></view>
+      <view class="todo-trip__foot">{{travelHighlight.progressText}}</view>
+    </view>
+  </block>
+
+  <block wx:if="{{expenseHighlight}}">
+    <view class="todo-bill" data-id="{{expenseHighlight.id}}" bindtap="onEditItem">
+      <view class="todo-bill__icon"><line-icon name="wallet" size="24" tone="gold" /></view>
+      <view class="todo-bill__body">
+        <text>本月共同支出</text>
+        <view>{{expenseTotalLabel}}</view>
+        <text>{{expenseHighlight.latestMeta}}</text>
+      </view>
+      <text class="todo-bill__arrow">›</text>
+    </view>
+  </block>
+
   <app-tab-bar active="todo" />
 </view>

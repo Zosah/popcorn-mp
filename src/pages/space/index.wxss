@@ -1,15 +1,15 @@
 .space-page {
-  --space-paper: #fdfbf7;
-  --space-surface: #fffefa;
-  --space-ink: #2e2a28;
-  --space-ink-2: #6b635c;
-  --space-ink-3: #a69e96;
-  --space-line: #ebe5da;
-  --space-deep: #2c4a52;
-  --space-blue: #5b8fb9;
-  --space-green: #6f9f7d;
-  --space-orange: #d98a45;
-  --space-pink: #d87592;
+  --space-paper: var(--c-paper, #f8f7f4);
+  --space-surface: #ffffff;
+  --space-ink: var(--c-text, #252b27);
+  --space-ink-2: var(--c-text-2, #5f5a53);
+  --space-ink-3: var(--c-muted, #837f76);
+  --space-line: var(--c-line, #e9e6e1);
+  --space-deep: var(--c-primary, #252b27);
+  --space-blue: var(--c-sage, #668478);
+  --space-green: var(--c-sage, #668478);
+  --space-orange: #9a7250;
+  --space-pink: var(--c-primary-link, #b86757);
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
@@ -24,7 +24,7 @@
   border: 1rpx solid var(--space-line);
   border-radius: 40rpx;
   background: var(--space-surface);
-  box-shadow: 0 14rpx 38rpx rgba(82, 65, 48, 0.05);
+  box-shadow: 0 14rpx 38rpx rgba(42, 62, 50, 0.05);
   text-align: center;
 }
 
@@ -36,7 +36,7 @@
   justify-content: center;
   margin: 0 auto 20rpx;
   border-radius: 32rpx;
-  background: #eaf1f7;
+  background: var(--c-sage-soft, #e2eee9);
 }
 
 .space-hero__title-row {
@@ -47,6 +47,7 @@
 }
 
 .space-hero__title {
+  font-family: var(--font-serif);
   min-width: 0;
   overflow: hidden;
   max-width: 460rpx;
@@ -61,7 +62,7 @@
 .space-hero__edit {
   padding: 8rpx 17rpx;
   border-radius: 999rpx;
-  background: #f6f1e9;
+  background: var(--c-paper-2, #f1ede7);
   color: var(--space-ink-2);
   flex-shrink: 0;
   font-size: 23rpx;
@@ -149,7 +150,7 @@
   border: 1rpx solid var(--space-line);
   border-radius: 30rpx;
   background: var(--space-surface);
-  box-shadow: 0 10rpx 28rpx rgba(82, 65, 48, 0.035);
+  box-shadow: 0 10rpx 28rpx rgba(42, 62, 50, 0.035);
 }
 
 .member-row {
@@ -201,12 +202,12 @@
 }
 
 .member-row__role--owner {
-  background: #eaf1f7;
-  color: #4b7fa7;
+  background: var(--c-sage-soft, #e2eee9);
+  color: var(--c-sage, #668478);
 }
 
 .member-row__role--member {
-  background: #fcedf0;
+  background: var(--c-coral-soft, #f7e7e2);
   color: var(--space-pink);
 }
 
@@ -231,8 +232,8 @@
   padding: 25rpx 24rpx 22rpx;
   border: 1rpx solid #f6dce2;
   border-radius: 34rpx;
-  background: linear-gradient(145deg, #fdf1f4, #fcedf0);
-  box-shadow: 0 12rpx 30rpx rgba(216, 117, 146, 0.06);
+  background: linear-gradient(145deg, #fdf1f4, var(--c-coral-soft, #f7e7e2));
+  box-shadow: 0 12rpx 30rpx rgba(168, 86, 78, 0.06);
 }
 
 .invite-sheet__label {
@@ -287,8 +288,8 @@
 }
 
 .invite-sheet__copy-button {
-  border: 1rpx solid rgba(44, 74, 82, 0.08);
-  background: rgba(255, 254, 250, 0.92);
+  border: 1rpx solid rgba(45, 74, 58, 0.08);
+  background: rgba(255, 255, 255, 0.92);
   color: var(--space-ink);
 }
 
@@ -296,8 +297,8 @@
 .invite-sheet__actions .primary-button {
   border: 0;
   background: var(--space-deep);
-  color: #fffefa;
-  box-shadow: 0 9rpx 20rpx rgba(44, 74, 82, 0.15);
+  color: #ffffff;
+  box-shadow: 0 9rpx 20rpx rgba(45, 74, 58, 0.15);
 }
 
 .invite-sheet__links {
@@ -321,7 +322,7 @@
   padding: 19rpx 20rpx;
   border: 1rpx solid var(--space-line);
   border-radius: 28rpx;
-  background: rgba(255, 254, 250, 0.72);
+  background: rgba(255, 255, 255, 0.72);
   gap: 14rpx;
 }
 
@@ -332,7 +333,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 15rpx;
-  background: #f6f1e9;
+  background: var(--c-paper-2, #f1ede7);
   flex-shrink: 0;
 }
 

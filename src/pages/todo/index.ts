@@ -233,6 +233,17 @@ Page({
     mealIdeaIndex: 0,
     expenseTotalLabel: '¥0.00',
     expenseCount: 0,
+    travelHighlight: null as {
+      id: string
+      title: string
+      meta: string
+      progress: number
+      progressText: string
+    } | null,
+    expenseHighlight: null as {
+      id: string
+      latestMeta: string
+    } | null,
     emptyTitle: '这里还没有待办',
     emptyCopy: '先记下一件想做的事，完成一件就少一件。',
   },
@@ -305,6 +316,10 @@ Page({
       : items.filter((item) => item.kind === selectedKind)
     const expenses = items.filter((item) => item.kind === 'expense')
     const expenseTotal = expenses.reduce((total, item) => total + item.amount, 0)
+    const latestExpense = expenses[0]
+    const travel = items.find((item) => item.kind === 'travel' && !item.done)
+    const travelDone = travel?.checklist.filter((entry) => entry.done).length ?? 0
+    const travelTotal = travel?.checklist.length ?? 0
     const progressPercent = summary.total
       ? Math.round((summary.completed / summary.total) * 100)
       : 0
@@ -322,6 +337,27 @@ Page({
       progressPercent,
       expenseTotalLabel: `¥${expenseTotal.toFixed(2)}`,
       expenseCount: expenses.length,
+      travelHighlight: travel
+        ? {
+            id: travel.id,
+            title: travel.title,
+            meta: itemMeta(travel),
+            progress: travelTotal
+              ? Math.round((travelDone / travelTotal) * 100)
+              : 0,
+            progressText: travelTotal
+              ? `已完成 ${travelDone} / ${travelTotal} 项准备`
+              : travel.dueDate
+                ? `计划于 ${formatDateLabel(travel.dueDate)} 出发`
+                : '还没有添加准备清单',
+          }
+        : null,
+      expenseHighlight: latestExpense
+        ? {
+            id: latestExpense.id,
+            latestMeta: `最近一笔 · ${latestExpense.merchant || latestExpense.title} ${formatAmount(latestExpense.amount)}`,
+          }
+        : null,
       emptyTitle: selected && selected.value !== 'all'
         ? `${selected.label}还是空的`
         : '这里还没有待办',

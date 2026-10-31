@@ -1,83 +1,93 @@
+/*
+ * 底部导航 · v10
+ * 紧凑贴底栏：降低整体高度，去掉双层高亮和重毛玻璃，减少切页时的叠影感。
+ */
 .app-tab-shell {
   position: fixed;
-  right: 22rpx;
-  bottom: calc(4rpx + env(safe-area-inset-bottom));
-  left: 22rpx;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 900;
-  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1rpx solid rgba(216, 209, 199, 0.64);
+  background: #f9f8f5;
+  box-shadow: 0 -8rpx 26rpx rgba(92, 74, 61, 0.035);
+  transform: translateZ(0);
 }
 
 .app-tab-bar {
   display: flex;
-  height: 92rpx;
-  align-items: center;
-  padding: 7rpx 9rpx;
+  height: 112rpx;
+  align-items: stretch;
+  padding: 8rpx 28rpx 10rpx;
   box-sizing: border-box;
-  border: 1rpx solid rgba(255, 255, 255, 0.94);
-  border-radius: 32rpx;
-  background: rgba(255, 254, 250, 0.98);
-  box-shadow:
-    0 12rpx 28rpx -12rpx rgba(63, 52, 42, 0.2),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.94);
-  pointer-events: auto;
+  gap: 4rpx;
 }
 
 .app-tab-item {
   position: relative;
   display: flex;
   min-width: 0;
-  height: 78rpx;
+  height: 94rpx;
   align-items: center;
   justify-content: center;
   border-radius: 26rpx;
-  color: #8d8580;
+  color: var(--c-faint, #a29b91);
   flex: 1;
-  gap: 7rpx;
-  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+  flex-direction: column;
+  gap: 2rpx;
+  transition:
+    color 120ms ease,
+    opacity 120ms ease,
+    transform 120ms ease;
 }
 
 .app-tab-item--active {
-  background: #f3eee5;
-  color: #2e2a28;
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.86);
-}
-
-.app-tab-item--pending {
-  opacity: 0.82;
-}
-
-.app-tab-item--pressed {
-  opacity: 0.75;
-  transform: scale(0.97);
+  color: var(--c-primary, #252b27);
 }
 
 .app-tab-item__icon {
   display: flex;
-  width: 38rpx;
-  height: 38rpx;
+  width: 60rpx;
+  height: 44rpx;
   align-items: center;
   justify-content: center;
-  border-radius: 14rpx;
+  border-radius: 999rpx;
+  background: transparent;
   flex: 0 0 auto;
+  transition: background 120ms ease, transform 120ms ease;
 }
 
-.app-tab-item__icon--blue { background: #eaf1f7; }
-.app-tab-item__icon--green { background: #eef5ef; }
-.app-tab-item__icon--gold { background: #fbf3e1; }
-.app-tab-item__icon--pink { background: #fcedf0; }
-.app-tab-item__icon--orange { background: #fdf0e4; }
+.app-tab-item--active .app-tab-item__icon {
+  background: rgba(198, 125, 109, 0.13);
+}
 
 .app-tab-item__label {
   overflow: hidden;
-  font-size: 24rpx;
-  font-weight: 600;
-  line-height: 1;
+  color: inherit;
+  font-size: 20rpx;
+  font-weight: 500;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.app-tab-item--active .app-tab-item__label {
+  font-weight: 700;
+}
+
+.app-tab-item--pending .app-tab-item__icon {
+  transform: translateY(-1rpx) scale(0.96);
+}
+
+.app-tab-item--pressed {
+  opacity: 0.68;
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .app-tab-item {
+  .app-tab-item,
+  .app-tab-item__icon {
     transition: none;
   }
 }

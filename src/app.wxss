@@ -1,49 +1,90 @@
 /*
- * 「时刻见」设计 token（v7 纸感生活手帐）
- * 墨青负责秩序，纸底与领域马卡龙负责温度；不再使用紫色作为主识别色。
+ * 「时刻见」设计 token · v9 暖奶油手帐
+ *
+ * 视觉基准来自最新 Figma Make：奶油纸底、珊瑚陶土、鼠尾草绿与宋体标题。
+ * 主按钮使用墨色，珊瑚只负责强调与当下状态；这样页面有温度，但不会到处抢焦点。
  */
 page {
-  --c-primary: #2c4a52;
-  --c-primary-deep: #243d44;
-  --c-primary-soft: #e8eeef;
-  --c-accent: #2c4a52;
-  --c-accent-2: #9bc4a6;
-  --c-accent-3: #f0a868;
-  --c-accent-soft: #e8eeef;
-  --c-mint-soft: #eef5ef;
-  --c-peach-soft: #fdf0e4;
-  --c-warm-soft: #fbf3e1;
-  --c-blue-soft: #eaf1f7;
-  --c-pink-soft: #fcedf0;
-  --c-bg: #fdfbf7;
-  --c-paper-2: #f6f1e9;
-  --c-surface: rgba(255, 254, 250, 0.94);
-  --c-surface-strong: #fffefa;
-  --c-text: #2e2a28;
-  --c-text-2: #6b635c;
-  --c-muted: #8d8580;
-  --c-faint: #a69e96;
-  --c-line: #ebe5da;
-  --c-line-strong: #ddd5c8;
-  --c-success: #6f9f7d;
-  --c-success-soft: #eef5ef;
-  --c-warning: #b78024;
-  --c-warning-soft: #fbf3e1;
-  --c-danger: #d85f78;
-  --c-danger-soft: #fcebee;
-  --c-shadow: rgba(82, 65, 48, 0.07);
-  --r-card: 30rpx;
-  --r-card-lg: 40rpx;
-  --r-btn: 999rpx;
+  /* ---- 纸 ---- */
+  --c-paper: #f8f7f4;
+  --c-paper-2: #f1ede7;
+  --c-paper-3: #e9e6e1;
+  --c-paper-grad:
+    radial-gradient(circle at 104% 1%, rgba(250, 216, 202, 0.52) 0%, rgba(250, 216, 202, 0) 25%),
+    radial-gradient(circle at -8% 36%, rgba(226, 238, 233, 0.7) 0%, rgba(226, 238, 233, 0) 26%),
+    linear-gradient(180deg, #fffaf5 0%, #faf7f1 44%, #f8f7f4 100%);
+
+  /* ---- 品牌色 ---- */
+  --c-primary: #252b27;
+  --c-primary-deep: #1f2421;
+  --c-primary-soft: #f7e7e2;
+  --c-primary-faint: #fbf0ed;
+  --c-primary-link: #b86757;
+  --c-coral: #c67d6d;
+  --c-coral-soft: #f7e7e2;
+  --c-sage: #668478;
+  --c-sage-soft: #e2eee9;
+  --c-butter: #c9a764;
+  --c-butter-soft: #f2e8cc;
+  --c-accent-ink: #668478;
+
+  /* ---- 文字 ---- */
+  --c-text: #252b27;
+  --c-text-2: #5f5a53;
+  --c-muted: #837f76;
+  --c-faint: #a29b91;
+
+  /* ---- 线 ---- */
+  --c-line: #e9e6e1;
+  --c-line-strong: #d8d1c7;
+
+  /* ---- 语义色 ---- */
+  --c-success: #668478;
+  --c-success-soft: #e2eee9;
+  --c-warning: #a18448;
+  --c-warning-soft: #f2e8cc;
+  --c-danger: #b86757;
+  --c-danger-soft: #f7e7e2;
+
+  /* ---- 阴影与玻璃 ---- */
+  --c-shadow: rgba(92, 74, 61, 0.06);
+  --c-shadow-strong: rgba(92, 74, 61, 0.14);
+  --c-glass: rgba(255, 255, 255, 0.68);
+  --c-glass-border: rgba(255, 255, 255, 0.86);
+
+  /* ---- 领域色：只用于图标底和小面积点缀 ---- */
+  --c-mint-soft: #e2eee9;
+  --c-peach-soft: #f7e7e2;
+  --c-warm-soft: #f2e8cc;
+  --c-blue-soft: #dfe7e7;
+  --c-pink-soft: #e9e5eb;
+  --c-lilac-soft: #e9e5eb;
+
+  /* ---- 兼容旧变量名 ---- */
+  --c-accent: #c67d6d;
+  --c-accent-2: #668478;
+  --c-accent-3: #c9a764;
+  --c-accent-soft: #f7e7e2;
+  --c-bg: #f8f7f4;
+  --c-surface: rgba(255, 255, 255, 0.78);
+  --c-surface-strong: #ffffff;
+
+  /* ---- 圆角与间距 ---- */
+  --r-card: 32rpx;
+  --r-card-lg: 44rpx;
+  --r-btn: 28rpx;
   --r-pill: 999rpx;
   --sp-1: 8rpx;
   --sp-2: 16rpx;
   --sp-3: 24rpx;
   --sp-4: 32rpx;
-  --fs-caption: 26rpx;
-  --fs-body: 32rpx;
-  --fs-title: 36rpx;
-  --fs-display: 57rpx;
+
+  /* ---- 字号：以 32rpx 为正文基准 ---- */
+  --fs-caption: 24rpx;
+  --fs-body: 30rpx;
+  --fs-title: 38rpx;
+  --fs-display: 62rpx;
+  --font-serif: "Noto Serif SC", "Songti SC", "STSong", serif;
 }
 
 page {
@@ -52,11 +93,12 @@ page {
   min-height: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
-  background-color: #fdfbf7;
-  background-image: none;
-  color: var(--c-text, #2e2a28);
+  background-color: var(--c-paper);
+  background-image: var(--c-paper-grad);
+  background-attachment: fixed;
+  color: var(--c-text);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: var(--fs-body, 32rpx);
+  font-size: var(--fs-body);
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
@@ -84,7 +126,7 @@ page::-webkit-scrollbar {
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 34rpx 36rpx calc(158rpx + env(safe-area-inset-bottom));
+  padding: 0 0 calc(224rpx + env(safe-area-inset-bottom));
 }
 
 .page-shell {
@@ -93,75 +135,79 @@ page::-webkit-scrollbar {
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 28rpx 36rpx calc(158rpx + env(safe-area-inset-bottom));
+  padding: 30rpx 36rpx calc(224rpx + env(safe-area-inset-bottom));
 }
 
 .subpage-back {
   display: none;
 }
 
-.glass-card {
+/* 卡片：白纸轻描边，玻璃只负责柔化背景，不制造一层层浮岛 */
+.glass-card,
+.card {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  border: 1rpx solid rgba(255, 255, 255, 0.92);
-  border-radius: var(--r-card, 30rpx);
-  background: linear-gradient(145deg, rgba(255, 254, 250, 0.98), rgba(253, 251, 247, 0.94));
+  border: 1rpx solid var(--c-line);
+  border-radius: var(--r-card);
+  background: rgba(255, 255, 255, 0.88);
   box-shadow:
-    0 18rpx 48rpx var(--c-shadow, rgba(68, 61, 76, 0.08)),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(18rpx);
-  -webkit-backdrop-filter: blur(18rpx);
+    0 16rpx 40rpx -30rpx var(--c-shadow-strong),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
 }
 
-.card {
-  box-sizing: border-box;
-  border: 1rpx solid rgba(255, 255, 255, 0.92);
-  border-radius: var(--r-card, 30rpx);
-  background: linear-gradient(145deg, rgba(255, 254, 250, 0.98), rgba(253, 251, 247, 0.94));
+.glass-card {
+  border-color: var(--c-glass-border);
+  border-radius: var(--r-card-lg);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.52));
   box-shadow:
-    0 16rpx 40rpx var(--c-shadow, rgba(68, 61, 76, 0.08)),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(16rpx);
-  -webkit-backdrop-filter: blur(16rpx);
+    0 20rpx 52rpx -34rpx var(--c-shadow-strong),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
 }
 
 .h-display {
-  color: var(--c-text, #2e2a28);
-  font-size: var(--fs-display, 57rpx);
-  font-weight: 600;
-  line-height: 1.25;
+  color: var(--c-text);
+  font-family: var(--font-serif);
+  font-size: var(--fs-display);
+  font-weight: 700;
+  line-height: 1.35;
   letter-spacing: -2rpx;
 }
 
 .h-title {
-  color: var(--c-text, #2e2a28);
-  font-size: var(--fs-title, 36rpx);
-  font-weight: 600;
-  line-height: 1.4;
+  color: var(--c-text);
+  font-family: var(--font-serif);
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -1rpx;
 }
 
 .muted {
-  color: var(--c-muted, #8d8580);
+  color: var(--c-muted);
 }
 
 .section-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin: 34rpx 4rpx 16rpx;
+  margin: 30rpx 4rpx 14rpx;
 }
 
 .section-head__title {
-  color: var(--c-text, #2e2a28);
-  font-size: 31rpx;
-  font-weight: 600;
-  letter-spacing: 0.5rpx;
+  color: var(--c-text);
+  font-family: var(--font-serif);
+  font-size: 34rpx;
+  font-weight: 700;
+  letter-spacing: -0.5rpx;
 }
 
 .section-head__action {
-  color: var(--c-muted, #8d8580);
-  font-size: 25rpx;
+  color: var(--c-primary-link);
+  font-size: 24rpx;
+  font-weight: 600;
 }
 
 /* 数据来源标识的统一摆放位置 */
@@ -175,10 +221,10 @@ page::-webkit-scrollbar {
 .segmented {
   display: flex;
   padding: 7rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.86);
-  border-radius: 999rpx;
-  background: rgba(255, 254, 250, 0.72);
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.88);
+  border: 1rpx solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--r-pill);
+  background: rgba(235, 229, 221, 0.74);
+  box-shadow: inset 0 1rpx 2rpx rgba(92, 74, 61, 0.04);
 }
 
 .segmented__item {
@@ -188,17 +234,18 @@ page::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   height: 66rpx;
-  border-radius: 999rpx;
-  color: var(--c-muted, #8d8580);
-  font-size: 27rpx;
+  border-radius: var(--r-pill);
+  color: var(--c-muted);
+  font-size: 26rpx;
   font-weight: 500;
   transition: color 160ms ease, background 160ms ease;
 }
 
 .segmented__item--active {
-  background: rgba(255, 254, 250, 0.98);
-  color: var(--c-text, #2e2a28);
-  box-shadow: 0 8rpx 20rpx rgba(68, 61, 76, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--c-text);
+  font-weight: 700;
+  box-shadow: 0 8rpx 20rpx -14rpx rgba(92, 74, 61, 0.3);
 }
 
 .segmented__item--active::after {
@@ -213,49 +260,48 @@ page::-webkit-scrollbar {
   justify-content: center;
   min-height: 92rpx;
   margin: 0;
-  border-radius: var(--r-btn, 999rpx);
+  border-radius: var(--r-btn);
   gap: 10rpx;
-  font-size: 32rpx;
-  font-weight: 600;
-  letter-spacing: 0.5rpx;
+  font-size: 31rpx;
+  font-weight: 700;
+  letter-spacing: 0.4rpx;
 }
 
 .primary-button {
-  border: 1rpx solid rgba(255, 255, 255, 0.30);
-  background: var(--c-primary, #2c4a52);
-  box-shadow: 0 15rpx 32rpx rgba(44, 74, 82, 0.18);
-  color: #fffefa;
+  border: 0;
+  background: var(--c-primary);
+  box-shadow: 0 14rpx 28rpx -18rpx rgba(37, 43, 39, 0.5);
+  color: #ffffff;
 }
 
 .secondary-button {
-  border: 1rpx solid var(--c-line, #ebe5da);
-  background: rgba(255, 254, 250, 0.92);
-  box-shadow: 0 8rpx 20rpx rgba(82, 65, 48, 0.04);
-  color: var(--c-primary, #2c4a52);
+  border: 1rpx solid var(--c-line-strong);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--c-primary);
 }
 
 .danger-button {
-  border: 1rpx solid rgba(223, 111, 125, 0.12);
-  background: var(--c-danger-soft, #fce9ec);
-  color: var(--c-danger, #b96f78);
+  border: 1rpx solid rgba(168, 86, 78, 0.16);
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
 }
 
 .soft-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 22rpx;
-  background: rgba(255, 254, 250, 0.84);
-  box-shadow:
-    0 8rpx 18rpx rgba(68, 61, 76, 0.07),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.94);
+  border: 1rpx solid rgba(255, 255, 255, 0.86);
+  border-radius: 21rpx;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8rpx 20rpx -14rpx var(--c-shadow-strong);
 }
 
+/* 小标签：不再是全大写加字距的装饰性 eyebrow，改成真正用来标字段的注记 */
 .eyebrow {
-  color: var(--c-primary, #2c4a52);
-  font-size: 22rpx;
+  color: var(--c-muted);
+  font-size: 21rpx;
   font-weight: 600;
-  letter-spacing: 4rpx;
+  letter-spacing: 0.6rpx;
   line-height: 1.4;
 }
 
@@ -266,7 +312,7 @@ page::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   padding: 42rpx 30rpx 38rpx;
-  border-radius: 34rpx;
+  border-radius: var(--r-card);
   flex-direction: column;
   text-align: center;
 }
@@ -276,7 +322,7 @@ page::-webkit-scrollbar {
 }
 
 .state-card--error {
-  background: linear-gradient(145deg, rgba(255, 252, 251, 0.88), rgba(252, 235, 238, 0.68));
+  background: var(--c-danger-soft);
 }
 
 .state-card__icon {
@@ -285,28 +331,28 @@ page::-webkit-scrollbar {
   height: 88rpx;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.78);
-  border-radius: 30rpx;
-  background: linear-gradient(145deg, #eaf1f7, #eef5ef);
-  box-shadow: 0 9rpx 20rpx rgba(68, 61, 76, 0.06);
+  border: 1rpx solid var(--c-line);
+  border-radius: 28rpx;
+  background: #fff;
+  box-shadow: 0 9rpx 20rpx -12rpx var(--c-shadow-strong);
 }
 
 .state-card--error .state-card__icon {
-  background: linear-gradient(145deg, #fff4f4, #fbe7ea);
+  border-color: rgba(168, 86, 78, 0.14);
 }
 
 .state-card__title {
   margin-top: 18rpx;
-  color: var(--c-text, #2e2a28);
-  font-size: 30rpx;
-  font-weight: 600;
+  color: var(--c-text);
+  font-size: 29rpx;
+  font-weight: 700;
   line-height: 1.45;
 }
 
 .state-card__copy {
   max-width: 490rpx;
   margin-top: 7rpx;
-  color: var(--c-muted, #8d8580);
+  color: var(--c-muted);
   font-size: 23rpx;
   line-height: 1.65;
 }
@@ -318,24 +364,27 @@ page::-webkit-scrollbar {
   justify-content: center;
   margin-top: 20rpx;
   padding: 0 24rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.88);
-  border-radius: 999rpx;
-  background: rgba(255, 254, 250, 0.86);
-  color: var(--c-primary, #2c4a52);
+  border: 1rpx solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  background: #fff;
+  color: var(--c-primary);
   font-size: 23rpx;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .state-banner {
   display: flex;
   align-items: center;
   padding: 16rpx 18rpx;
-  border-radius: 26rpx;
+  border: 1rpx solid var(--c-line);
+  border-radius: 24rpx;
+  background: #fff;
   gap: 13rpx;
 }
 
 .state-banner--warm {
-  background: linear-gradient(135deg, rgba(255, 252, 249, 0.90), rgba(252, 237, 235, 0.76));
+  border-color: rgba(168, 86, 78, 0.16);
+  background: var(--c-danger-soft);
 }
 
 .state-banner__icon {
@@ -344,8 +393,8 @@ page::-webkit-scrollbar {
   height: 50rpx;
   align-items: center;
   justify-content: center;
-  border-radius: 17rpx;
-  background: rgba(255, 255, 255, 0.74);
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
 }
 
@@ -358,13 +407,13 @@ page::-webkit-scrollbar {
 }
 
 .state-banner__title {
-  color: var(--c-text, #2e2a28);
+  color: var(--c-text);
   font-size: 23rpx;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .state-banner__copy {
-  color: var(--c-text-2, #6b635c);
+  color: var(--c-text-2);
   font-size: 20rpx;
   line-height: 1.45;
 }
@@ -374,10 +423,10 @@ page::-webkit-scrollbar {
   min-height: 54rpx;
   align-items: center;
   padding: 0 4rpx 0 10rpx;
-  color: var(--c-primary, #2c4a52);
+  color: var(--c-primary);
   flex-shrink: 0;
   font-size: 21rpx;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 input,

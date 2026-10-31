@@ -24,10 +24,10 @@
     "pages/tab-settings/index"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#fdfbf7",
+    "navigationBarBackgroundColor": "#fbfaf6",
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "时刻见",
-    "backgroundColor": "#fdfbf7",
+    "backgroundColor": "#fbfaf6",
     "backgroundTextStyle": "light"
   },
   "sitemapLocation": "sitemap.json"

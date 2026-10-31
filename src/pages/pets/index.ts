@@ -113,6 +113,22 @@ Page({
     homeOnLabel: '',
     neuteredOnLabel: '',
     latestWeight: '—',
+    companionDays: 0,
+    dailyDoneCount: 0,
+    nextCare: null as {
+      title: string
+      monthLabel: string
+      dayLabel: string
+      meta: string
+      statusLabel: string
+    } | null,
+    featuredSupply: null as {
+      id: string
+      categoryLabel: string
+      iconName: string
+      name: string
+      note: string
+    } | null,
     weightPoints: [] as Array<{
       value: string
       dateLabel: string
@@ -236,6 +252,35 @@ Page({
     const todayDailyLogs = state.dailyLogs.filter(
       (item) => getShanghaiDateOnly(Date.parse(item.recordedAt)) === today,
     )
+    const dailySummary = buildPetDailySummary(state.dailyLogs, today).map((item) => ({
+      ...item,
+      iconName: PET_DAILY_ICON_NAMES[item.type],
+    }))
+    const careCards = buildPetCareCards(state.events, today)
+    const carePriority: Record<string, number> = {
+      overdue: 0,
+      'due-soon': 1,
+      normal: 2,
+      unrecorded: 3,
+    }
+    const nextCareCard = [...careCards].sort((left, right) =>
+      (carePriority[left.status] ?? 9) - (carePriority[right.status] ?? 9) ||
+      (left.nextOn ?? '9999-12-31').localeCompare(right.nextOn ?? '9999-12-31'),
+    )[0]
+    const nextOnParts = nextCareCard?.nextOn?.split('-') ?? []
+    const currentSupplies = getCurrentPetSupplies(state.supplies).map((item) => ({
+      id: item.id,
+      categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
+      iconName: PET_SUPPLY_ICON_NAMES[item.category],
+      name: item.name,
+      note: item.note,
+    }))
+    const homeTimestamp = Date.parse(`${state.profile.homeOn}T00:00:00.000Z`)
+    const todayTimestamp = Date.parse(`${today}T00:00:00.000Z`)
+    const companionDays =
+      Number.isFinite(homeTimestamp) && Number.isFinite(todayTimestamp)
+        ? Math.max(1, Math.floor((todayTimestamp - homeTimestamp) / 86400000) + 1)
+        : 0
 
     this.setData({
       profile: state.profile,
@@ -246,17 +291,26 @@ Page({
       homeOnLabel: formatShortDate(state.profile.homeOn),
       neuteredOnLabel: formatShortDate(state.profile.neuteredOn),
       latestWeight: latestValue?.value ?? '—',
+      companionDays,
+      dailyDoneCount: dailySummary.filter((item) => item.done).length,
+      nextCare: nextCareCard
+        ? {
+            title: nextCareCard.title,
+            monthLabel: nextOnParts[1] ? `${Number(nextOnParts[1])}月` : '待定',
+            dayLabel: nextOnParts[2] ? String(Number(nextOnParts[2])) : '—',
+            meta: `${nextCareCard.statusLabel} · ${nextCareCard.intervalLabel}`,
+            statusLabel: nextCareCard.statusLabel,
+          }
+        : null,
+      featuredSupply: currentSupplies[0] ?? null,
       weightPoints,
       weightTrendLabel,
       timeline,
-      careCards: buildPetCareCards(state.events, today),
+      careCards,
       careTimeline: timeline
         .filter((item) => item.type !== 'birthday' && item.type !== 'home')
         .slice(0, 6),
-      dailySummary: buildPetDailySummary(state.dailyLogs, today).map((item) => ({
-        ...item,
-        iconName: PET_DAILY_ICON_NAMES[item.type],
-      })),
+      dailySummary,
       recentDailyLogs: todayDailyLogs.slice(0, 6).map((item) => ({
         id: item.id,
         iconName: PET_DAILY_ICON_NAMES[item.type],
@@ -264,13 +318,7 @@ Page({
         summary: item.summary,
         timeLabel: formatDailyTime(item.recordedAt),
       })),
-      currentSupplies: getCurrentPetSupplies(state.supplies).map((item) => ({
-        id: item.id,
-        categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
-        iconName: PET_SUPPLY_ICON_NAMES[item.category],
-        name: item.name,
-        note: item.note,
-      })),
+      currentSupplies,
       supplies: filterPetSupplies(
         state.supplies,
         this.data.selectedSupplyCategory,
@@ -305,6 +353,20 @@ Page({
     this.setData({ editingProfile: false, selectedSupplyCategory: 'all' })
     this.loadState(switchDemoPet(event.currentTarget.dataset.id))
     this.loadPetTabs()
+  },
+
+  onChoosePet() {
+    if (this.data.petTabs.length <= 1) {
+      this.onAddPet()
+      return
+    }
+    wx.showActionSheet({
+      itemList: this.data.petTabs.map((item) => item.name),
+      success: (selection) => {
+        const selected = this.data.petTabs[selection.tapIndex]
+        if (selected) this.onSwitchPet({ currentTarget: { dataset: { id: selected.id } } })
+      },
+    })
   },
 
   onAddPet() {

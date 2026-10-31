@@ -3,13 +3,13 @@
     <view
       wx:for="{{items}}"
       wx:key="id"
-      class="app-tab-item {{activeId === item.id || pendingId === item.id ? 'app-tab-item--active app-tab-item--pending' : ''}}"
+      class="app-tab-item {{visualActiveId === item.id ? 'app-tab-item--active' : ''}} {{pendingId === item.id ? 'app-tab-item--pending' : ''}}"
       hover-class="app-tab-item--pressed"
       data-id="{{item.id}}"
       bindtap="onSelect"
     >
-      <view class="app-tab-item__icon app-tab-item__icon--{{item.tone}}">
-        <line-icon name="{{item.icon}}" size="29" tone="{{activeId === item.id || pendingId === item.id ? 'ink' : 'muted'}}" />
+      <view class="app-tab-item__icon">
+        <line-icon name="{{item.icon}}" size="44" tone="{{visualActiveId === item.id ? 'ink' : 'muted'}}" />
       </view>
       <text class="app-tab-item__label">{{item.label}}</text>
     </view>

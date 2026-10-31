@@ -1,10 +1,11 @@
 {
   "navigationBarTitleText": "时刻见",
-  "navigationBarBackgroundColor": "#fdfbf7",
+  "navigationBarBackgroundColor": "#fbfaf6",
   "navigationBarTextStyle": "black",
-  "backgroundColor": "#fdfbf7",
+  "backgroundColor": "#fbfaf6",
   "usingComponents": {
     "line-icon": "/components/line-icon/index",
     "app-tab-bar": "/components/app-tab-bar/index"
-  }
+  },
+  "navigationStyle": "custom"
 }

@@ -62,7 +62,7 @@
           <view class="form-label">设置有效期</view>
           <view class="form-hint">开启后会出现在临期提醒中</view>
         </view>
-        <switch checked="{{hasExpiry}}" color="#2c4a52" bindchange="onExpiryToggle" />
+        <switch checked="{{hasExpiry}}" color="#252b27" bindchange="onExpiryToggle" />
       </view>
 
       <view wx:if="{{hasExpiry}}" class="form-field">

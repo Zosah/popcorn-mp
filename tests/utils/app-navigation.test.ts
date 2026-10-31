@@ -12,7 +12,7 @@ describe('自定义底栏根页面导航', () => {
     ).toEqual({ action: 'scroll-top' })
   })
 
-  it('页面已缓存时直接返回，避免销毁重建', () => {
+  it('根页面之间使用替换式导航，不把旧页面留在栈里', () => {
     expect(
       resolveAppRootNavigation(
         [
@@ -22,18 +22,17 @@ describe('自定义底栏根页面导航', () => {
         ],
         '/pages/pets/index',
       ),
-    ).toEqual({ action: 'back', delta: 1 })
+    ).toEqual({ action: 'relaunch', url: '/pages/pets/index' })
   })
 
-  it('首次进入使用 navigateTo 保留页面实例', () => {
+  it('首次切换根页面同样不压入页面栈', () => {
     expect(
       resolveAppRootNavigation(
         [{ route: 'pages/home/index', options: {} }],
         '/pages/todo/index?kind=travel',
       ),
     ).toEqual({
-      action: 'open',
-      method: 'navigateTo',
+      action: 'relaunch',
       url: '/pages/todo/index?kind=travel',
     })
   })
@@ -45,23 +44,17 @@ describe('自定义底栏根页面导航', () => {
         '/pages/pets/index?section=daily',
       ),
     ).toEqual({
-      action: 'open',
-      method: 'navigateTo',
+      action: 'relaunch',
       url: '/pages/pets/index?section=daily',
     })
   })
 
-  it('页面栈接近上限时改为替换当前页', () => {
-    const pages = Array.from({ length: 8 }, (_, index) => ({
-      route: `pages/cache-${index}/index`,
-      options: {},
-    }))
+  it('缺少前导斜杠时自动补齐路径', () => {
     expect(
-      resolveAppRootNavigation(pages, '/pages/menu/index'),
-    ).toEqual({
-      action: 'open',
-      method: 'redirectTo',
-      url: '/pages/menu/index',
-    })
+      resolveAppRootNavigation(
+        [{ route: 'pages/home/index', options: {} }],
+        'pages/menu/index',
+      ),
+    ).toEqual({ action: 'relaunch', url: '/pages/menu/index' })
   })
 })

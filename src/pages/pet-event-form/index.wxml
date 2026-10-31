@@ -54,7 +54,7 @@
     </view>
     <view class="event-switch">
       <view class="event-switch__copy"><text>设置下次日期</text><text>用于月历预览和照护提醒</text></view>
-      <switch checked="{{hasNextDate}}" color="#2c4a52" bindchange="onNextToggle" />
+      <switch checked="{{hasNextDate}}" color="#252b27" bindchange="onNextToggle" />
     </view>
     <view wx:if="{{hasNextDate}}" class="event-field event-field--stack event-field--last">
       <text class="event-label">下次日期</text>
