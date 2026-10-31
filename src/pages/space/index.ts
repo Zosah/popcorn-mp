@@ -10,10 +10,12 @@ import { getDemoSpaceName, setDemoSpaceName } from '../../services/demo-space'
 import {
   createApiSpaceInvite,
   getApiSpace,
+  leaveApiSpace,
   listApiSpaceMembers,
   renameApiSpace,
 } from '../../services/space-gateway'
 import type { ApiSpaceDetail, ApiSpaceMember } from '../../types/api'
+import { openAppRoot } from '../../utils/app-navigation'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 interface MemberView {
@@ -44,6 +46,8 @@ Page({
     hasInvite: false,
     inviteExpiryLabel: '创建后 7 天内有效',
     isLoading: false,
+    canLeaveSpace: false,
+    isLeaving: false,
   },
 
   onShow() {
@@ -99,6 +103,8 @@ Page({
       hasInvite: true,
       inviteExpiryLabel: 'Demo 邀请码 · 真实版本 7 天内有效',
       isLoading: false,
+      canLeaveSpace: false,
+      isLeaving: false,
     })
   },
 
@@ -112,6 +118,8 @@ Page({
         memberCount: 0,
         spaceName: auth.spaceName || '我们的家',
         spaceCreatedLabel: '登录后可查看共同空间',
+      canLeaveSpace: false,
+      isLeaving: false,
       })
       return
     }
@@ -160,6 +168,8 @@ Page({
       currentAvatarTone: current?.avatarTone ?? 'lavender',
       inviteExpiryLabel: '一次性邀请码 · 创建后 7 天内有效',
       isLoading: false,
+      canLeaveSpace: space.role === 'member',
+      isLeaving: false,
     })
   },
 
@@ -173,10 +183,37 @@ Page({
     const role = event.currentTarget.dataset.role || '成员'
     wx.showModal({
       title: nickname,
-      content: `当前身份：${role}。成员管理接口接入后，这里会提供移出与权限调整。`,
+      content: `当前身份：${role}。成员可以共同维护空间内容，创建者负责邀请和管理空间。`,
       showCancel: false,
       confirmText: '知道了',
     })
+  },
+
+  onLeaveSpace() {
+    if (!this.data.canLeaveSpace || this.data.isLeaving) return
+    wx.showModal({
+      title: '退出这个空间？',
+      content: `退出后将无法继续查看「${this.data.spaceName}」里的共享内容，之后需要重新接受邀请才能加入。`,
+      confirmText: '确认退出',
+      confirmColor: '#b86757',
+      success: (result) => {
+        if (!result.confirm) return
+        void this.leaveCurrentSpace()
+      },
+    })
+  },
+
+  async leaveCurrentSpace() {
+    if (this.data.isLeaving) return
+    this.setData({ isLeaving: true })
+    const result = await leaveApiSpace(this.data.spaceId)
+    if (!result.ok) {
+      this.setData({ isLeaving: false })
+      wx.showToast({ title: result.message || '退出空间失败', icon: 'none' })
+      return
+    }
+    wx.showToast({ title: '已退出共享空间', icon: 'success' })
+    openAppRoot('/pages/profile/index')
   },
 
 

@@ -5,6 +5,7 @@ import {
   acceptApiInvite,
   createApiSpaceInvite,
   getApiSpace,
+  leaveApiSpace,
   listApiSpaceMembers,
   renameApiSpace,
   resolveApiInvite,
@@ -109,6 +110,10 @@ describe('HTTP 空间网关', () => {
           }, 201)
           return
         }
+        if (url.endsWith('/spaces/space-1/members/me') && method === 'DELETE') {
+          succeed(options, '', 204)
+          return
+        }
         if (url.endsWith('/invites/ABCDE23456') && method === 'GET') {
           succeed(options, {
             status: 'available',
@@ -191,6 +196,17 @@ describe('HTTP 空间网关', () => {
 
     expect(result).toMatchObject({ ok: true, data: { role: 'member' } })
     expect(readStoredApiSession()?.token).toBe('token-1')
+    expect(requests.map((item) => item.url)).toContain('https://api.test/session')
+  })
+
+  it('退出共享空间后刷新会话缓存', async () => {
+    const result = await leaveApiSpace('space-1')
+
+    expect(result).toEqual({ ok: true })
+    expect(requests[0]).toMatchObject({
+      url: 'https://api.test/spaces/space-1/members/me',
+      method: 'DELETE',
+    })
     expect(requests.map((item) => item.url)).toContain('https://api.test/session')
   })
 })

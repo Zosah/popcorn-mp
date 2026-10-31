@@ -86,4 +86,12 @@
       <text>{{isDemoMode ? 'Demo 数据只保存在当前设备。健康资料和宠物病历后续可单独设置可见范围。' : '服务端会校验会话、空间成员关系与 owner 权限；敏感资料可单独设置可见范围。'}}</text>
     </view>
   </view>
+
+  <view wx:if="{{canLeaveSpace}}" class="leave-panel">
+    <view class="leave-panel__copy">
+      <text>不再一起生活了？</text>
+      <text>退出后，这个空间的共享内容将不再对你可见；你创建的内容会留在空间里。</text>
+    </view>
+    <button class="leave-panel__button" loading="{{isLeaving}}" disabled="{{isLeaving}}" bindtap="onLeaveSpace">退出这个空间</button>
+  </view>
 </view>

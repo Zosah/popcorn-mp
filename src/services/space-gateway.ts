@@ -121,6 +121,23 @@ export async function acceptApiInvite(
   }
 }
 
+export async function leaveApiSpace(
+  spaceId: string,
+): Promise<SpaceGatewayResult<void>> {
+  const token = readApiToken()
+  if (!token) return unauthenticated()
+  try {
+    await requestApi<void>(
+      `/spaces/${encodeURIComponent(spaceId)}/members/me`,
+      { method: 'DELETE', token },
+    )
+    await refreshSessionCache()
+    return { ok: true }
+  } catch (error) {
+    return gatewayError(error)
+  }
+}
+
 async function refreshSessionCache(): Promise<void> {
   const token = readApiToken()
   if (!token) return
