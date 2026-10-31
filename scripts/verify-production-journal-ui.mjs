@@ -82,6 +82,10 @@ async function listNotes() {
   return apiOk(`/spaces/${encodeURIComponent(spaceId)}/journals?kind=note&limit=100`)
 }
 
+async function getNote(id) {
+  return apiOk(`/spaces/${encodeURIComponent(spaceId)}/journals/${encodeURIComponent(id)}`)
+}
+
 async function writeTempImage(bytes) {
   return miniProgram.evaluate((base64) => new Promise((resolve, reject) => {
     const filePath = `${wx.env.USER_DATA_PATH}/production-journal-${Date.now()}.jpg`
@@ -176,6 +180,55 @@ try {
     status: imageResponse.status,
     contentType: imageResponse.headers.get('content-type'),
   }))
+
+  const replaceForm = await open(`/pages/journal-form/index?id=${encodeURIComponent(created.id)}`)
+  await waitFor(async () => {
+    const data = await replaceForm.data()
+    return !data.loading && data.version === created.version ? data : false
+  }, '图片替换编辑页加载')
+  const replacementImage = await writeTempImage(image)
+  await replaceForm.callMethod('uploadImage', replacementImage.filePath, replacementImage.size)
+  const replacementReady = await waitFor(async () => {
+    const data = await replaceForm.data()
+    return !data.imageUploading && data.image?.mediaId ? data : false
+  }, '生产生活记录图片替换上传')
+  assert.notEqual(replacementReady.image.mediaId, created.imageMediaId)
+  await screenshot('form-replaced')
+  await replaceForm.callMethod('onSave')
+  const replaced = await waitFor(async () => {
+    const note = await getNote(created.id)
+    return note.version > created.version && note.imageMediaId === replacementReady.image.mediaId
+      ? note
+      : false
+  }, '生产生活记录图片替换保存')
+  created = replaced
+  console.log('PASS 生活记录图片替换后写入新媒体', replaced.imageMediaId)
+
+  const removeForm = await open(`/pages/journal-form/index?id=${encodeURIComponent(created.id)}`)
+  await waitFor(async () => {
+    const data = await removeForm.data()
+    return !data.loading && data.version === created.version && data.image?.mediaId
+      ? data
+      : false
+  }, '图片移除编辑页加载')
+  await removeForm.callMethod('onRemoveImage')
+  assert.equal((await removeForm.data()).image, null)
+  await screenshot('form-image-removed')
+  await removeForm.callMethod('onSave')
+  const withoutImage = await waitFor(async () => {
+    const note = await getNote(created.id)
+    return note.version > created.version && !note.imageMediaId ? note : false
+  }, '生产生活记录移除图片保存')
+  created = withoutImage
+
+  const removedDetail = await open(`/pages/journal-detail/index?id=${encodeURIComponent(created.id)}`)
+  const removedDetailData = await waitFor(async () => {
+    const data = await removedDetail.data()
+    return !data.loading && data.entry?.id === created.id ? data : false
+  }, '图片移除后详情加载')
+  assert.ok(!removedDetailData.entry.image)
+  await screenshot('detail-image-removed')
+  console.log('PASS 生活记录图片可移除且详情不再展示')
 
   const latest = await apiOk(
     `/spaces/${encodeURIComponent(spaceId)}/journals/${encodeURIComponent(created.id)}`,

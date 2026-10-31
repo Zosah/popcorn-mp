@@ -11,7 +11,7 @@
 - 当前焦点：生活记录 `1.22.0` 的私密图片权限收口。私密记录图片只能由上传者读取；共享记录图片允许空间成员读取；其他成员即使拿到 `mediaId` 也不能读取私密图片或将其复用到自己的公开记录。
 - 已归档切片：菜单 / 今天吃什么 `1.20.0` 已上传微信后台，做饭模式、私有 COS、冲突恢复和软删除已通过生产真实微信自动化，等待体验版真机验收。
 - 本地验证：先用双用户 HTTP 脚本复现私密图片被同空间成员读取为 `200`；修复后上传者读取 `200`、其他成员读取 `404`、跨用户复用私密图片返回 `422`、共享记录图片对成员返回 `200`。前端 40 个测试文件 / 231 项测试通过，类型检查通过；Go 全量测试、`go test -race`、`go vet` 与 Linux 构建通过。
-- 生产验证：后端 `61027c4` 已通过 GitHub Actions Deploy #30 自动部署生产，`healthz / readyz` 正常；真实微信生产脚本已通过私密生活记录图片上传、列表缩略图、详情原图、签名地址 `200 image/jpeg` 和软删除清理。私密/共享双用户负例继续由本地真实 MySQL 验收覆盖。
+- 生产验证：后端 `61027c4` 已通过 GitHub Actions Deploy #30 自动部署生产，`healthz / readyz` 正常；真实微信生产脚本已通过私密生活记录图片上传、列表缩略图、详情原图、签名地址 `200 image/jpeg`、图片替换、图片移除、移除后详情降级和软删除清理。私密/共享双用户负例继续由本地真实 MySQL 验收覆盖。
 - 发布状态：前端 `1.22.0` 已上传微信后台，包体 `1,892,249 Byte`；预览包已生成 `shots/preview-1.22.0.png`。生产发布过程中发现固定 `/tmp` 文件名导致同 SHA 重试时 `popcorn-deploy` 无权覆盖，已改为每次运行使用唯一文件名并自动清理；仓库变量 `DEPLOY_ENABLED=true` 已补齐，Deploy #30 全流程成功。
 - 下一门槛：扫描 `shots/preview-1.22.0.png` 在真机完成私密图片、共享图片、弱网和双人可见范围验收；随后在公众平台将 `1.22.0` 设为体验版。未完成前生活记录切片不标记为已闭环。
 
@@ -221,8 +221,8 @@ API / DB：复用媒体表、生活记录表和现有 mediaId 外键；本切片
 - ✅ 新增媒体仓储与生活记录仓储回归测试，Go 全量测试、`go test -race`、`go vet` 和 Linux 构建通过。
 - ✅ 前端类型检查与 40 个测试文件 / 231 项测试通过。
 - ✅ 后端 `61027c4` 已由 GitHub Actions Deploy #30 自动部署生产，发布脚本迁移检查、原子切换和健康检查通过；当前生产 release 指针已确认切到该 SHA。
-- ✅ 真实微信生产脚本通过：私有生活记录图片上传、保存回读、列表缩略图、详情原图、签名地址 `200 image/jpeg`、软删除清理。
-- ✅ 生产截图：`shots/production-journal-ui-form-empty.png`、`shots/production-journal-ui-form-uploaded.png`、`shots/production-journal-ui-list-loaded.png`、`shots/production-journal-ui-detail-loaded.png`。
+- ✅ 真实微信生产脚本通过：私有生活记录图片上传、保存回读、列表缩略图、详情原图、签名地址 `200 image/jpeg`、图片替换、图片移除、移除后详情降级、软删除清理。
+- ✅ 生产截图：`shots/production-journal-ui-form-empty.png`、`shots/production-journal-ui-form-uploaded.png`、`shots/production-journal-ui-list-loaded.png`、`shots/production-journal-ui-detail-loaded.png`、`shots/production-journal-ui-form-replaced.png`、`shots/production-journal-ui-form-image-removed.png`、`shots/production-journal-ui-detail-image-removed.png`。
 - ✅ 修正 Deploy workflow 的固定 `/tmp` 文件名问题，同 SHA 重试时不再因文件归属冲突失败。
 - ✅ 仓库变量 `DEPLOY_ENABLED=true` 已补齐，Deploy #30 重新执行后成功完成上传、迁移、原子切换和健康检查。
 - ✅ `npm run verify:production-journal-ui` 在自动部署后的生产环境再次通过。
