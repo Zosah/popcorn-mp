@@ -122,6 +122,7 @@ describe('HTTP 登录网关', () => {
     const result = await updateApiProfile({
       nickname: '小满',
       avatarTone: 'mint',
+      avatarMediaId: 'm_avatar001',
     })
 
     expect(result.ok).toBe(true)
@@ -133,6 +134,11 @@ describe('HTTP 登录网关', () => {
     expect(requests[1]).toMatchObject({
       url: 'https://api.test/me',
       method: 'PUT',
+      data: {
+        nickname: '小满',
+        avatarTone: 'mint',
+        avatarMediaId: 'm_avatar001',
+      },
     })
     expect(requests[1]?.header?.Authorization).toBe('Bearer token-1')
   })

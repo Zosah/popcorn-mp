@@ -38,7 +38,8 @@
 
   <view class="member-list">
     <view wx:for="{{members}}" wx:key="userId" class="member-row">
-      <image class="member-row__avatar" src="../../images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
+      <image wx:if="{{item.avatarUrl}}" class="member-row__avatar" src="{{item.avatarUrl}}" mode="aspectFill" data-index="{{index}}" binderror="onMemberAvatarError" />
+      <image wx:else class="member-row__avatar" src="../../images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
       <view class="member-row__body">
         <view class="member-row__name-line">
           <text>{{item.nickname}}</text>

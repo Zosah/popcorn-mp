@@ -16,6 +16,7 @@ import {
 } from '../../services/space-gateway'
 import type { ApiSpaceDetail, ApiSpaceMember } from '../../types/api'
 import { openAppRoot } from '../../utils/app-navigation'
+import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 interface MemberView {
@@ -23,6 +24,8 @@ interface MemberView {
   nickname: string
   avatarText: string
   avatarTone: DemoAvatarTone
+  avatarMediaId: string
+  avatarUrl: string
   role: 'owner' | 'member'
   roleLabel: string
   meta: string
@@ -72,6 +75,8 @@ Page({
         : '登录后认领这个空间身份',
       avatarText: auth.isLoggedIn ? auth.avatarText : '访',
       avatarTone: currentUser?.avatarTone ?? 'lavender',
+      avatarMediaId: currentUser?.avatarMediaId ?? '',
+      avatarUrl: '',
       role: 'owner',
       roleLabel: auth.isLoggedIn ? '创建者' : '待登录',
       meta: auth.isLoggedIn ? '空间创建者 · 可以管理成员' : '登录后进入共同空间',
@@ -82,6 +87,8 @@ Page({
         nickname: '共同生活成员',
         avatarText: '屿',
         avatarTone: 'lavender',
+        avatarMediaId: '',
+        avatarUrl: '',
         role: 'member',
         roleLabel: '成员',
         meta: '可以维护共同内容',
@@ -106,6 +113,7 @@ Page({
       canLeaveSpace: false,
       isLeaving: false,
     })
+    void this.hydrateMemberAvatars(members)
   },
 
   async loadApiSpace(auth: AuthState) {
@@ -146,6 +154,8 @@ Page({
       nickname: member.nickname || '待完善资料',
       avatarText: buildDemoAvatarText(member.nickname),
       avatarTone: member.avatarTone,
+      avatarMediaId: member.avatarMediaId ?? '',
+      avatarUrl: '',
       role: member.role,
       roleLabel: member.role === 'owner' ? '创建者' : '成员',
       meta: member.role === 'owner'
@@ -171,6 +181,25 @@ Page({
       canLeaveSpace: space.role === 'member',
       isLeaving: false,
     })
+    void this.hydrateMemberAvatars(memberViews)
+  },
+
+  async hydrateMemberAvatars(members: MemberView[]) {
+    const requestedIds = members.map((member) => member.userId).join('|')
+    const resolved = await Promise.all(members.map(async (member) => ({
+      ...member,
+      avatarUrl: await resolveAvatarUrl(member.avatarMediaId),
+    })))
+    if (this.data.members.map((member) => member.userId).join('|') !== requestedIds) {
+      return
+    }
+    this.setData({ members: resolved })
+  },
+
+  onMemberAvatarError(event: WechatMiniprogram.TouchEvent) {
+    const index = Number(event.currentTarget.dataset.index)
+    if (!Number.isInteger(index)) return
+    this.setData({ [`members[${index}].avatarUrl`]: '' })
   },
 
   onBack() {

@@ -51,12 +51,59 @@ describe('本机登录态', () => {
     expect(getDemoAuthState().isLoggedIn).toBe(true)
   })
 
-  it('支持更新昵称和头像配色', () => {
-    registerDemoAccount({ nickname: '小满', avatarTone: 'mint' })
+  it('支持更新昵称和头像配色，不传头像时保留原头像', () => {
+    registerDemoAccount({
+      nickname: '小满',
+      avatarTone: 'mint',
+      avatarMediaId: 'm_avatar001',
+    })
     const result = updateDemoAccount({ nickname: '满满', avatarTone: 'sun' })
 
     expect(result.ok).toBe(true)
-    expect(getDemoAccount()).toMatchObject({ nickname: '满满', avatarTone: 'sun' })
+    expect(getDemoAccount()).toMatchObject({
+      nickname: '满满',
+      avatarTone: 'sun',
+      avatarMediaId: 'm_avatar001',
+    })
+  })
+
+  it('支持替换和清除头像', () => {
+    registerDemoAccount({
+      nickname: '小满',
+      avatarTone: 'mint',
+      avatarMediaId: 'm_avatar001',
+    })
+    updateDemoAccount({
+      nickname: '小满',
+      avatarTone: 'mint',
+      avatarMediaId: 'm_avatar002',
+    })
+    expect(getDemoAccount()?.avatarMediaId).toBe('m_avatar002')
+
+    updateDemoAccount({
+      nickname: '小满',
+      avatarTone: 'mint',
+      avatarMediaId: '',
+    })
+    expect(getDemoAccount()?.avatarMediaId).toBe('')
+  })
+
+  it('兼容旧缓存中没有 avatarMediaId 的账号', () => {
+    storage.set('popcorn_demo_auth_account_v1', {
+      id: 'demo-user-legacy',
+      nickname: '旧账号',
+      avatarTone: 'peach',
+      createdAt: '2026-10-01T10:00:00.000Z',
+    })
+    storage.set('popcorn_demo_auth_session_v1', {
+      userId: 'demo-user-legacy',
+      loggedInAt: '2026-10-01T10:00:00.000Z',
+    })
+
+    expect(getDemoAuthState()).toMatchObject({
+      isLoggedIn: true,
+      user: { nickname: '旧账号', avatarMediaId: '' },
+    })
   })
 
   it('拒绝空昵称，并可在清除后重新注册', () => {

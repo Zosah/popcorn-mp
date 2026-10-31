@@ -10,7 +10,10 @@
   </view>
 
   <view class="profile-card" bindtap="onOpenAuth">
-    <view class="profile-avatar profile-avatar--{{avatarTone}}">{{avatarText}}</view>
+    <view class="profile-avatar profile-avatar--{{avatarTone}}">
+      <image wx:if="{{avatarUrl}}" class="profile-avatar__image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+      <text wx:else>{{avatarText}}</text>
+    </view>
     <view class="profile-card__body">
       <view class="profile-card__name">{{displayName}}</view>
       <view class="profile-card__meta">{{isLoggedIn ? identityMeta : '登录后认领空间身份，和朋友共享同一份生活。'}}</view>
@@ -31,7 +34,13 @@
       <text>当前共同空间</text>
       <view>{{spaceName}}</view>
       <view class="profile-space__members">
-        <view class="profile-space__avatars"><text>{{avatarText}}</text><text>伴</text></view>
+        <view class="profile-space__avatars">
+          <view class="profile-space__avatar">
+            <image wx:if="{{avatarUrl}}" class="profile-space__avatar-image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+            <text wx:else>{{avatarText}}</text>
+          </view>
+          <text>伴</text>
+        </view>
         <text>{{spaceMembersCopy}}</text>
       </view>
     </view>

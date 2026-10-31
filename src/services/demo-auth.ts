@@ -40,13 +40,18 @@ function isUserProfile(value: unknown): value is DemoUserProfile {
     typeof user.nickname === 'string' &&
     normalizeDemoNickname(user.nickname).length > 0 &&
     isDemoAvatarTone(user.avatarTone) &&
+    (user.avatarMediaId === undefined || typeof user.avatarMediaId === 'string') &&
     typeof user.createdAt === 'string'
   )
 }
 
 function readAccount(): DemoUserProfile | null {
   const value = wx.getStorageSync<unknown>(ACCOUNT_KEY)
-  return isUserProfile(value) ? value : null
+  if (!isUserProfile(value)) return null
+  return {
+    ...value,
+    avatarMediaId: value.avatarMediaId ?? '',
+  }
 }
 
 function readSession(): DemoAuthSession | null {
@@ -131,6 +136,7 @@ export function updateDemoAccount(
     ...user,
     nickname: normalizeDemoNickname(input.nickname),
     avatarTone: input.avatarTone,
+    avatarMediaId: input.avatarMediaId?.trim() ?? user.avatarMediaId,
   }
   wx.setStorageSync(ACCOUNT_KEY, updated)
   return { ok: true, user: updated }

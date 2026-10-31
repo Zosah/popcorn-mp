@@ -15,6 +15,7 @@ import {
   type SpaceGatewayResult,
 } from '../../services/space-gateway'
 import type { ApiInvitePreview } from '../../types/api'
+import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { openAppRoot } from '../../utils/app-navigation'
 
@@ -68,6 +69,8 @@ Page({
     inviterName: '时刻见体验官',
     inviterAvatar: '满',
     inviterAvatarTone: 'lavender',
+    inviterAvatarMediaId: '',
+    inviterAvatarUrl: '',
     expiresLabel: '',
     canAccept: false,
   },
@@ -173,9 +176,24 @@ Page({
       inviterName: preview.inviter.nickname || '空间创建者',
       inviterAvatar: preview.inviter.nickname?.slice(0, 1) || '家',
       inviterAvatarTone: preview.inviter.avatarTone,
+      inviterAvatarMediaId: preview.inviter.avatarMediaId ?? '',
+      inviterAvatarUrl: '',
       expiresLabel: formatInviteExpiry(preview.expiresAt),
       canAccept: true,
     })
+    if (preview.inviter.avatarMediaId) {
+      void this.loadInviterAvatar(preview.inviter.avatarMediaId)
+    }
+  },
+
+  async loadInviterAvatar(mediaId: string) {
+    const inviterAvatarUrl = await resolveAvatarUrl(mediaId)
+    if (this.data.inviterAvatarMediaId !== mediaId) return
+    this.setData({ inviterAvatarUrl })
+  },
+
+  onInviterAvatarError() {
+    this.setData({ inviterAvatarUrl: '' })
   },
 
   applyGatewayFailure(

@@ -11,3 +11,7 @@ design-review/
 
 # 设计技能运行时产物
 .taste-skill/
+
+# 本地浏览器会话与一次性调试脚本
+Cookies
+scripts/.debug-popcorn.mjs

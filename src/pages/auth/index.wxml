@@ -22,7 +22,10 @@
     </view>
 
     <view wx:if="{{hasAccount}}" class="detected-account paper-card">
-      <view class="user-avatar detected-account__avatar user-avatar--{{accountAvatarTone}}">{{accountAvatarText}}</view>
+      <view class="user-avatar detected-account__avatar user-avatar--{{accountAvatarTone}}">
+        <image wx:if="{{accountAvatarUrl}}" class="user-avatar__image" src="{{accountAvatarUrl}}" mode="aspectFill" binderror="onAccountAvatarError" />
+        <text wx:else>{{accountAvatarText}}</text>
+      </view>
       <view class="detected-account__body">
         <text class="detected-account__label">检测到本机账号</text>
         <text class="detected-account__name">{{accountNickname}}</text>
@@ -53,7 +56,10 @@
     </view>
 
     <view class="paper-card profile-preview">
-      <view class="user-avatar profile-preview__avatar user-avatar--{{selectedTone}}">{{nicknamePreview}}</view>
+      <view class="user-avatar profile-preview__avatar user-avatar--{{selectedTone}}">
+        <image wx:if="{{avatarPreviewUrl}}" class="user-avatar__image" src="{{avatarPreviewUrl}}" mode="aspectFill" binderror="onAvatarImageError" />
+        <text wx:else>{{nicknamePreview}}</text>
+      </view>
       <view class="profile-preview__body">
         <text class="profile-preview__label">{{profilePreviewLabel}}</text>
         <text class="profile-preview__name">{{nicknameInput || '还没取名字'}}</text>
@@ -63,6 +69,28 @@
     </view>
 
     <view class="paper-card profile-form">
+      <view class="profile-form__group profile-form__group--avatar">
+        <view class="profile-form__avatar-copy">
+          <text class="profile-form__label">头像照片</text>
+          <text>不选也可以，会先用昵称首字和头像色。</text>
+        </view>
+        <view class="avatar-editor">
+          <view class="avatar-editor__preview user-avatar--{{selectedTone}}" bindtap="onPreviewAvatar">
+            <image wx:if="{{avatarPreviewUrl}}" class="user-avatar__image" src="{{avatarPreviewUrl}}" mode="aspectFill" binderror="onAvatarImageError" />
+            <text wx:else>{{nicknamePreview}}</text>
+            <view wx:if="{{avatarUploading}}" class="avatar-editor__loading">上传中</view>
+          </view>
+          <view class="avatar-editor__actions">
+            <view class="avatar-editor__action" bindtap="onChooseAvatar">
+              <line-icon name="image" size="20" tone="blue" />
+              <text>{{avatarMediaId ? '替换照片' : '选择照片'}}</text>
+            </view>
+            <view wx:if="{{avatarMediaId && !avatarUploading}}" class="avatar-editor__remove" bindtap="onRemoveAvatar">移除</view>
+          </view>
+        </view>
+        <view wx:if="{{avatarUploadError}}" class="profile-form__error">{{avatarUploadError}}</view>
+      </view>
+
       <view class="profile-form__group">
         <text class="profile-form__label">怎么称呼你</text>
         <input class="profile-form__input" type="nickname" maxlength="16" value="{{nicknameInput}}" placeholder="例如：小满" placeholder-class="profile-form__placeholder" bindinput="onNicknameInput" />
@@ -77,7 +105,7 @@
             <text>{{item.label}}</text>
           </view>
         </view>
-        <view class="profile-form__hint">头像暂时使用昵称首字，后续可以换成自定义插画。</view>
+        <view class="profile-form__hint">没有上传照片时，用头像色和昵称首字生成默认头像。</view>
       </view>
     </view>
 
@@ -96,7 +124,10 @@
     </view>
 
     <view class="paper-card account-hero">
-      <view class="user-avatar account-hero__avatar user-avatar--{{accountAvatarTone}}">{{accountAvatarText}}</view>
+      <view class="user-avatar account-hero__avatar user-avatar--{{accountAvatarTone}}">
+        <image wx:if="{{accountAvatarUrl}}" class="user-avatar__image" src="{{accountAvatarUrl}}" mode="aspectFill" binderror="onAccountAvatarError" />
+        <text wx:else>{{accountAvatarText}}</text>
+      </view>
       <view class="account-hero__body">
         <text class="account-hero__name">{{accountNickname}}</text>
         <text class="account-hero__id">ID · {{accountId}}</text>

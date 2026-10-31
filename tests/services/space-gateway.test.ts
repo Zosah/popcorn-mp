@@ -39,6 +39,7 @@ const session: ApiSession = {
     id: 'user-1',
     nickname: '小满',
     avatarTone: 'mint',
+    avatarMediaId: 'm_avatar001',
     createdAt: now,
     onboardingRequired: false,
   },
@@ -57,6 +58,7 @@ const member: ApiSpaceMember = {
   userId: 'user-1',
   nickname: '小满',
   avatarTone: 'mint',
+  avatarMediaId: 'm_avatar001',
   role: 'owner',
   joinedAt: now,
 }
@@ -118,7 +120,12 @@ describe('HTTP 空间网关', () => {
           succeed(options, {
             status: 'available',
             space: { id: 'space-1', name: '我们的家', type: 'family' },
-            inviter: { userId: 'user-1', nickname: '小满', avatarTone: 'mint' },
+            inviter: {
+              userId: 'user-1',
+              nickname: '小满',
+              avatarTone: 'mint',
+              avatarMediaId: 'm_avatar001',
+            },
             expiresAt: '2026-11-03T10:00:00Z',
           } satisfies ApiInvitePreview)
           return
@@ -164,7 +171,10 @@ describe('HTTP 空间网关', () => {
     const memberResult = await listApiSpaceMembers('space-1')
 
     expect(spaceResult).toMatchObject({ ok: true, data: { id: 'space-1' } })
-    expect(memberResult).toMatchObject({ ok: true, data: [{ role: 'owner' }] })
+    expect(memberResult).toMatchObject({
+      ok: true,
+      data: [{ role: 'owner', avatarMediaId: 'm_avatar001' }],
+    })
     expect(requests[0]?.header?.Authorization).toBe('Bearer token-1')
   })
 
@@ -175,7 +185,10 @@ describe('HTTP 空间网关', () => {
     expect(invite).toMatchObject({ ok: true, data: { code: 'ABCDE23456' } })
     expect(preview).toMatchObject({
       ok: true,
-      data: { space: { name: '我们的家' } },
+      data: {
+        space: { name: '我们的家' },
+        inviter: { avatarMediaId: 'm_avatar001' },
+      },
     })
     expect(requests[1]?.header?.Authorization).toBeUndefined()
   })

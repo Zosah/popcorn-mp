@@ -16,6 +16,7 @@ export interface ApiUser {
   id: string
   nickname: string
   avatarTone: ApiAvatarTone
+  avatarMediaId?: string
   createdAt: string
   onboardingRequired: boolean
 }
@@ -54,6 +55,7 @@ export interface ApiSpaceMember {
   userId: string
   nickname: string
   avatarTone: ApiAvatarTone
+  avatarMediaId?: string
   role: 'owner' | 'member'
   joinedAt: string
 }
@@ -79,6 +81,7 @@ export interface ApiInvitePreview {
     userId: string
     nickname: string
     avatarTone: ApiAvatarTone
+    avatarMediaId?: string
   }
   expiresAt: string
 }
@@ -100,6 +103,7 @@ export interface MockLoginRequest {
 export interface ProfileUpdateRequest {
   nickname: string
   avatarTone: ApiAvatarTone
+  avatarMediaId?: string
 }
 
 export type ApiInventoryCategory =

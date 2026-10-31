@@ -13,6 +13,7 @@ import {
   type TodoSummary,
 } from '../../services/todo-gateway'
 import { openAppRoot } from '../../utils/app-navigation'
+import { resolveAvatarUrl } from '../../utils/avatar'
 import { createRequestGate } from '../../utils/request-control'
 
 const profileRequestGate = createRequestGate()
@@ -25,6 +26,8 @@ Page({
     displayName: '还没有登录',
     avatarText: '访',
     avatarTone: 'lavender',
+    avatarMediaId: '',
+    avatarUrl: '',
     identityMeta: '登录后认领空间身份，和朋友共享同一份生活。',
     identityBadge: '访客模式',
     accountMeta: '登录或注册一个账号',
@@ -95,12 +98,15 @@ Page({
     const tabBarSummary = resolveAppTabItems(getAppTabConfig())
       .map((item) => item.label)
       .join(' / ')
+    const avatarMediaId = loggedInUser?.avatarMediaId ?? ''
     this.setData({
       spaceName: auth.spaceName,
       isLoggedIn,
       displayName: loggedInUser?.nickname || (isLoggedIn ? '待完善资料' : '还没有登录'),
       avatarText: isLoggedIn ? auth.avatarText : '访',
       avatarTone: loggedInUser?.avatarTone ?? 'lavender',
+      avatarMediaId,
+      avatarUrl: '',
       identityMeta: isLoggedIn
         ? (isApiAccount
           ? '已登录 · 账号资料与共享空间已同步'
@@ -128,6 +134,17 @@ Page({
       todoLoading: false,
       tabBarSummary,
     })
+    if (avatarMediaId) void this.loadAvatar(avatarMediaId)
+  },
+
+  async loadAvatar(mediaId: string) {
+    const avatarUrl = await resolveAvatarUrl(mediaId)
+    if (this.data.avatarMediaId !== mediaId) return
+    this.setData({ avatarUrl })
+  },
+
+  onAvatarError() {
+    this.setData({ avatarUrl: '' })
   },
 
   onOpenSpace() {

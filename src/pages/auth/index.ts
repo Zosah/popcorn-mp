@@ -18,6 +18,9 @@ import {
   saveAuthProfile,
 } from '../../services/auth'
 import { syncAppTabSettings } from '../../services/app-tab-settings'
+import { mediaGateway } from '../../services/media'
+import { getMediaErrorMessage } from '../../services/media-gateway'
+import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 type AuthMode = 'login' | 'register' | 'account'
@@ -31,9 +34,15 @@ interface AuthPageData {
   nicknameError: string
   selectedTone: DemoAvatarTone
   avatarOptions: typeof DEMO_AVATAR_OPTIONS
+  avatarMediaId: string
+  avatarPreviewUrl: string
+  avatarUploading: boolean
+  avatarUploadError: string
   accountNickname: string
   accountAvatarText: string
   accountAvatarTone: DemoAvatarTone
+  accountAvatarMediaId: string
+  accountAvatarUrl: string
   accountCreatedAt: string
   accountId: string
   spaceName: string
@@ -68,9 +77,15 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     nicknameError: '',
     selectedTone: 'lavender',
     avatarOptions: DEMO_AVATAR_OPTIONS,
+    avatarMediaId: '',
+    avatarPreviewUrl: '',
+    avatarUploading: false,
+    avatarUploadError: '',
     accountNickname: '',
     accountAvatarText: '时',
     accountAvatarTone: 'lavender',
+    accountAvatarMediaId: '',
+    accountAvatarUrl: '',
     accountCreatedAt: '',
     accountId: '',
     spaceName: '我们的家',
@@ -132,6 +147,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   showLogin() {
     const account = getKnownAuthAccount()
     const state = getAuthState()
+    const accountAvatarMediaId = account?.avatarMediaId ?? ''
     this.setData({
       mode: 'login',
       isEditing: false,
@@ -139,14 +155,18 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       accountNickname: account?.nickname ?? '',
       accountAvatarText: buildDemoAvatarText(account?.nickname ?? ''),
       accountAvatarTone: account?.avatarTone ?? 'lavender',
+      accountAvatarMediaId,
+      accountAvatarUrl: '',
       spaceName: state.spaceName,
       backLabel: '← 返回我的',
     })
+    if (accountAvatarMediaId) void this.loadAccountAvatar(accountAvatarMediaId)
   },
 
   showRegister(isEditing: boolean) {
     const state = getAuthState()
     const account = isEditing ? state.user : (state.user ?? getKnownAuthAccount())
+    const avatarMediaId = account?.avatarMediaId ?? ''
     this.setData({
       mode: 'register',
       isEditing,
@@ -154,9 +174,14 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       nicknamePreview: isEditing ? buildDemoAvatarText(account?.nickname ?? '') : '时',
       nicknameError: '',
       selectedTone: isEditing ? (account?.avatarTone ?? 'lavender') : 'lavender',
+      avatarMediaId,
+      avatarPreviewUrl: '',
+      avatarUploading: false,
+      avatarUploadError: '',
       spaceName: state.spaceName,
       backLabel: isEditing ? '← 返回账号' : '← 返回登录',
     })
+    if (avatarMediaId) void this.loadProfileAvatar(avatarMediaId)
   },
 
   showAccount(user: DemoUserProfile) {
@@ -168,11 +193,26 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       accountNickname: user.nickname,
       accountAvatarText: buildDemoAvatarText(user.nickname),
       accountAvatarTone: user.avatarTone,
+      accountAvatarMediaId: user.avatarMediaId,
+      accountAvatarUrl: '',
       accountCreatedAt: formatAccountDate(user.createdAt),
       accountId: user.id.slice(-8).toUpperCase(),
       spaceName: state.spaceName,
       backLabel: '← 返回我的',
     })
+    if (user.avatarMediaId) void this.loadAccountAvatar(user.avatarMediaId)
+  },
+
+  async loadProfileAvatar(mediaId: string) {
+    const url = await resolveAvatarUrl(mediaId)
+    if (this.data.avatarMediaId !== mediaId) return
+    this.setData({ avatarPreviewUrl: url })
+  },
+
+  async loadAccountAvatar(mediaId: string) {
+    const url = await resolveAvatarUrl(mediaId)
+    if (this.data.accountAvatarMediaId !== mediaId) return
+    this.setData({ accountAvatarUrl: url })
   },
 
   onBack() {
@@ -232,7 +272,70 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     this.setData({ selectedTone: tone })
   },
 
+  onChooseAvatar() {
+    if (this.data.avatarUploading) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (result) => {
+        const file = result.tempFiles[0]
+        if (!file) return
+        if (file.size > 10 * 1024 * 1024) {
+          this.setData({ avatarUploadError: '图片不能超过 10 MiB' })
+          return
+        }
+        void this.uploadAvatar(file.tempFilePath, file.size)
+      },
+    })
+  },
+
+  async uploadAvatar(filePath: string, fileSize: number) {
+    this.setData({ avatarUploading: true, avatarUploadError: '' })
+    try {
+      const asset = await mediaGateway.upload(filePath, 'avatar', fileSize)
+      this.setData({
+        avatarMediaId: asset.id,
+        avatarPreviewUrl: asset.thumb.url || asset.display.url,
+      })
+      wx.showToast({ title: '头像已准备好', icon: 'success' })
+    } catch (error) {
+      const message = getMediaErrorMessage(error, '头像上传没有完成')
+      this.setData({ avatarUploadError: message })
+      wx.showToast({ title: message, icon: 'none' })
+    } finally {
+      this.setData({ avatarUploading: false })
+    }
+  },
+
+  onPreviewAvatar() {
+    const src = this.data.avatarPreviewUrl
+    if (!src) return
+    wx.previewImage({ current: src, urls: [src] })
+  },
+
+  onRemoveAvatar() {
+    if (this.data.avatarUploading) return
+    this.setData({
+      avatarMediaId: '',
+      avatarPreviewUrl: '',
+      avatarUploadError: '',
+    })
+  },
+
+  onAvatarImageError() {
+    this.setData({ avatarPreviewUrl: '' })
+  },
+
+  onAccountAvatarError() {
+    this.setData({ accountAvatarUrl: '' })
+  },
+
   async onSubmitProfile() {
+    if (this.data.avatarUploading) {
+      wx.showToast({ title: '头像还在上传，请稍等一下', icon: 'none' })
+      return
+    }
     const nicknameMessage = validateDemoNickname(this.data.nicknameInput)
     if (nicknameMessage) {
       this.setData({ nicknameError: nicknameMessage })
@@ -243,6 +346,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     const result = await saveAuthProfile({
       nickname: normalizeDemoNickname(this.data.nicknameInput),
       avatarTone: this.data.selectedTone,
+      avatarMediaId: this.data.avatarMediaId,
     })
     wx.hideLoading()
 

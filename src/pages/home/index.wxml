@@ -14,7 +14,8 @@
     <view class="home-header__actions">
       <view class="member-stack" aria-label="{{spaceMemberCopy}}" bindtap="onOpenProfile">
         <view wx:for="{{spaceMembers}}" wx:if="{{index < 2}}" wx:key="userId" class="member-stack__item">
-          <image class="member-stack__image" src="/images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
+          <image wx:if="{{item.avatarUrl}}" class="member-stack__image" src="{{item.avatarUrl}}" mode="aspectFill" data-index="{{index}}" binderror="onMemberAvatarError" />
+          <image wx:else class="member-stack__image" src="/images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
         </view>
       </view>
       <view class="header-bell" hover-class="tap-dim" bindtap="onOpenReminders" aria-label="提醒设置">

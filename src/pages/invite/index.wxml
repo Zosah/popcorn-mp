@@ -16,7 +16,8 @@
     <view class="home-ticket__label">你将加入</view>
     <view class="home-ticket__name">{{spaceName}}</view>
     <view class="home-ticket__inviter">
-      <view class="home-ticket__avatar home-ticket__avatar--{{inviterAvatarTone}}">{{inviterAvatar}}</view>
+      <image wx:if="{{inviterAvatarUrl}}" class="home-ticket__avatar home-ticket__avatar--image" src="{{inviterAvatarUrl}}" mode="aspectFill" binderror="onInviterAvatarError" />
+      <view wx:else class="home-ticket__avatar home-ticket__avatar--{{inviterAvatarTone}}">{{inviterAvatar}}</view>
       <view class="home-ticket__inviter-body"><text>{{inviterName}}</text><text>邀请你共同记录家里的小事</text></view>
     </view>
     <view class="home-ticket__code"><line-icon name="ticket" size="18" tone="muted" /><text>邀请码 · {{code}}<text wx:if="{{expiresLabel}}"> · {{expiresLabel}}</text></text></view>

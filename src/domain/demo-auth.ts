@@ -21,12 +21,14 @@ export interface DemoUserProfile {
   id: string
   nickname: string
   avatarTone: DemoAvatarTone
+  avatarMediaId: string
   createdAt: string
 }
 
 export interface DemoUserInput {
   nickname: string
   avatarTone: DemoAvatarTone
+  avatarMediaId?: string
 }
 
 export function isDemoAvatarTone(value: unknown): value is DemoAvatarTone {
@@ -64,6 +66,7 @@ export function createDemoUserProfile(
     id: `demo-user-${nowMs.toString(36)}-${suffix}`,
     nickname,
     avatarTone: input.avatarTone,
+    avatarMediaId: input.avatarMediaId?.trim() ?? '',
     createdAt: new Date(nowMs).toISOString(),
   }
 }

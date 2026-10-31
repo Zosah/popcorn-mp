@@ -27,12 +27,15 @@ import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 import { openAppRoot } from '../../utils/app-navigation'
+import { resolveAvatarUrl } from '../../utils/avatar'
 import { createRequestGate } from '../../utils/request-control'
 
 interface HomeMemberView {
   userId: string
   avatarText: string
   avatarTone: DemoAvatarTone
+  avatarMediaId: string
+  avatarUrl: string
 }
 
 interface HomePetActivity extends PetHomeActivity {
@@ -233,11 +236,15 @@ Page({
           userId: auth.user.id,
           avatarText: auth.avatarText,
           avatarTone: auth.user.avatarTone,
+          avatarMediaId: auth.user.avatarMediaId,
+          avatarUrl: '',
         }
       : {
           userId: 'guest',
           avatarText: '访',
           avatarTone: 'lavender',
+          avatarMediaId: '',
+          avatarUrl: '',
         }
     const apiMembers = membersResult.status === 'fulfilled' ? membersResult.value : null
     const spaceMembers: HomeMemberView[] = apiMembers?.ok && apiMembers.data.length
@@ -245,6 +252,8 @@ Page({
           userId: member.userId,
           avatarText: buildDemoAvatarText(member.nickname),
           avatarTone: member.avatarTone,
+          avatarMediaId: member.avatarMediaId ?? '',
+          avatarUrl: '',
         }))
       : [fallbackMember]
     if (auth.source === 'demo' && auth.isLoggedIn && spaceMembers.length === 1) {
@@ -252,6 +261,8 @@ Page({
         userId: 'demo-member',
         avatarText: '屿',
         avatarTone: 'mint',
+        avatarMediaId: '',
+        avatarUrl: '',
       })
     }
 
@@ -330,6 +341,23 @@ Page({
       reminderCount,
       reminderCopy,
     })
+    void this.hydrateMemberAvatars(sequence)
+  },
+
+  async hydrateMemberAvatars(sequence: number) {
+    const members = this.data.spaceMembers
+    const resolved = await Promise.all(members.map(async (member) => ({
+      ...member,
+      avatarUrl: await resolveAvatarUrl(member.avatarMediaId),
+    })))
+    if (!homeRequestGate.isCurrent(sequence)) return
+    this.setData({ spaceMembers: resolved })
+  },
+
+  onMemberAvatarError(event: WechatMiniprogram.TouchEvent) {
+    const index = Number(event.currentTarget.dataset.index)
+    if (!Number.isInteger(index)) return
+    this.setData({ [`spaceMembers[${index}].avatarUrl`]: '' })
   },
 
   onRetryInventory() {

@@ -199,6 +199,7 @@ function toDemoUserProfile(
     id: user.id,
     nickname: user.nickname,
     avatarTone: user.avatarTone,
+    avatarMediaId: user.avatarMediaId ?? '',
     createdAt: user.createdAt,
   }
 }
