@@ -47,7 +47,12 @@ for (const sourceFile of sourceFiles) {
         fit: 'contain',
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
-      .png()
+      .png({
+        palette: true,
+        quality: 92,
+        compressionLevel: 9,
+        effort: 10,
+      })
       .toFile(path.join(outputDir, `${name}-${tone}.png`))
   }
 }
