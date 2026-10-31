@@ -10,7 +10,11 @@ export type PetEventType =
   | 'internal-deworm'
   | 'external-deworm'
 
-export type PetCareType = 'internal-deworm' | 'external-deworm'
+export type PetCareType =
+  | 'vaccine'
+  | 'grooming'
+  | 'internal-deworm'
+  | 'external-deworm'
 
 export type PetDailyLogType = 'meal' | 'water' | 'stool' | 'urine'
 
@@ -54,6 +58,7 @@ export interface DemoPetEvent {
   provider?: string
   cost?: string
   nextOn?: string | null
+  recurrenceDays?: number
   createdAt: string
   version?: number
 }
@@ -103,6 +108,7 @@ export interface PetCareCard {
   type: PetCareType
   title: string
   intervalLabel: string
+  intervalDays: number
   lastOn: string | null
   nextOn: string | null
   status: 'unrecorded' | 'overdue' | 'due-soon' | 'normal'
@@ -181,9 +187,26 @@ export function getPetSupplyStatusLabel(
   return PET_SUPPLY_STATUS_LABELS[status]
 }
 
-const CARE_INTERVALS: Record<PetCareType, number> = {
+export const PET_CARE_INTERVALS: Record<PetCareType, number> = {
+  vaccine: 365,
+  grooming: 30,
   'internal-deworm': 90,
   'external-deworm': 30,
+}
+
+export const PET_CARE_TYPES: readonly PetCareType[] = [
+  'vaccine',
+  'grooming',
+  'internal-deworm',
+  'external-deworm',
+]
+
+export function isPetCareType(type: PetEventType): type is PetCareType {
+  return PET_CARE_TYPES.includes(type as PetCareType)
+}
+
+export function getDefaultPetCareInterval(type: PetCareType): number {
+  return PET_CARE_INTERVALS[type]
 }
 
 function parseDateOnly(value: string): number {
@@ -327,18 +350,26 @@ export function buildPetCareCards(
   events: readonly DemoPetEvent[],
   today: string,
 ): PetCareCard[] {
-  return (['internal-deworm', 'external-deworm'] as const).map((type) => {
-    const interval = CARE_INTERVALS[type]
+  return PET_CARE_TYPES.map((type) => {
     const latest = events
       .filter((event) => event.type === type)
-      .sort((left, right) => right.occurredOn.localeCompare(left.occurredOn))[0]
-    const nextOn = latest ? addCalendarDays(latest.occurredOn, interval) : null
+      .sort((left, right) =>
+        right.occurredOn.localeCompare(left.occurredOn) ||
+        right.createdAt.localeCompare(left.createdAt),
+      )[0]
+    const interval = latest?.recurrenceDays && latest.recurrenceDays > 0
+      ? latest.recurrenceDays
+      : PET_CARE_INTERVALS[type]
+    const nextOn = latest
+      ? latest.nextOn || addCalendarDays(latest.occurredOn, interval)
+      : null
 
     if (!latest || !nextOn) {
       return {
         type,
         title: PET_EVENT_LABELS[type],
         intervalLabel: `每 ${interval} 天`,
+        intervalDays: interval,
         lastOn: null,
         nextOn: null,
         status: 'unrecorded',
@@ -361,6 +392,7 @@ export function buildPetCareCards(
       type,
       title: PET_EVENT_LABELS[type],
       intervalLabel: `每 ${interval} 天`,
+      intervalDays: interval,
       lastOn: latest.occurredOn,
       nextOn,
       status,

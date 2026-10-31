@@ -382,6 +382,7 @@ export interface ApiPetEvent {
   provider: string
   cost: string
   nextOn: string
+  recurrenceDays: number
   version: number
   createdBy: string
   deletedAt: string | null
@@ -471,6 +472,7 @@ export interface ApiPetEventWriteRequest {
   provider: string
   cost: string
   nextOn: string | null
+  recurrenceDays: number
 }
 
 export interface ApiPetWeightWriteRequest {

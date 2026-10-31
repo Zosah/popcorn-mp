@@ -11,9 +11,11 @@ import {
   filterPetSupplies,
   formatPetAge,
   formatPetWeight,
+  getDefaultPetCareInterval,
   getCurrentPetSupplies,
   getPetSupplyStatusLabel,
   PET_DAILY_LOG_LABELS,
+  PET_EVENT_LABELS,
   PET_SUPPLY_CATEGORY_LABELS,
   type DemoPetProfile,
   type DemoPetState,
@@ -641,10 +643,14 @@ Page({
   },
 
   onCompleteCare(event: {
-    currentTarget: { dataset: { type: PetCareType } }
+    currentTarget: { dataset: { type: PetCareType; intervalDays: number } }
   }) {
     const type = event.currentTarget.dataset.type
-    const title = type === 'internal-deworm' ? '完成体内驱虫' : '完成体外驱虫'
+    const intervalDays = Number(event.currentTarget.dataset.intervalDays)
+    const recurrenceDays = Number.isInteger(intervalDays) && intervalDays > 0
+      ? intervalDays
+      : getDefaultPetCareInterval(type)
+    const title = `完成${PET_EVENT_LABELS[type]}`
     wx.showModal({
       title,
       content: '确认今天已经完成？记录后会自动计算下一次日期。',
@@ -659,6 +665,7 @@ Page({
               title,
               note: '',
               occurredOn: getShanghaiDateOnly(Date.now()),
+              recurrenceDays,
             },
           ),
           '下次日期已更新',

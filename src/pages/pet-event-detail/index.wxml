@@ -26,6 +26,7 @@
     <view class="event-detail-row"><text>发生日期</text><text>{{event.occurredOn}}</text></view>
     <view wx:if="{{event.provider}}" class="event-detail-row"><text>机构 / 地点</text><text>{{event.provider}}</text></view>
     <view wx:if="{{event.cost}}" class="event-detail-row"><text>费用</text><text>¥{{event.cost}}</text></view>
+    <view wx:if="{{event.recurrenceDays}}" class="event-detail-row"><text>照护周期</text><text>每 {{event.recurrenceDays}} 天</text></view>
     <view wx:if="{{event.nextOn}}" class="event-detail-row"><text>下次计划</text><text>{{event.nextOn}}</text></view>
     <view class="event-detail-note">
       <view class="event-detail-note__label"><line-icon name="pen-line" size="18" tone="pink" /><text>详细记录</text></view>

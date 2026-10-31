@@ -161,15 +161,15 @@
     <block wx:elif="{{activeSection === 'care'}}">
       <view class="pet-intro">
         <view class="pet-intro__icon"><line-icon name="heart-pulse" size="27" tone="pink" /></view>
-        <view><text>持续记录，不靠记忆</text><text>体内驱虫按 90 天、体外驱虫按 30 天生成下一次日期。</text></view>
+        <view><text>持续记录，不靠记忆</text><text>疫苗、洗护和内外驱都能设置周期，完成后自动推进下一次日期。</text></view>
       </view>
-      <view class="pet-section-head"><view><text class="pet-eyebrow">护理周期</text><text class="pet-section-head__title">内外驱虫</text></view><view bindtap="onOpenCalendar">查看月历</view></view>
+      <view class="pet-section-head"><view><text class="pet-eyebrow">护理周期</text><text class="pet-section-head__title">疫苗、洗护与驱虫</text></view><view bindtap="onOpenCalendar">查看月历</view></view>
       <view class="care-list">
         <view wx:for="{{careCards}}" wx:key="type" class="care-card care-card--{{item.status}}">
           <view class="care-card__top"><text>{{item.title}}</text><text>{{item.intervalLabel}}</text></view>
           <view class="care-card__status">{{item.statusLabel}}</view>
           <view class="care-card__meta"><text>上次 {{item.lastOn || '未记录'}}</text><text>下次 {{item.nextOn || '待记录'}}</text></view>
-          <button data-type="{{item.type}}" bindtap="onCompleteCare">今天完成一次</button>
+          <button data-type="{{item.type}}" data-interval-days="{{item.intervalDays}}" bindtap="onCompleteCare">今天完成一次</button>
         </view>
       </view>
       <view class="pet-section-head"><view><text class="pet-eyebrow">最近照护</text><text class="pet-section-head__title">照护时间线</text></view><view bindtap="onAddEvent">＋ 其他事件</view></view>

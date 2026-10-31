@@ -61,6 +61,7 @@ const apiPet: ApiPet = {
     provider: '社区宠物医院',
     cost: '180',
     nextOn: '2027-10-01',
+    recurrenceDays: 365,
     version: 2,
     createdBy: 'u_1234567890',
     deletedAt: null,
@@ -187,6 +188,35 @@ describe('HTTP 宠物网关', () => {
           succeed(options, { ...apiPet, name: '糯米团', version: 4 }, 200, { etag: '"4"' })
           return
         }
+        if (url.endsWith('/pets/e_1234567890/events') && method === 'POST') {
+          succeed(options, {
+            ...apiPet,
+            events: [{
+              ...apiPet.events[0],
+              id: 'n_created0001',
+              type: 'external-deworm',
+              occurredOn: '2026-10-31',
+              title: '完成体外驱虫',
+              nextOn: '2026-11-30',
+              recurrenceDays: 30,
+              version: 1,
+            }],
+          }, 201)
+          return
+        }
+        if (url.endsWith('/events/n_1234567890') && method === 'PUT') {
+          succeed(options, {
+            ...apiPet,
+            events: [{
+              ...apiPet.events[0],
+              title: '年度疫苗加强',
+              nextOn: '2027-10-15',
+              recurrenceDays: 379,
+              version: 3,
+            }],
+          }, 200, { etag: '"3"' })
+          return
+        }
         if (url.endsWith('/events/n_1234567890') && method === 'DELETE') {
           succeed(options, {
             ...apiPet,
@@ -219,7 +249,12 @@ describe('HTTP 宠物网关', () => {
         avatarMediaId: 'm_petavatar01',
         avatarUrl: 'https://cos.test/pet-thumb.jpg',
       },
-      events: [{ id: 'n_1234567890', version: 2 }],
+      events: [{
+        id: 'n_1234567890',
+        version: 2,
+        nextOn: '2027-10-01',
+        recurrenceDays: 365,
+      }],
       supplies: [{ id: 'q_1234567890', version: 4 }],
     })
     const listRequest = requests.find((item) =>
@@ -261,6 +296,49 @@ describe('HTTP 宠物网关', () => {
     expect(request?.header?.['If-Match']).toBe('"3"')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_profile_/)
     expect(request?.data).toMatchObject({ name: '糯米团', avatarMediaId: 'm_petavatar01' })
+  })
+
+  it('创建和修改周期照护事件时提交 recurrenceDays', async () => {
+    const gateway = new HttpPetGateway()
+    const created = await gateway.createEvent(apiPet.id, {
+      type: 'external-deworm',
+      occurredOn: '2026-10-31',
+      title: '完成体外驱虫',
+      note: '',
+      nextOn: null,
+      recurrenceDays: 30,
+    })
+    expect(created.events[0]).toMatchObject({
+      type: 'external-deworm',
+      nextOn: '2026-11-30',
+      recurrenceDays: 30,
+    })
+    const createRequest = requests.find(
+      (item) => item.method === 'POST' && String(item.url).endsWith('/events'),
+    )
+    expect(createRequest?.data).toMatchObject({
+      type: 'external-deworm',
+      nextOn: null,
+      recurrenceDays: 30,
+    })
+    expect(createRequest?.header?.['Idempotency-Key']).toMatch(/^pet_event-create_/)
+
+    const updated = await gateway.updateEvent(apiPet.id, 'n_1234567890', {
+      type: 'vaccine',
+      occurredOn: '2026-10-01',
+      title: '年度疫苗加强',
+      note: '',
+      nextOn: null,
+      recurrenceDays: 379,
+    }, 2)
+    expect(updated.events[0]).toMatchObject({
+      title: '年度疫苗加强',
+      nextOn: '2027-10-15',
+      recurrenceDays: 379,
+    })
+    const updateRequest = requests.find((item) => item.method === 'PUT')
+    expect(updateRequest?.header?.['If-Match']).toBe('"2"')
+    expect(updateRequest?.data).toMatchObject({ recurrenceDays: 379 })
   })
 
   it('删除事件使用事件自身版本', async () => {

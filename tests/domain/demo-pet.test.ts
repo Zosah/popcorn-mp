@@ -9,6 +9,7 @@ import {
   filterPetSupplies,
   formatPetAge,
   formatPetWeight,
+  getDefaultPetCareInterval,
   getCurrentPetSupplies,
   getPetSupplyStatusLabel,
   shiftPetCalendarMonth,
@@ -67,16 +68,22 @@ describe('首页宠物动态', () => {
 })
 
 describe('周期照护', () => {
-  it('根据最近一次内外驱记录计算下次日期', () => {
+  it('覆盖疫苗、洗护和内外驱，并按最近一次记录计算下次日期', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const cards = buildPetCareCards(state.events, '2026-08-27')
 
-    expect(cards[0]).toMatchObject({
+    expect(cards.map((item) => item.type)).toEqual([
+      'vaccine',
+      'grooming',
+      'internal-deworm',
+      'external-deworm',
+    ])
+    expect(cards.find((item) => item.type === 'internal-deworm')).toMatchObject({
       type: 'internal-deworm',
       nextOn: '2026-09-06',
       status: 'normal',
     })
-    expect(cards[1]).toMatchObject({
+    expect(cards.find((item) => item.type === 'external-deworm')).toMatchObject({
       type: 'external-deworm',
       nextOn: '2026-09-02',
       status: 'due-soon',
@@ -85,11 +92,24 @@ describe('周期照护', () => {
   })
 
   it('没有记录和已经超期时显示明确状态', () => {
-    expect(buildPetCareCards([], '2026-08-27')[0]?.status).toBe('unrecorded')
+    expect(
+      buildPetCareCards([], '2026-08-27').every(
+        (item) => item.status === 'unrecorded',
+      ),
+    ).toBe(true)
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
-    expect(buildPetCareCards(state.events, '2026-10-01')[0]?.status).toBe(
-      'overdue',
-    )
+    expect(
+      buildPetCareCards(state.events, '2026-10-01').find(
+        (item) => item.type === 'internal-deworm',
+      )?.status,
+    ).toBe('overdue')
+  })
+
+  it('为四类周期照护提供默认天数', () => {
+    expect(getDefaultPetCareInterval('vaccine')).toBe(365)
+    expect(getDefaultPetCareInterval('grooming')).toBe(30)
+    expect(getDefaultPetCareInterval('internal-deworm')).toBe(90)
+    expect(getDefaultPetCareInterval('external-deworm')).toBe(30)
   })
 })
 

@@ -29,6 +29,7 @@ export interface PetEventInput {
   provider?: string
   cost?: string
   nextOn?: string | null
+  recurrenceDays?: number
 }
 
 export interface PetDailyLogInput {

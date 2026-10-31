@@ -180,18 +180,26 @@ export function addDemoPetEvent(input: {
   provider?: string
   cost?: string
   nextOn?: string | null
+  recurrenceDays?: number
 }): DemoPetState {
   const state = getDemoPetState()
   const nowMs = Date.now()
+  const occurredOn = input.occurredOn ?? getShanghaiDateOnly(nowMs)
+  const recurrenceDays = input.recurrenceDays ?? 0
   const event: DemoPetEvent = {
     id: `pet-event-${nowMs}`,
     type: input.type,
-    occurredOn: input.occurredOn ?? getShanghaiDateOnly(nowMs),
+    occurredOn,
     title: input.title.trim(),
     note: input.note.trim(),
     provider: input.provider?.trim() ?? '',
     cost: input.cost?.trim() ?? '',
-    nextOn: input.nextOn ?? null,
+    nextOn:
+      input.nextOn ??
+      (recurrenceDays > 0
+        ? addCalendarDays(occurredOn, recurrenceDays)
+        : null),
+    recurrenceDays,
     createdAt: new Date(nowMs).toISOString(),
     version: 1,
   }
@@ -214,9 +222,11 @@ export function updateDemoPetEvent(
     provider?: string
     cost?: string
     nextOn?: string | null
+    recurrenceDays?: number
   },
 ): DemoPetState {
   const state = getDemoPetState()
+  const recurrenceDays = input.recurrenceDays ?? 0
   state.events = state.events.map((event) =>
     event.id === id
       ? {
@@ -227,7 +237,12 @@ export function updateDemoPetEvent(
           note: input.note.trim(),
           provider: input.provider?.trim() ?? '',
           cost: input.cost?.trim() ?? '',
-          nextOn: input.nextOn ?? null,
+          nextOn:
+            input.nextOn ??
+            (recurrenceDays > 0
+              ? addCalendarDays(input.occurredOn, recurrenceDays)
+              : null),
+          recurrenceDays,
           version: (event.version ?? 1) + 1,
         }
       : event,

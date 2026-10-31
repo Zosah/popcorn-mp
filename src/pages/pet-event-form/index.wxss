@@ -59,6 +59,20 @@
 .event-switch__copy text:first-child { color: var(--event-ink); font-size: 27rpx; font-weight: 600; }
 .event-switch__copy text:last-child { color: var(--event-ink-3); font-size: 22rpx; }
 .event-switch switch { transform: scale(0.76); transform-origin: right center; }
+.care-schedule { padding: 6rpx 0 20rpx; }
+.care-schedule__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; }
+.care-schedule__head > view { display: flex; min-width: 0; flex-direction: column; gap: 4rpx; }
+.care-schedule__head text:first-child { color: var(--event-ink); font-size: 27rpx; font-weight: 600; }
+.care-schedule__head text:last-child { color: var(--event-ink-3); font-size: 22rpx; line-height: 1.5; }
+.care-schedule__body { display: flex; align-items: stretch; margin-top: 16rpx; padding: 16rpx; border-radius: 23rpx; background: #fff8f5; gap: 12rpx; }
+.care-interval { display: flex; min-width: 0; align-items: center; padding: 0 14rpx; border: 1rpx solid #edd8d0; border-radius: 18rpx; background: #fff; flex: 1; }
+.care-interval__input { width: 92rpx; height: 64rpx; color: var(--event-ink); font-family: var(--font-serif); font-size: 34rpx; font-weight: 700; text-align: center; }
+.care-interval text { color: var(--event-ink-3); font-size: 21rpx; white-space: nowrap; }
+.care-preview { display: flex; min-width: 190rpx; justify-content: center; padding: 8rpx 14rpx; border-radius: 18rpx; background: var(--event-pink-soft); flex-direction: column; }
+.care-preview text:first-child { color: #a86c5d; font-size: 19rpx; }
+.care-preview text:last-child { margin-top: 3rpx; color: var(--event-ink); font-size: 25rpx; font-weight: 700; }
+.care-preview--empty { background: #f1ede7; }
+.care-preview--empty text:last-child { color: var(--event-ink-3); font-size: 21rpx; font-weight: 500; }
 .event-section-head { display: flex; margin: 30rpx 4rpx 12rpx; }
 .event-section-head text { display: block; }
 .event-section-head text:first-child { color: var(--event-ink); font-size: 31rpx; font-weight: 700; }

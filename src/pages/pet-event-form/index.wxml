@@ -64,19 +64,37 @@
       <text class="event-label">费用</text>
       <input class="event-input" type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" />
     </view>
-    <view class="event-switch">
-      <view class="event-switch__copy"><text>设置下次日期</text><text>用于月历预览和照护提醒</text></view>
-      <switch checked="{{hasNextDate}}" color="#252b27" bindchange="onNextToggle" />
-    </view>
-    <view wx:if="{{hasNextDate}}" class="event-field event-field--stack event-field--last">
-      <text class="event-label">下次日期</text>
-      <picker mode="date" value="{{form.nextOn}}" bindchange="onNextDateChange">
-        <view class="event-picker event-picker--date">
-          <view class="event-picker__value"><line-icon name="calendar-days" size="21" tone="pink" /><text>{{form.nextOn || '选择日期'}}</text></view>
-          <text class="event-picker__arrow">›</text>
+    <view wx:if="{{isCareEvent}}" class="care-schedule">
+      <view class="care-schedule__head">
+        <view><text>设置照护周期</text><text>完成后，下次日期会从发生日期自动推算。</text></view>
+        <line-icon name="rotate-ccw" size="23" tone="pink" />
+      </view>
+      <view class="care-schedule__body">
+        <view class="care-interval">
+          <input class="care-interval__input" type="number" value="{{careIntervalDays}}" maxlength="4" bindinput="onCareIntervalInput" />
+          <text>天一次</text>
         </view>
-      </picker>
+        <view class="care-preview {{nextCarePreview ? '' : 'care-preview--empty'}}">
+          <text>下次照护</text>
+          <text>{{nextCarePreview || '输入 1–3650 天'}}</text>
+        </view>
+      </view>
     </view>
+    <block wx:else>
+      <view class="event-switch">
+        <view class="event-switch__copy"><text>设置下次日期</text><text>用于月历预览和照护提醒</text></view>
+        <switch checked="{{hasNextDate}}" color="#252b27" bindchange="onNextToggle" />
+      </view>
+      <view wx:if="{{hasNextDate}}" class="event-field event-field--stack event-field--last">
+        <text class="event-label">下次日期</text>
+        <picker mode="date" value="{{form.nextOn}}" bindchange="onNextDateChange">
+          <view class="event-picker event-picker--date">
+            <view class="event-picker__value"><line-icon name="calendar-days" size="21" tone="pink" /><text>{{form.nextOn || '选择日期'}}</text></view>
+            <text class="event-picker__arrow">›</text>
+          </view>
+        </picker>
+      </view>
+    </block>
   </view>
 
   <view wx:if="{{errorText}}" class="event-save-error"><line-icon name="circle-alert" size="20" tone="danger" /><text>{{errorText}}</text></view>

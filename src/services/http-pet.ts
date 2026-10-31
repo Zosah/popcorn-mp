@@ -328,6 +328,7 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       provider: event.provider,
       cost: event.cost,
       nextOn: event.nextOn || null,
+      recurrenceDays: event.recurrenceDays || 0,
       createdAt: event.createdAt,
       version: event.version,
     })),
@@ -389,6 +390,7 @@ function toEventRequest(input: PetEventInput): ApiPetEventWriteRequest {
     provider: input.provider?.trim() ?? '',
     cost: input.cost?.trim() ?? '',
     nextOn: input.nextOn ?? null,
+    recurrenceDays: input.recurrenceDays ?? 0,
   }
 }
 

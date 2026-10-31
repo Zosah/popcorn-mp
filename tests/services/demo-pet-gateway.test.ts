@@ -63,6 +63,28 @@ describe('Demo 宠物网关', () => {
     expect((await gateway.findEvent(event.id))).toBeNull()
   })
 
+  it('创建周期照护事件时保存周期并自动推算下次日期', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    if (!pet) throw new Error('缺少演示宠物')
+
+    const updated = await gateway.createEvent(pet.profile.id, {
+      type: 'external-deworm',
+      occurredOn: '2026-10-31',
+      title: '完成体外驱虫',
+      note: '',
+      nextOn: null,
+      recurrenceDays: 30,
+    })
+    const event = updated.events.find((item) => item.title === '完成体外驱虫')
+
+    expect(event).toMatchObject({
+      recurrenceDays: 30,
+      nextOn: '2026-11-30',
+    })
+  })
+
   it('用品状态更新使用用品自身版本', async () => {
     const gateway = new DemoPetGateway()
     const collection = await gateway.list()
