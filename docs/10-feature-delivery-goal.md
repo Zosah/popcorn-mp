@@ -8,12 +8,12 @@
 
 - 状态：进行中（active）。
 - 当前焦点：把每个功能按“设计 → 前后端实现 → 数据库迁移 → 私有 COS → 生产部署与真实联调 → 自动化验收 → 体验版上传”推进到可验收状态。
-- 本轮已完成：宠物档案软删除、删除后自动切换、最后一只删除后的空态、私有 COS 头像与生产宠物全链路验收。
-- 当前切片：宠物照护从页面创建、图片上传、体重/日常/周期照护/用品、首页摘要，到删除和刷新后的空态均已在生产真实微信会话闭环。
-- 验证结果：Go 全量测试与 `go vet` 通过；前端类型检查、35 个测试文件 / 204 项测试通过；生产真实微信覆盖宠物页面创建、私有 COS 头像 `200 image/jpeg`、业务回读、软删除关联清理、自动切换和空态持久化。
-- 发布状态：后端 `439381d` 已部署生产，新删除路由未鉴权返回 `401`，`healthz / readyz` 正常；前端提交 `0e155f4` 已推送，`1.14.0` 已上传微信后台，包体 `1,832,112 Byte`（约 1.7 MB）。
-- 生产复验：`npm run verify:production-pet-ui` 已通过，截图 `shots/production-pet-ui-profile-empty.png`、`shots/production-pet-ui-profile-avatar.png`、`shots/production-pet-ui-care.png`、`shots/production-pet-ui-supplies.png`、`shots/production-pet-ui-home.png`、`shots/production-pet-ui-profile-deleted-switched.png`、`shots/production-pet-ui-profile-final-empty.png`。
-- 下一门槛：在微信公众平台将 `1.14.0` 设为体验版，完成真机图片、周期照护和双人共享验收。
+- 本轮已完成：家庭库存生产真实微信全链路、库存数量格式修复、首次加载节流修复、详情时间格式化和可重复生产验收脚本。
+- 当前切片：家庭库存从页面创建、列表回读、到期筛选、编辑、详情、用完 / 历史 / 恢复、首页摘要到软删除与兜底清理均已在生产真实微信会话闭环。
+- 验证结果：Go 全量测试与 `go vet` 通过；前端类型检查、35 个测试文件 / 206 项测试通过；生产真实微信完成 3 类临时库存的页面 CRUD、摘要、生命周期和清理，最终临时数据残留为空。
+- 发布状态：后端 `9b60052` 已部署生产，库存数量统一输出为 `1` / `2.5` 等规范格式；前端 `1.15.0` 已完成生产 UI 复验，待提交、推送和上传微信后台。
+- 生产复验：`npm run verify:production-inventory-ui` 已通过，截图 `shots/production-inventory-ui-form.png`、`shots/production-inventory-ui-list.png`、`shots/production-inventory-ui-filter.png`、`shots/production-inventory-ui-detail.png`、`shots/production-inventory-ui-history.png`、`shots/production-inventory-ui-home.png`。
+- 下一门槛：上传 `1.15.0` 后在微信公众平台设为体验版，完成真机弱网、临期提醒边界与双人共享验收。
 
 ## 1. 执行原则
 
@@ -45,9 +45,9 @@
 | 顺序 | 功能 | 当前阶段 | 闭环重点 |
 | --- | --- | --- | --- |
 | 1 | 菜单 / 今天吃什么 | 🔄 生产 COS 闭环完成，待真机验收 | CRUD、人份、食材备齐、私有 COS、共享与冲突 |
-| 2 | 宠物照护 | 🔄 `1.14.0` 生产全链路完成，待上传/真机验收 | 档案增删、体重、事件、日历、周期照护、私有 COS 图片 |
+| 2 | 宠物照护 | 🔄 `1.14.0` 已上传，待真机验收 | 档案增删、体重、事件、日历、周期照护、私有 COS 图片 |
 | 3 | 生活记录 | 🔄 生产图片/私密记录闭环，待真机验收 | 弱网、双人可见范围与删除后媒体治理 |
-| 4 | 家庭库存 | ✅ 后端闭环 | 补充体验版真机弱网验收与临期提醒边界 |
+| 4 | 家庭库存 | 🔄 `1.15.0` 生产 UI 全链路完成，待上传/真机验收 | 页面 CRUD、数量格式、到期筛选、生命周期、首页摘要、软删除 |
 | 5 | 待办与小计划 | 🔄 五类场景生产联调完成，待真机验收 | 小计划、旅行准备、健身、今天吃什么、账单 |
 | 6 | 登录、空间与邀请 | 🔄 `1.11.1` 体验版已上传 | 真机微信登录、邀请分享、成员退出和多用户复验 |
 | 7 | 首页与底部导航 | 🔄 `1.13.0` 已上传，待真机验收 | 首页摘要、宠物动态、自定义底栏、本机快照与跨设备同步 |
@@ -107,6 +107,19 @@
 - ✅ 生产截图：`shots/production-pet-ui-profile-empty.png`、`shots/production-pet-ui-profile-avatar.png`、`shots/production-pet-ui-care.png`、`shots/production-pet-ui-supplies.png`、`shots/production-pet-ui-home.png`、`shots/production-pet-ui-profile-deleted-switched.png`、`shots/production-pet-ui-profile-final-empty.png`。
 - ✅ 前端提交 `0e155f4` 已推送，`1.14.0` 已上传微信后台，包体 `1,832,112 Byte`（约 1.7 MB）。
 - ⏳ 在公众平台设置 `1.14.0` 体验版，完成真机弱网、周期照护、图片和双人共享验收。
+
+### 家庭库存
+
+- ✅ 后端 CRUD、状态流转、历史筛选、软删除、空间权限、幂等和乐观锁均已完成。
+- ✅ MySQL `DECIMAL(9,3)` 数量在服务层、仓储层和 HTTP 响应统一规范为 `1`、`2.5` 等外部格式，不再向页面泄露 `1.000`。
+- ✅ 库存页首次加载节流改为页面实例级，快速重开页面不会共享模块级时间戳而永久停留在加载态。
+- ✅ 库存详情更新时间统一按上海时区格式化为 `M月D日 HH:mm`，不再直接显示 ISO 字符串。
+- ✅ 新增可重复生产验收脚本 `npm run verify:production-inventory-ui`，覆盖真实微信会话、页面创建三类库存、列表回读、筛选项、编辑、详情、用完、历史、恢复、首页摘要、页面软删除和 finally 兜底清理。
+- ✅ 开发者工具连续 `reLaunch` 偶发 automation 超时；脚本增加断线重连与一次重试，避免验收工具不稳定造成假失败。
+- ✅ 前端类型检查、35 个测试文件 / 206 项测试通过；Go 全量测试与 `go vet` 通过。
+- ✅ 生产复验最终输出 `PRODUCTION INVENTORY UI VERIFICATION PASSED`，临时库存检查 `FINAL_LEFTOVERS []`。
+- ✅ 生产截图：`shots/production-inventory-ui-form.png`、`shots/production-inventory-ui-list.png`、`shots/production-inventory-ui-filter.png`、`shots/production-inventory-ui-detail.png`、`shots/production-inventory-ui-history.png`、`shots/production-inventory-ui-home.png`。
+- ⏳ 上传 `1.15.0` 并在体验版完成真机弱网、临期提醒边界与双人共享验收。
 
 ### 旅行准备
 
@@ -182,4 +195,4 @@
 
 ### 下一阶段
 
-宠物照护已完成生产真实微信全链路验收，新增档案删除、自动切换、空态持久化和可重复脚本；`1.14.0` 已上传微信后台。下一步在公众平台设为体验版，完成真机图片、周期照护与双人共享验收，再继续为库存和待办补可重复的生产验收切片；微信订阅消息仍需模板 ID 后才能进入发送验收。
+家庭库存已完成生产真实微信全链路验收，统一了数量和时间对外格式，并补充可重复脚本与 automation 重连能力；`1.15.0` 待上传微信后台。下一步先完成体验版真机验收，再按功能清单继续为待办与小计划补完整生产 UI 切片；微信订阅消息仍需模板 ID 后才能进入发送验收。

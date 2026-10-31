@@ -40,6 +40,16 @@ export function getShanghaiDateOnly(nowMs: number): string {
   return formatDateOnly(nowMs + SHANGHAI_OFFSET_MS)
 }
 
+export function formatShanghaiDateTime(value: string): string {
+  const timestamp = Date.parse(value)
+  if (Number.isNaN(timestamp)) return '时间未知'
+
+  const date = new Date(timestamp + SHANGHAI_OFFSET_MS)
+  return `${date.getUTCMonth() + 1}月${date.getUTCDate()}日 ${pad(
+    date.getUTCHours(),
+  )}:${pad(date.getUTCMinutes())}`
+}
+
 export function resolveExpiry(
   expiresOn: string | null,
   today: string,

@@ -53,7 +53,6 @@ const inventoryRequestGate = createRequestGate()
 const inventoryPageGate = createRequestGate()
 const inventorySearchDebouncer = createDebouncer(300)
 const PAGE_REFRESH_INTERVAL_MS = 500
-let lastPageRefreshAt = 0
 
 function toExpiryStatuses(filter: DemoExpiryFilter): ExpiryStatus[] | undefined {
   const mapping: Record<Exclude<DemoExpiryFilter, 'all'>, ExpiryStatus[]> = {
@@ -151,6 +150,7 @@ Page({
     hasResults: false,
     syncState: appConfig.demoMode ? 'local' : 'pending',
     syncText: appConfig.demoMode ? '只在本机' : '正在同步',
+    lastRefreshAt: 0,
   },
 
   onShow() {
@@ -170,8 +170,8 @@ Page({
 
   async refreshPage() {
     const now = Date.now()
-    if (now - lastPageRefreshAt < PAGE_REFRESH_INTERVAL_MS) return
-    lastPageRefreshAt = now
+    if (now - this.data.lastRefreshAt < PAGE_REFRESH_INTERVAL_MS) return
+    this.setData({ lastRefreshAt: now })
     const sequence = inventoryPageGate.begin()
     const auth = await hydrateAuthState()
     if (!inventoryPageGate.isCurrent(sequence)) return

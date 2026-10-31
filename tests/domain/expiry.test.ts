@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   addCalendarDays,
+  formatShanghaiDateTime,
   getShanghaiDateOnly,
   resolveExpiry,
 } from '../../src/domain/expiry'
@@ -47,6 +48,18 @@ describe('getShanghaiDateOnly', () => {
     expect(getShanghaiDateOnly(Date.UTC(2026, 7, 26, 16, 0, 0))).toBe(
       '2026-08-27',
     )
+  })
+})
+
+describe('formatShanghaiDateTime', () => {
+  it('把 ISO 时间转换为稳定的上海日期时间', () => {
+    expect(formatShanghaiDateTime('2026-10-31T18:37:39.296Z')).toBe(
+      '11月1日 02:37',
+    )
+  })
+
+  it('非法时间返回兜底文案', () => {
+    expect(formatShanghaiDateTime('not-a-date')).toBe('时间未知')
   })
 })
 

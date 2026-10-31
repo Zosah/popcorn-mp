@@ -53,7 +53,7 @@
       <view class="detail-timeline__item">
         <view class="detail-timeline__dot detail-timeline__dot--orange"></view>
         <view class="detail-timeline__date">最近更新</view>
-        <view class="detail-timeline__title">{{item.updatedAt}}</view>
+        <view class="detail-timeline__title">{{item.updatedAtLabel}}</view>
         <view class="detail-timeline__copy">当前状态：{{item.statusLabel}}</view>
       </view>
       <view class="detail-timeline__item">

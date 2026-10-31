@@ -1,7 +1,11 @@
 import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
 import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
 import { resolveInventoryLifecycleActions } from '../../domain/demo-interactions'
-import { getShanghaiDateOnly, resolveExpiry } from '../../domain/expiry'
+import {
+  formatShanghaiDateTime,
+  getShanghaiDateOnly,
+  resolveExpiry,
+} from '../../domain/expiry'
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -27,6 +31,7 @@ interface ItemDetailView extends InventoryItem {
   locationLabel: string
   expiry: ReturnType<typeof resolveExpiry>
   statusLabel: string
+  updatedAtLabel: string
   actions: Array<{
     key: keyof typeof ACTION_LABELS
     label: string
@@ -69,6 +74,7 @@ Page({
           locationLabel: getLocationLabel(item.location),
           expiry: resolveExpiry(item.expiresOn, today),
           statusLabel: LIFECYCLE_LABELS[item.status],
+          updatedAtLabel: formatShanghaiDateTime(item.updatedAt),
           actions: resolveInventoryLifecycleActions(item.status).map((action) => ({
             ...action,
             label: ACTION_LABELS[action.key],
