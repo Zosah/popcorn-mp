@@ -17,6 +17,7 @@ import {
   resetAuthAccount,
   saveAuthProfile,
 } from '../../services/auth'
+import { syncAppTabSettings } from '../../services/app-tab-settings'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
 type AuthMode = 'login' | 'register' | 'account'
@@ -212,6 +213,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     }
 
     this.showAccount(result.state.user)
+    void syncAppTabSettings().catch(() => undefined)
     wx.showToast({ title: '欢迎回来', icon: 'success' })
     setTimeout(() => navigateBackOrTab('/pages/profile/index'), 420)
   },
@@ -256,6 +258,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     }
 
     this.showAccount(result.state.user)
+    void syncAppTabSettings().catch(() => undefined)
     wx.showToast({ title: '欢迎回家', icon: 'success' })
     setTimeout(() => navigateBackOrTab('/pages/profile/index'), 420)
   },

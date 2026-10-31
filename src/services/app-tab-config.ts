@@ -28,6 +28,11 @@ export interface AppTabConfig {
   slot3: AppTabCustomId
 }
 
+export interface AppTabSnapshot extends AppTabConfig {
+  version: number
+  updatedAt: string
+}
+
 export interface AppTabOption {
   id: AppTabCustomId
   label: string
@@ -189,6 +194,12 @@ export const DEFAULT_APP_TAB_CONFIG: AppTabConfig = {
 }
 
 const STORAGE_PREFIX = 'popcorn_app_tab_config_v1'
+const configListeners = new Set<() => void>()
+
+export function subscribeAppTabConfig(listener: () => void): () => void {
+  configListeners.add(listener)
+  return () => configListeners.delete(listener)
+}
 
 function isAppTabCustomId(value: unknown): value is AppTabCustomId {
   return APP_TAB_OPTIONS.some((option) => option.id === value)
@@ -196,7 +207,14 @@ function isAppTabCustomId(value: unknown): value is AppTabCustomId {
 
 export function getAppTabOwnerId(): string {
   const auth = getAuthState()
-  return auth.user?.id || auth.activeSpaceId || 'guest'
+  return buildAppTabOwnerId(auth.user?.id ?? '', auth.activeSpaceId)
+}
+
+export function buildAppTabOwnerId(userId: string, spaceId: string): string {
+  const normalizedUser = userId.trim()
+  const normalizedSpace = spaceId.trim()
+  if (normalizedUser && normalizedSpace) return `${normalizedSpace}:${normalizedUser}`
+  return normalizedUser || normalizedSpace || 'guest'
 }
 
 export function getAppTabStorageKey(ownerId = getAppTabOwnerId()): string {
@@ -229,18 +247,63 @@ export function normalizeAppTabConfig(value: unknown): AppTabConfig {
   return { slot2, slot3 }
 }
 
+export function getAppTabSnapshot(
+  ownerId = getAppTabOwnerId(),
+): AppTabSnapshot {
+  const storageKey = getAppTabStorageKey(ownerId)
+  let value = wx.getStorageSync<unknown>(storageKey)
+  if ((!value || typeof value !== 'object') && ownerId.includes(':')) {
+    // 兼容从 v1.12.0 之前只按用户 ID 保存的本机配置。
+    value = wx.getStorageSync<unknown>(
+      getAppTabStorageKey(ownerId.split(':').slice(1).join(':')),
+    )
+  }
+  const record = value && typeof value === 'object'
+    ? value as Record<string, unknown>
+    : {}
+  const source = record.config && typeof record.config === 'object'
+    ? record.config
+    : record
+  const version = typeof record.version === 'number' && record.version > 0
+    ? Math.trunc(record.version)
+    : 1
+  return {
+    ...normalizeAppTabConfig(source),
+    version,
+    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : '',
+  }
+}
+
 export function getAppTabConfig(ownerId = getAppTabOwnerId()): AppTabConfig {
-  const value = wx.getStorageSync<unknown>(getAppTabStorageKey(ownerId))
-  return normalizeAppTabConfig(value)
+  const { slot2, slot3 } = getAppTabSnapshot(ownerId)
+  return { slot2, slot3 }
+}
+
+export function saveAppTabSnapshot(
+  snapshot: AppTabSnapshot,
+  ownerId = getAppTabOwnerId(),
+): AppTabSnapshot {
+  const saved: AppTabSnapshot = {
+    ...normalizeAppTabConfig(snapshot),
+    version: snapshot.version > 0 ? Math.trunc(snapshot.version) : 1,
+    updatedAt: snapshot.updatedAt,
+  }
+  wx.setStorageSync(getAppTabStorageKey(ownerId), saved)
+  for (const listener of configListeners) listener()
+  return saved
 }
 
 export function saveAppTabConfig(
   config: AppTabConfig,
   ownerId = getAppTabOwnerId(),
 ): AppTabConfig {
-  const normalized = normalizeAppTabConfig(config)
-  wx.setStorageSync(getAppTabStorageKey(ownerId), normalized)
-  return normalized
+  const current = getAppTabSnapshot(ownerId)
+  const saved = saveAppTabSnapshot({
+    ...normalizeAppTabConfig(config),
+    version: current.version + 1,
+    updatedAt: new Date().toISOString(),
+  }, ownerId)
+  return { slot2: saved.slot2, slot3: saved.slot3 }
 }
 
 export function getAppTabOption(id: AppTabId): AppTabItem {

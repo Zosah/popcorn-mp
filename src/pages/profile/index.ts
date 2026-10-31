@@ -1,5 +1,6 @@
 import { appConfig, formatVersionLabel } from '../../config/env'
 import { hydrateAuthState, type AuthState } from '../../services/auth'
+import { syncAppTabSettings } from '../../services/app-tab-settings'
 import {
   getAppTabConfig,
   resolveAppTabItems,
@@ -57,6 +58,7 @@ Page({
       return
     }
 
+    void syncAppTabSettings().catch(() => undefined)
     this.setData({ todoLoading: true })
     let summary: TodoSummary | null = null
     let todoError = ''
@@ -90,9 +92,7 @@ Page({
       if (activeSummary && todoError) summaryText += ' · 同步失败'
     }
     const isApiAccount = auth.source === 'api'
-    const tabBarSummary = resolveAppTabItems(
-      getAppTabConfig(auth.user?.id || auth.activeSpaceId || 'guest'),
-    )
+    const tabBarSummary = resolveAppTabItems(getAppTabConfig())
       .map((item) => item.label)
       .join(' / ')
     this.setData({

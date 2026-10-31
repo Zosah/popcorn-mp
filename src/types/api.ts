@@ -495,6 +495,18 @@ export interface ApiPetSupplyWriteRequest {
   recordedOn: string
 }
 
+export interface ApiAppTabSettings {
+  slot2: string
+  slot3: string
+  version: number
+  updatedAt: string
+}
+
+export interface ApiAppTabSettingsUpdateRequest {
+  slot2: string
+  slot3: string
+}
+
 export interface ApiReminderSettings {
   expiry: boolean
   petCare: boolean

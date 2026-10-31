@@ -15,7 +15,7 @@
   <view class="tab-settings-preview">
     <view class="tab-settings-preview__head">
       <text>当前底栏</text>
-      <text>自动保存</text>
+      <text>{{syncText}}</text>
     </view>
     <view class="tab-settings-preview__bar">
       <view wx:for="{{previewItems}}" wx:key="id" class="tab-settings-preview__item">
@@ -25,6 +25,14 @@
         <text>{{item.label}}</text>
       </view>
     </view>
+  </view>
+
+  <view wx:if="{{errorText}}" class="tab-settings-error">
+    <view class="tab-settings-error__copy">
+      <line-icon name="circle-alert" size="24" tone="orange" />
+      <text>{{errorText}}</text>
+    </view>
+    <view class="tab-settings-error__retry" bindtap="onRetry">重试</view>
   </view>
 
   <view class="tab-settings-section-head">
@@ -71,7 +79,7 @@
         wx:for="{{item.items}}"
         wx:for-item="option"
         wx:key="id"
-        class="tab-settings-option {{option.selected ? 'tab-settings-option--selected' : ''}} {{option.disabled ? 'tab-settings-option--disabled' : ''}}"
+        class="tab-settings-option {{option.selected ? 'tab-settings-option--selected' : ''}} {{option.disabled ? 'tab-settings-option--disabled' : ''}} {{loading || saving ? 'tab-settings-option--busy' : ''}}"
         data-id="{{option.id}}"
         bindtap="onChooseCandidate"
       >
@@ -95,6 +103,6 @@
 
   <view class="tab-settings-note">
     <line-icon name="circle-alert" size="24" tone="orange" />
-    <text>同一功能只能放在一个位置。设置会跟随当前账号保存在这台设备上。</text>
+    <text>同一功能只能放在一个位置。设置会跟随当前账号同步到共同空间，同时保留本机缓存。</text>
   </view>
 </view>

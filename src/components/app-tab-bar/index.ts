@@ -1,10 +1,13 @@
 import {
   getAppTabConfig,
   resolveActiveAppTabItemId,
+  subscribeAppTabConfig,
   resolveAppTabItems,
   type AppTabId,
   type AppTabItem,
 } from '../../services/app-tab-config'
+
+const appTabSubscriptions = new WeakMap<object, () => void>()
 
 Component({
   properties: {
@@ -23,7 +26,15 @@ Component({
 
   lifetimes: {
     attached() {
+      appTabSubscriptions.get(this)?.()
+      appTabSubscriptions.set(this, subscribeAppTabConfig(() => {
+        this.refresh()
+      }))
       this.refresh()
+    },
+    detached() {
+      appTabSubscriptions.get(this)?.()
+      appTabSubscriptions.delete(this)
     },
   },
 
