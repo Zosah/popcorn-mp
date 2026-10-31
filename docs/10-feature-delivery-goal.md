@@ -8,13 +8,13 @@
 
 - 状态：进行中（active）。
 - Goal 模式：这不是一次性计划。每轮只取一个功能切片，从交互设计一路推进到生产部署、真实环境联调、小程序体验版上传和真机验收；未达到 Definition of Done 就留在当前切片，不跳到下一个功能。
-- 当前焦点：微信用户真实头像与账号资料全链路。头像已写入 `t_users.avatar_media_id`，图片进入私有 COS，登录、账号资料、个人中心、首页空间成员、空间成员和邀请页统一展示服务端签名地址。
-- 当前切片已完成：数据库迁移 13、后端头像媒体校验与回读、OpenAPI、前端选图 / 上传 / 替换 / 移除 / 失败回退、生产真实微信会话验收，以及个人中心空间头像溢出修复。
-- 本地验证：前端类型检查通过；38 个测试文件 / 220 项测试通过；后端 `gofmt`、`go vet`、`go test ./...` 与 `go test -race ./...` 通过。
-- 生产验证：`npm run verify:production-avatar-ui` 已覆盖真实微信会话、`purpose=avatar`、私有 COS 路径与签名 URL、保存回读、替换、移除、无头像昵称首字回退、跨空间头像引用拒绝，并在 `finally` 中恢复验收前头像。
-- 当前截图：`shots/production-avatar-ui-auth-uploaded.png`、`shots/production-avatar-ui-account.png`、`shots/production-avatar-ui-profile.png`、`shots/production-avatar-ui-home-members.png`、`shots/production-avatar-ui-space-members.png`、`shots/production-avatar-ui-invite.png`、`shots/production-avatar-ui-account-cleared.png`、`shots/production-avatar-ui-profile-fallback.png`。
-- 发布状态：后端 `6e960c0` 已推送并部署生产，迁移 13 已应用，`healthz / readyz` 正常；前端 `d1f7ed7` 已提交并推送，`1.18.0` 已上传微信后台，包体 `1,852,683 Byte`（约 1.8 MB），待设为体验版并完成真机验收。
-- 下一门槛：完成 `1.18.0` 前端提交推送，在公众平台设为体验版；真机复验上传、替换、移除、杀进程重进后的头像状态。GitHub Actions 自动部署结果仍需在网页端确认（本机无可用的已授权 GitHub CLI）。
+- 当前焦点：菜单 / 今天吃什么 `1.19.0`。菜单页已收口为“今天 / 菜谱本”两个真实入口，今日推荐、换一道、搜索、30 分钟筛选、私有 COS、生产真实微信验收均已完成；剩余工作是最终回归、提交推送、上传体验版和真机验收。
+- 已归档切片：微信用户真实头像与账号资料全链路。数据库迁移 13、后端头像媒体校验与回读、OpenAPI、前端选图 / 上传 / 替换 / 移除 / 失败回退、生产真实微信会话验收，以及个人中心空间头像溢出修复均已完成。
+- 本地验证：前端类型检查通过；39 个测试文件 / 223 项测试通过；菜单 HTTP 全链路与开发者工具 UI 自动化通过；后端现有测试通过，本切片未新增后端代码或迁移。
+- 生产验证：`npm run verify:production-menu-ui` 已覆盖真实微信会话、今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS 上传与签名读取、保存回读、详情、编辑、冲突恢复和软删除清理。
+- 当前截图：`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
+- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端菜单 `1.19.0` 已完成生产验收，但尚未提交、推送和上传微信后台。
+- 下一门槛：重跑类型检查、223 项测试与最终生产菜单验收，提交推送 `1.19.0`，上传微信后台，设为体验版并完成真机验收；未完成前菜单切片不标记为已闭环。
 
 ## 1. 执行原则
 
@@ -48,7 +48,7 @@
 
 | 顺序 | 功能 | 当前阶段 | 闭环重点 |
 | --- | --- | --- | --- |
-| 1 | 菜单 / 今天吃什么 | 🔄 生产 COS 闭环完成，待真机验收 | CRUD、人份、食材备齐、私有 COS、共享与冲突 |
+| 1 | 菜单 / 今天吃什么 | 🔄 `1.19.0` 生产验收通过，待上传 / 真机验收 | 今日推荐、搜索、30 分钟筛选、CRUD、私有 COS、共享与冲突 |
 | 2 | 宠物照护 | 🔄 `1.14.0` 已上传，待真机验收 | 档案增删、体重、事件、日历、周期照护、私有 COS 图片 |
 | 3 | 生活记录 | 🔄 生产图片/私密记录闭环，待真机验收 | 弱网、双人可见范围与删除后媒体治理 |
 | 4 | 家庭库存 | 🔄 `1.15.0` 已上传，待真机验收 | 页面 CRUD、数量格式、到期筛选、生命周期、首页摘要、软删除 |
@@ -118,18 +118,39 @@ Demo 模式：
 
 ### 菜单 / 今天吃什么
 
+#### 当前单功能 Goal 卡
+
+```text
+功能：菜单 / 今天吃什么
+版本：1.19.0（基于 1.18.0）
+范围：菜谱列表、搜索、30 分钟内筛选、按日期轮换的今日推荐、换一道、详情、增删改、人份、食材备齐、私有 COS 图片、共享空间权限、冲突恢复
+非目标：持久化周计划、购物清单、库存临期自动推荐、AI 推荐、COS 物理删除；这些功能不借用“本周”“智能推荐”等文案伪装成已完成
+交互与视觉证据：保留现有暖奶油手帐风格；移除没有数据模型的“本周菜单”假入口；今日页负责决定，菜谱本负责浏览、搜索和筛选
+API / DB / OpenAPI：复用现有菜单 CRUD、`query`、`maxMinutes`、分页、人份、食材状态和媒体字段；本切片不新增数据库迁移
+Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 模式行为一致
+本地 HTTP + 双用户：覆盖空间隔离、图片上传、保存回读、版本冲突和软删除
+图片 / COS：复用私有 COS、`mediaId`、短时签名 URL、替换 / 移除和失败回退
+生产部署与迁移：后端无新迁移时复验现有生产健康检查与菜单路由；若实现中发现契约缺口，再同步 OpenAPI、迁移、测试和部署
+生产真实微信验收 / 截图：更新 `verify:production-menu-ui`，覆盖今日推荐、菜谱本、搜索、30 分钟筛选和图片
+小程序上传：生产验收通过后提升版本号并上传微信后台
+体验版真机验收：决定今天吃什么、搜索、快速筛选、查看图片与基础编辑
+剩余阻塞：真机验收依赖微信公众平台操作和真实设备
+提交与文档归档：前后端提交、Goal 卡、MVP 实施计划和验收截图同步更新
+```
+
 - ✅ 后端 CRUD、搜索、分页、空间权限、幂等、乐观锁和软删除。
 - ✅ 人份调整、食材备齐 / 取消、首页摘要。
 - ✅ 私有 COS 上传、签名展示、替换和移除。
 - ✅ 生产迁移、HTTPS 接口、写入与回读复验。
 - ✅ 2026-11-01 使用生产真实微信会话完成前端 `uploadImage → wx.uploadFile → 私有 COS → 保存菜谱 → 列表展示`；另验证图片替换、移除、创建幂等和软删除。
-- ✅ 生产截图：`shots/menu-cos-ui-upload-vwlsjai.png`、`shots/menu-cos-ui-saved-vwlsjai.png`、`shots/menu-cos-production-list-vwlkubr.png`、`shots/menu-cos-production-detail-vwlkubr.png`。
-- ✅ 新增可重复生产验收脚本 `npm run verify:production-menu-ui`，本次再次通过真实微信会话、私有 COS 上传、保存回读、签名图片 `200 image/jpeg` 和软删除清理。
-- ✅ 本次生产截图：`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`、`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-detail-loaded.png`。
-- ✅ 前端类型检查和 178 项自动化测试通过。
-- ✅ 小程序 `1.9.0` 已上传微信后台。
-- ✅ 菜单能力已包含在 `1.10.0` 体验版构建中。
-- ⏳ 在微信公众平台设为体验版，并完成真机登录、上传、多人冲突和弱网恢复验收。
+- ✅ 菜单页收口为“今天 / 菜谱本”两个真实入口；删除没有数据模型的“本周菜单”假 Tab。
+- ✅ 今日推荐按本地自然日稳定生成，同一天保持稳定；“换一道”在真实菜谱集合内轮换，并明确不是 AI 推荐。
+- ✅ 菜谱本支持真实后端 `query` 搜索菜名与介绍，支持 `maxMinutes=30` 快速筛选。
+- ✅ 新增 `src/domain/menu-discovery.ts` 与对应单元测试，覆盖每日索引、轮换和筛选参数。
+- ✅ 生产截图：`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
+- ✅ 可重复生产验收脚本 `npm run verify:production-menu-ui` 已覆盖今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS、保存回读、详情、编辑、冲突恢复和软删除清理。
+- ✅ 前端类型检查与 39 个测试文件 / 223 项测试通过；本地 HTTP 全链路和页面自动化通过。
+- ⏳ 提交推送、上传 `1.19.0` 微信后台、设为体验版并完成真机验收。
 
 ### 宠物照护
 
@@ -259,4 +280,4 @@ Demo 模式：
 
 ### 下一阶段
 
-当前先收口用户头像与账号资料：发布并上传 `1.18.0`，在公众平台设为体验版，完成真机上传、替换、移除和重进验收。头像门槛全部通过后，再按功能清单进入下一个功能。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。
+当前先完成菜单 `1.19.0` 的最终回归、提交推送、体验版上传与真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。

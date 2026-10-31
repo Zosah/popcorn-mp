@@ -2,7 +2,7 @@
   <view class="menu-top">
     <view class="menu-top__main">
       <view class="menu-top__title">今天吃什么</view>
-      <view class="menu-top__sub">{{recipes.length}} 道常做的</view>
+      <view class="menu-top__sub">{{allRecipes.length}} 道常做的</view>
     </view>
     <view class="menu-add" bindtap="onCreate">
       <line-icon name="plus" size="22" tone="white" />
@@ -27,14 +27,12 @@
   <block wx:else>
   <view class="menu-tabs">
     <view class="menu-tab {{activeTab === 'today' ? 'menu-tab--active' : ''}}" data-value="today" bindtap="onSwitchTab">今天</view>
-    <view class="menu-tab {{activeTab === 'all' ? 'menu-tab--active' : ''}}" data-value="all" bindtap="onSwitchTab">常做的</view>
-    <view class="menu-tab {{activeTab === 'week' ? 'menu-tab--active' : ''}}" data-value="week" bindtap="onSwitchTab">本周</view>
+    <view class="menu-tab {{activeTab === 'all' ? 'menu-tab--active' : ''}}" data-value="all" bindtap="onSwitchTab">菜谱本</view>
   </view>
-
-  <block wx:if="{{activeTab === 'today'}}">
+  <view wx:if="{{activeTab === 'today'}}">
     <view wx:if="{{recommended}}" class="menu-recommend">
       <view class="menu-recommend__head">
-        <view class="menu-recommend__eyebrow">今晚推荐</view>
+        <view class="menu-recommend__eyebrow">今日推荐</view>
         <view class="menu-recommend__shuffle" bindtap="onShuffleRecommendation">换一道</view>
       </view>
       <view class="menu-recommend__main">
@@ -59,27 +57,40 @@
 
     <view class="menu-section-head"><text>快速决定</text><text>按场景</text></view>
     <view class="menu-quick">
-      <view class="menu-quick__row" data-value="all" bindtap="onSwitchTab">
+      <view class="menu-quick__row" bindtap="onSelectFast">
         <view class="menu-quick__icon menu-quick__icon--green"><line-icon name="clock-3" size="24" tone="green" /></view>
         <text>30 分钟内能做好</text>
         <text>{{fastCount}} 道</text>
       </view>
-      <view class="menu-quick__row" data-value="all" bindtap="onSwitchTab">
+      <view class="menu-quick__row" bindtap="onOpenRecipeBook">
         <view class="menu-quick__icon menu-quick__icon--orange"><line-icon name="flame" size="24" tone="orange" /></view>
-        <text>从常做的里面挑</text>
-        <text>打开菜谱本</text>
-      </view>
-      <view class="menu-quick__row" data-value="week" bindtap="onSwitchTab">
-        <view class="menu-quick__icon menu-quick__icon--blue"><line-icon name="calendar-days" size="24" tone="blue" /></view>
-        <text>这周换换口味</text>
-        <text>{{recipes.length}} 道可选</text>
+        <text>慢慢翻一遍菜谱本</text>
+        <text>全部 {{allRecipes.length}} 道</text>
       </view>
     </view>
-  </block>
+  </view>
 
-  <block wx:elif="{{recipes.length}}">
-    <view class="menu-section-head">
-      <text>{{activeTab === 'week' ? '本周菜单' : '常做的菜'}}</text>
+  <view wx:if="{{activeTab === 'all'}}">
+    <view class="menu-search">
+      <line-icon name="search" size="21" tone="faint" />
+      <input
+        value="{{searchQuery}}"
+        confirm-type="search"
+        placeholder="搜菜名或介绍"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <view wx:if="{{searchQuery}}" class="menu-search__clear" bindtap="onClearSearch">清空</view>
+    </view>
+
+    <view class="menu-filters">
+      <view class="menu-filter {{recipeFilter === 'all' ? 'menu-filter--active' : ''}}" data-value="all" bindtap="onSelectFilter">全部</view>
+      <view class="menu-filter {{recipeFilter === 'fast' ? 'menu-filter--active' : ''}}" data-value="fast" bindtap="onSelectFilter">30 分钟内</view>
+      <view wx:if="{{listLoading}}" class="menu-filter__loading">正在筛选…</view>
+    </view>
+
+    <view wx:if="{{recipes.length}}" class="menu-section-head">
+      <text>常做的菜</text>
       <text>{{recipes.length}} 道</text>
     </view>
     <view class="menu-list">
@@ -96,13 +107,14 @@
         <view class="menu-card__arrow">›</view>
       </view>
     </view>
-  </block>
 
-  <view wx:else class="menu-empty">
-    <view class="menu-empty__icon"><line-icon name="utensils" size="36" tone="gold" /></view>
-    <view class="menu-empty__title">菜单还是空的</view>
-    <view class="menu-empty__copy">先收一道常做的菜，下次不知道吃什么时就有答案了。</view>
-    <view class="menu-empty__action" bindtap="onCreate">添加第一道菜单</view>
+    <view wx:if="{{!recipes.length}}" class="menu-empty">
+      <view class="menu-empty__icon"><line-icon name="search" size="34" tone="gold" /></view>
+      <view class="menu-empty__title">{{allRecipes.length ? '没有找到合适的菜' : '菜单还是空的'}}</view>
+      <view class="menu-empty__copy">{{allRecipes.length ? '换个关键词，或看看全部菜谱。' : '先收一道常做的菜，下次不知道吃什么时就有答案了。'}}</view>
+      <view wx:if="{{!allRecipes.length}}" class="menu-empty__action" bindtap="onCreate">添加第一道菜单</view>
+      <view wx:else class="menu-empty__action" bindtap="onOpenRecipeBook">查看全部菜谱</view>
+    </view>
   </view>
   </block>
   <app-tab-bar active="menu" />

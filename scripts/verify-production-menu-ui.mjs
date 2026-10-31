@@ -156,6 +156,34 @@ try {
   await screenshot('list-loaded')
   console.log('PASS 生产菜单列表展示签名图片')
 
+  await list.callMethod('onOpenRecipeBook')
+  await waitFor(async () => {
+    const data = await list.data()
+    return data.activeTab === 'all' && data.recipeFilter === 'all' ? data : false
+  }, '生产菜谱本')
+  await screenshot('list-recipe-book')
+
+  await list.callMethod('onSelectFast')
+  const fastFiltered = await waitFor(async () => {
+    const data = await list.data()
+    return !data.listLoading && data.recipeFilter === 'fast' && data.recipes.length >= 1
+      ? data
+      : false
+  }, '生产 30 分钟筛选')
+  assert.ok(fastFiltered.recipes.some((item) => item.id === created.id))
+  await screenshot('list-fast-filter')
+
+  await list.callMethod('onSearchInput', { detail: { value: title } })
+  const searched = await waitFor(async () => {
+    const data = await list.data()
+    return !data.listLoading && data.searchQuery === title && data.recipes.some((item) => item.id === created.id)
+      ? data
+      : false
+  }, '生产菜谱搜索')
+  assert.ok(searched.recipes.some((item) => item.id === created.id))
+  await screenshot('list-search')
+  console.log('PASS 生产搜索、菜谱本与 30 分钟筛选')
+
   const detail = await open(`/pages/menu-detail/index?id=${encodeURIComponent(created.id)}`)
   const detailData = await waitFor(async () => {
     const data = await detail.data()

@@ -24,6 +24,14 @@
 .menu-tab--active { color: var(--menu-ink); font-weight: 700; }
 .menu-tab--active::after { position: absolute; right: 0; bottom: -1rpx; left: 0; height: 4rpx; border-radius: 4rpx; background: var(--menu-deep); content: ""; }
 
+.menu-search { display: flex; min-height: 82rpx; align-items: center; margin-top: 24rpx; padding: 0 22rpx; border: 1rpx solid var(--menu-line); border-radius: 24rpx; background: #ffffff; gap: 13rpx; }
+.menu-search input { min-width: 0; height: 82rpx; flex: 1; color: var(--menu-ink); font-size: 27rpx; }
+.menu-search__clear { padding: 10rpx 4rpx 10rpx 12rpx; color: var(--menu-gold); font-size: 24rpx; }
+.menu-filters { display: flex; min-height: 76rpx; align-items: center; gap: 12rpx; }
+.menu-filter { padding: 11rpx 20rpx; border: 1rpx solid var(--menu-line); border-radius: 999rpx; background: rgba(255, 255, 255, 0.76); color: var(--menu-ink-3); font-size: 24rpx; }
+.menu-filter--active { border-color: var(--menu-deep); background: var(--menu-deep); color: #ffffff; font-weight: 600; }
+.menu-filter__loading { margin-left: auto; color: var(--menu-ink-3); font-size: 22rpx; }
+
 .menu-recommend { margin-top: 26rpx; padding: 25rpx; border-radius: 30rpx; background: var(--c-butter-soft, #f2e8cc); }
 .menu-recommend__head { display: flex; align-items: center; justify-content: space-between; }
 .menu-recommend__eyebrow { color: var(--c-warning, #a18448); font-size: 24rpx; font-weight: 700; }

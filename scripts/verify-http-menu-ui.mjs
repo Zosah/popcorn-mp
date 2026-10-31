@@ -198,6 +198,33 @@ try {
   await screenshot('list-loaded')
   console.log('PASS 菜单列表展示图片与推荐')
 
+  await menuPage.callMethod('onSelectFast')
+  const fastFiltered = await waitFor(async () => {
+    const data = await menuPage.data()
+    return !data.listLoading && data.recipeFilter === 'fast' ? data : false
+  }, '30 分钟筛选')
+  assert.equal(fastFiltered.recipes.some((item) => item.id === created.id), false)
+  await screenshot('list-fast-filter')
+
+  await menuPage.callMethod('onOpenRecipeBook')
+  await waitFor(async () => {
+    const data = await menuPage.data()
+    return data.recipeFilter === 'all' && data.recipes.some((item) => item.id === created.id)
+      ? data
+      : false
+  }, '返回全部菜谱')
+
+  await menuPage.callMethod('onSearchInput', { detail: { value: title } })
+  const searched = await waitFor(async () => {
+    const data = await menuPage.data()
+    return !data.listLoading && data.searchQuery === title && data.recipes.length === 1
+      ? data
+      : false
+  }, '菜谱搜索')
+  assert.equal(searched.recipes[0].id, created.id)
+  await screenshot('list-search')
+  console.log('PASS 菜谱搜索与 30 分钟筛选走真实菜单查询')
+
   const detail = await open(`/pages/menu-detail/index?id=${encodeURIComponent(created.id)}`)
   const detailData = await waitFor(async () => {
     const data = await detail.data()
