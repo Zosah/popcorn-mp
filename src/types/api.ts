@@ -492,3 +492,19 @@ export interface ApiPetSupplyWriteRequest {
   note: string
   recordedOn: string
 }
+
+export interface ApiReminderSettings {
+  expiry: boolean
+  petCare: boolean
+  weeklyReview: boolean
+  reminderTime: string
+  version: number
+  updatedAt: string
+}
+
+export interface ApiReminderSettingsUpdateRequest {
+  expiry: boolean
+  petCare: boolean
+  weeklyReview: boolean
+  reminderTime: string
+}

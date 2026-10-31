@@ -305,3 +305,92 @@
   font-size: 22rpx;
   line-height: 1.65;
 }
+
+.reminder-head__eyebrow {
+  margin-bottom: 13rpx;
+}
+
+.reminder-error {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18rpx;
+  padding: 18rpx 19rpx;
+  border: 1rpx solid rgba(184, 103, 87, 0.18);
+  border-radius: 24rpx;
+  background: var(--c-coral-soft, #f7e7e2);
+  gap: 16rpx;
+}
+
+.reminder-error__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.reminder-error__title {
+  color: #8c4f43;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.reminder-error__text {
+  color: #9b6a61;
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.reminder-error__action {
+  min-width: 92rpx;
+  height: 54rpx;
+  margin: 0;
+  padding: 0 17rpx;
+  border: 0;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.72);
+  color: #8c4f43;
+  flex-shrink: 0;
+  font-size: 23rpx;
+  font-weight: 650;
+  line-height: 54rpx;
+}
+
+.reminder-loading {
+  display: flex;
+  min-height: 280rpx;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 42rpx 25rpx;
+  border: 1rpx solid var(--reminder-line);
+  border-radius: 34rpx;
+  background: var(--reminder-surface);
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.reminder-loading__line {
+  width: 72%;
+  height: 28rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, #f1ede7 20%, #faf8f5 50%, #f1ede7 80%);
+  background-size: 200% 100%;
+  animation: reminder-shimmer 1.3s ease-in-out infinite;
+}
+
+.reminder-loading__line--short {
+  width: 42%;
+  height: 18rpx;
+}
+
+.reminder-loading text {
+  margin-top: 8rpx;
+  color: var(--reminder-ink-3);
+  font-size: 23rpx;
+}
+
+@keyframes reminder-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}

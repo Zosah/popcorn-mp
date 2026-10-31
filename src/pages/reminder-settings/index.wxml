@@ -3,105 +3,160 @@
 
   <view class="reminder-head">
     <view class="reminder-head__copy">
+      <view class="reminder-head__eyebrow">
+        <sync-badge state="{{syncState}}" text="{{syncText}}" />
+      </view>
       <text class="reminder-head__title">该记得的事，轻轻提醒</text>
-      <text class="reminder-head__desc">暂未真正发送微信订阅消息，先把偏好留在这里。</text>
+      <text class="reminder-head__desc">
+        {{mode === 'demo' ? '先把偏好留在这台设备上。' : '每个空间成员各自设置，不覆盖对方。'}}
+      </text>
     </view>
-    <button class="reminder-head__auth" bindtap="onAuthorize">授权</button>
+    <button class="reminder-head__auth" bindtap="onAuthorize">
+      {{mode === 'demo' ? '本机说明' : '订阅说明'}}
+    </button>
   </view>
 
-  <view class="reminder-list">
-    <view class="reminder-row">
-      <view class="reminder-row__icon reminder-row__icon--orange">
-        <line-icon name="bell" size="29" tone="orange" />
-      </view>
-      <view class="reminder-row__body">
-        <text>库存临期提醒</text>
-        <text>有物品 3 天内到期时提醒</text>
-      </view>
-      <switch checked="{{settings.expiry}}" color="#252b27" data-key="expiry" bindchange="onToggle" />
+  <view wx:if="{{errorText}}" class="reminder-error">
+    <view class="reminder-error__body">
+      <text class="reminder-error__title">这次没有同步成功</text>
+      <text class="reminder-error__text">{{errorText}}</text>
     </view>
+    <button class="reminder-error__action" bindtap="onRetry">重试</button>
+  </view>
 
-    <view class="reminder-row">
-      <view class="reminder-row__icon reminder-row__icon--pink">
-        <line-icon name="paw-print" size="29" tone="pink" />
-      </view>
-      <view class="reminder-row__body">
-        <text>宠物照护提醒</text>
-        <text>驱虫、疫苗和每天的小任务</text>
-      </view>
-      <switch checked="{{settings.petCare}}" color="#252b27" data-key="petCare" bindchange="onToggle" />
-    </view>
+  <view wx:if="{{loading}}" class="reminder-loading">
+    <view class="reminder-loading__line"></view>
+    <view class="reminder-loading__line reminder-loading__line--short"></view>
+    <text>正在读取你的提醒偏好…</text>
+  </view>
 
-    <view class="reminder-row">
-      <view class="reminder-row__icon reminder-row__icon--green">
-        <line-icon name="calendar-days" size="29" tone="green" />
-      </view>
-      <view class="reminder-row__body">
-        <text>每周回顾</text>
-        <text>周日晚看看这一周的生活</text>
-      </view>
-      <switch checked="{{settings.weeklyReview}}" color="#252b27" data-key="weeklyReview" bindchange="onToggle" />
-    </view>
-
-    <picker mode="time" value="{{settings.reminderTime}}" bindchange="onTimeChange">
-      <view class="reminder-row reminder-row--time">
-        <view class="reminder-row__icon reminder-row__icon--blue">
-          <line-icon name="clock-3" size="29" tone="blue" />
+  <block wx:else>
+    <view class="reminder-list">
+      <view class="reminder-row">
+        <view class="reminder-row__icon reminder-row__icon--orange">
+          <line-icon name="bell" size="29" tone="orange" />
         </view>
         <view class="reminder-row__body">
-          <text>默认提醒时间</text>
-          <text>采用 Asia/Shanghai 时间</text>
+          <text>库存临期提醒</text>
+          <text>有物品 3 天内到期时提醒</text>
         </view>
-        <view class="reminder-row__time">
-          <text>{{settings.reminderTime}}</text>
-          <text>›</text>
+        <switch
+          checked="{{settings.expiry}}"
+          color="#252b27"
+          data-key="expiry"
+          disabled="{{saving}}"
+          bindchange="onToggle"
+        />
+      </view>
+
+      <view class="reminder-row">
+        <view class="reminder-row__icon reminder-row__icon--pink">
+          <line-icon name="paw-print" size="29" tone="pink" />
+        </view>
+        <view class="reminder-row__body">
+          <text>宠物照护提醒</text>
+          <text>驱虫、疫苗和每天的小任务</text>
+        </view>
+        <switch
+          checked="{{settings.petCare}}"
+          color="#252b27"
+          data-key="petCare"
+          disabled="{{saving}}"
+          bindchange="onToggle"
+        />
+      </view>
+
+      <view class="reminder-row">
+        <view class="reminder-row__icon reminder-row__icon--green">
+          <line-icon name="calendar-days" size="29" tone="green" />
+        </view>
+        <view class="reminder-row__body">
+          <text>每周回顾</text>
+          <text>周日晚看看这一周的生活</text>
+        </view>
+        <switch
+          checked="{{settings.weeklyReview}}"
+          color="#252b27"
+          data-key="weeklyReview"
+          disabled="{{saving}}"
+          bindchange="onToggle"
+        />
+      </view>
+
+      <picker
+        mode="time"
+        value="{{settings.reminderTime}}"
+        disabled="{{saving}}"
+        bindchange="onTimeChange"
+      >
+        <view class="reminder-row reminder-row--time">
+          <view class="reminder-row__icon reminder-row__icon--blue">
+            <line-icon name="clock-3" size="29" tone="blue" />
+          </view>
+          <view class="reminder-row__body">
+            <text>默认提醒时间</text>
+            <text>采用 Asia/Shanghai 时间</text>
+          </view>
+          <view class="reminder-row__time">
+            <text>{{settings.reminderTime}}</text>
+            <text>›</text>
+          </view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="reminder-section-head">
+      <text>推送方式</text>
+      <text>{{mode === 'demo' ? '本机偏好' : '服务通知'}}</text>
+    </view>
+    <view class="reminder-method">
+      <text class="reminder-method__copy">
+        {{mode === 'demo'
+          ? 'Demo 模式只记录开关和时间，不会调用微信授权，也不会发送通知。'
+          : '偏好已经保存到当前空间。微信订阅消息模板与定时发送任务尚未配置，当前不会发送服务通知。'}}
+      </text>
+      <view class="reminder-method__tip">
+        <text class="reminder-method__dot"></text>
+        <text>
+          {{mode === 'demo'
+            ? '切换 Demo 模式后，偏好会保留在这台设备'
+            : '后续接模板 ID 时，会在这里发起一次微信订阅授权'}}
+        </text>
+      </view>
+    </view>
+
+    <view class="reminder-section-head">
+      <text>每周回顾</text>
+      <text>每周日 {{settings.reminderTime}}</text>
+    </view>
+    <view class="reminder-weekly {{settings.weeklyReview ? '' : 'reminder-weekly--off'}}">
+      <view class="reminder-weekly__head">
+        <view>
+          <text class="reminder-weekly__title">这周你们一起过了 5 天</text>
+          <text class="reminder-weekly__meta">示例回顾 · 上周日</text>
+        </view>
+        <text class="reminder-weekly__status">{{settings.weeklyReview ? '已开启' : '未开启'}}</text>
+      </view>
+      <view class="reminder-weekly__stats">
+        <view class="reminder-weekly__stat reminder-weekly__stat--gold">
+          <text>3</text>
+          <text>顿饭</text>
+        </view>
+        <view class="reminder-weekly__stat reminder-weekly__stat--pink">
+          <text>5</text>
+          <text>照护</text>
+        </view>
+        <view class="reminder-weekly__stat reminder-weekly__stat--blue">
+          <text>4</text>
+          <text>瞬间</text>
         </view>
       </view>
-    </picker>
-  </view>
-
-  <view class="reminder-section-head">
-    <text>推送方式</text>
-    <text>服务通知</text>
-  </view>
-  <view class="reminder-method">
-    <text class="reminder-method__copy">提醒目前只在小程序内展示，还没有接微信订阅消息。授权之后，会以「服务通知」的形式出现在微信里。</text>
-    <view class="reminder-method__tip">
-      <text class="reminder-method__dot"></text>
-      <text>当前为 Demo 页面，不会真的发送通知</text>
     </view>
-  </view>
 
-  <view class="reminder-section-head">
-    <text>每周回顾</text>
-    <text>每周日 {{settings.reminderTime}}</text>
-  </view>
-  <view class="reminder-weekly {{settings.weeklyReview ? '' : 'reminder-weekly--off'}}">
-    <view class="reminder-weekly__head">
-      <view>
-        <text class="reminder-weekly__title">这周你们一起过了 5 天</text>
-        <text class="reminder-weekly__meta">示例回顾 · 上周日</text>
-      </view>
-      <text class="reminder-weekly__status">{{settings.weeklyReview ? '已开启' : '未开启'}}</text>
+    <view class="reminder-footnote">
+      <line-icon name="lock" size="21" tone="muted" />
+      <text wx:if="{{mode === 'demo'}}">Demo 模式：提醒偏好只保存在当前设备，不会上传服务端。</text>
+      <text wx:else>提醒偏好按“空间 + 个人”保存到服务端；微信订阅消息授权与发送能力仍待模板配置。</text>
     </view>
-    <view class="reminder-weekly__stats">
-      <view class="reminder-weekly__stat reminder-weekly__stat--gold">
-        <text>3</text>
-        <text>顿饭</text>
-      </view>
-      <view class="reminder-weekly__stat reminder-weekly__stat--pink">
-        <text>5</text>
-        <text>照护</text>
-      </view>
-      <view class="reminder-weekly__stat reminder-weekly__stat--blue">
-        <text>4</text>
-        <text>瞬间</text>
-      </view>
-    </view>
-  </view>
-
-  <view class="reminder-footnote">
-    <line-icon name="lock" size="21" tone="muted" />
-    <text>提醒偏好只保存在当前设备，接入订阅消息后再同步到服务端。</text>
-  </view>
+  </block>
 </view>
