@@ -1,6 +1,7 @@
 // 连接已开启自动化端口的微信开发者工具，验证生活记录真实 HTTP 链路。
 // 前提：env.ts 已切换为 local + HTTP，且本地 API 可访问。
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 
 import automator from 'miniprogram-automator'
 
@@ -16,6 +17,9 @@ const ownerIdentity = `jno${suffix}`
 const memberIdentity = `jnm${suffix}`
 const title = `B5生活记录${suffix.slice(-4)}`
 const privateTitle = `B5私密记录${suffix.slice(-4)}`
+const privateImageTitle = `B5私密图片${suffix.slice(-4)}`
+const sharedImageTitle = `B5共享图片${suffix.slice(-4)}`
+const image = await readFile(new URL('../src/images/demo-flowers.jpg', import.meta.url))
 
 async function apiRaw(path, options = {}) {
   const headers = { ...(options.headers ?? {}) }
@@ -94,6 +98,30 @@ async function listJournals(token, spaceId, kind) {
   return page.items
 }
 
+async function uploadJournalImage(token, spaceId, filename) {
+  const form = new FormData()
+  form.append('purpose', 'journal')
+  form.append('file', new Blob([image], { type: 'image/jpeg' }), filename)
+  const response = await fetch(`${apiBaseUrl}/spaces/${encodeURIComponent(spaceId)}/media`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  })
+  const text = await response.text()
+  let data = null
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      data = text
+    }
+  }
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(`POST /spaces/${spaceId}/media -> ${response.status}: ${JSON.stringify(data)}`)
+  }
+  return data
+}
+
 try {
   const owner = await login(ownerIdentity, `B5房主${suffix.slice(-4)}`, 'mint')
   const member = await login(memberIdentity, `B5成员${suffix.slice(-4)}`, 'peach')
@@ -158,6 +186,81 @@ try {
   )
   assert.equal(privateDetail.status, 404)
   console.log('PASS HTTP 私密记录对空间成员不可见')
+
+  const privateImage = await uploadJournalImage(owner.token, spaceId, `private-${suffix}.jpg`)
+  const privateImageEntry = await apiOk(`/spaces/${encodeURIComponent(spaceId)}/journals`, {
+    method: 'POST',
+    token: owner.token,
+    headers: { 'Idempotency-Key': `b5_private_image_${suffix}` },
+    body: {
+      kind: 'note',
+      title: privateImageTitle,
+      content: '私密图片只能由上传者读取。',
+      category: 'other',
+      visibility: 'private',
+      imageMediaId: privateImage.id,
+      imageCaption: '私密图片',
+    },
+  })
+  const ownerPrivateMedia = await apiRaw(
+    `/spaces/${encodeURIComponent(spaceId)}/media/${encodeURIComponent(privateImage.id)}`,
+    { token: owner.token },
+  )
+  assert.equal(ownerPrivateMedia.status, 200)
+  const memberPrivateMedia = await apiRaw(
+    `/spaces/${encodeURIComponent(spaceId)}/media/${encodeURIComponent(privateImage.id)}`,
+    { token: member.token },
+  )
+  assert.equal(memberPrivateMedia.status, 404)
+  const memberReusePrivateMedia = await apiRaw(`/spaces/${encodeURIComponent(spaceId)}/journals`, {
+    method: 'POST',
+    token: member.token,
+    headers: { 'Idempotency-Key': `b5_reuse_private_image_${suffix}` },
+    body: {
+      kind: 'note',
+      title: `B5越权引用${suffix.slice(-4)}`,
+      content: '不能把别人的私密图片挂到公开记录。',
+      category: 'other',
+      visibility: 'space',
+      imageMediaId: privateImage.id,
+    },
+  })
+  assert.equal(memberReusePrivateMedia.status, 422)
+  console.log('PASS HTTP 私密生活记录图片仅上传者可见且不可被成员复用')
+
+  const sharedImage = await uploadJournalImage(owner.token, spaceId, `shared-${suffix}.jpg`)
+  const sharedImageEntry = await apiOk(`/spaces/${encodeURIComponent(spaceId)}/journals`, {
+    method: 'POST',
+    token: owner.token,
+    headers: { 'Idempotency-Key': `b5_shared_image_${suffix}` },
+    body: {
+      kind: 'note',
+      title: sharedImageTitle,
+      content: '共享记录图片对空间成员可见。',
+      category: 'other',
+      visibility: 'space',
+      imageMediaId: sharedImage.id,
+      imageCaption: '共享图片',
+    },
+  })
+  const memberSharedMedia = await apiRaw(
+    `/spaces/${encodeURIComponent(spaceId)}/media/${encodeURIComponent(sharedImage.id)}`,
+    { token: member.token },
+  )
+  assert.equal(memberSharedMedia.status, 200)
+  assert.match(memberSharedMedia.data?.display?.url ?? '', /^https:\/\//)
+  console.log('PASS HTTP 共享生活记录图片对空间成员可读')
+
+  for (const entry of [privateImageEntry, sharedImageEntry]) {
+    await apiOk(`/spaces/${encodeURIComponent(spaceId)}/journals/${encodeURIComponent(entry.id)}`, {
+      method: 'DELETE',
+      token: owner.token,
+      headers: {
+        'If-Match': `"${entry.version}"`,
+        'Idempotency-Key': `b5_image_cleanup_${entry.id}`,
+      },
+    }).catch(() => undefined)
+  }
 
   const serverUpdated = await apiOk(
     `/spaces/${encodeURIComponent(spaceId)}/journals/${encodeURIComponent(created.id)}`,
