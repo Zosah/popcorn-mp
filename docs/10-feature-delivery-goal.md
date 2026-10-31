@@ -13,8 +13,8 @@
 - 本地验证：前端类型检查通过；40 个测试文件 / 231 项测试通过；宠物 HTTP 全链路和开发者工具 UI 自动化通过，覆盖上传、替换、旧文件保留、失败回退和移除；生产 API `healthz / readyz` 正常。
 - 生产验证：`npm run verify:production-pet-ui` 已覆盖真实微信会话、档案与周期照护、私有 COS 上传、头像替换、旧签名 URL 继续可读、超大图片失败回退、头像移除、首页摘要、删除切换和最终空态。
 - 当前截图：`shots/production-pet-ui-profile-avatar.png`、`shots/production-pet-ui-profile-avatar-replaced.png`、`shots/production-pet-ui-profile-avatar-upload-error.png`、`shots/production-pet-ui-profile-avatar-removed.png`、`shots/production-pet-ui-care.png`、`shots/production-pet-ui-supplies.png`、`shots/production-pet-ui-home.png`、`shots/production-pet-ui-profile-deleted-switched.png`、`shots/production-pet-ui-profile-final-empty.png`。
-- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端 `1.21.0` 待提交、推送和上传微信后台。
-- 下一门槛：完成 `1.21.0` 的提交 / 推送 / 上传，再由用户在微信公众平台设为体验版，真机验收头像上传、替换、失败提示、移除、周期照护、弱网和双人共享；未完成前宠物切片不标记为已闭环。
+- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端提交 `e3b1284` 已推送，`1.21.0` 已上传微信后台，包体 `1,892,249 Byte`（约 1.8 MB）。
+- 下一门槛：由用户在微信公众平台将 `1.21.0` 设为体验版，真机验收头像上传、替换、失败提示、移除、周期照护、弱网和双人共享；未完成前宠物切片不标记为已闭环。
 
 ## 1. 执行原则
 
@@ -49,7 +49,7 @@
 | 顺序 | 功能 | 当前阶段 | 闭环重点 |
 | --- | --- | --- | --- |
 | 1 | 菜单 / 今天吃什么 | 🔄 `1.20.0` 已上传，待真机验收 | 今日推荐、搜索、30 分钟筛选、CRUD、做饭模式、私有 COS、共享与冲突 |
-| 2 | 宠物照护 | 🔄 `1.21.0` 待上传，待真机验收 | 档案增删、体重、事件、日历、周期照护、头像上传 / 替换 / 移除、私有 COS |
+| 2 | 宠物照护 | 🔄 `1.21.0` 已上传，待真机验收 | 档案增删、体重、事件、日历、周期照护、头像上传 / 替换 / 移除、私有 COS |
 | 3 | 生活记录 | 🔄 生产图片/私密记录闭环，待真机验收 | 弱网、双人可见范围与删除后媒体治理 |
 | 4 | 家庭库存 | 🔄 `1.15.0` 已上传，待真机验收 | 页面 CRUD、数量格式、到期筛选、生命周期、首页摘要、软删除 |
 | 5 | 待办与小计划 | 🔄 `1.16.0` 已上传，待真机验收 | 小计划、旅行准备、健身、今天吃什么、账单、冲突恢复 |
@@ -173,10 +173,10 @@ Demo 模式：上传动作使用选图后的本地临时文件，档案媒体引
 图片 / COS：上传 `purpose=avatar`，私有桶路径按空间隔离；替换不物理删除旧文件；移除只清空业务引用
 生产部署与迁移：后端无新代码或迁移，复验生产 `healthz / readyz`、宠物路由和 COS 读写
 生产真实微信验收 / 截图：覆盖档案、周期照护、用品、首页摘要、头像上传 / 替换 / 失败 / 移除、删除切换与最终空态
-小程序上传：本地与生产验收通过后上传 `1.21.0`
+小程序上传：`1.21.0` 已上传微信后台，包体 `1,892,249 Byte`（约 1.8 MB）
 体验版真机验收：头像上传、替换、失败提示、移除、弱网恢复、周期照护和双人共享
 剩余阻塞：微信公众平台设置体验版与真实设备验收
-提交与文档归档：前端提交、Goal 卡、MVP 实施计划和验收截图同步更新
+提交与文档归档：前端提交 `e3b1284`、Goal 卡、MVP 实施计划和验收截图已同步
 ```
 
 - ✅ 后端档案、体重、日常、事件、月历、用品、空间权限、幂等、乐观锁和软删除。
@@ -196,7 +196,8 @@ Demo 模式：上传动作使用选图后的本地临时文件，档案媒体引
 - ✅ 前端类型检查与 40 个测试文件 / 231 项测试通过；Go 全量测试与 `go vet` 通过。
 - ✅ 后端提交 `6e960c0` 已部署生产，`healthz / readyz` 正常；本切片未新增后端代码或迁移。
 - ✅ 生产截图：`shots/production-pet-ui-profile-avatar.png`、`shots/production-pet-ui-profile-avatar-replaced.png`、`shots/production-pet-ui-profile-avatar-upload-error.png`、`shots/production-pet-ui-profile-avatar-removed.png`、`shots/production-pet-ui-care.png`、`shots/production-pet-ui-supplies.png`、`shots/production-pet-ui-home.png`、`shots/production-pet-ui-profile-deleted-switched.png`、`shots/production-pet-ui-profile-final-empty.png`。
-- ⏳ 提交并上传前端 `1.21.0`；随后在公众平台设为体验版，完成真机弱网、头像上传 / 替换 / 失败 / 移除、周期照护和双人共享验收。
+- ✅ 前端提交 `e3b1284` 已推送；`1.21.0` 已上传微信后台，包体 `1,892,249 Byte`（约 1.8 MB）。
+- ⏳ 在公众平台将 `1.21.0` 设为体验版，完成真机弱网、头像上传 / 替换 / 失败 / 移除、周期照护和双人共享验收。
 
 ### 家庭库存
 
@@ -306,4 +307,4 @@ Demo 模式：上传动作使用选图后的本地临时文件，档案媒体引
 
 ### 下一阶段
 
-当前先完成宠物 `1.21.0` 的提交、上传和体验版真机验收；菜单 `1.20.0` 同步等待体验版真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。
+当前先完成宠物 `1.21.0` 的体验版设置和真机验收；菜单 `1.20.0` 同步等待体验版真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。
