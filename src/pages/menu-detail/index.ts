@@ -173,15 +173,8 @@ Page({
   onStartCooking() {
     const recipe = this.data.recipe
     if (!recipe) return
-    const missingCount = recipe.ingredients.filter((item) => !item.ready).length
-    wx.showModal({
-      title: missingCount > 0 ? '还有食材没准备好' : '可以开火啦',
-      content:
-        missingCount > 0
-          ? `还有 ${missingCount} 样食材待准备。准备齐后，再按步骤慢慢来。`
-          : '食材已经齐了。按上面的步骤慢慢来，别忘了趁热吃。',
-      showCancel: false,
-      confirmText: '知道了',
+    wx.navigateTo({
+      url: `/pages/menu-cook/index?id=${encodeURIComponent(recipe.id)}`,
     })
   },
 })

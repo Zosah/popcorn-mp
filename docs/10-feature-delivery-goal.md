@@ -8,13 +8,13 @@
 
 - 状态：进行中（active）。
 - Goal 模式：这不是一次性计划。每轮只取一个功能切片，从交互设计一路推进到生产部署、真实环境联调、小程序体验版上传和真机验收；未达到 Definition of Done 就留在当前切片，不跳到下一个功能。
-- 当前焦点：菜单 / 今天吃什么 `1.19.0`。菜单页已收口为“今天 / 菜谱本”两个真实入口，今日推荐、换一道、搜索、30 分钟筛选、私有 COS、生产真实微信验收均已完成；剩余工作是最终回归、提交推送、上传体验版和真机验收。
+- 当前焦点：菜单 / 今天吃什么 `1.20.0`。在 `1.19.0` 的发现能力上补齐“做饭模式”：备菜勾选、开始计时、分步引导、离开后本机恢复、完成态、屏幕常亮和结束清理；本地 HTTP 与生产真实微信链路均已跑通，剩余工作是最终回归、提交推送、上传体验版和真机验收。
 - 已归档切片：微信用户真实头像与账号资料全链路。数据库迁移 13、后端头像媒体校验与回读、OpenAPI、前端选图 / 上传 / 替换 / 移除 / 失败回退、生产真实微信会话验收，以及个人中心空间头像溢出修复均已完成。
-- 本地验证：前端类型检查通过；39 个测试文件 / 223 项测试通过；菜单 HTTP 全链路与开发者工具 UI 自动化通过；后端现有测试通过，本切片未新增后端代码或迁移。
-- 生产验证：`npm run verify:production-menu-ui` 已覆盖真实微信会话、今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS 上传与签名读取、保存回读、详情、编辑、冲突恢复和软删除清理。
-- 当前截图：`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
-- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端提交 `5924e3c` 已推送，菜单 `1.19.0` 已上传微信后台，包体 `1,856,956 Byte`（约 1.8 MB）。
-- 下一门槛：在微信公众平台将 `1.19.0` 设为体验版，完成今日推荐、菜谱本、搜索、30 分钟筛选、图片、新增 / 编辑 / 删除和弱网恢复的真机验收；未完成前菜单切片不标记为已闭环。
+- 本地验证：前端类型检查通过；40 个测试文件 / 230 项测试通过；菜单 HTTP 全链路、做饭模式与开发者工具 UI 自动化通过；生产 API `healthz / readyz` 正常，本切片未新增后端代码或迁移。
+- 生产验证：`npm run verify:production-menu-ui` 已覆盖真实微信会话、今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS 上传与签名读取、保存回读、详情、备菜勾选、做饭计时、步骤完成、退出重进恢复、完成态、本机会话清理、编辑 / 冲突恢复和软删除清理。
+- 当前截图：`shots/production-menu-ui-cook-prep.png`、`shots/production-menu-ui-cook-step.png`、`shots/production-menu-ui-cook-resumed.png`、`shots/production-menu-ui-cook-done.png`，以及 `shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
+- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端 `1.20.0` 已完成代码与本地 / 生产验收，等待最终提交、推送和微信后台上传。
+- 下一门槛：上传 `1.20.0`，在微信公众平台设为体验版，完成今日推荐、菜谱本、搜索、30 分钟筛选、图片、新增 / 编辑 / 删除、做饭模式和弱网恢复的真机验收；未完成前菜单切片不标记为已闭环。
 
 ## 1. 执行原则
 
@@ -48,7 +48,7 @@
 
 | 顺序 | 功能 | 当前阶段 | 闭环重点 |
 | --- | --- | --- | --- |
-| 1 | 菜单 / 今天吃什么 | 🔄 `1.19.0` 已上传，待真机验收 | 今日推荐、搜索、30 分钟筛选、CRUD、私有 COS、共享与冲突 |
+| 1 | 菜单 / 今天吃什么 | 🔄 `1.20.0` 待上传，待真机验收 | 今日推荐、搜索、30 分钟筛选、CRUD、做饭模式、私有 COS、共享与冲突 |
 | 2 | 宠物照护 | 🔄 `1.14.0` 已上传，待真机验收 | 档案增删、体重、事件、日历、周期照护、私有 COS 图片 |
 | 3 | 生活记录 | 🔄 生产图片/私密记录闭环，待真机验收 | 弱网、双人可见范围与删除后媒体治理 |
 | 4 | 家庭库存 | 🔄 `1.15.0` 已上传，待真机验收 | 页面 CRUD、数量格式、到期筛选、生命周期、首页摘要、软删除 |
@@ -122,8 +122,8 @@ Demo 模式：
 
 ```text
 功能：菜单 / 今天吃什么
-版本：1.19.0（基于 1.18.0）
-范围：菜谱列表、搜索、30 分钟内筛选、按日期轮换的今日推荐、换一道、详情、增删改、人份、食材备齐、私有 COS 图片、共享空间权限、冲突恢复
+版本：1.20.0（基于 1.19.0）
+范围：菜谱列表、搜索、30 分钟内筛选、按日期轮换的今日推荐、换一道、详情、增删改、人份、食材备齐、做饭模式、私有 COS 图片、共享空间权限、冲突恢复
 非目标：持久化周计划、购物清单、库存临期自动推荐、AI 推荐、COS 物理删除；这些功能不借用“本周”“智能推荐”等文案伪装成已完成
 交互与视觉证据：保留现有暖奶油手帐风格；移除没有数据模型的“本周菜单”假入口；今日页负责决定，菜谱本负责浏览、搜索和筛选
 API / DB / OpenAPI：复用现有菜单 CRUD、`query`、`maxMinutes`、分页、人份、食材状态和媒体字段；本切片不新增数据库迁移
@@ -131,9 +131,9 @@ Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 
 本地 HTTP + 双用户：覆盖空间隔离、图片上传、保存回读、版本冲突和软删除
 图片 / COS：复用私有 COS、`mediaId`、短时签名 URL、替换 / 移除和失败回退
 生产部署与迁移：后端无新迁移时复验现有生产健康检查与菜单路由；若实现中发现契约缺口，再同步 OpenAPI、迁移、测试和部署
-生产真实微信验收 / 截图：更新 `verify:production-menu-ui`，覆盖今日推荐、菜谱本、搜索、30 分钟筛选和图片
+生产真实微信验收 / 截图：更新 `verify:production-menu-ui`，覆盖今日推荐、菜谱本、搜索、30 分钟筛选、图片、备菜、计时、恢复与完成态
 小程序上传：生产验收通过后提升版本号并上传微信后台
-体验版真机验收：决定今天吃什么、搜索、快速筛选、查看图片与基础编辑
+体验版真机验收：决定今天吃什么、搜索、快速筛选、查看图片、基础编辑与完整做菜流程
 剩余阻塞：真机验收依赖微信公众平台操作和真实设备
 提交与文档归档：前后端提交、Goal 卡、MVP 实施计划和验收截图同步更新
 ```
@@ -147,11 +147,13 @@ Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 
 - ✅ 今日推荐按本地自然日稳定生成，同一天保持稳定；“换一道”在真实菜谱集合内轮换，并明确不是 AI 推荐。
 - ✅ 菜谱本支持真实后端 `query` 搜索菜名与介绍，支持 `maxMinutes=30` 快速筛选。
 - ✅ 新增 `src/domain/menu-discovery.ts` 与对应单元测试，覆盖每日索引、轮换和筛选参数。
-- ✅ 生产截图：`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
-- ✅ 可重复生产验收脚本 `npm run verify:production-menu-ui` 已覆盖今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS、保存回读、详情、编辑、冲突恢复和软删除清理。
-- ✅ 前端类型检查与 39 个测试文件 / 223 项测试通过；本地 HTTP 全链路和页面自动化通过。
-- ✅ 前端提交 `5924e3c` 已推送；`1.19.0` 已上传微信后台，包体 `1,856,956 Byte`（约 1.8 MB）。
-- ⏳ 在公众平台将 `1.19.0` 设为体验版，完成今日推荐、菜谱本、搜索、30 分钟筛选、图片、基础编辑和弱网恢复的真机验收。
+- ✅ 新增真实做饭模式：备菜清单与食材勾选、开始计时、分步引导、上一步 / 下一步、回看、完成态、屏幕常亮、退出后本机恢复和结束清理。
+- ✅ 做饭会话通过 `src/domain/menu-cooking.ts` 纯函数管理，步骤变化时丢弃过期进度；会话只存本机，菜谱和食材状态继续写入真实 API。
+- ✅ 做饭页延续暖奶油手帐视觉，使用真实菜谱图片、备菜进度、步骤卡、计时器和完成卡片；修复了不存在的图标色值，避免真机空白图标。
+- ✅ 生产截图：`shots/production-menu-ui-cook-prep.png`、`shots/production-menu-ui-cook-step.png`、`shots/production-menu-ui-cook-resumed.png`、`shots/production-menu-ui-cook-done.png`、`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
+- ✅ 可重复生产验收脚本 `npm run verify:production-menu-ui` 已覆盖今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS、保存回读、详情、备菜勾选、计时、步骤完成、退出重进恢复、完成态、本机会话清理、编辑、冲突恢复和软删除清理。
+- ✅ 前端类型检查与 40 个测试文件 / 230 项测试通过；本地 HTTP 全链路、做饭模式和生产真实微信页面自动化通过。
+- ⏳ `1.20.0` 待最终提交、推送和上传微信后台；上传后在公众平台设为体验版，完成今日推荐、搜索、图片、做饭模式和弱网恢复的真机验收。
 
 ### 宠物照护
 
@@ -281,4 +283,4 @@ Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 
 
 ### 下一阶段
 
-当前先完成菜单 `1.19.0` 的体验版设置与真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。
+当前先完成菜单 `1.20.0` 的上传、体验版设置与真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。

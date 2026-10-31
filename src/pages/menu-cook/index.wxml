@@ -1,0 +1,191 @@
+<view class="mc-page">
+  <view wx:if="{{loading}}" class="mc-loading">
+    <view class="mc-loading__icon"><line-icon name="soup" size="46" tone="gold" /></view>
+    <text>正在系上围裙…</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="mc-error">
+    <line-icon name="circle-alert" size="38" tone="orange" />
+    <view class="mc-error__title">暂时做不了这道菜</view>
+    <view class="mc-error__copy">{{loadError}}</view>
+    <view wx:if="{{recipe}}" class="mc-error__action" bindtap="onRetryLoad">再试一次</view>
+    <view wx:else class="mc-error__action" bindtap="onPauseAndBack">回到菜单</view>
+  </view>
+
+  <block wx:elif="{{recipe}}">
+    <view class="mc-topbar">
+      <view class="mc-back" bindtap="onPauseAndBack">‹</view>
+      <view class="mc-topbar__copy">
+        <text>{{stage === 'prep' ? '备菜检查' : stage === 'cooking' ? '下厨中' : '完成啦'}}</text>
+        <text>{{recipe.title}}</text>
+      </view>
+      <view wx:if="{{stage === 'cooking'}}" class="mc-timer">
+        <line-icon name="clock-3" size="18" tone="green" />
+        <text>{{elapsedLabel}}</text>
+      </view>
+      <view wx:else class="mc-duration">
+        <line-icon name="clock-3" size="17" tone="muted" />
+        <text>{{recipe.cookingMinutes}} 分</text>
+      </view>
+    </view>
+
+    <block wx:if="{{stage === 'prep'}}">
+      <view class="mc-hero">
+        <image wx:if="{{recipe.image && recipe.image.src}}" class="mc-hero__image" src="{{recipe.image.src}}" mode="aspectFill" />
+        <view wx:if="{{recipe.image && recipe.image.src}}" class="mc-hero__shade"></view>
+        <view class="mc-hero__copy">
+          <view class="mc-kicker">{{recipe.cookingMinutes}} 分钟 · {{recipe.servings}} 人份</view>
+          <view class="mc-hero__title">{{recipe.title}}</view>
+          <view class="mc-hero__copytext">先确认手边的食材，再一步一步慢慢来。</view>
+        </view>
+        <view class="mc-hero__stamp">COOK</view>
+      </view>
+
+      <view class="mc-prep-card">
+        <view class="mc-prep-card__head">
+          <view>
+            <text>备菜进度</text>
+            <text>{{readyCount}} / {{recipe.ingredients.length}} 已备好</text>
+          </view>
+          <view class="mc-prep-card__count">{{missingIngredients.length === 0 ? '齐了' : missingIngredients.length + ' 样待准备'}}</view>
+        </view>
+        <view class="mc-prep-card__bar">
+          <view class="mc-prep-card__fill" style="width: {{recipe.ingredients.length ? (readyCount / recipe.ingredients.length * 100) : 0}}%;"></view>
+        </view>
+      </view>
+
+      <view wx:if="{{missingIngredients.length > 0}}" class="mc-missing">
+        <view class="mc-missing__icon"><line-icon name="bowl" size="24" tone="orange" /></view>
+        <view class="mc-missing__copy">
+          <text>还差 {{missingIngredients.length}} 样</text>
+          <text>没有备齐也可以开始，做菜时再回来确认。</text>
+        </view>
+      </view>
+
+      <view class="mc-section-head">
+        <view>
+          <text>备菜清单</text>
+          <text>点一下，备好就打勾</text>
+        </view>
+      </view>
+
+      <view class="mc-ingredients">
+        <view wx:for="{{recipe.ingredients}}" wx:key="id" class="mc-ingredient {{item.ready ? 'mc-ingredient--ready' : ''}} {{activeIngredientId === item.id ? 'mc-ingredient--busy' : ''}}" data-id="{{item.id}}" bindtap="onToggleIngredient">
+          <view class="mc-ingredient__check">{{item.ready ? '✓' : ''}}</view>
+          <view class="mc-ingredient__body">
+            <text>{{item.name}}</text>
+            <text>{{item.source || '来源未填写'}}</text>
+          </view>
+          <text class="mc-ingredient__amount">{{item.amount}}</text>
+        </view>
+      </view>
+
+      <view class="mc-tip">
+        <line-icon name="notebook-tabs" size="24" tone="gold" />
+        <view>
+          <text>小提示</text>
+          <text>开始后步骤和计时会留在本机，中途退出也能接着做。</text>
+        </view>
+      </view>
+
+      <button class="mc-primary {{mutating ? 'mc-primary--busy' : ''}}" bindtap="onBeginCooking">
+        <line-icon name="flame" size="22" tone="white" />
+        <text>{{missingIngredients.length > 0 ? '还是开始做饭' : '食材齐了，开始做饭'}}</text>
+      </button>
+    </block>
+
+    <block wx:elif="{{stage === 'cooking'}}">
+      <view class="mc-progress-card">
+        <view class="mc-progress-card__head">
+          <view>
+            <text>步骤 {{viewStepIndex + 1}} / {{steps.length}}</text>
+            <text>{{isReviewing ? '正在回看已完成步骤' : '跟着节奏来，不着急'}}</text>
+          </view>
+          <view class="mc-progress-card__percent">{{progressPercent}}%</view>
+        </view>
+        <view class="mc-progress-card__bar">
+          <view class="mc-progress-card__fill" style="width: {{progressPercent}}%;"></view>
+        </view>
+      </view>
+
+      <view class="mc-step-stage {{isReviewing ? 'mc-step-stage--reviewing' : ''}}">
+        <view class="mc-step-stage__top">
+          <view class="mc-step-stage__badge">{{stepBadgeLabel}}</view>
+          <view class="mc-step-stage__leaf"><line-icon name="flame" size="30" tone="gold" /></view>
+        </view>
+        <view class="mc-step-stage__title">{{currentStep.title}}</view>
+        <view class="mc-step-stage__copy">{{currentStep.description || '按自己的节奏完成这一步。'}}</view>
+        <view class="mc-step-stage__hint">
+          <view class="mc-step-stage__dot"></view>
+          <text>{{isReviewing ? '这一步已经完成，可以随时回到当前步骤。' : '做完后点下面的按钮，自动进入下一步。'}}</text>
+        </view>
+      </view>
+
+      <view class="mc-step-nav">
+        <view class="mc-step-nav__button {{canGoPrevious ? '' : 'mc-step-nav__button--disabled'}}" bindtap="onPreviousStep">上一步</view>
+        <view class="mc-step-nav__button {{canGoNext ? '' : 'mc-step-nav__button--disabled'}}" bindtap="onNextStep">下一步</view>
+      </view>
+
+      <view class="mc-section-head mc-section-head--compact">
+        <view>
+          <text>全部步骤</text>
+          <text>完成后可以点回看</text>
+        </view>
+      </view>
+
+      <view class="mc-step-list">
+        <view wx:for="{{steps}}" wx:key="id" class="mc-step-item mc-step-item--{{item.state}} {{viewStepIndex === index ? 'mc-step-item--viewing' : ''}}" data-index="{{index}}" bindtap="onSelectStep">
+          <view class="mc-step-item__number">{{item.state === 'done' ? '✓' : item.stepNumber}}</view>
+          <view class="mc-step-item__copy">
+            <text>{{item.title}}</text>
+            <text>{{item.description || '按步骤完成'}}</text>
+          </view>
+          <view wx:if="{{item.state === 'current'}}" class="mc-step-item__current">正在做</view>
+          <view wx:elif="{{item.state === 'done'}}" class="mc-step-item__done">已完成</view>
+        </view>
+      </view>
+
+      <button class="mc-primary" bindtap="onPrimaryStepAction">
+        <line-icon name="{{isReviewing ? 'rotate-ccw' : isLastStep ? 'check' : 'check'}}" size="22" tone="white" />
+        <text>{{primaryActionLabel}}</text>
+      </button>
+      <view class="mc-pause" bindtap="onPauseAndBack">先歇一下，进度会保留</view>
+    </block>
+
+    <block wx:else>
+      <view class="mc-done-card">
+        <view class="mc-done-card__sun">
+          <view class="mc-done-card__ring"></view>
+          <line-icon name="flame" size="54" tone="gold" />
+        </view>
+        <view class="mc-kicker">今天也有好好吃饭</view>
+        <view class="mc-done-card__title">这道菜，做好了。</view>
+        <view class="mc-done-card__copy">把热乎的这一刻记下来，然后慢慢享用。</view>
+        <view class="mc-done-card__stats">
+          <view>
+            <text>{{elapsedLabel}}</text>
+            <text>用时</text>
+          </view>
+          <view>
+            <text>{{completedCount}}</text>
+            <text>完成步骤</text>
+          </view>
+          <view>
+            <text>{{recipe.servings}}</text>
+            <text>人份</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="mc-done-note">
+        <line-icon name="circle-check" size="24" tone="green" />
+        <text>菜谱还在菜单里，这次做菜进度只保存在本机。</text>
+      </view>
+
+      <button class="mc-primary" bindtap="onFinishCooking">
+        <line-icon name="check" size="22" tone="white" />
+        <text>结束这次做饭</text>
+      </button>
+    </block>
+  </block>
+</view>

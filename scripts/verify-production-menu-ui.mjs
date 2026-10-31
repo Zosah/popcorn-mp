@@ -70,6 +70,37 @@ async function waitFor(check, label, timeoutMs = 30000) {
   throw new Error(`等待超时：${label}，最后状态：${JSON.stringify(lastValue)}`)
 }
 
+async function readCurrentPage() {
+  try {
+    return await miniProgram.currentPage()
+  } catch {
+    return null
+  }
+}
+
+async function waitForPage(path, check, label, timeoutMs = 30000) {
+  const startedAt = Date.now()
+  let lastValue
+  while (Date.now() - startedAt < timeoutMs) {
+    const page = await readCurrentPage()
+    if (page?.path === path) {
+      const data = await page.data()
+      lastValue = { data }
+      if (check(data)) return { page, data }
+    }
+    await wait(250)
+  }
+  throw new Error(`等待超时：${label}，最后状态：${JSON.stringify(lastValue)}`)
+}
+
+async function callMethodIgnoringDestroyed(page, method, ...args) {
+  try {
+    await page.callMethod(method, ...args)
+  } catch (error) {
+    if (!String(error).includes('page destroyed')) throw error
+  }
+}
+
 async function screenshot(name) {
   await miniProgram.pageScrollTo(0)
   await wait(400)
@@ -199,6 +230,100 @@ try {
     status: imageResponse.status,
     contentType: imageResponse.headers.get('content-type'),
   }))
+
+  await callMethodIgnoringDestroyed(detail, 'onStartCooking')
+  let cook = await waitForPage(
+    'pages/menu-cook/index',
+    (data) => data.id === created.id && !data.loading && data.recipe?.id === created.id,
+    '从详情页进入做饭模式',
+  )
+  assert.equal(cook.data.stage, 'prep')
+  assert.ok(cook.data.recipe?.image?.src)
+  assert.ok(cook.data.recipe?.steps?.length >= 2)
+  await screenshot('cook-prep')
+  console.log('PASS 做饭模式从菜单详情进入并展示私有 COS 图片')
+
+  for (const ingredient of [...cook.data.recipe.ingredients]) {
+    if (ingredient.ready) continue
+    await cook.page.callMethod('onToggleIngredient', {
+      currentTarget: { dataset: { id: ingredient.id } },
+    })
+    cook.data = await waitFor(async () => {
+      const data = await cook.page.data()
+      const current = data.recipe?.ingredients?.find((item) => item.id === ingredient.id)
+      return !data.mutating && current?.ready ? data : false
+    }, `备菜勾选 ${ingredient.name}`)
+  }
+  assert.equal(cook.data.missingIngredients.length, 0)
+  console.log('PASS 备菜清单已逐项写回后端')
+
+  await cook.page.callMethod('onBeginCooking')
+  cook.data = await waitFor(async () => {
+    const data = await cook.page.data()
+    return data.stage === 'cooking' && data.session?.startedAt ? data : false
+  }, '开始做饭计时')
+  await wait(1500)
+  cook.data = await cook.page.data()
+  assert.notEqual(cook.data.elapsedLabel, '00:00')
+  await screenshot('cook-step')
+  console.log('PASS 做饭计时开始并可展示当前步骤')
+
+  const firstStepId = cook.data.currentStep?.id
+  const firstCompletedCount = cook.data.completedCount
+  await cook.page.callMethod('onPrimaryStepAction')
+  cook.data = await waitFor(async () => {
+    const data = await cook.page.data()
+    return data.completedCount > firstCompletedCount ? data : false
+  }, '完成第一步')
+  assert.ok(cook.data.session.completedStepIds.includes(firstStepId))
+  await screenshot('cook-first-step-done')
+
+  const resumed = await open(`/pages/menu-cook/index?id=${encodeURIComponent(created.id)}`)
+  cook = {
+    page: resumed,
+    data: await waitFor(async () => {
+      const data = await resumed.data()
+      return !data.loading
+        && data.stage === 'cooking'
+        && data.completedCount === firstCompletedCount + 1
+        ? data
+        : false
+    }, '重新进入后恢复做饭进度'),
+  }
+  assert.ok(cook.data.session.completedStepIds.includes(firstStepId))
+  await screenshot('cook-resumed')
+  console.log('PASS 离开并重新进入后恢复步骤进度与计时')
+
+  for (let guard = 0; cook.data.stage !== 'done' && guard < 10; guard += 1) {
+    const beforeCount = cook.data.completedCount
+    await cook.page.callMethod('onPrimaryStepAction')
+    cook.data = await waitFor(async () => {
+      const data = await cook.page.data()
+      return data.stage === 'done' || data.completedCount > beforeCount ? data : false
+    }, '继续完成做饭步骤')
+  }
+  assert.equal(cook.data.stage, 'done')
+  assert.equal(cook.data.completedCount, cook.data.recipe.steps.length)
+  assert.equal(cook.data.progressPercent, 100)
+  await wait(1600)
+  await screenshot('cook-done')
+  console.log('PASS 全部步骤完成并进入完成态')
+
+  await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
+  await callMethodIgnoringDestroyed(cook.page, 'onFinishCooking')
+  await waitFor(async () => {
+    const page = await readCurrentPage()
+    return page?.path === 'pages/menu/index' ? page : false
+  }, '结束做饭返回菜单')
+  await miniProgram.restoreWxMethod('showModal')
+
+  const resetCook = await open(`/pages/menu-cook/index?id=${encodeURIComponent(created.id)}`)
+  const resetData = await waitFor(async () => {
+    const data = await resetCook.data()
+    return !data.loading && data.stage === 'prep' ? data : false
+  }, '结束做饭后清理本机会话')
+  assert.equal(resetData.completedCount, 0)
+  console.log('PASS 结束做饭后本机会话已清理')
 
   const latest = await apiOk(
     `/spaces/${encodeURIComponent(spaceId)}/menu-recipes/${encodeURIComponent(created.id)}`,

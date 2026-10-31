@@ -87,6 +87,37 @@ async function waitFor(check, label, timeoutMs = 20000) {
   throw new Error(`等待超时：${label}，最后状态：${JSON.stringify(lastValue)}`)
 }
 
+async function readCurrentPage() {
+  try {
+    return await miniProgram.currentPage()
+  } catch {
+    return null
+  }
+}
+
+async function waitForPage(path, check, label, timeoutMs = 20000) {
+  const startedAt = Date.now()
+  let lastValue
+  while (Date.now() - startedAt < timeoutMs) {
+    const page = await readCurrentPage()
+    if (page?.path === path) {
+      const data = await page.data()
+      lastValue = { data }
+      if (check(data)) return { page, data }
+    }
+    await wait(250)
+  }
+  throw new Error(`等待超时：${label}，最后状态：${JSON.stringify(lastValue)}`)
+}
+
+async function callMethodIgnoringDestroyed(page, method, ...args) {
+  try {
+    await page.callMethod(method, ...args)
+  } catch (error) {
+    if (!String(error).includes('page destroyed')) throw error
+  }
+}
+
 async function screenshot(name) {
   await miniProgram.pageScrollTo(0)
   await wait(500)
@@ -253,6 +284,95 @@ try {
   await screenshot('detail-ready')
   console.log('PASS 详情页人份与食材状态写回服务端')
 
+  await callMethodIgnoringDestroyed(detail, 'onStartCooking')
+  let cook = await waitForPage(
+    'pages/menu-cook/index',
+    (data) => data.id === created.id && !data.loading && data.recipe?.id === created.id,
+    '从详情页进入做饭模式',
+  )
+  assert.equal(cook.data.stage, 'prep')
+  assert.ok(cook.data.recipe?.image?.src)
+  await assertNoHorizontalOverflow(cook.page, '备菜页')
+  await screenshot('cook-prep')
+
+  for (const ingredient of [...cook.data.recipe.ingredients]) {
+    if (ingredient.ready) continue
+    await cook.page.callMethod('onToggleIngredient', {
+      currentTarget: { dataset: { id: ingredient.id } },
+    })
+    cook.data = await waitFor(async () => {
+      const data = await cook.page.data()
+      const current = data.recipe?.ingredients?.find((item) => item.id === ingredient.id)
+      return !data.mutating && current?.ready ? data : false
+    }, `备菜勾选 ${ingredient.name}`)
+  }
+  assert.equal(cook.data.missingIngredients.length, 0)
+
+  await cook.page.callMethod('onBeginCooking')
+  cook.data = await waitFor(async () => {
+    const data = await cook.page.data()
+    return data.stage === 'cooking' && data.session?.startedAt ? data : false
+  }, '开始做饭计时')
+  await wait(1500)
+  cook.data = await cook.page.data()
+  assert.notEqual(cook.data.elapsedLabel, '00:00')
+  await assertNoHorizontalOverflow(cook.page, '做饭步骤页')
+  await screenshot('cook-step')
+
+  const firstStepId = cook.data.currentStep?.id
+  const firstCompletedCount = cook.data.completedCount
+  await cook.page.callMethod('onPrimaryStepAction')
+  cook.data = await waitFor(async () => {
+    const data = await cook.page.data()
+    return data.completedCount > firstCompletedCount ? data : false
+  }, '完成第一步')
+  assert.ok(cook.data.session.completedStepIds.includes(firstStepId))
+
+  const resumed = await open(`/pages/menu-cook/index?id=${encodeURIComponent(created.id)}`)
+  cook = {
+    page: resumed,
+    data: await waitFor(async () => {
+      const data = await resumed.data()
+      return !data.loading
+        && data.stage === 'cooking'
+        && data.completedCount === firstCompletedCount + 1
+        ? data
+        : false
+    }, '重新进入后恢复做饭进度'),
+  }
+  assert.ok(cook.data.session.completedStepIds.includes(firstStepId))
+  await screenshot('cook-resumed')
+
+  for (let guard = 0; cook.data.stage !== 'done' && guard < 10; guard += 1) {
+    const beforeCount = cook.data.completedCount
+    await cook.page.callMethod('onPrimaryStepAction')
+    cook.data = await waitFor(async () => {
+      const data = await cook.page.data()
+      return data.stage === 'done' || data.completedCount > beforeCount ? data : false
+    }, '继续完成做饭步骤')
+  }
+  assert.equal(cook.data.stage, 'done')
+  assert.equal(cook.data.progressPercent, 100)
+  await wait(1600)
+  await screenshot('cook-done')
+
+  await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
+  await callMethodIgnoringDestroyed(cook.page, 'onFinishCooking')
+  await waitFor(async () => {
+    const page = await readCurrentPage()
+    return page?.path === 'pages/menu/index' ? page : false
+  }, '结束做饭返回菜单')
+  await miniProgram.restoreWxMethod('showModal')
+
+  const resetCook = await open(`/pages/menu-cook/index?id=${encodeURIComponent(created.id)}`)
+  const resetData = await waitFor(async () => {
+    const data = await resetCook.data()
+    return !data.loading && data.stage === 'prep' ? data : false
+  }, '结束做饭后清理本机会话')
+  assert.equal(resetData.completedCount, 0)
+  console.log('PASS 做饭模式完成备菜、计时、恢复、完成与清理')
+  ready.recipe = cook.data.recipe
+
   const home = await open('/pages/home/index')
   const homeData = await waitFor(async () => {
     const data = await home.data()
@@ -310,24 +430,24 @@ try {
       },
     },
   )
-  assert.equal(serverUpdated.version, 4)
+  assert.equal(serverUpdated.version, ready.recipe.version + 1)
 
   const edit = await open(`/pages/menu-form/index?id=${encodeURIComponent(created.id)}`)
   await waitFor(async () => {
     const data = await edit.data()
-    return !data.loading && data.version === 4
+    return !data.loading && data.version === serverUpdated.version
   }, '编辑页加载')
   await screenshot('form-edit')
-  await edit.setData({ version: 3, 'form.title': `${title}·旧版本` })
+  await edit.setData({ version: serverUpdated.version - 1, 'form.title': `${title}·旧版本` })
   await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
   await edit.callMethod('onSave')
   const recovered = await waitFor(async () => {
     const data = await edit.data()
-    return !data.saving && data.version === 4 && data.form.title === updatedTitle
+    return !data.saving && data.version === serverUpdated.version && data.form.title === updatedTitle
       ? data
       : false
   }, '版本冲突后重载')
-  assert.equal(recovered.version, 4)
+  assert.equal(recovered.version, serverUpdated.version)
   await miniProgram.restoreWxMethod('showModal')
   await screenshot('form-conflict-reloaded')
   console.log('PASS 版本冲突不覆盖并重新载入最新内容')
