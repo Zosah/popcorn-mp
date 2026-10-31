@@ -13,8 +13,8 @@
 - 本地验证：前端类型检查通过；39 个测试文件 / 223 项测试通过；菜单 HTTP 全链路与开发者工具 UI 自动化通过；后端现有测试通过，本切片未新增后端代码或迁移。
 - 生产验证：`npm run verify:production-menu-ui` 已覆盖真实微信会话、今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS 上传与签名读取、保存回读、详情、编辑、冲突恢复和软删除清理。
 - 当前截图：`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
-- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端菜单 `1.19.0` 已完成生产验收，但尚未提交、推送和上传微信后台。
-- 下一门槛：重跑类型检查、223 项测试与最终生产菜单验收，提交推送 `1.19.0`，上传微信后台，设为体验版并完成真机验收；未完成前菜单切片不标记为已闭环。
+- 发布状态：后端 `6e960c0` 已部署生产，`healthz / readyz` 正常；前端提交 `5924e3c` 已推送，菜单 `1.19.0` 已上传微信后台，包体 `1,856,956 Byte`（约 1.8 MB）。
+- 下一门槛：在微信公众平台将 `1.19.0` 设为体验版，完成今日推荐、菜谱本、搜索、30 分钟筛选、图片、新增 / 编辑 / 删除和弱网恢复的真机验收；未完成前菜单切片不标记为已闭环。
 
 ## 1. 执行原则
 
@@ -48,7 +48,7 @@
 
 | 顺序 | 功能 | 当前阶段 | 闭环重点 |
 | --- | --- | --- | --- |
-| 1 | 菜单 / 今天吃什么 | 🔄 `1.19.0` 生产验收通过，待上传 / 真机验收 | 今日推荐、搜索、30 分钟筛选、CRUD、私有 COS、共享与冲突 |
+| 1 | 菜单 / 今天吃什么 | 🔄 `1.19.0` 已上传，待真机验收 | 今日推荐、搜索、30 分钟筛选、CRUD、私有 COS、共享与冲突 |
 | 2 | 宠物照护 | 🔄 `1.14.0` 已上传，待真机验收 | 档案增删、体重、事件、日历、周期照护、私有 COS 图片 |
 | 3 | 生活记录 | 🔄 生产图片/私密记录闭环，待真机验收 | 弱网、双人可见范围与删除后媒体治理 |
 | 4 | 家庭库存 | 🔄 `1.15.0` 已上传，待真机验收 | 页面 CRUD、数量格式、到期筛选、生命周期、首页摘要、软删除 |
@@ -150,7 +150,8 @@ Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 
 - ✅ 生产截图：`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
 - ✅ 可重复生产验收脚本 `npm run verify:production-menu-ui` 已覆盖今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS、保存回读、详情、编辑、冲突恢复和软删除清理。
 - ✅ 前端类型检查与 39 个测试文件 / 223 项测试通过；本地 HTTP 全链路和页面自动化通过。
-- ⏳ 提交推送、上传 `1.19.0` 微信后台、设为体验版并完成真机验收。
+- ✅ 前端提交 `5924e3c` 已推送；`1.19.0` 已上传微信后台，包体 `1,856,956 Byte`（约 1.8 MB）。
+- ⏳ 在公众平台将 `1.19.0` 设为体验版，完成今日推荐、菜谱本、搜索、30 分钟筛选、图片、基础编辑和弱网恢复的真机验收。
 
 ### 宠物照护
 
@@ -280,4 +281,4 @@ Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 
 
 ### 下一阶段
 
-当前先完成菜单 `1.19.0` 的最终回归、提交推送、体验版上传与真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。
+当前先完成菜单 `1.19.0` 的体验版设置与真机验收。通过后再从功能清单中选择下一项，仍按单功能 Goal 卡推进到 API、数据库、私有 COS、生产联调、上传和真机验收全部完成。微信提醒订阅的真实模板发送仍作为独立外部阻塞保留，不把未验证的真实送达标记为完成。
