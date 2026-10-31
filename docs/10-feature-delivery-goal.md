@@ -11,8 +11,9 @@
 - 本轮已完成：自定义底栏跨设备、跨空间同步，覆盖数据库、HTTP 接口、Demo / HTTP 双模式、本机快照、弱网降级和 UI 自动化。
 - 当前切片：后端迁移 11 新增 `t_app_tab_settings`；配置按“空间 + 用户”隔离，首次 GET 懒创建 `pets + journal`，PUT 使用 `If-Match`、`Idempotency-Key` 和 `409 VERSION_CONFLICT`。
 - 验证结果：Go 全量测试与 `go vet` 通过；前端类型检查、35 个测试文件 / 201 项测试通过；真实 HTTP + 开发者工具 UI 自动化覆盖双用户隔离、双空间隔离、幂等重放、旧版本冲突、权限边界、设置保存、首页跳转、个人中心摘要和错误恢复。
-- 发布状态：代码已收口，待提交、生产部署和 `1.13.0` 体验版上传；本切片没有图片，不涉及 COS。
-- 下一门槛：生产迁移 11、HTTPS 接口、真实微信登录和体验版真机验收。
+- 发布状态：后端 `ab19ea3` 已部署生产，迁移 11 与 `t_app_tab_settings` 已核验；前端 `3f17308` 已推送，`1.13.0` 已上传微信后台，包体 `1,826,043 Byte`（约 1.7 MB）。
+- 生产复验：真实微信会话已通过登录、底栏读取、页面保存、清缓存后服务端恢复、首页底栏和个人中心摘要联动；截图 `shots/wechat-production-auth.png`、`shots/wechat-production-app-tabs-loaded.png`、`shots/wechat-production-app-tabs-saved.png`、`shots/wechat-production-home-tabs.png`、`shots/wechat-production-profile-tabs.png`。
+- 下一门槛：在微信公众平台将 `1.13.0` 设为体验版，完成真机跨设备、切空间和弱网验收；本切片没有图片，不涉及 COS。
 
 ## 1. 执行原则
 
@@ -49,7 +50,7 @@
 | 4 | 家庭库存 | ✅ 后端闭环 | 补充体验版真机弱网验收与临期提醒边界 |
 | 5 | 待办与小计划 | 🔄 五类场景生产联调完成，待真机验收 | 小计划、旅行准备、健身、今天吃什么、账单 |
 | 6 | 登录、空间与邀请 | 🔄 `1.11.1` 体验版已上传 | 真机微信登录、邀请分享、成员退出和多用户复验 |
-| 7 | 首页与底部导航 | 🔄 `1.13.0` 待生产部署与真机验收 | 首页摘要、宠物动态、自定义底栏、本机快照与跨设备同步 |
+| 7 | 首页与底部导航 | 🔄 `1.13.0` 已上传，待真机验收 | 首页摘要、宠物动态、自定义底栏、本机快照与跨设备同步 |
 | 8 | 提醒与设置 | 🔄 体验版已上传，待真机验收 | 偏好持久化、微信订阅消息和通知授权边界 |
 
 ## 4. 每个功能的执行流水线
@@ -80,6 +81,8 @@
 - ✅ 生产迁移、HTTPS 接口、写入与回读复验。
 - ✅ 2026-11-01 使用生产真实微信会话完成前端 `uploadImage → wx.uploadFile → 私有 COS → 保存菜谱 → 列表展示`；另验证图片替换、移除、创建幂等和软删除。
 - ✅ 生产截图：`shots/menu-cos-ui-upload-vwlsjai.png`、`shots/menu-cos-ui-saved-vwlsjai.png`、`shots/menu-cos-production-list-vwlkubr.png`、`shots/menu-cos-production-detail-vwlkubr.png`。
+- ✅ 新增可重复生产验收脚本 `npm run verify:production-menu-ui`，本次再次通过真实微信会话、私有 COS 上传、保存回读、签名图片 `200 image/jpeg` 和软删除清理。
+- ✅ 本次生产截图：`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`、`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-detail-loaded.png`。
 - ✅ 前端类型检查和 178 项自动化测试通过。
 - ✅ 小程序 `1.9.0` 已上传微信后台。
 - ✅ 菜单能力已包含在 `1.10.0` 体验版构建中。
@@ -145,7 +148,10 @@
 - ✅ 应用启动、登录 / 注册、设置页和个人中心共用同一套同步与读取逻辑，避免使用旧缓存键导致摘要不一致。
 - ✅ 本地真实 HTTP + 开发者工具 UI 自动化全部通过，覆盖双用户、双空间、幂等、冲突、权限、设置保存、重开持久化、底栏跳转、个人中心摘要、错误态和重试。
 - ✅ 截图：`shots/app-tabs-http-loaded.png`、`shots/app-tabs-http-saved.png`、`shots/app-tabs-http-home.png`、`shots/app-tabs-http-tab-navigation.png`、`shots/app-tabs-http-conflict-recovered.png`、`shots/app-tabs-http-error-state.png`、`shots/app-tabs-http-profile-summary.png`。
-- ⏳ 后端尚未部署到生产，`1.13.0` 尚未上传体验版；下一步完成生产迁移、真实微信会话和真机跨设备 / 切空间 / 弱网验收。
+- ✅ 后端 `ab19ea3` 已部署生产，迁移 11、`t_app_tab_settings`、HTTPS 健康检查和新路由均已核验。
+- ✅ 生产真实微信会话通过底栏读取、保存、清本机缓存后恢复、首页渲染与个人中心摘要；生产截图见本节顶部。
+- ✅ 前端提交 `3f17308` 已推送；`1.13.0` 已上传微信后台，包体 `1,826,043 Byte`（约 1.7 MB）。
+- ⏳ 下一步在公众平台设为体验版，完成真机跨设备、切空间和弱网验收。
 - ℹ️ 本切片不涉及图片，因此没有 COS 上传或媒体清理；后续带图片的功能继续执行私有 COS 全链路。
 
 ### 私有 COS 用户媒体全链路
@@ -171,4 +177,4 @@
 
 ### 下一阶段
 
-自定义底栏已完成本地真实 HTTP 全链路验收，后端迁移 11 已在共享数据库执行，代码待提交和生产部署。下一步发布后端新版本并上传小程序 `1.13.0`，随后在体验版真机验证微信登录、底栏保存、跨设备同步、切空间和弱网恢复；微信订阅消息仍需模板 ID 后才能进入发送验收。
+自定义底栏已完成本地真实 HTTP、生产真实微信与私有 COS 回归验收，后端 `ab19ea3` 已部署，前端 `3f17308` 与生产验收脚本 `955f727` 已推送，`1.13.0` 已上传微信后台。下一步将 `1.13.0` 设为体验版并完成真机跨设备、切空间和弱网验收；随后继续按功能清单推进下一项，微信订阅消息仍需模板 ID 后才能进入发送验收。
