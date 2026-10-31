@@ -40,6 +40,26 @@ async function restoreModal() {
   await miniProgram.restoreWxMethod('showModal')
 }
 
+async function waitFor(check, label, timeoutMs = 12000) {
+  const startedAt = Date.now()
+  let lastValue
+  while (Date.now() - startedAt < timeoutMs) {
+    lastValue = await check()
+    if (lastValue) return lastValue
+    await wait(250)
+  }
+  throw new Error(`等待超时：${label}，最后状态：${JSON.stringify(lastValue)}`)
+}
+
+async function waitForPage(path, check, label, timeoutMs = 12000) {
+  return waitFor(async () => {
+    const current = await miniProgram.currentPage().catch(() => null)
+    if (current?.path !== path) return false
+    const data = await current.data()
+    return check(data) ? { page: current, data } : false
+  }, label, timeoutMs)
+}
+
 async function resetDemo() {
   const page = await open('/pages/profile/index')
   await confirmModal()
@@ -161,7 +181,7 @@ try {
       servings: '2',
       cookingMinutes: '12',
       ingredientsText: '米饭 | 1 碗 | 冰箱\n鸡蛋 | 2 个 | 冰箱',
-      stepsText: '翻炒 | 炒匀即可',
+      stepsText: '备料 | 米饭打散，鸡蛋搅匀。\n翻炒 | 炒匀即可',
     },
   })
   await page.callMethod('onSave')
@@ -197,6 +217,90 @@ try {
   assert.equal(detail.recipe.ingredients[0].ready, true)
   console.log('PASS 菜单重新打开后数据仍在')
 
+  // 做饭模式：备菜 → 开始计时 → 分步完成 → 离开恢复 → 完成 → 清理
+  await page.callMethod('onStartCooking')
+  let cook = await waitForPage(
+    'pages/menu-cook/index',
+    (data) => data.id === recipe.id && !data.loading && data.recipe?.id === recipe.id,
+    '进入 Demo 做饭模式',
+  )
+  page = cook.page
+  assert.equal(cook.data.stage, 'prep')
+  assert.equal(cook.data.recipe.steps.length, 2)
+
+  for (const ingredient of [...cook.data.recipe.ingredients]) {
+    if (ingredient.ready) continue
+    await page.callMethod('onToggleIngredient', {
+      currentTarget: { dataset: { id: ingredient.id } },
+    })
+    cook.data = await waitFor(async () => {
+      const data = await page.data()
+      const current = data.recipe?.ingredients?.find((item) => item.id === ingredient.id)
+      return !data.mutating && current?.ready ? data : false
+    }, `Demo 备菜勾选 ${ingredient.name}`)
+  }
+  assert.equal(cook.data.missingIngredients.length, 0)
+
+  await page.callMethod('onBeginCooking')
+  cook.data = await waitFor(async () => {
+    const data = await page.data()
+    return data.stage === 'cooking' && data.session?.startedAt ? data : false
+  }, 'Demo 开始做饭计时')
+  await wait(1200)
+  cook.data = await page.data()
+  assert.notEqual(cook.data.elapsedLabel, '00:00')
+
+  const firstStepId = cook.data.currentStep?.id
+  await page.callMethod('onPrimaryStepAction')
+  cook.data = await waitFor(async () => {
+    const data = await page.data()
+    return data.completedCount === 1 ? data : false
+  }, 'Demo 完成做饭第一步')
+  assert.ok(cook.data.session.completedStepIds.includes(firstStepId))
+
+  page = await open(`/pages/menu-cook/index?id=${recipe.id}`)
+  cook.data = await waitFor(async () => {
+    const data = await page.data()
+    return !data.loading && data.stage === 'cooking' && data.completedCount === 1
+      ? data
+      : false
+  }, 'Demo 重进恢复做饭进度')
+  assert.ok(cook.data.session.completedStepIds.includes(firstStepId))
+
+  for (let guard = 0; cook.data.stage !== 'done' && guard < 5; guard += 1) {
+    const beforeCount = cook.data.completedCount
+    await page.callMethod('onPrimaryStepAction')
+    cook.data = await waitFor(async () => {
+      const data = await page.data()
+      return data.stage === 'done' || data.completedCount > beforeCount ? data : false
+    }, 'Demo 继续完成做饭步骤')
+  }
+  assert.equal(cook.data.stage, 'done')
+  assert.equal(cook.data.progressPercent, 100)
+
+  await confirmModal()
+  await page.callMethod('onFinishCooking')
+  await waitForPage(
+    'pages/menu/index',
+    () => true,
+    'Demo 结束做饭返回菜单',
+  )
+  await restoreModal()
+  const cookingSession = await miniProgram.callWxMethod(
+    'getStorageSync',
+    `popcorn_menu_cooking_session_v1:${recipe.id}`,
+  )
+  assert.equal(cookingSession, '')
+  console.log('PASS Demo 做饭模式、计时、恢复、完成与清理')
+
+  page = await open(`/pages/menu-cook/index?id=${recipe.id}`)
+  cook.data = await waitFor(async () => {
+    const data = await page.data()
+    return !data.loading && data.stage === 'prep' ? data : false
+  }, 'Demo 清理后可重新开始做饭')
+  assert.equal(cook.data.completedCount, 0)
+
+  page = await open(`/pages/menu-detail/index?id=${recipe.id}`)
   await page.callMethod('onEdit')
   await wait(700)
   page = await miniProgram.currentPage()

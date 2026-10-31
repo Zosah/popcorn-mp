@@ -153,6 +153,7 @@ Demo 模式：搜索、30 分钟筛选、每日推荐与换一道必须与 HTTP 
 - ✅ 生产截图：`shots/production-menu-ui-cook-prep.png`、`shots/production-menu-ui-cook-step.png`、`shots/production-menu-ui-cook-resumed.png`、`shots/production-menu-ui-cook-done.png`、`shots/production-menu-ui-list-loaded.png`、`shots/production-menu-ui-list-recipe-book.png`、`shots/production-menu-ui-list-fast-filter.png`、`shots/production-menu-ui-list-search.png`、`shots/production-menu-ui-detail-loaded.png`、`shots/production-menu-ui-form-empty.png`、`shots/production-menu-ui-form-uploaded.png`。
 - ✅ 可重复生产验收脚本 `npm run verify:production-menu-ui` 已覆盖今日推荐、菜谱本、搜索、30 分钟筛选、私有 COS、保存回读、详情、备菜勾选、计时、步骤完成、退出重进恢复、完成态、本机会话清理、编辑、冲突恢复和软删除清理。
 - ✅ 前端类型检查与 40 个测试文件 / 230 项测试通过；本地 HTTP 全链路、做饭模式和生产真实微信页面自动化通过。
+- ✅ 2026-11-01 `npm run verify:demo` 全量通过：本机账号注册与重登、重要记录、菜单、做饭模式计时 / 恢复 / 完成 / 清理、旅行待办与准备项、账单和 Demo 重置均通过；验收后已恢复 `production + wechat` 配置。
 - ✅ 前端提交 `80acdc0` 已推送；`1.20.0` 已上传微信后台，包体 `1,890,881 Byte`（约 1.8 MB）。
 - ⏳ 在公众平台将 `1.20.0` 设为体验版，完成今日推荐、搜索、图片、做饭模式和弱网恢复的真机验收。
 
