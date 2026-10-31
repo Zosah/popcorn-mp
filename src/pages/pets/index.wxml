@@ -32,9 +32,10 @@
         </view>
       </block>
       <view wx:else class="pet-portrait__initial">{{profileInitial}}</view>
-      <view class="pet-portrait__camera">
+      <view wx:if="{{profile.avatarMediaId}}" class="pet-portrait__remove" catchtap="onRemoveAvatar">移除</view>
+      <view class="pet-portrait__camera" catchtap="onChooseAvatar">
         <line-icon name="image" size="18" tone="white" />
-        <text>{{uploadingAvatar ? '上传中' : '换照片'}}</text>
+        <text>{{uploadingAvatar ? '处理中' : profile.avatarUrl ? '换照片' : '添加照片'}}</text>
       </view>
     </view>
 

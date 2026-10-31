@@ -185,7 +185,10 @@ describe('HTTP 宠物网关', () => {
           return
         }
         if (url.endsWith('/pets/e_1234567890') && method === 'PUT') {
-          succeed(options, { ...apiPet, name: '糯米团', version: 4 }, 200, { etag: '"4"' })
+          const body = options.data && typeof options.data === 'object'
+            ? options.data as Partial<ApiPet>
+            : {}
+          succeed(options, { ...apiPet, ...body, version: 4 }, 200, { etag: '"4"' })
           return
         }
         if (url.endsWith('/pets/e_1234567890') && method === 'DELETE') {
@@ -300,6 +303,27 @@ describe('HTTP 宠物网关', () => {
     expect(request?.header?.['If-Match']).toBe('"3"')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_profile_/)
     expect(request?.data).toMatchObject({ name: '糯米团', avatarMediaId: 'm_petavatar01' })
+  })
+
+  it('移除宠物头像时显式提交空媒体 ID', async () => {
+    const gateway = new HttpPetGateway()
+    const updated = await gateway.updateProfile(apiPet.id, {
+      name: apiPet.name,
+      species: 'cat',
+      breed: apiPet.breed,
+      sex: 'female',
+      birthday: apiPet.birthday,
+      homeOn: apiPet.homeOn,
+      neuteredOn: apiPet.neuteredOn,
+      status: apiPet.status,
+      avatarMediaId: '',
+    }, 3)
+
+    expect(updated.profile.avatarMediaId).toBe('')
+    expect(updated.profile.avatarUrl).toBe('')
+    const request = requests.find((item) => item.method === 'PUT')
+    expect(request?.header?.['If-Match']).toBe('"3"')
+    expect(request?.data).toMatchObject({ avatarMediaId: '' })
   })
 
   it('创建和修改周期照护事件时提交 recurrenceDays', async () => {

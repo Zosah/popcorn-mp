@@ -525,7 +525,7 @@ Page({
   },
 
   onChooseAvatar() {
-    if (this.data.uploadingAvatar) return
+    if (this.data.uploadingAvatar || this.data.syncing) return
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
@@ -555,6 +555,39 @@ Page({
           const message = error instanceof PetGatewayError
             ? getPetErrorMessage(error, '照片没有保存成功')
             : getMediaErrorMessage(error, '照片没有上传成功')
+          this.setData({ errorText: message })
+          wx.showToast({ title: message, icon: 'none' })
+        } finally {
+          this.setData({ uploadingAvatar: false })
+        }
+      },
+    })
+  },
+
+  onRemoveAvatar() {
+    const profile = this.data.profile
+    if (!profile.avatarMediaId || this.data.uploadingAvatar || this.data.syncing) return
+    wx.showModal({
+      title: '移除宠物照片',
+      content: '照片会从档案中移除，原文件暂不物理删除。',
+      confirmText: '移除',
+      confirmColor: '#b86757',
+      success: async (result) => {
+        if (!result.confirm) return
+        this.setData({ uploadingAvatar: true, errorText: '' })
+        try {
+          const updated = await petGateway.updateProfile(
+            profile.id,
+            {
+              ...toPetProfileInput(profile),
+              avatarMediaId: '',
+            },
+            profile.version ?? 1,
+          )
+          this.applyPetState(updated)
+          wx.showToast({ title: '照片已移除', icon: 'success' })
+        } catch (error) {
+          const message = getPetErrorMessage(error, '照片没有移除成功')
           this.setData({ errorText: message })
           wx.showToast({ title: message, icon: 'none' })
         } finally {

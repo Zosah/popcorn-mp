@@ -189,9 +189,62 @@ try {
   }, '宠物头像上传')
   assert.match(avatarData.profile.avatarUrl, /^https:\/\//)
   assert.ok(avatarData.profile.avatarMediaId)
-  await miniProgram.restoreWxMethod('chooseMedia')
   await screenshot('profile-avatar')
+  const firstAvatarMediaId = avatarData.profile.avatarMediaId
+  const firstAvatarUrl = avatarData.profile.avatarUrl
   console.log('PASS 前端上传头像到私有 COS、更新档案并回读签名地址')
+
+  await miniProgram.mockWxMethod('chooseMedia', {
+    tempFiles: [{ tempFilePath: tempImage.filePath, size: tempImage.size }],
+  })
+  await page.callMethod('onChooseAvatar')
+  const replacedAvatarData = await waitFor(async () => {
+    const data = await page.data()
+    return !data.uploadingAvatar
+      && data.profile?.avatarMediaId
+      && data.profile.avatarMediaId !== firstAvatarMediaId
+      && data.profile?.avatarUrl
+      ? data
+      : false
+  }, '宠物头像替换')
+  const replacementMediaId = replacedAvatarData.profile.avatarMediaId
+  const latestAfterReplacement = (await listPets(owner.token, owner.activeSpaceId)).items
+    .find((item) => item.id === pet.id)
+  assert.equal(latestAfterReplacement?.avatarMediaId, replacementMediaId)
+  assert.equal((await fetch(firstAvatarUrl)).status, 200)
+  await screenshot('profile-avatar-replaced')
+  console.log('PASS 宠物头像替换生成新媒体，旧文件按既定策略保留')
+
+  await miniProgram.mockWxMethod('chooseMedia', {
+    tempFiles: [{ tempFilePath: tempImage.filePath, size: 11 * 1024 * 1024 }],
+  })
+  await page.callMethod('onChooseAvatar')
+  const failedUploadData = await waitFor(async () => {
+    const data = await page.data()
+    return !data.uploadingAvatar && data.errorText ? data : false
+  }, '宠物头像上传失败回退')
+  assert.equal(failedUploadData.profile.avatarMediaId, replacementMediaId)
+  assert.equal(failedUploadData.profile.avatarUrl, replacedAvatarData.profile.avatarUrl)
+  assert.match(failedUploadData.errorText, /10 MiB/)
+  await screenshot('profile-avatar-upload-error')
+  console.log('PASS 宠物头像上传失败时保留原头像并展示错误')
+
+  await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
+  await page.callMethod('onRemoveAvatar')
+  await waitFor(async () => {
+    const data = await page.data()
+    return !data.uploadingAvatar
+      && data.profile?.avatarMediaId === ''
+      && data.profile?.avatarUrl === ''
+      ? data
+      : false
+  }, '宠物头像移除')
+  await miniProgram.restoreWxMethod('showModal')
+  const latestAfterRemoval = (await listPets(owner.token, owner.activeSpaceId)).items
+    .find((item) => item.id === pet.id)
+  assert.equal(latestAfterRemoval?.avatarMediaId, '')
+  await screenshot('profile-avatar-removed')
+  console.log('PASS 宠物头像移除后清空媒体引用并回退插画头像')
 
   await miniProgram.mockWxMethod('showModal', {
     confirm: true,
