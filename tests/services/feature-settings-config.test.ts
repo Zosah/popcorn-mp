@@ -30,13 +30,13 @@ describe('统一功能配置', () => {
     })
   })
 
-  it('拒绝未知项和非法位置，并在各自区域内去重', () => {
+  it('拒绝未知项、跨区域重复和不合法位置，并补齐七个唯一入口', () => {
     expect(normalizeFeatureSettings({
       homeSlots: ['todo', 'todo', 'unknown', 'reminders'],
-      tabSlots: ['menu', 'menu', 'reminders', 'expense'],
+      tabSlots: ['menu', 'menu', 'journal', 'expense'],
     })).toEqual({
-      homeSlots: ['todo', 'inventory', 'journal', 'reminders'],
-      tabSlots: ['menu', 'journal', 'todo'],
+      homeSlots: ['todo', 'inventory', 'journal', 'pets'],
+      tabSlots: ['menu', 'expense', 'fitness'],
     })
   })
 
@@ -64,12 +64,12 @@ describe('统一功能配置', () => {
 
     saveFeatureSettingsConfig({
       homeSlots: ['menu', 'todo', 'journal', 'pets'],
-      tabSlots: ['menu', 'expense', 'pets'],
+      tabSlots: ['expense', 'fitness', 'inventory'],
     }, ownerA)
 
     expect(getFeatureSettingsConfig(ownerA)).toEqual({
       homeSlots: ['menu', 'todo', 'journal', 'pets'],
-      tabSlots: ['menu', 'expense', 'pets'],
+      tabSlots: ['expense', 'fitness', 'inventory'],
     })
     expect(getFeatureSettingsConfig(ownerB)).toEqual(DEFAULT_FEATURE_SETTINGS)
     expect(getFeatureSettingsStorageKey(ownerA)).not.toBe(getFeatureSettingsStorageKey(ownerB))

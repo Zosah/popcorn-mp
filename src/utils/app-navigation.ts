@@ -7,7 +7,7 @@ export type AppRootNavigationPlan =
   | { action: 'scroll-top' }
   | { action: 'relaunch'; url: string }
 
-function decodeQueryValue(value: string): string {
+export function decodeQueryValue(value: string): string {
   try {
     return decodeURIComponent(value)
   } catch {

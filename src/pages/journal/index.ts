@@ -254,6 +254,30 @@ Page({
     wx.navigateTo({ url: `/pages/journal-detail/index?id=${encodeURIComponent(id)}` })
   },
 
+  onPreviewEntryImage(event: {
+    currentTarget: { dataset: { entryId?: string; imageIndex?: string | number } }
+  }) {
+    const entryId = event.currentTarget.dataset.entryId
+    const imageIndex = Number(event.currentTarget.dataset.imageIndex ?? 0)
+    if (!entryId || !Number.isInteger(imageIndex) || imageIndex < 0) return
+
+    let entry = this.data.entries.find((item) => item.id === entryId)
+    if (!entry) {
+      for (const group of this.data.noteGroups) {
+        entry = group.entries.find((item) => item.id === entryId)
+        if (entry) break
+      }
+    }
+    if (!entry) return
+
+    const images = entry.images?.length ? entry.images : entry.image ? [entry.image] : []
+    const urls = images.map((image) => image.src || image.thumbSrc || '').filter(Boolean)
+    if (!urls.length) return
+    const selected = images[imageIndex]
+    const current = selected?.src || selected?.thumbSrc || urls[0]
+    wx.previewImage({ current, urls })
+  },
+
   onUnload() {
     journalRequestGate.invalidate()
   },

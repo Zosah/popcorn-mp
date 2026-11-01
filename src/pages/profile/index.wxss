@@ -1,77 +1,89 @@
 /*
- * 我的：身份、共同空间与完整功能目录。
- * 设置集中在右上角，正文只保留用户真正需要浏览和进入的内容。
+ * 我的：只保留身份、设置和四类功能。功能目录共用一张玻璃面板，
+ * 用细分隔线建立层级，避免重复卡片和过多说明文字。
  */
 .profile-page {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  padding: 24rpx 34rpx calc(176rpx + env(safe-area-inset-bottom));
+  padding: 18rpx 28rpx calc(176rpx + env(safe-area-inset-bottom));
   background:
-    radial-gradient(circle at 103% 0%, rgba(242, 217, 204, 0.42), transparent 24%),
-    linear-gradient(180deg, #fffaf5 0%, #f7f5f1 54%, #f3f0ea 100%);
+    radial-gradient(circle at 105% -2%, rgba(246, 218, 208, 0.54), transparent 27%),
+    radial-gradient(circle at -12% 68%, rgba(221, 235, 226, 0.4), transparent 25%),
+    linear-gradient(180deg, #fffaf5 0%, #f8f5f0 54%, #f2efe9 100%);
   box-sizing: border-box;
 }
 
 .profile-toolbar {
   display: flex;
-  min-height: 64rpx;
+  min-height: 66rpx;
   align-items: center;
-  justify-content: space-between;
-}
-
-.profile-toolbar__brand {
-  color: var(--c-faint);
-  font-family: var(--font-serif);
-  font-size: 25rpx;
-  font-weight: 650;
-  letter-spacing: 1rpx;
+  justify-content: flex-end;
 }
 
 .profile-toolbar__settings {
   display: flex;
-  width: 62rpx;
-  height: 62rpx;
+  min-height: 54rpx;
   align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(219, 211, 201, 0.9);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.92);
+  padding: 0 17rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.94);
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 12rpx 30rpx -26rpx rgba(77, 65, 56, 0.48),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
+  color: var(--c-text-2);
+  gap: 7rpx;
+  font-size: 21rpx;
+  font-weight: 660;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
 }
 
-.profile-toolbar__settings--pressed {
-  opacity: 0.56;
+.profile-toolbar__settings--pressed,
+.profile-identity--pressed,
+.profile-feature--pressed {
+  opacity: 0.58;
 }
 
-.profile-card {
+.profile-identity {
   display: flex;
+  min-height: 144rpx;
   align-items: center;
-  padding: 25rpx 4rpx 35rpx;
-  border-bottom: 1rpx solid rgba(215, 207, 197, 0.54);
+  margin-top: 8rpx;
+  padding: 22rpx 24rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.92);
+  border-radius: 36rpx;
+  background:
+    radial-gradient(circle at 98% 0, rgba(244, 224, 213, 0.5), transparent 42%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 252, 247, 0.68));
+  box-shadow:
+    0 24rpx 54rpx -46rpx rgba(78, 64, 52, 0.48),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.98);
+  box-sizing: border-box;
   transition: opacity 120ms ease;
-}
-
-.profile-card--pressed {
-  opacity: 0.72;
+  backdrop-filter: blur(24rpx);
+  -webkit-backdrop-filter: blur(24rpx);
 }
 
 .profile-avatar {
   display: flex;
   overflow: hidden;
-  width: 120rpx;
-  height: 120rpx;
+  width: 108rpx;
+  height: 108rpx;
   align-items: center;
   justify-content: center;
-  border: 4rpx solid rgba(255, 255, 255, 0.94);
-  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.98);
+  border-radius: 35rpx;
   background: #ead7cc;
-  box-shadow: 0 17rpx 34rpx -29rpx rgba(92, 74, 61, 0.52);
+  box-shadow:
+    0 22rpx 44rpx -32rpx rgba(92, 74, 61, 0.5),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.74);
   color: #8b5f52;
   flex: 0 0 auto;
   font-family: var(--font-serif);
-  font-size: 42rpx;
-  font-weight: 700;
+  font-size: 40rpx;
+  font-weight: 720;
 }
 
 .profile-avatar__image {
@@ -86,190 +98,197 @@
 .profile-avatar--gold,
 .profile-avatar--apricot { background: #efe0c8; color: #8c6d36; }
 
-.profile-card__body {
+.profile-identity__body {
+  display: flex;
   min-width: 0;
   margin-left: 22rpx;
   flex: 1;
+  flex-direction: column;
 }
 
-.profile-card__name {
+.profile-identity__name {
   overflow: hidden;
   color: var(--c-text);
   font-family: var(--font-serif);
   font-size: 44rpx;
-  font-weight: 720;
-  letter-spacing: -0.6rpx;
-  line-height: 1.32;
+  font-weight: 760;
+  letter-spacing: -0.8rpx;
+  line-height: 1.24;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.profile-card__meta {
+.profile-identity__account {
   overflow: hidden;
-  margin-top: 7rpx;
+  margin-top: 8rpx;
   color: var(--c-muted);
-  font-size: 24rpx;
-  line-height: 1.45;
+  font-size: 22rpx;
+  line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.profile-card__edit {
+.profile-identity__arrow {
   display: flex;
-  width: 62rpx;
-  height: 62rpx;
+  width: 48rpx;
+  height: 48rpx;
   align-items: center;
   justify-content: center;
-  margin-left: 16rpx;
-  border: 1rpx solid rgba(213, 205, 195, 0.9);
+  margin-left: 12rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(242, 237, 230, 0.88);
+  color: #aaa097;
   flex: 0 0 auto;
-}
-
-.profile-card__login {
-  display: flex;
-  min-height: 62rpx;
-  align-items: center;
-  margin-left: 14rpx;
-  padding: 0 19rpx 0 23rpx;
-  border-radius: 999rpx;
-  background: var(--c-primary);
-  color: #fff;
-  flex: 0 0 auto;
-  font-size: 23rpx;
-  font-weight: 650;
-  gap: 5rpx;
-}
-
-.profile-card__login-arrow {
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 300;
+  line-height: 1;
 }
 
 .feature-directory-head {
   display: flex;
   align-items: baseline;
-  margin-top: 48rpx;
-  padding: 0 6rpx;
-  gap: 15rpx;
+  padding: 34rpx 7rpx 14rpx;
 }
 
 .feature-directory-head__title {
   color: var(--c-text);
   font-family: var(--font-serif);
-  font-size: 42rpx;
+  font-size: 38rpx;
+  font-weight: 760;
+  line-height: 1.25;
+}
+
+.profile-directory {
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 255, 255, 0.94);
+  border-radius: 34rpx;
+  background:
+    radial-gradient(circle at 100% 0, rgba(241, 227, 215, 0.36), transparent 34%),
+    rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 24rpx 58rpx -50rpx rgba(76, 63, 51, 0.46),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24rpx);
+  -webkit-backdrop-filter: blur(24rpx);
+}
+
+.profile-category {
+  min-width: 0;
+  padding: 22rpx 20rpx 18rpx;
+  box-sizing: border-box;
+}
+
+.profile-directory {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-category:nth-child(odd) {
+  border-right: 1rpx solid rgba(218, 211, 201, 0.56);
+}
+
+.profile-category:nth-child(n + 3) {
+  border-top: 1rpx solid rgba(218, 211, 201, 0.56);
+}
+
+.profile-category--orange {
+  background: radial-gradient(circle at 100% 0, rgba(245, 225, 218, 0.36), transparent 54%);
+}
+
+.profile-category--green {
+  background: radial-gradient(circle at 0 0, rgba(225, 237, 228, 0.38), transparent 54%);
+}
+
+.profile-category--blue {
+  background: radial-gradient(circle at 100% 100%, rgba(229, 235, 232, 0.34), transparent 56%);
+}
+
+.profile-category--pink {
+  background: radial-gradient(circle at 0 100%, rgba(239, 231, 236, 0.36), transparent 56%);
+}
+
+.profile-category__head {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.profile-category__title {
+  color: var(--c-text);
+  font-family: var(--font-serif);
+  font-size: 28rpx;
   font-weight: 750;
   line-height: 1.3;
 }
 
-.feature-directory-head__copy {
-  color: var(--c-muted);
-  font-size: 22rpx;
-  line-height: 1.45;
-}
-
-.profile-feature-group {
-  margin-top: 30rpx;
-}
-
-.profile-feature-group__head {
-  display: flex;
-  align-items: baseline;
-  padding: 0 7rpx 11rpx;
-  gap: 13rpx;
-}
-
-.profile-feature-group__title {
-  color: var(--c-text);
-  font-size: 31rpx;
-  font-weight: 720;
-  line-height: 1.35;
-}
-
-.profile-feature-group__description {
+.profile-category__description {
+  overflow: hidden;
   color: var(--c-faint);
   font-size: 21rpx;
   line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.profile-feature-group__list {
-  overflow: hidden;
-  padding: 0 23rpx;
-  border: 1rpx solid rgba(225, 218, 208, 0.84);
-  border-radius: 31rpx;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow:
-    0 18rpx 44rpx -40rpx rgba(92, 74, 61, 0.34),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.88);
-}
-
-.profile-feature-row {
+.profile-category__items {
   display: flex;
-  min-height: 112rpx;
-  align-items: center;
-  border-bottom: 1rpx solid var(--c-line);
-  gap: 17rpx;
-  transition: opacity 120ms ease;
-}
-
-.profile-feature-row:last-child {
-  border-bottom: 0;
-}
-
-.profile-feature-row--pressed {
-  opacity: 0.56;
-}
-
-.profile-feature-row__icon {
-  display: flex;
-  width: 58rpx;
-  height: 58rpx;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.78);
-  border-radius: 18rpx;
-  flex: 0 0 auto;
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.82);
-}
-
-.profile-feature-row__icon--blue { background: #e5ece9; }
-.profile-feature-row__icon--green { background: #e4eee7; }
-.profile-feature-row__icon--gold { background: #f2e8ce; }
-.profile-feature-row__icon--pink { background: #eee7ec; }
-.profile-feature-row__icon--orange { background: #f3e5df; }
-
-.profile-feature-row__body {
-  display: flex;
-  min-width: 0;
-  flex: 1;
+  margin-top: 13rpx;
   flex-direction: column;
   gap: 3rpx;
 }
 
-.profile-feature-row__title {
+.profile-feature {
+  display: flex;
+  min-width: 0;
+  min-height: 60rpx;
+  align-items: center;
+  padding: 6rpx 0;
+  box-sizing: border-box;
+  gap: 9rpx;
+  transition: opacity 120ms ease;
+}
+
+.profile-feature__icon {
+  display: flex;
+  width: 43rpx;
+  height: 43rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(255, 255, 255, 0.84);
+  border-radius: 14rpx;
+  flex: 0 0 auto;
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+}
+
+.profile-feature__icon--blue { background: #e5ece9; }
+.profile-feature__icon--green { background: #e4eee7; }
+.profile-feature__icon--gold { background: #f2e8ce; }
+.profile-feature__icon--pink { background: #eee7ec; }
+.profile-feature__icon--orange { background: #f3e5df; }
+
+.profile-feature__title {
   overflow: hidden;
   color: var(--c-text);
-  font-size: 29rpx;
-  font-weight: 680;
-  line-height: 1.4;
+  flex: 1;
+  font-size: 25rpx;
+  font-weight: 690;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.profile-feature-row__description {
-  overflow: hidden;
-  color: var(--c-muted);
-  font-size: 22rpx;
-  line-height: 1.45;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.profile-feature-row__arrow {
-  color: #beb7ae;
+.profile-feature__arrow {
+  color: #beb6ad;
   flex: 0 0 auto;
-  font-size: 38rpx;
+  font-size: 26rpx;
   font-weight: 300;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-identity,
+  .profile-feature {
+    transition: none;
+  }
 }

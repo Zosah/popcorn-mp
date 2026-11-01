@@ -284,6 +284,8 @@ function todoListPath(
   if (filters.status && filters.status !== 'all') add('status', filters.status)
   const query = filters.query?.trim()
   if (query) add('query', query)
+  const tag = filters.tag?.trim()
+  if (tag) add('tag', tag)
   if (cursor) add('cursor', cursor)
   add('limit', String(PAGE_LIMIT))
   return `/spaces/${encodeURIComponent(spaceId)}/todos?${params.join('&')}`
@@ -299,6 +301,7 @@ function toTodoItem(item: ApiTodoItem): TodoItem {
     kind: normalizeKind(item.kind),
     title: item.title,
     note: item.note,
+    tag: item.tag ?? '',
     done: item.done,
     dueDate: item.dueDate ?? '',
     destination: item.destination,
@@ -324,6 +327,7 @@ function toApiInput(input: DemoTodoInput): ApiTodoWriteRequest {
     kind: input.kind,
     title: input.title.trim(),
     note: input.note?.trim() ?? '',
+    tag: input.kind === 'plan' ? input.tag?.trim() ?? '' : '',
     dueDate: input.dueDate?.trim() || null,
   }
 

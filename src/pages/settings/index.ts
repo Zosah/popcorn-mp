@@ -42,8 +42,4 @@ Page({
     wx.navigateTo({ url: '/pages/feature-settings/index' })
   },
 
-  onOpenReminders() {
-    if (!this.ensureLoggedIn()) return
-    wx.navigateTo({ url: '/pages/reminder-settings/index' })
-  },
 })

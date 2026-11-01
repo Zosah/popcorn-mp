@@ -227,7 +227,8 @@ async function toJournalItem(
 ): Promise<JournalItem> {
   const kind = normalizeKind(item.kind)
   const category = kind === 'note' ? normalizeCategory(item.category) : undefined
-  const image = await resolveJournalImage(item, variant)
+  const images = await resolveJournalImages(item, variant)
+  const image = images[0]
   const formatted = formatDemoJournalEntry({
     id: item.id,
     kind,
@@ -244,7 +245,7 @@ async function toJournalItem(
     dateLabel: '',
     timeLabel: '',
     createdAt: item.createdAt,
-    ...(image ? { image } : {}),
+    ...(images.length ? { images, image } : {}),
     ...(wasEdited(item.createdAt, item.updatedAt) ? { updatedAt: item.updatedAt } : {}),
   })
   return {
@@ -254,37 +255,50 @@ async function toJournalItem(
   }
 }
 
-async function resolveJournalImage(
+async function resolveJournalImages(
   item: ApiJournalItem,
   variant: 'display' | 'thumb',
-): Promise<DemoJournalImage | undefined> {
-  const mediaId = item.imageMediaId || ''
-  if (!mediaId) return undefined
-  const caption = item.imageCaption || ''
-  try {
-    const asset = await mediaGateway.get(mediaId)
-    return {
-      mediaId,
-      src: variant === 'thumb' ? asset.thumb.url : asset.display.url,
-      thumbSrc: asset.thumb.url,
-      ...(caption ? { caption } : {}),
+): Promise<DemoJournalImage[]> {
+  const apiImages = [...(item.images ?? [])].sort((left, right) => left.sortOrder - right.sortOrder)
+  const sources = apiImages.length
+    ? apiImages.map((image) => ({ mediaId: image.mediaId, caption: image.caption }))
+    : item.imageMediaId
+      ? [{ mediaId: item.imageMediaId, caption: item.imageCaption }]
+      : []
+
+  return Promise.all(sources.map(async ({ mediaId, caption }) => {
+    try {
+      const asset = await mediaGateway.get(mediaId)
+      return {
+        mediaId,
+        src: variant === 'thumb' ? asset.thumb.url : asset.display.url,
+        thumbSrc: asset.thumb.url,
+        ...(caption ? { caption } : {}),
+      }
+    } catch {
+      // 单张图片签名失败不阻塞整条记录；编辑页仍保留 mediaId 供替换或重试。
+      return { mediaId, src: '', ...(caption ? { caption } : {}) }
     }
-  } catch {
-    // 图片签名失败不阻塞文字内容；编辑页仍保留 mediaId，可重新加载或直接替换。
-    return { mediaId, src: '', ...(caption ? { caption } : {}) }
-  }
+  }))
 }
 
 function toApiInput(input: DemoJournalEntryInput): ApiJournalWriteRequest {
   const kind = normalizeKind(input.kind ?? 'moment')
+  const images = input.images ?? (input.image ? [input.image] : [])
+  const firstImage = images[0]
   return {
     kind,
     title: input.title.trim(),
     content: input.content.trim(),
     category: kind === 'note' ? normalizeCategory(input.category) : '',
     visibility: normalizeVisibility(input.visibility),
-    imageMediaId: input.image?.mediaId ?? input.imageMediaId ?? '',
-    imageCaption: input.imageCaption ?? input.image?.caption ?? '',
+    imageMediaId: firstImage?.mediaId ?? input.imageMediaId ?? '',
+    imageCaption: firstImage?.caption ?? input.imageCaption ?? '',
+    images: images.map((image, index) => ({
+      mediaId: image.mediaId ?? '',
+      caption: image.caption ?? '',
+      sortOrder: index,
+    })),
   }
 }
 

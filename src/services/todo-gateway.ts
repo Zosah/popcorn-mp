@@ -10,6 +10,7 @@ export interface TodoListFilters {
   kinds?: DemoTodoKind[]
   status?: TodoStatus
   query?: string
+  tag?: string
 }
 
 export interface TodoSummary {

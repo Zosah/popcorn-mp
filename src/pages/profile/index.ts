@@ -41,7 +41,7 @@ Page({
     avatarTone: 'lavender',
     avatarMediaId: '',
     avatarUrl: '',
-    profileMeta: '登录后保存你的生活与共同空间',
+    accountLabel: '微信登录后开始记录',
     featureGroups: buildFeatureGroups() as ProfileFeatureGroupView[],
   },
 
@@ -93,9 +93,6 @@ Page({
     const loggedInUser = auth.isLoggedIn ? auth.user : null
     const isLoggedIn = Boolean(loggedInUser)
     const avatarMediaId = loggedInUser?.avatarMediaId ?? ''
-    const profileMeta = isLoggedIn
-      ? `在「${auth.spaceName}」里`
-      : '登录后保存你的生活与共同空间'
     this.setData({
       initialLoading: false,
       hasLoaded: true,
@@ -106,7 +103,7 @@ Page({
       avatarTone: loggedInUser?.avatarTone ?? 'lavender',
       avatarMediaId,
       avatarUrl: this.data.avatarMediaId === avatarMediaId ? this.data.avatarUrl : '',
-      profileMeta,
+      accountLabel: isLoggedIn ? '账号与空间' : '微信登录后开始记录',
       featureGroups: buildFeatureGroups(),
     }, () => this.cacheCurrentPage())
 

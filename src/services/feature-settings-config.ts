@@ -17,7 +17,7 @@ export interface FeatureSettingsSnapshot extends FeatureSettingsConfig {
 
 export const DEFAULT_FEATURE_SETTINGS: FeatureSettingsConfig = {
   homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-  tabSlots: ['pets', 'journal', 'todo'],
+  tabSlots: ['menu', 'expense', 'fitness'],
 }
 
 const STORAGE_PREFIX = 'popcorn_feature_settings_v2'
@@ -51,9 +51,22 @@ export function normalizeFeatureSettings(value: unknown): FeatureSettingsConfig 
   const record = value && typeof value === 'object'
     ? value as Record<string, unknown>
     : {}
+  const used = new Set<FeatureId>()
   return {
-    homeSlots: normalizeSlots(record.homeSlots, 'home', HOME_SLOT_COUNT, DEFAULT_FEATURE_SETTINGS.homeSlots),
-    tabSlots: normalizeSlots(record.tabSlots, 'tab', TAB_SLOT_COUNT, DEFAULT_FEATURE_SETTINGS.tabSlots),
+    homeSlots: normalizeSlots(
+      record.homeSlots,
+      'home',
+      HOME_SLOT_COUNT,
+      DEFAULT_FEATURE_SETTINGS.homeSlots,
+      used,
+    ),
+    tabSlots: normalizeSlots(
+      record.tabSlots,
+      'tab',
+      TAB_SLOT_COUNT,
+      DEFAULT_FEATURE_SETTINGS.tabSlots,
+      used,
+    ),
   }
 }
 
@@ -119,9 +132,9 @@ function normalizeSlots(
   availability: 'home' | 'tab',
   count: number,
   defaults: readonly FeatureId[],
+  used: Set<FeatureId>,
 ): FeatureId[] {
   const candidates = Array.isArray(value) ? value : []
-  const used = new Set<FeatureId>()
   const result: FeatureId[] = []
 
   const take = (candidate: unknown): FeatureId | undefined => {

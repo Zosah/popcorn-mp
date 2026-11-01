@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { appConfig } from '../../src/config/env'
 import { HttpJournalGateway } from '../../src/services/http-journal'
+import { mediaGateway } from '../../src/services/media'
 import { clearApiSession, saveApiSession } from '../../src/stores/session'
-import type { ApiJournalItem, ApiSession } from '../../src/types/api'
+import type { ApiJournalItem, ApiMediaAsset, ApiSession } from '../../src/types/api'
 
 const originalConfig = { ...appConfig }
 const createdAt = '2026-10-28T02:00:00Z'
@@ -38,6 +39,7 @@ const apiJournal: ApiJournalItem = {
   visibility: 'space',
   imageMediaId: '',
   imageCaption: '',
+  images: [],
   version: 3,
   createdBy: 'user-1',
   authorName: '小满',
@@ -107,6 +109,26 @@ describe('HTTP 生活记录网关', () => {
           succeed(options, apiJournal, 200, { etag: '"3"' })
           return
         }
+        if (url.endsWith('/journals/journal-images') && method === 'GET') {
+          succeed(options, {
+            ...apiJournal,
+            id: 'journal-images',
+            images: [
+              { mediaId: 'media-2', caption: '第二张', sortOrder: 1 },
+              { mediaId: 'media-1', caption: '第一张', sortOrder: 0 },
+            ],
+          }, 200, { etag: '"3"' })
+          return
+        }
+        if (url.endsWith('/journals/journal-legacy') && method === 'GET') {
+          succeed(options, {
+            ...apiJournal,
+            id: 'journal-legacy',
+            imageMediaId: 'media-legacy',
+            imageCaption: '旧版单图',
+          }, 200, { etag: '"3"' })
+          return
+        }
         if (url.endsWith('/journals') && method === 'POST') {
           succeed(options, {
             ...apiJournal,
@@ -146,6 +168,7 @@ describe('HTTP 生活记录网关', () => {
   afterEach(() => {
     clearApiSession()
     Object.assign(appConfig, originalConfig)
+    vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })
 
@@ -210,7 +233,65 @@ describe('HTTP 生活记录网关', () => {
       visibility: 'space',
       imageMediaId: '',
       imageCaption: '',
+      images: [],
     })
+  })
+
+  it('创建时按顺序提交最多九张图片，并兼容第一张旧字段', async () => {
+    const gateway = new HttpJournalGateway()
+    const images = Array.from({ length: 9 }, (_, index) => ({
+      mediaId: `media-${index + 1}`,
+      src: `https://cdn.test/${index + 1}.jpg`,
+      caption: index === 0 ? '封面说明' : '',
+    }))
+
+    await gateway.create({
+      kind: 'moment',
+      title: '九张照片',
+      content: '把这一天完整留下',
+      visibility: 'space',
+      images,
+    })
+
+    expect(requests[0]?.data).toMatchObject({
+      imageMediaId: 'media-1',
+      imageCaption: '封面说明',
+      images: images.map((image, index) => ({
+        mediaId: image.mediaId,
+        caption: image.caption,
+        sortOrder: index,
+      })),
+    })
+  })
+
+  it('读取多图时按 sortOrder 排序并签名，旧单图字段仍可回退', async () => {
+    const getMedia = vi.spyOn(mediaGateway, 'get').mockImplementation(async (mediaId): Promise<ApiMediaAsset> => ({
+      id: mediaId,
+      spaceId: 'space-1',
+      purpose: 'journal',
+      width: 1200,
+      height: 1200,
+      createdAt,
+      display: { url: `https://cdn.test/${mediaId}-display.jpg`, expiresAt: updatedAt },
+      thumb: { url: `https://cdn.test/${mediaId}-thumb.jpg`, expiresAt: updatedAt },
+    }))
+    const gateway = new HttpJournalGateway()
+
+    const multi = await gateway.get('journal-images')
+    const legacy = await gateway.get('journal-legacy')
+
+    expect(multi?.images?.map((image) => image.mediaId)).toEqual(['media-1', 'media-2'])
+    expect(multi?.images?.map((image) => image.src)).toEqual([
+      'https://cdn.test/media-1-display.jpg',
+      'https://cdn.test/media-2-display.jpg',
+    ])
+    expect(multi?.image?.caption).toBe('第一张')
+    expect(legacy?.image).toMatchObject({
+      mediaId: 'media-legacy',
+      src: 'https://cdn.test/media-legacy-display.jpg',
+      caption: '旧版单图',
+    })
+    expect(getMedia).toHaveBeenCalledTimes(3)
   })
 
   it('更新与删除都使用当前版本的 If-Match 和独立幂等键', async () => {

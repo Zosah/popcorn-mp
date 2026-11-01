@@ -32,8 +32,8 @@ const session: ApiSession = {
 
 const settings: ApiAppTabSettings = {
   slot2: 'menu',
-  slot3: 'fitness',
-  slot4: 'todo',
+  slot3: 'expense',
+  slot4: 'fitness',
   version: 4,
   updatedAt: '2026-11-01T03:00:00Z',
 }
@@ -109,8 +109,8 @@ describe('HTTP 自定义底栏网关', () => {
 
     const result = await new HttpAppTabGateway().update({
       slot2: 'menu',
-      slot3: 'fitness',
-      slot4: 'todo',
+      slot3: 'expense',
+      slot4: 'fitness',
     }, 4)
     expect(result.version).toBe(5)
     expect(requests[0]?.method).toBe('PUT')
@@ -118,8 +118,8 @@ describe('HTTP 自定义底栏网关', () => {
     expect(requests[0]?.header?.['Idempotency-Key']).toMatch(/^app_tab_update_/)
     expect(requests[0]?.data).toEqual({
       slot2: 'menu',
-      slot3: 'fitness',
-      slot4: 'todo',
+      slot3: 'expense',
+      slot4: 'fitness',
     })
   })
 
@@ -140,8 +140,8 @@ describe('HTTP 自定义底栏网关', () => {
 
     const promise = new HttpAppTabGateway().update({
       slot2: 'menu',
-      slot3: 'fitness',
-      slot4: 'todo',
+      slot3: 'expense',
+      slot4: 'fitness',
     }, 2)
     await expect(promise).rejects.toMatchObject({
       name: AppTabGatewayError.name,

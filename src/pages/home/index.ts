@@ -168,7 +168,7 @@ Page({
     menuCount: 0,
     menuSummary: '还没有收藏菜单，先收一道常做的菜。',
     todoPendingCount: 0,
-    todoSummary: '旅行、计划、健身、吃什么和账单',
+    todoSummary: '想到的事，用自己的标签收好',
     petActivities: [] as HomePetActivity[],
     petActivityCount: 0,
     hasLoadedInventory: false,

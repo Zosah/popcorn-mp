@@ -1,4 +1,3 @@
-import { appConfig } from '../../config/env'
 import {
   DEMO_MEAL_TYPE_OPTIONS,
   DEMO_TODO_KIND_OPTIONS,
@@ -19,6 +18,7 @@ import {
   getTodoErrorMessage,
   isTodoVersionConflict,
 } from '../../services/todo-gateway'
+import { decodeQueryValue } from '../../utils/app-navigation'
 
 type TodoFormField =
   | 'title'
@@ -34,6 +34,9 @@ type TodoFormField =
 const KIND_COPY: Record<
   DemoTodoKind,
   {
+    pageTitle: string
+    saveText: string
+    heroCopy: string
     titleLabel: string
     titlePlaceholder: string
     dateLabel: string
@@ -42,6 +45,9 @@ const KIND_COPY: Record<
   }
 > = {
   travel: {
+    pageTitle: '记一项旅行准备',
+    saveText: '保存准备',
+    heroCopy: '把目的地和出发前要带的东西放在一起。',
     titleLabel: '要准备的事',
     titlePlaceholder: '例如：去大理前，把行李收好',
     dateLabel: '出发日期',
@@ -49,27 +55,39 @@ const KIND_COPY: Record<
     notePlaceholder: '想去哪里、和谁去，或者要留意的安排',
   },
   plan: {
-    titleLabel: '想做什么',
-    titlePlaceholder: '例如：周末把换季衣服整理出来',
-    dateLabel: '计划日期',
-    noteLabel: '补充说明',
-    notePlaceholder: '为什么想做，或者需要提前准备什么',
+    pageTitle: '记下一件待办',
+    saveText: '保存待办',
+    heroCopy: '写清楚要做什么，截止日期可以稍后再定。',
+    titleLabel: '要做什么',
+    titlePlaceholder: '例如：下班带一袋猫砂回家',
+    dateLabel: '截止日期',
+    noteLabel: '备注',
+    notePlaceholder: '补充需要的信息，或者记下具体一点的要求',
   },
   fitness: {
+    pageTitle: '记一次运动',
+    saveText: '保存运动',
+    heroCopy: '记下运动类型、时长和大致消耗。',
     titleLabel: '这次练什么',
     titlePlaceholder: '例如：晚饭前快走 30 分钟',
-    dateLabel: '计划日期',
+    dateLabel: '运动日期',
     noteLabel: '训练备注',
     notePlaceholder: '身体感受、路线或下次想调整的地方',
   },
   meal: {
+    pageTitle: '记一餐',
+    saveText: '保存这一餐',
+    heroCopy: '把吃过的好味道和下一次想吃的东西留下来。',
     titleLabel: '吃什么',
     titlePlaceholder: '例如：今晚吃番茄牛腩',
-    dateLabel: '记录日期',
+    dateLabel: '用餐日期',
     noteLabel: '这一餐的备注',
     notePlaceholder: '想配什么菜，或者下次想试什么',
   },
   expense: {
+    pageTitle: '记一笔账单',
+    saveText: '保存账单',
+    heroCopy: '记下金额、地点和实际买了什么。',
     titleLabel: '买了什么',
     titlePlaceholder: '例如：盒马采购',
     dateLabel: '消费日期',
@@ -97,15 +115,12 @@ Page({
     loadError: '',
     itemId: '',
     version: 0,
-    pageTitle: '记一件要做的事',
-    saveText: '放进待办',
-    storageCopy: appConfig.demoMode
-      ? '所有内容只保存在这台手机。'
-      : '保存后会同步给共同空间里的成员。',
-    kindOptions: DEMO_TODO_KIND_OPTIONS,
+    pageTitle: KIND_COPY.plan.pageTitle,
+    saveText: KIND_COPY.plan.saveText,
+    heroCopy: KIND_COPY.plan.heroCopy,
     mealTypeOptions: DEMO_MEAL_TYPE_OPTIONS,
-    kindHint: '旅行准备 · 目的地、清单和物品',
     kindIcon: 'list-todo',
+    tagSuggestions: [] as string[],
     titleLabel: KIND_COPY.plan.titleLabel,
     titlePlaceholder: KIND_COPY.plan.titlePlaceholder,
     dateLabel: KIND_COPY.plan.dateLabel,
@@ -117,6 +132,7 @@ Page({
       kind: 'plan' as DemoTodoKind,
       title: '',
       note: '',
+      tag: '',
       dueDate: '',
       destination: '',
       checklistText: '',
@@ -148,13 +164,34 @@ Page({
       kind === 'fitness' || kind === 'meal' || kind === 'expense'
         ? getTodoTodayKey()
         : ''
+    const tag = kind === 'plan'
+      ? decodeQueryValue(options.tag ?? '').trim().slice(0, 20)
+      : ''
     this.setData({
       'form.kind': kind,
-      'form.title': (options.title ?? '').trim(),
+      'form.title': decodeQueryValue(options.title ?? '').trim(),
+      'form.tag': tag,
       'form.dueDate': defaultDate,
       dateDisplay: formatTodoDateDisplay(defaultDate),
     })
     this.applyKindCopy(kind)
+    if (kind === 'plan') void this.loadTagSuggestions(tag)
+  },
+
+  async loadTagSuggestions(currentTag = '') {
+    try {
+      const items = await todoGateway.list({ kinds: ['plan'] })
+      const tags = [...new Set(
+        items.map((item) => item.tag.trim()).filter(Boolean),
+      )].sort((left, right) => left.localeCompare(right))
+      this.setData({
+        tagSuggestions: currentTag
+          ? [currentTag, ...tags.filter((tag) => tag !== currentTag)]
+          : tags,
+      })
+    } catch {
+      this.setData({ tagSuggestions: currentTag ? [currentTag] : [] })
+    }
   },
 
   async loadItem(id: string) {
@@ -171,13 +208,12 @@ Page({
         itemId: item.id,
         version: item.version,
         currentChecklist: item.checklist,
-        pageTitle: '把这件事再整理一下',
-        saveText: '保存修改',
         dateDisplay: formatTodoDateDisplay(item.dueDate),
         form: {
           kind: item.kind,
           title: item.title,
           note: item.note,
+          tag: item.tag,
           dueDate: item.dueDate,
           destination: item.destination,
           checklistText: formatDemoTodoChecklist(item.checklist),
@@ -189,7 +225,8 @@ Page({
           merchant: item.merchant,
         },
       })
-      this.applyKindCopy(item.kind)
+      this.applyKindCopy(item.kind, true)
+      if (item.kind === 'plan') void this.loadTagSuggestions(item.tag)
     } catch (error) {
       this.setData({
         loadError: getTodoErrorMessage(error, '这条待办暂时没有加载出来'),
@@ -207,11 +244,13 @@ Page({
     backToTodo()
   },
 
-  applyKindCopy(kind: DemoTodoKind) {
+  applyKindCopy(kind: DemoTodoKind, editing = false) {
     const option = DEMO_TODO_KIND_OPTIONS.find((entry) => entry.value === kind)
     const copy = KIND_COPY[kind]
     this.setData({
-      kindHint: option ? `${option.label} · ${option.hint}` : '',
+      pageTitle: editing ? '编辑记录' : copy.pageTitle,
+      saveText: editing ? '保存修改' : copy.saveText,
+      heroCopy: copy.heroCopy,
       kindIcon: option?.icon ?? 'list-todo',
       titleLabel: copy.titleLabel,
       titlePlaceholder: copy.titlePlaceholder,
@@ -221,13 +260,17 @@ Page({
     })
   },
 
-  onSelectKind(event: {
-    currentTarget: { dataset: { kind?: DemoTodoKind } }
-  }) {
-    const kind = event.currentTarget.dataset.kind
-    if (!kind || !kindAllowed(kind)) return
-    this.setData({ 'form.kind': kind })
-    this.applyKindCopy(kind)
+  onTagInput(event: { detail: { value: string } }) {
+    this.setData({ 'form.tag': event.detail.value.slice(0, 20) })
+  },
+
+  onSelectTag(event: { currentTarget: { dataset: { tag?: string } } }) {
+    const tag = event.currentTarget.dataset.tag ?? ''
+    this.setData({ 'form.tag': tag })
+  },
+
+  onClearTag() {
+    this.setData({ 'form.tag': '' })
   },
 
   onFieldInput(event: {
@@ -289,6 +332,7 @@ Page({
       kind: form.kind,
       title: form.title,
       note: form.note,
+      tag: form.kind === 'plan' ? form.tag.trim().slice(0, 20) : '',
       dueDate: form.dueDate,
       destination: form.destination,
       checklist: parseDemoTodoChecklist(form.checklistText).map((item) => {
@@ -317,6 +361,10 @@ Page({
 
     if (!form.title.trim()) {
       wx.showToast({ title: '先写下这件事吧', icon: 'none' })
+      return
+    }
+    if (form.kind === 'plan' && form.tag.trim().length > 20) {
+      wx.showToast({ title: '标签最多 20 个字符', icon: 'none' })
       return
     }
     if (
@@ -355,9 +403,11 @@ Page({
       wx.showToast({
         title: this.data.itemId
           ? '修改已保存'
-          : form.kind === 'expense'
-            ? '账单已记下'
-            : '已经放进待办',
+          : form.kind === 'plan'
+            ? '待办已保存'
+            : form.kind === 'expense'
+              ? '账单已记下'
+              : '记录已保存',
         icon: 'success',
       })
       backToTodo()

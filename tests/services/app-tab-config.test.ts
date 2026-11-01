@@ -22,63 +22,63 @@ beforeEach(() => {
 })
 
 describe('底部导航配置', () => {
-  it('默认展示 家 / 宠物 / 记录 / 待办 / 我的', () => {
+  it('默认展示 家 / 下厨 / 账单 / 健身 / 我的', () => {
     expect(getAppTabConfig('user-a')).toEqual({
-      slot2: 'pets',
-      slot3: 'journal',
-      slot4: 'todo',
+      slot2: 'menu',
+      slot3: 'expense',
+      slot4: 'fitness',
     })
     expect(
-      resolveAppTabItems({ slot2: 'pets', slot3: 'journal', slot4: 'todo' }).map(
+      resolveAppTabItems({ slot2: 'menu', slot3: 'expense', slot4: 'fitness' }).map(
         (item) => item.label,
       ),
-    ).toEqual(['家', '宠物', '记录', '待办', '我的'])
+    ).toEqual(['家', '下厨', '账单', '健身', '我的'])
   })
 
   it('按账号分别保存自定义入口', () => {
-    saveAppTabConfig({ slot2: 'todo', slot3: 'menu', slot4: 'journal' }, 'user-a')
+    saveAppTabConfig({ slot2: 'travel', slot3: 'menu', slot4: 'expense' }, 'user-a')
 
     expect(getAppTabConfig('user-a')).toEqual({
-      slot2: 'todo',
+      slot2: 'travel',
       slot3: 'menu',
-      slot4: 'journal',
+      slot4: 'expense',
     })
     expect(getAppTabConfig('user-b')).toEqual({
-      slot2: 'pets',
-      slot3: 'journal',
-      slot4: 'todo',
+      slot2: 'menu',
+      slot3: 'expense',
+      slot4: 'fitness',
     })
   })
 
   it('拒绝重复和未知位置，并自动补成三个不同入口', () => {
     expect(
-      normalizeAppTabConfig({ slot2: 'menu', slot3: 'menu', slot4: 'todo' }),
-    ).toEqual({ slot2: 'menu', slot3: 'journal', slot4: 'todo' })
+      normalizeAppTabConfig({ slot2: 'menu', slot3: 'menu', slot4: 'travel' }),
+    ).toEqual({ slot2: 'menu', slot3: 'expense', slot4: 'travel' })
     expect(
       normalizeAppTabConfig({ slot2: 'unknown', slot3: 'todo', slot4: 'todo' }),
-    ).toEqual({ slot2: 'pets', slot3: 'todo', slot4: 'journal' })
+    ).toEqual({ slot2: 'menu', slot3: 'expense', slot4: 'fitness' })
   })
 })
 
 describe('自定义底栏二级功能', () => {
-  it('可以直接跳转到宠物照护和旅行准备', () => {
-    expect(getAppTabOption('pet-care')).toMatchObject({
-      label: '照护',
-      path: '/pages/pets/index?section=care',
-      parentId: 'pets',
-    })
+  it('可以直接跳转到旅行与健身等一级功能', () => {
     expect(getAppTabOption('travel')).toMatchObject({
       label: '旅行',
       path: '/pages/todo/index?kind=travel',
-      parentId: 'todo',
+      parentId: 'travel',
+    })
+    expect(getAppTabOption('fitness')).toMatchObject({
+      label: '健身',
+      path: '/pages/todo/index?kind=fitness',
+      parentId: 'fitness',
     })
   })
 
   it('按当前页面与查询参数高亮准确的自定义入口', () => {
     const items = resolveAppTabItems({
       slot2: 'travel',
-      slot3: 'pet-care',
-      slot4: 'todo',
+      slot3: 'expense',
+      slot4: 'menu',
     })
 
     expect(
@@ -92,14 +92,14 @@ describe('自定义底栏二级功能', () => {
     expect(
       resolveActiveAppTabItemId(
         items,
-        'pages/pets/index',
-        { section: 'care' },
-        'pets',
+        'pages/todo/index',
+        { kind: 'travel' },
+        'travel',
       ),
-    ).toBe('pet-care')
+    ).toBe('travel')
   })
 
-  it('同一父级有多个二级入口时，根页面不随意高亮其中一个', () => {
+  it('根页面不会被同一个二级功能错误高亮', () => {
     const items = resolveAppTabItems({
       slot2: 'menu',
       slot3: 'expense',
@@ -110,18 +110,8 @@ describe('自定义底栏二级功能', () => {
       resolveActiveAppTabItemId(items, 'pages/todo/index', {}, 'todo'),
     ).toBe('')
 
-    const singleSecondaryItems = resolveAppTabItems({
-      slot2: 'menu',
-      slot3: 'expense',
-      slot4: 'journal',
-    })
     expect(
-      resolveActiveAppTabItemId(
-        singleSecondaryItems,
-        'pages/todo/index',
-        {},
-        'todo',
-      ),
+      resolveActiveAppTabItemId(items, 'pages/todo/index', { kind: 'expense' }, 'todo'),
     ).toBe('expense')
   })
 })

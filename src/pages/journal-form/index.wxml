@@ -46,29 +46,30 @@
     </view>
 
     <view class="journal-section-head">
-      <view><text>配一张图</text><text>让记忆有颜色</text></view>
-      <text>可选 · 10 MiB 内</text>
+      <view><text>照片</text><text>最多九张，按 1:1 排开</text></view>
+      <text>{{images.length}}/9</text>
     </view>
 
     <view class="paper-card journal-image-card">
-      <view wx:if="{{image && image.src}}" class="journal-image-preview" bindtap="onPreviewImage">
-        <image src="{{image.src}}" mode="aspectFill" />
-        <view class="journal-image-preview__badge"><line-icon name="image" size="19" tone="white" /><text>轻触查看</text></view>
+      <view wx:if="{{images.length}}" class="journal-image-grid">
+        <view wx:for="{{images}}" wx:key="mediaId" class="journal-image-tile" data-index="{{index}}" catchtap="onPreviewImage">
+          <image wx:if="{{item.src || item.thumbSrc}}" class="journal-image-tile__image" src="{{item.src || item.thumbSrc}}" mode="aspectFill" />
+          <view wx:else class="journal-image-tile__placeholder"><line-icon name="image" size="28" tone="muted" /></view>
+          <view class="journal-image-tile__remove" data-index="{{index}}" catchtap="onRemoveImage" aria-label="移除图片">×</view>
+        </view>
+        <view wx:if="{{images.length < 9}}" class="journal-image-tile journal-image-tile--add" catchtap="onChooseImage">
+          <view class="journal-image-tile__add-icon"><line-icon name="{{imageUploading ? 'image' : 'plus'}}" size="28" tone="muted" /></view>
+          <text>{{imageUploading ? uploadProgress : '添加图片'}}</text>
+        </view>
       </view>
-      <view wx:elif="{{imageUploading}}" class="journal-image-empty journal-image-empty--loading">
-        <view class="journal-image-empty__mark"><line-icon name="image" size="32" tone="blue" /></view>
-        <text>正在把照片安放好</text>
-        <text>图片会压缩后保存到私有空间</text>
-      </view>
-      <view wx:else class="journal-image-empty" bindtap="onChooseImage">
+      <view wx:else class="journal-image-empty {{imageUploading ? 'journal-image-empty--loading' : ''}}" bindtap="onChooseImage">
         <view class="journal-image-empty__mark"><line-icon name="image" size="34" tone="blue" /></view>
-        <text>从相册选一张，或现在拍</text>
-        <text>原图只在当前空间可见</text>
+        <text>{{imageUploading ? uploadProgress : '从相册选择，或现在拍'}}</text>
+        <text>{{imageUploading ? '图片会依次上传' : '最多九张 · 每张 10 MiB 内'}}</text>
       </view>
 
-      <view wx:if="{{image}}" class="journal-image-tools">
-        <input value="{{image.caption}}" maxlength="120" placeholder="给这张图写一句说明（可选）" bindinput="onImageCaptionInput" />
-        <view class="journal-image-remove" catchtap="onRemoveImage">移除</view>
+      <view wx:if="{{images.length}}" class="journal-image-tools">
+        <input value="{{images[0].caption}}" maxlength="120" placeholder="给第一张图写一句说明（可选）" bindinput="onImageCaptionInput" />
       </view>
     </view>
 

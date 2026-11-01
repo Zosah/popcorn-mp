@@ -17,43 +17,41 @@ describe('功能注册表', () => {
     }
   })
 
-  it('完整功能清单只展示一级能力，并按工具、备忘、成员分组', () => {
+  it('完整功能清单只有四类八个一级能力', () => {
     const groups = getFeatureCategoryGroups('list')
 
     expect(groups.map((group) => group.category.title)).toEqual([
       '工具',
+      '生活',
       '备忘',
       '成员',
     ])
     expect(groups.map((group) => group.items.map((item) => item.id))).toEqual([
-      ['inventory', 'menu', 'reminders'],
-      ['todo', 'journal'],
+      ['inventory', 'expense', 'menu'],
+      ['travel', 'fitness'],
+      ['journal', 'todo'],
       ['pets'],
     ])
+    expect(groups.flatMap((group) => group.items)).toHaveLength(8)
     expect(groups.flatMap((group) => group.items).every((item) => item.level === 'primary')).toBe(true)
   })
 
-  it('快捷入口可以解析二级功能和普通页面', () => {
-    expect(getFeatureDefinition('pet-calendar')).toMatchObject({
-      label: '宠物月历',
-      category: 'member',
-      launchMode: 'page',
-    })
+  it('所有一级功能都可进入首页和底栏，且有明确路由', () => {
     expect(getFeatureDefinition('travel')).toMatchObject({
-      label: '旅行准备',
-      parentId: 'todo',
+      label: '旅行',
+      category: 'life',
+      path: '/pages/todo/index?kind=travel',
       launchMode: 'root',
     })
+    expect(getFeatureDefinition('todo')).toMatchObject({
+      label: '待办',
+      path: '/pages/todo/index',
+    })
     expect(getFeatureDefinition('unknown')).toBeUndefined()
-  })
 
-  it('首页与底栏沿用各自的资格边界', () => {
     const homeItems = getFeatureCategoryGroups('home').flatMap((group) => group.items)
     const tabItems = getFeatureCategoryGroups('tab').flatMap((group) => group.items)
-
-    expect(homeItems.some((item) => item.id === 'reminders')).toBe(true)
-    expect(homeItems.some((item) => item.id === 'pet-calendar')).toBe(true)
-    expect(tabItems.some((item) => item.id === 'reminders')).toBe(false)
-    expect(tabItems.some((item) => item.id === 'pet-calendar')).toBe(false)
+    expect(homeItems.map((item) => item.id)).toEqual(FEATURE_CATALOG.map((item) => item.id))
+    expect(tabItems.map((item) => item.id)).toEqual(FEATURE_CATALOG.map((item) => item.id))
   })
 })

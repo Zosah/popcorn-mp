@@ -63,6 +63,14 @@
   box-sizing: border-box;
 }
 
+.home-header__chevron {
+  margin-top: -3rpx;
+  color: var(--c-muted);
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1;
+}
+
 .home-header__date {
   display: block;
   margin-top: 7rpx;

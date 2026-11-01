@@ -22,8 +22,10 @@ export class DemoTodoGateway implements TodoGateway {
   async list(filters: TodoListFilters = {}): Promise<TodoItem[]> {
     const query = filters.query?.trim().toLocaleLowerCase() ?? ''
     const kinds = new Set(filters.kinds ?? [])
+    const tag = filters.tag?.trim() ?? ''
     return listDemoTodoItems()
       .filter((item) => !kinds.size || kinds.has(item.kind))
+      .filter((item) => !tag || item.tag === tag)
       .filter((item) => {
         if (filters.status === 'pending') return !item.done
         if (filters.status === 'completed') return item.done

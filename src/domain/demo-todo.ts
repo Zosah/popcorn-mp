@@ -11,6 +11,7 @@ export interface DemoTodoInput {
   kind: DemoTodoKind
   title: string
   note?: string
+  tag?: string
   dueDate?: string
   destination?: string
   checklist?: Array<{ id?: string; text: string; done?: boolean }>
@@ -27,6 +28,7 @@ export interface DemoTodoItem {
   kind: DemoTodoKind
   title: string
   note: string
+  tag: string
   done: boolean
   dueDate: string
   destination: string
@@ -48,7 +50,7 @@ export const DEMO_TODO_KIND_OPTIONS: Array<{
   hint: string
 }> = [
   { value: 'travel', label: '旅行准备', icon: 'plane', hint: '目的地、清单和物品' },
-  { value: 'plan', label: '小计划', icon: 'list-todo', hint: '什么时候做什么' },
+  { value: 'plan', label: '待办', icon: 'list-todo', hint: '想到的事，用自己的标签收好' },
   { value: 'fitness', label: '健身', icon: 'dumbbell', hint: '运动、时长和热量' },
   { value: 'meal', label: '今天吃什么', icon: 'utensils', hint: '菜单、记录和推荐' },
   { value: 'expense', label: '我们的账单', icon: 'wallet', hint: '花了多少、买了什么' },
@@ -56,7 +58,7 @@ export const DEMO_TODO_KIND_OPTIONS: Array<{
 
 export const DEMO_TODO_KIND_LABELS: Record<DemoTodoKind, string> = {
   travel: '旅行准备',
-  plan: '小计划',
+  plan: '待办',
   fitness: '健身',
   meal: '今天吃什么',
   expense: '我们的账单',
@@ -158,6 +160,7 @@ function normalizeInput(
     kind,
     title: normalizeText(input.title),
     note: normalizeText(input.note),
+    tag: kind === 'plan' ? normalizeText(input.tag).slice(0, 20) : '',
     done: kind === 'expense',
     dueDate: normalizeDate(input.dueDate),
     destination: kind === 'travel' ? normalizeText(input.destination) : '',
@@ -226,6 +229,7 @@ export function normalizeDemoTodoItem(
       kind: item.kind,
       title: item.title,
       note: item.note,
+      tag: item.tag,
       dueDate: item.dueDate,
       destination: item.destination,
       checklist: Array.isArray(item.checklist) ? item.checklist : [],
@@ -324,12 +328,34 @@ export function createDemoTodoSeedItems(nowMs = Date.now()): DemoTodoItem[] {
     createDemoTodoItem(
       {
         kind: 'plan',
+        title: '下班带一袋猫砂回家',
+        tag: '下班买的东西',
+        dueDate: dateKey(0),
+        note: '豆腐砂，两袋。',
+      },
+      nowMs - 4 * DAY_MS,
+      () => 'demo-todo-cat-litter',
+    ),
+    createDemoTodoItem(
+      {
+        kind: 'plan',
         title: '周末把换季衣服整理出来',
+        tag: '周末处理',
         dueDate: dateKey(2),
         note: '厚的收进储物箱，留两件薄外套。',
       },
-      nowMs - 4 * DAY_MS,
+      nowMs - 3 * DAY_MS,
       () => 'demo-todo-closet',
+    ),
+    createDemoTodoItem(
+      {
+        kind: 'plan',
+        title: '给阳台的薄荷换个大盆',
+        tag: '突然想到',
+        note: '顺便买一点营养土。',
+      },
+      nowMs - 2 * DAY_MS,
+      () => 'demo-todo-mint',
     ),
     createDemoTodoItem(
       {

@@ -62,10 +62,16 @@ Page({
     navigateBackOrTab('/pages/journal/index')
   },
 
-  onPreviewImage() {
-    const src = this.data.entry?.image?.src
-    if (!src) return
-    wx.previewImage({ current: src, urls: [src] })
+  onPreviewImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    const entry = this.data.entry
+    if (!entry) return
+    const index = Number(event.currentTarget.dataset.index ?? 0)
+    const images = entry.images?.length ? entry.images : entry.image ? [entry.image] : []
+    const urls = images.map((image) => image.src || image.thumbSrc || '').filter(Boolean)
+    if (!urls.length) return
+    const selected = images[index]
+    const current = selected?.src || selected?.thumbSrc || urls[0]
+    wx.previewImage({ current, urls })
   },
 
   onEdit() {

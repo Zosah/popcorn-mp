@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "设置",
+  "navigationBarTitleText": "",
   "usingComponents": {
     "line-icon": "/components/line-icon/index"
   }

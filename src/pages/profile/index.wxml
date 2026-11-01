@@ -3,7 +3,6 @@
   <auth-preview-gate />
 
   <view class="profile-toolbar">
-    <text class="profile-toolbar__brand">时刻见</text>
     <view
       class="profile-toolbar__settings"
       hover-class="profile-toolbar__settings--pressed"
@@ -11,59 +10,56 @@
       aria-label="打开设置"
       bindtap="onOpenSettings"
     >
-      <line-icon name="settings" size="31" tone="ink" />
+      <line-icon name="settings" size="23" tone="ink" />
+      <text>设置</text>
     </view>
   </view>
 
-  <view class="profile-card" hover-class="profile-card--pressed" bindtap="onOpenAuth">
+  <view class="profile-identity" hover-class="profile-identity--pressed" bindtap="onOpenAuth">
     <view class="profile-avatar profile-avatar--{{avatarTone}}">
       <image wx:if="{{avatarUrl}}" class="profile-avatar__image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
       <text wx:else>{{avatarText}}</text>
     </view>
 
-    <view class="profile-card__body">
-      <view class="profile-card__name">{{displayName}}</view>
-      <view class="profile-card__meta">{{profileMeta}}</view>
+    <view class="profile-identity__body">
+      <text class="profile-identity__name">{{displayName}}</text>
+      <text class="profile-identity__account">{{accountLabel}}</text>
     </view>
 
-    <view wx:if="{{isLoggedIn}}" class="profile-card__edit" aria-label="编辑个人资料">
-      <line-icon name="pen-line" size="24" tone="ink" />
-    </view>
-    <view wx:else class="profile-card__login">
-      <text>微信登录</text>
-      <text class="profile-card__login-arrow">›</text>
-    </view>
+    <view class="profile-identity__arrow">›</view>
   </view>
 
   <view class="feature-directory-head">
     <text class="feature-directory-head__title">功能</text>
-    <text class="feature-directory-head__copy">按用途整理，点开就能用。</text>
   </view>
 
-  <view wx:for="{{featureGroups}}" wx:key="key" class="profile-feature-group">
-    <view class="profile-feature-group__head">
-      <text class="profile-feature-group__title">{{item.category.title}}</text>
-      <text class="profile-feature-group__description">{{item.category.description}}</text>
-    </view>
+  <view class="profile-directory">
+    <view
+      wx:for="{{featureGroups}}"
+      wx:key="key"
+      class="profile-category profile-category--{{item.category.tone}}"
+    >
+      <view class="profile-category__head">
+        <text class="profile-category__title">{{item.category.title}}</text>
+        <text class="profile-category__description">{{item.category.description}}</text>
+      </view>
 
-    <view class="profile-feature-group__list">
-      <view
-        wx:for="{{item.items}}"
-        wx:for-item="feature"
-        wx:key="id"
-        class="profile-feature-row"
-        hover-class="profile-feature-row--pressed"
-        data-id="{{feature.id}}"
-        bindtap="onOpenFeature"
-      >
-        <view class="profile-feature-row__icon profile-feature-row__icon--{{feature.tone}}">
-          <line-icon name="{{feature.icon}}" size="29" tone="{{feature.tone}}" />
+      <view class="profile-category__items">
+        <view
+          wx:for="{{item.items}}"
+          wx:for-item="feature"
+          wx:key="id"
+          class="profile-feature"
+          hover-class="profile-feature--pressed"
+          data-id="{{feature.id}}"
+          bindtap="onOpenFeature"
+        >
+          <view class="profile-feature__icon profile-feature__icon--{{feature.tone}}">
+            <line-icon name="{{feature.icon}}" size="27" tone="{{feature.tone}}" />
+          </view>
+          <text class="profile-feature__title">{{feature.label}}</text>
+          <text class="profile-feature__arrow">›</text>
         </view>
-        <view class="profile-feature-row__body">
-          <text class="profile-feature-row__title">{{feature.label}}</text>
-          <text class="profile-feature-row__description">{{feature.description}}</text>
-        </view>
-        <text class="profile-feature-row__arrow">›</text>
       </view>
     </view>
   </view>

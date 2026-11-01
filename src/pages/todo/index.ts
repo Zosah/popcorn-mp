@@ -1,237 +1,208 @@
 import { appConfig } from '../../config/env'
-import {
-  DEMO_MEAL_TYPE_LABELS,
-  DEMO_TODO_KIND_LABELS,
-  DEMO_TODO_KIND_OPTIONS,
-  type DemoTodoKind,
-} from '../../domain/demo-todo'
-import { todoGateway } from '../../services/todo'
+import type { DemoTodoInput, DemoTodoKind, DemoTodoItem } from '../../domain/demo-todo'
+import { getFeatureDefinition } from '../../domain/feature-catalog'
+import { formatTodoDateLabel, isTodoOverdue } from '../../domain/todo-date'
 import { hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
 import { readPageCache, writePageCache } from '../../services/page-cache'
+import { todoGateway } from '../../services/todo'
 import {
   getTodoErrorMessage,
   isTodoVersionConflict,
   type TodoItem,
-  type TodoSummary,
+  type TodoStatus,
 } from '../../services/todo-gateway'
-import {
-  formatTodoDateLabel,
-  isTodoOverdue,
-} from '../../domain/todo-date'
+import { decodeQueryValue } from '../../utils/app-navigation'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
-type TodoFilterValue = DemoTodoKind | 'all'
-
-interface TodoFilterView {
-  value: TodoFilterValue
+type TodoTagFilter = {
+  value: string
   label: string
-  icon: string
   count: number
+  manageable: boolean
 }
 
-interface TodoChecklistView {
+type TodoItemView = {
   id: string
-  text: string
-  done: boolean
-  number: string
-}
-
-interface TodoItemView {
-  id: string
-  kind: DemoTodoKind
-  kindLabel: string
-  kindIcon: string
   title: string
   note: string
+  tag: string
+  tagLabel: string
   done: boolean
-  version: number
-  amount: number
-  meta: string
   dateLabel: string
   overdue: boolean
-  checklist: TodoChecklistView[]
-  checklistDone: number
-  checklistTotal: number
-  checklistText: string
 }
 
-const MEAL_IDEAS = [
-  '番茄牛腩配米饭',
-  '葱油拌面和一盘小青菜',
-  '番茄鸡蛋面',
-  '清炒时蔬配煎蛋',
-  '一锅热汤和烤面包',
-] as const
+type TodoTagGroup = {
+  key: string
+  label: string
+  count: number
+  items: TodoItemView[]
+}
 
-const ALL_FILTER: TodoFilterView = {
-  value: 'all',
-  label: '全部',
-  icon: 'notebook-tabs',
-  count: 0,
+const ALL_TAGS = '__all__'
+const UNTAGGED = '__untagged__'
+const TODO_KINDS = new Set<DemoTodoKind>([
+  'travel',
+  'plan',
+  'fitness',
+  'meal',
+  'expense',
+])
+const KIND_COPY: Record<DemoTodoKind, { title: string; copy: string; create: string }> = {
+  plan: {
+    title: '待办',
+    copy: '想到的事，用自己的标签收好',
+    create: '新建待办',
+  },
+  travel: {
+    title: '旅行',
+    copy: '目的地、出发准备和清单',
+    create: '新建旅行',
+  },
+  fitness: {
+    title: '健身',
+    copy: '运动、时长和热量',
+    create: '记一次运动',
+  },
+  meal: {
+    title: '下厨',
+    copy: '今天吃什么，收在厨房里',
+    create: '记一餐',
+  },
+  expense: {
+    title: '账单',
+    copy: '花了多少，买了什么',
+    create: '记一笔',
+  },
 }
 
 const todoRequestGate = createRequestGate()
 const TODO_PAGE_CACHE_KEY = 'todo:overview'
 
-function formatAmount(amount: number): string {
-  return amount > 0 ? `¥${amount.toFixed(2)}` : '未记金额'
+function normalizeKind(value: string | undefined): DemoTodoKind {
+  return value && TODO_KINDS.has(value as DemoTodoKind)
+    ? (value as DemoTodoKind)
+    : 'plan'
 }
 
-function itemMeta(item: TodoItem, includeDate = true): string {
-  const dateLabel = includeDate ? formatTodoDateLabel(item.dueDate) : ''
-  switch (item.kind) {
-    case 'travel': {
-      const parts = [
-        item.destination ? `去${item.destination}` : '旅行准备',
-        dateLabel,
-        item.checklist.length
-          ? `${item.checklist.filter((entry) => entry.done).length}/${item.checklist.length} 已准备`
-          : '',
-      ]
-      return parts.filter(Boolean).join(' · ')
-    }
-    case 'fitness': {
-      const parts = [
-        item.exercise || '运动',
-        item.durationMinutes ? `${item.durationMinutes} 分钟` : '',
-        item.calories ? `${item.calories} kcal` : '',
-        dateLabel,
-      ]
-      return parts.filter(Boolean).join(' · ')
-    }
-    case 'meal': {
-      const parts = [
-        item.mealType ? DEMO_MEAL_TYPE_LABELS[item.mealType] : '今天吃什么',
-        dateLabel,
-      ]
-      return parts.filter(Boolean).join(' · ')
-    }
-    case 'expense': {
-      const parts = [formatAmount(item.amount), item.merchant, dateLabel]
-      return parts.filter(Boolean).join(' · ')
-    }
-    case 'plan':
-    default:
-      return dateLabel || (item.dueDate ? '按计划推进' : '待安排')
+function itemToView(item: TodoItem, showTag: boolean): TodoItemView {
+  return {
+    id: item.id,
+    title: item.title,
+    note: item.note,
+    tag: item.tag,
+    tagLabel: showTag ? item.tag || '未分类' : '',
+    done: item.done,
+    dateLabel: formatTodoDateLabel(item.dueDate),
+    overdue: isTodoOverdue(item.dueDate, item.done),
   }
 }
 
-function itemToView(item: TodoItem): TodoItemView {
-  const checklistDone = item.checklist.filter((entry) => entry.done).length
-  const dateLabel = formatTodoDateLabel(item.dueDate)
+function toTodoInput(item: TodoItem, tag: string): DemoTodoInput {
   return {
-    id: item.id,
     kind: item.kind,
-    kindLabel: DEMO_TODO_KIND_LABELS[item.kind],
-    kindIcon:
-      DEMO_TODO_KIND_OPTIONS.find((option) => option.value === item.kind)?.icon ??
-      'notebook-tabs',
     title: item.title,
     note: item.note,
-    done: item.done,
-    version: item.version,
-    amount: item.amount,
-    meta: itemMeta(item, false),
-    dateLabel,
-    overdue: isTodoOverdue(item.dueDate, item.done),
-    checklist: item.checklist.map((entry, index) => ({
+    tag,
+    dueDate: item.dueDate,
+    destination: item.destination,
+    checklist: item.checklist.map((entry) => ({
       id: entry.id,
       text: entry.text,
       done: entry.done,
-      number: String(index + 1).padStart(2, '0'),
     })),
-    checklistDone,
-    checklistTotal: item.checklist.length,
-    checklistText: item.checklist.length
-      ? `${checklistDone}/${item.checklist.length} 已准备`
-      : '',
+    exercise: item.exercise,
+    durationMinutes: item.durationMinutes,
+    calories: item.calories,
+    mealType: item.mealType,
+    amount: item.amount,
+    merchant: item.merchant,
   }
 }
 
-function summarizeItems(items: TodoItem[]): TodoSummary {
-  const pendingByKind: Record<DemoTodoKind, number> = {
-    travel: 0,
-    plan: 0,
-    fitness: 0,
-    meal: 0,
-    expense: 0,
+function computeTagFilters(items: TodoItem[], status: TodoStatus): TodoTagFilter[] {
+  const statusItems = items.filter((item) =>
+    status === 'completed' ? item.done : !item.done,
+  )
+  const counts = new Map<string, number>()
+  let untagged = 0
+  for (const item of statusItems) {
+    if (item.tag) counts.set(item.tag, (counts.get(item.tag) ?? 0) + 1)
+    else untagged += 1
   }
-  let pending = 0
-  for (const item of items) {
-    if (item.done) continue
-    pending += 1
-    pendingByKind[item.kind] += 1
-  }
-  return {
-    total: items.length,
-    pending,
-    completed: items.length - pending,
-    pendingByKind,
-  }
-}
-
-function buildFilters(summary: TodoSummary): TodoFilterView[] {
   return [
-    {
-      ...ALL_FILTER,
-      count: summary.pending,
-    },
-    ...DEMO_TODO_KIND_OPTIONS.map((option) => ({
-      value: option.value,
-      label: option.label,
-      icon: option.icon,
-      count: summary.pendingByKind[option.value] ?? 0,
-    })),
+    { value: ALL_TAGS, label: '全部', count: statusItems.length, manageable: false },
+    ...[...counts.entries()]
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+      .map(([tag, count]) => ({
+        value: tag,
+        label: tag,
+        count,
+        manageable: true,
+      })),
+    ...(untagged
+      ? [{ value: UNTAGGED, label: '未分类', count: untagged, manageable: false }]
+      : []),
   ]
+}
+
+function buildTagGroups(items: TodoItem[]): TodoTagGroup[] {
+  const grouped = new Map<string, TodoItem[]>()
+  for (const item of items) {
+    const key = item.tag || UNTAGGED
+    const group = grouped.get(key) ?? []
+    group.push(item)
+    grouped.set(key, group)
+  }
+  return [...grouped.entries()]
+    .map(([tag, groupItems]) => ({
+      key: tag,
+      label: tag === UNTAGGED ? '未分类' : tag,
+      count: groupItems.length,
+      items: groupItems.map((item) => itemToView(item, false)),
+    }))
+    .sort((left, right) => {
+      if (left.key === UNTAGGED) return 1
+      if (right.key === UNTAGGED) return -1
+      return right.count - left.count || left.label.localeCompare(right.label)
+    })
 }
 
 Page({
   data: {
-    activeKind: 'all' as TodoFilterValue,
-    activeLabel: '全部事项',
-    emptyIcon: 'list-todo',
-    filters: [] as TodoFilterView[],
-    items: [] as TodoItemView[],
+    activeKind: 'plan' as DemoTodoKind,
+    isPlanMode: true,
+    pageTitle: KIND_COPY.plan.title,
+    pageCopy: KIND_COPY.plan.copy,
+    createText: KIND_COPY.plan.create,
+    activeTag: ALL_TAGS,
+    statusFilter: 'pending' as TodoStatus,
+    tagFilters: [] as TodoTagFilter[],
+    tagGroups: [] as TodoTagGroup[],
+    flatItems: [] as TodoItemView[],
     allItems: [] as TodoItem[],
-    summary: null as TodoSummary | null,
     loading: true,
     hasLoaded: false,
     cacheFresh: false,
     hasShown: false,
     loadError: '',
     mutating: false,
-    syncState: appConfig.demoMode ? 'local' : 'pending',
-    syncText: appConfig.demoMode ? '只在本机' : '正在同步',
-    pendingCount: 0,
-    visiblePendingCount: 0,
-    completedCount: 0,
     totalCount: 0,
+    pendingCount: 0,
+    completedCount: 0,
     progressPercent: 0,
-    mealIdea: (MEAL_IDEAS[0] ?? '番茄牛腩配米饭') as string,
-    mealIdeaIndex: 0,
-    expenseTotalLabel: '¥0.00',
-    expenseCount: 0,
-    travelHighlight: null as {
-      id: string
-      title: string
-      meta: string
-      progress: number
-      progressText: string
-    } | null,
-    expenseHighlight: null as {
-      id: string
-      latestMeta: string
-    } | null,
-    emptyTitle: '这里还没有待办',
-    emptyCopy: '先记下一件想做的事，完成一件就少一件。',
+    visibleCount: 0,
+    emptyTitle: '还没有待办',
+    emptyCopy: '先记下一件想到的小事。',
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    const kind = normalizeKind(options.kind)
     const cached = readPageCache<Record<string, unknown>>(TODO_PAGE_CACHE_KEY)
-    if (cached) {
+    if (cached && (cached.value as { activeKind?: string }).activeKind === kind) {
       this.setData({
         ...cached.value,
         loading: false,
@@ -241,14 +212,17 @@ Page({
         mutating: false,
       })
     }
-    const kind = options.kind
-    const allowed = DEMO_TODO_KIND_OPTIONS.some((option) => option.value === kind)
-    if (allowed && kind) {
-      this.setData({
-        activeKind: kind as DemoTodoKind,
-        activeLabel: DEMO_TODO_KIND_LABELS[kind as DemoTodoKind],
-      })
-    }
+    const copy = KIND_COPY[kind]
+    const feature = getFeatureDefinition(kind === 'plan' ? 'todo' : kind)
+    const incomingTag = decodeQueryValue(options.tag ?? '').trim()
+    this.setData({
+      activeKind: kind,
+      isPlanMode: kind === 'plan',
+      pageTitle: feature?.label ?? copy.title,
+      pageCopy: copy.copy,
+      createText: copy.create,
+      activeTag: kind === 'plan' ? incomingTag || ALL_TAGS : ALL_TAGS,
+    })
   },
 
   onShow() {
@@ -279,63 +253,50 @@ Page({
     if (!appConfig.demoMode && !auth.isLoggedIn) {
       if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
-        filters: [],
-        items: [],
+        tagFilters: [],
+        tagGroups: [],
+        flatItems: [],
         allItems: [],
-        summary: null,
-        pendingCount: 0,
-        visiblePendingCount: 0,
-        completedCount: 0,
         totalCount: 0,
+        pendingCount: 0,
+        completedCount: 0,
         progressPercent: 0,
-        travelHighlight: null,
-        expenseHighlight: null,
+        visibleCount: 0,
         loading: false,
         hasLoaded: true,
         cacheFresh: false,
         loadError: '',
-        syncState: 'local',
-        syncText: '登录后同步',
+        emptyTitle: '登录后同步待办',
+        emptyCopy: '登录后，空间里的待办会来到这里。',
       })
       if (fromPullDown) wx.stopPullDownRefresh()
       promptAuthGateIfNeeded()
       return
     }
+
     const hasExistingData = this.data.allItems.length > 0
-    this.setData({
-      loading: !hasExistingData,
-      loadError: '',
-      syncState: appConfig.demoMode ? 'local' : 'pending',
-      syncText: appConfig.demoMode ? '只在本机' : '正在同步',
-    })
+    this.setData({ loading: !hasExistingData, loadError: '' })
     try {
-      const [items, summary] = await Promise.all([
-        todoGateway.list(),
-        todoGateway.summary(),
-      ])
+      const items = await todoGateway.list({ kinds: [this.data.activeKind] })
       if (!todoRequestGate.isCurrent(sequence)) return
       if (firstLoad) await waitForMinimumLoading(startedAt)
       if (!todoRequestGate.isCurrent(sequence)) return
-      this.render(items, summary)
+      this.render(items)
       this.setData({
         loading: false,
         hasLoaded: true,
         cacheFresh: true,
         loadError: '',
-        syncState: appConfig.demoMode ? 'local' : 'synced',
-        syncText: appConfig.demoMode ? '只在本机' : '已同步',
       }, () => this.cacheCurrentPage())
     } catch (error) {
       if (!todoRequestGate.isCurrent(sequence)) return
-      const message = getTodoErrorMessage(error, '待办暂时没有加载出来')
       if (firstLoad) await waitForMinimumLoading(startedAt)
       if (!todoRequestGate.isCurrent(sequence)) return
+      const message = getTodoErrorMessage(error, '待办暂时没有加载出来')
       this.setData({
         loading: false,
         hasLoaded: true,
         loadError: message,
-        syncState: 'pending',
-        syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
       })
       if (this.data.allItems.length) {
         wx.showToast({ title: message, icon: 'none' })
@@ -349,65 +310,58 @@ Page({
     void this.refresh()
   },
 
-  render(items: TodoItem[], summary: TodoSummary, activeKind?: TodoFilterValue) {
-    const selectedKind = activeKind ?? this.data.activeKind
-    const filters = buildFilters(summary)
-    const selected = filters.find((filter) => filter.value === selectedKind)
-    const visibleItems = selectedKind === 'all'
-      ? items
-      : items.filter((item) => item.kind === selectedKind)
-    const expenses = items.filter((item) => item.kind === 'expense')
-    const expenseTotal = expenses.reduce((total, item) => total + item.amount, 0)
-    const latestExpense = expenses[0]
-    const travel = items.find((item) => item.kind === 'travel' && !item.done)
-    const travelDone = travel?.checklist.filter((entry) => entry.done).length ?? 0
-    const travelTotal = travel?.checklist.length ?? 0
-    const progressPercent = summary.total
-      ? Math.round((summary.completed / summary.total) * 100)
-      : 0
+  render(
+    items: TodoItem[],
+    activeTag?: string,
+    statusFilter?: TodoStatus,
+  ) {
+    const nextTag = activeTag ?? this.data.activeTag
+    const nextStatus = statusFilter ?? this.data.statusFilter as TodoStatus
+    const tagFilters = this.data.isPlanMode
+      ? computeTagFilters(items, nextStatus)
+      : []
+    const validTag = nextTag === ALL_TAGS
+      || tagFilters.some((filter) => filter.value === nextTag)
+      ? nextTag
+      : ALL_TAGS
+    const statusItems = items.filter((item) =>
+      nextStatus === 'completed' ? item.done : !item.done,
+    )
+    const visible = statusItems.filter((item) => {
+      if (!this.data.isPlanMode || validTag === ALL_TAGS) return true
+      if (validTag === UNTAGGED) return !item.tag
+      return item.tag === validTag
+    })
+    const pendingCount = items.filter((item) => !item.done).length
+    const completedCount = items.filter((item) => item.done).length
+    const totalCount = items.length
+    const activeFilter = tagFilters.find((filter) => filter.value === validTag)
+    const emptyTitle = nextStatus === 'completed'
+      ? '还没有完成的待办'
+      : activeFilter && validTag !== ALL_TAGS
+        ? `${activeFilter.label}还是空的`
+        : '还没有待办'
+    const emptyCopy = nextStatus === 'completed'
+      ? '完成一件事之后，会收在这里。'
+      : '先记下一件想到的小事。'
 
     this.setData({
-      filters,
-      activeLabel: selected?.label ?? '全部事项',
-      emptyIcon: selected && selected.value !== 'all' ? selected.icon : 'list-todo',
-      items: visibleItems.map(itemToView),
+      activeTag: validTag,
+      tagFilters,
+      tagGroups: this.data.isPlanMode && validTag === ALL_TAGS
+        ? buildTagGroups(visible)
+        : [],
+      flatItems: !this.data.isPlanMode || validTag !== ALL_TAGS
+        ? visible.map((item) => itemToView(item, this.data.isPlanMode && validTag === ALL_TAGS))
+        : [],
       allItems: items,
-      summary,
-      pendingCount: summary.pending,
-      visiblePendingCount: visibleItems.filter((item) => !item.done).length,
-      completedCount: summary.completed,
-      totalCount: summary.total,
-      progressPercent,
-      expenseTotalLabel: `¥${expenseTotal.toFixed(2)}`,
-      expenseCount: expenses.length,
-      travelHighlight: travel
-        ? {
-            id: travel.id,
-            title: travel.title,
-            meta: itemMeta(travel),
-            progress: travelTotal
-              ? Math.round((travelDone / travelTotal) * 100)
-              : 0,
-            progressText: travelTotal
-              ? `已完成 ${travelDone} / ${travelTotal} 项准备`
-              : travel.dueDate
-                ? `计划于 ${formatTodoDateLabel(travel.dueDate)} 出发`
-                : '还没有添加准备清单',
-          }
-        : null,
-      expenseHighlight: latestExpense
-        ? {
-            id: latestExpense.id,
-            latestMeta: `最近一笔 · ${latestExpense.merchant || latestExpense.title} ${formatAmount(latestExpense.amount)}`,
-          }
-        : null,
-      emptyTitle: selected && selected.value !== 'all'
-        ? `${selected.label}还是空的`
-        : '这里还没有待办',
-      emptyCopy:
-        selected && selected.value !== 'all'
-          ? '把想到的一件小事写下来，之后就不会忘记。'
-          : '先记下一件想做的事，完成一件就少一件。',
+      totalCount,
+      pendingCount,
+      completedCount,
+      progressPercent: totalCount ? Math.round((completedCount / totalCount) * 100) : 0,
+      visibleCount: visible.length,
+      emptyTitle,
+      emptyCopy,
     }, () => this.cacheCurrentPage())
   },
 
@@ -426,39 +380,130 @@ Page({
     })
   },
 
-  onSelectFilter(event: {
-    currentTarget: { dataset: { kind?: TodoFilterValue } }
-  }) {
-    const kind = event.currentTarget.dataset.kind
-    if (!kind) return
-    this.setData({ activeKind: kind })
-    this.render(this.data.allItems, this.data.summary ?? summarizeItems([]), kind)
+  onSelectTag(event: { currentTarget: { dataset: { tag?: string } } }) {
+    const tag = event.currentTarget.dataset.tag
+    if (!tag || this.data.mutating) return
+    this.render(this.data.allItems, tag, this.data.statusFilter as TodoStatus)
   },
 
-  onShuffleMealIdea() {
-    const nextIndex = (this.data.mealIdeaIndex + 1) % MEAL_IDEAS.length
-    this.setData({
-      mealIdeaIndex: nextIndex,
-      mealIdea: MEAL_IDEAS[nextIndex] ?? MEAL_IDEAS[0],
-    })
-  },
-
-  onUseMealIdea() {
-    if (!requireAuthForWrite()) return
-    wx.navigateTo({
-      url: `/pages/todo-form/index?kind=meal&title=${encodeURIComponent(this.data.mealIdea)}`,
-    })
+  onSelectStatus(event: { currentTarget: { dataset: { status?: TodoStatus } } }) {
+    const status = event.currentTarget.dataset.status
+    if (!status || status === this.data.statusFilter || this.data.mutating) return
+    this.setData({ statusFilter: status })
+    this.render(this.data.allItems, this.data.activeTag, status)
   },
 
   onCreate() {
     if (!requireAuthForWrite()) return
-    const kind = this.data.activeKind === 'all' ? 'plan' : this.data.activeKind
-    wx.navigateTo({ url: `/pages/todo-form/index?kind=${kind}` })
+    const params = [`kind=${this.data.activeKind}`]
+    if (
+      this.data.isPlanMode
+      && this.data.activeTag !== ALL_TAGS
+      && this.data.activeTag !== UNTAGGED
+    ) {
+      params.push(`tag=${encodeURIComponent(this.data.activeTag)}`)
+    }
+    wx.navigateTo({ url: `/pages/todo-form/index?${params.join('&')}` })
+  },
+
+  onCreateTag() {
+    if (!requireAuthForWrite() || this.data.mutating) return
+    wx.showModal({
+      title: '新标签',
+      editable: true,
+      placeholderText: '例如：突然想到',
+      confirmText: '下一步',
+      success: (result) => {
+        if (!result.confirm) return
+        const tag = (result.content ?? '').trim()
+        if (!tag) return
+        if (tag.length > 20) {
+          wx.showToast({ title: '标签最多 20 个字符', icon: 'none' })
+          return
+        }
+        wx.navigateTo({
+          url: `/pages/todo-form/index?kind=plan&tag=${encodeURIComponent(tag)}`,
+        })
+      },
+    })
+  },
+
+  onLongPressTag(event: { currentTarget: { dataset: { tag?: string } } }) {
+    const tag = event.currentTarget.dataset.tag
+    if (!tag || tag === ALL_TAGS || tag === UNTAGGED || this.data.mutating) return
+    if (!requireAuthForWrite()) return
+    wx.showActionSheet({
+      itemList: ['重命名标签', '删除标签'],
+      success: (result) => {
+        if (result.tapIndex === 0) this.renameTag(tag)
+        if (result.tapIndex === 1) this.deleteTag(tag)
+      },
+    })
+  },
+
+  renameTag(tag: string) {
+    wx.showModal({
+      title: '重命名标签',
+      editable: true,
+      placeholderText: tag,
+      confirmText: '保存',
+      success: (result) => {
+        if (!result.confirm) return
+        const nextTag = (result.content ?? '').trim()
+        if (!nextTag || nextTag === tag) return
+        if (nextTag.length > 20) {
+          wx.showToast({ title: '标签最多 20 个字符', icon: 'none' })
+          return
+        }
+        void this.bulkUpdateTag(tag, nextTag)
+      },
+    })
+  },
+
+  deleteTag(tag: string) {
+    wx.showModal({
+      title: `删除「${tag}」？`,
+      content: '标签会移除，里面的待办仍会保留。',
+      confirmText: '删除标签',
+      confirmColor: '#b86e7d',
+      success: (result) => {
+        if (result.confirm) void this.bulkUpdateTag(tag, '')
+      },
+    })
+  },
+
+  async bulkUpdateTag(fromTag: string, toTag: string) {
+    if (this.data.mutating) return
+    const targets = this.data.allItems.filter((item) => item.tag === fromTag)
+    if (!targets.length) return
+    todoRequestGate.invalidate()
+    this.setData({ mutating: true })
+    try {
+      const updatedItems: TodoItem[] = []
+      for (const item of targets) {
+        updatedItems.push(await todoGateway.update(
+          item.id,
+          toTodoInput(item, toTag),
+          item.version,
+        ))
+      }
+      const updateMap = new Map(updatedItems.map((item) => [item.id, item]))
+      const items = this.data.allItems.map((item) => updateMap.get(item.id) ?? item)
+      const nextActiveTag = this.data.activeTag === fromTag
+        ? toTag || ALL_TAGS
+        : this.data.activeTag
+      this.render(items, nextActiveTag, this.data.statusFilter as TodoStatus)
+      wx.showToast({ title: toTag ? '标签已更新' : '标签已删除', icon: 'success' })
+    } catch (error) {
+      this.handleMutationError(error, '标签没有更新成功')
+    } finally {
+      this.setData({ mutating: false })
+    }
   },
 
   onEditItem(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
-    if (!id) return
+    if (!id || this.data.mutating) return
     if (!requireAuthForWrite()) return
     wx.navigateTo({ url: `/pages/todo-form/index?id=${encodeURIComponent(id)}` })
   },
@@ -469,11 +514,6 @@ Page({
     if (!requireAuthForWrite()) return
     const item = this.findItem(id)
     if (!item) return
-    if (item.kind === 'expense') {
-      wx.showToast({ title: '账单是消费记录，不需要重新打开', icon: 'none' })
-      return
-    }
-
     todoRequestGate.invalidate()
     this.setData({ mutating: true })
     try {
@@ -486,36 +526,9 @@ Page({
     }
   },
 
-  async onToggleChecklist(event: {
-    currentTarget: { dataset: { parentId?: string; checklistId?: string } }
-  }) {
-    const { parentId, checklistId } = event.currentTarget.dataset
-    if (!parentId || !checklistId || this.data.mutating) return
-    if (!requireAuthForWrite()) return
-    const parent = this.findItem(parentId)
-    const checklist = parent?.checklist.find((item) => item.id === checklistId)
-    if (!parent || !checklist) return
-
-    todoRequestGate.invalidate()
-    this.setData({ mutating: true })
-    try {
-      const updated = await todoGateway.setChecklistDone(
-        parentId,
-        checklistId,
-        !checklist.done,
-        parent.version,
-      )
-      this.applyUpdatedItem(updated)
-    } catch (error) {
-      this.handleMutationError(error, '这个准备项没有保存成功')
-    } finally {
-      this.setData({ mutating: false })
-    }
-  },
-
   onLongPressItem(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
-    if (!id) return
+    if (!id || this.data.mutating) return
     if (!requireAuthForWrite()) return
     wx.showActionSheet({
       itemList: ['编辑', '删除'],
@@ -528,9 +541,9 @@ Page({
         if (!item) return
         wx.showModal({
           title: '删除这条待办？',
-          content: '删除后会从你们的共同空间隐藏。',
+          content: '删除后会从共同空间隐藏。',
           confirmText: '删除',
-          confirmColor: '#e8695c',
+          confirmColor: '#b86e7d',
           success: (modal) => {
             if (modal.confirm) void this.deleteItem(id, item.version)
           },
@@ -541,13 +554,12 @@ Page({
 
   async deleteItem(id: string, version: number) {
     if (this.data.mutating) return
-    if (!requireAuthForWrite()) return
     todoRequestGate.invalidate()
     this.setData({ mutating: true })
     try {
       await todoGateway.remove(id, version)
       const remaining = this.data.allItems.filter((item) => item.id !== id)
-      this.render(remaining, summarizeItems(remaining))
+      this.render(remaining)
       wx.showToast({ title: '已删除', icon: 'success' })
     } catch (error) {
       this.handleMutationError(error, '删除没有完成')
@@ -564,13 +576,19 @@ Page({
     const items = this.data.allItems.map((item) =>
       item.id === updated.id ? updated : item,
     )
-    this.render(items, summarizeItems(items))
+    this.render(items)
   },
 
   handleMutationError(error: unknown, fallback: string) {
-    const message = getTodoErrorMessage(error, fallback)
-    wx.showToast({ title: message, icon: 'none' })
-    if (isTodoVersionConflict(error)) void this.refresh()
+    if (isTodoVersionConflict(error)) {
+      wx.showToast({ title: '内容已更新，正在刷新', icon: 'none' })
+      void this.refresh()
+      return
+    }
+    wx.showToast({
+      title: getTodoErrorMessage(error, fallback),
+      icon: 'none',
+    })
   },
 
   onUnload() {

@@ -27,10 +27,12 @@
     </view>
 
     <view class="paper-card journal-paper">
-      <block wx:if="{{entry.image && entry.image.src}}">
-        <view class="journal-photo" bindtap="onPreviewImage">
-          <image class="journal-photo__image" src="{{entry.image.src}}" mode="aspectFill" lazy-load />
-          <view class="journal-photo__hint"><line-icon name="image" size="19" tone="white" /><text>轻触查看原图</text></view>
+      <block wx:if="{{entry.images && entry.images.length}}">
+        <view class="journal-photo-grid journal-photo-grid--count{{entry.images.length}}">
+          <view wx:for="{{entry.images}}" wx:key="mediaId" class="journal-photo-grid__item" data-index="{{index}}" catchtap="onPreviewImage">
+            <image wx:if="{{item.src || item.thumbSrc}}" class="journal-photo-grid__image" src="{{item.src || item.thumbSrc}}" mode="aspectFill" lazy-load />
+            <view wx:else class="journal-photo-grid__placeholder"><line-icon name="image" size="24" tone="muted" /></view>
+          </view>
         </view>
         <view wx:if="{{entry.image.caption}}" class="journal-caption">{{entry.image.caption}}</view>
       </block>

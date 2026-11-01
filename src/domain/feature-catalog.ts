@@ -5,31 +5,25 @@
  * 底部导航各自维护一份名称与路径。
  */
 
-export type FeatureCategoryId = 'tool' | 'memo' | 'member'
+export type FeatureCategoryId = 'tool' | 'life' | 'memo' | 'member'
 
 export type FeatureTone = 'blue' | 'green' | 'gold' | 'pink' | 'orange'
 
-export type FeatureLevel = 'primary' | 'secondary'
+export type FeatureLevel = 'primary'
 
 export type FeatureId =
   | 'inventory'
-  | 'menu'
-  | 'reminders'
-  | 'todo'
-  | 'journal'
-  | 'pets'
-  | 'pet-care'
-  | 'pet-daily'
-  | 'pet-calendar'
-  | 'travel'
-  | 'plan'
-  | 'fitness'
   | 'expense'
+  | 'menu'
+  | 'travel'
+  | 'fitness'
+  | 'journal'
+  | 'todo'
+  | 'pets'
 
 export interface FeatureCategoryDefinition {
   id: FeatureCategoryId
   title: string
-  eyebrow: string
   description: string
   icon: string
   tone: FeatureTone
@@ -47,14 +41,14 @@ export interface FeatureDefinition {
   tone: FeatureTone
   path: string
   query?: Record<string, string>
-  /** 是否作为一级功能出现在完整功能清单。二级能力收在父功能内部。 */
+  /** 是否作为一级功能出现在完整功能清单。 */
   listVisible: boolean
   /** 是否允许进入首页快捷入口。 */
   homeEligible: boolean
   /** 是否允许进入底部导航中间三个槽位。 */
   tabEligible: boolean
-  /** 打开方式：根页面使用 reLaunch，普通二级页使用 navigateTo。 */
-  launchMode: 'root' | 'page'
+  /** 打开方式：根页面使用 reLaunch。 */
+  launchMode: 'root'
 }
 
 export interface FeatureCategoryGroup {
@@ -68,24 +62,28 @@ export const FEATURE_CATEGORIES: readonly FeatureCategoryDefinition[] = [
   {
     id: 'tool',
     title: '工具',
-    eyebrow: 'TOOLS',
-    description: '把具体的小事处理好',
+    description: '库存、账单与下厨',
     icon: 'package',
     tone: 'orange',
   },
   {
+    id: 'life',
+    title: '生活',
+    description: '旅行与健身',
+    icon: 'heart-pulse',
+    tone: 'green',
+  },
+  {
     id: 'memo',
     title: '备忘',
-    eyebrow: 'MEMORY',
-    description: '记下计划、花费与共同回忆',
+    description: '记录与待办',
     icon: 'notebook-tabs',
     tone: 'blue',
   },
   {
     id: 'member',
     title: '成员',
-    eyebrow: 'FAMILY',
-    description: '围绕家里的人和毛孩子',
+    description: '一起生活的宠物',
     icon: 'paw-print',
     tone: 'pink',
   },
@@ -94,9 +92,9 @@ export const FEATURE_CATEGORIES: readonly FeatureCategoryDefinition[] = [
 export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   {
     id: 'inventory',
-    label: '家庭库存',
+    label: '库存',
     shortLabel: '库存',
-    description: '家里的物品、余量和临期提醒',
+    description: '家里的物品、余量和临期',
     category: 'tool',
     level: 'primary',
     parentId: 'inventory',
@@ -109,10 +107,27 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     launchMode: 'root',
   },
   {
+    id: 'expense',
+    label: '账单',
+    shortLabel: '账单',
+    description: '花了多少，买了什么',
+    category: 'tool',
+    level: 'primary',
+    parentId: 'expense',
+    icon: 'wallet',
+    tone: 'gold',
+    path: '/pages/todo/index?kind=expense',
+    query: { kind: 'expense' },
+    listVisible: true,
+    homeEligible: true,
+    tabEligible: true,
+    launchMode: 'root',
+  },
+  {
     id: 'menu',
-    label: '今天吃什么',
-    shortLabel: '吃什么',
-    description: '菜单、推荐和做饭模式',
+    label: '下厨',
+    shortLabel: '下厨',
+    description: '今天吃什么、菜单和做饭',
     category: 'tool',
     level: 'primary',
     parentId: 'menu',
@@ -125,32 +140,34 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     launchMode: 'root',
   },
   {
-    id: 'reminders',
-    label: '提醒设置',
-    shortLabel: '提醒',
-    description: '通知与订阅偏好',
-    category: 'tool',
+    id: 'travel',
+    label: '旅行',
+    shortLabel: '旅行',
+    description: '目的地、出发准备和清单',
+    category: 'life',
     level: 'primary',
-    parentId: 'reminders',
-    icon: 'bell',
+    parentId: 'travel',
+    icon: 'plane',
     tone: 'blue',
-    path: '/pages/reminder-settings/index',
+    path: '/pages/todo/index?kind=travel',
+    query: { kind: 'travel' },
     listVisible: true,
     homeEligible: true,
-    tabEligible: false,
-    launchMode: 'page',
+    tabEligible: true,
+    launchMode: 'root',
   },
   {
-    id: 'todo',
-    label: '待办与小计划',
-    shortLabel: '待办',
-    description: '旅行、健身、账单和日常待办',
-    category: 'memo',
+    id: 'fitness',
+    label: '健身',
+    shortLabel: '健身',
+    description: '运动、时长和热量记录',
+    category: 'life',
     level: 'primary',
-    parentId: 'todo',
-    icon: 'list-todo',
+    parentId: 'fitness',
+    icon: 'dumbbell',
     tone: 'green',
-    path: '/pages/todo/index',
+    path: '/pages/todo/index?kind=fitness',
+    query: { kind: 'fitness' },
     listVisible: true,
     homeEligible: true,
     tabEligible: true,
@@ -158,15 +175,31 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   },
   {
     id: 'journal',
-    label: '生活记录',
+    label: '记录',
     shortLabel: '记录',
-    description: '共同回忆与重要资料',
+    description: '生活点滴与重要资料',
     category: 'memo',
     level: 'primary',
     parentId: 'journal',
     icon: 'notebook-tabs',
     tone: 'blue',
     path: '/pages/journal/index',
+    listVisible: true,
+    homeEligible: true,
+    tabEligible: true,
+    launchMode: 'root',
+  },
+  {
+    id: 'todo',
+    label: '待办',
+    shortLabel: '待办',
+    description: '想到的事，用自己的标签收好',
+    category: 'memo',
+    level: 'primary',
+    parentId: 'todo',
+    icon: 'list-todo',
+    tone: 'green',
+    path: '/pages/todo/index',
     listVisible: true,
     homeEligible: true,
     tabEligible: true,
@@ -184,124 +217,6 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     tone: 'pink',
     path: '/pages/pets/index',
     listVisible: true,
-    homeEligible: true,
-    tabEligible: true,
-    launchMode: 'root',
-  },
-  {
-    id: 'pet-care',
-    label: '宠物照护',
-    shortLabel: '照护',
-    description: '疫苗、驱虫、洗护与健康记录',
-    category: 'member',
-    level: 'secondary',
-    parentId: 'pets',
-    icon: 'heart-pulse',
-    tone: 'pink',
-    path: '/pages/pets/index?section=care',
-    query: { section: 'care' },
-    listVisible: false,
-    homeEligible: true,
-    tabEligible: true,
-    launchMode: 'root',
-  },
-  {
-    id: 'pet-daily',
-    label: '宠物日常',
-    shortLabel: '日常',
-    description: '吃饭、喝水、便便和尿尿记录',
-    category: 'member',
-    level: 'secondary',
-    parentId: 'pets',
-    icon: 'droplets',
-    tone: 'green',
-    path: '/pages/pets/index?section=daily',
-    query: { section: 'daily' },
-    listVisible: false,
-    homeEligible: true,
-    tabEligible: true,
-    launchMode: 'root',
-  },
-  {
-    id: 'pet-calendar',
-    label: '宠物月历',
-    shortLabel: '月历',
-    description: '照护安排、历史记录和下次计划',
-    category: 'member',
-    level: 'secondary',
-    parentId: 'pets',
-    icon: 'calendar-days',
-    tone: 'pink',
-    path: '/pages/pet-calendar/index',
-    listVisible: false,
-    homeEligible: true,
-    tabEligible: false,
-    launchMode: 'page',
-  },
-  {
-    id: 'travel',
-    label: '旅行准备',
-    shortLabel: '旅行',
-    description: '目的地、出发时间和准备清单',
-    category: 'memo',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'plane',
-    tone: 'blue',
-    path: '/pages/todo/index?kind=travel',
-    query: { kind: 'travel' },
-    listVisible: false,
-    homeEligible: true,
-    tabEligible: true,
-    launchMode: 'root',
-  },
-  {
-    id: 'plan',
-    label: '小计划',
-    shortLabel: '计划',
-    description: '近期想做的事和完成进度',
-    category: 'memo',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'list-todo',
-    tone: 'green',
-    path: '/pages/todo/index?kind=plan',
-    query: { kind: 'plan' },
-    listVisible: false,
-    homeEligible: true,
-    tabEligible: true,
-    launchMode: 'root',
-  },
-  {
-    id: 'fitness',
-    label: '健身计划',
-    shortLabel: '健身',
-    description: '运动、时长和热量记录',
-    category: 'memo',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'dumbbell',
-    tone: 'orange',
-    path: '/pages/todo/index?kind=fitness',
-    query: { kind: 'fitness' },
-    listVisible: false,
-    homeEligible: true,
-    tabEligible: true,
-    launchMode: 'root',
-  },
-  {
-    id: 'expense',
-    label: '我们的账单',
-    shortLabel: '账单',
-    description: '一起记下花了什么、买了什么',
-    category: 'memo',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'wallet',
-    tone: 'gold',
-    path: '/pages/todo/index?kind=expense',
-    query: { kind: 'expense' },
-    listVisible: false,
     homeEligible: true,
     tabEligible: true,
     launchMode: 'root',

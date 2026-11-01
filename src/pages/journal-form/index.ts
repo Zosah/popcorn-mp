@@ -1,6 +1,7 @@
 import { appConfig } from '../../config/env'
 import {
   DEMO_NOTE_CATEGORY_LABELS,
+  MAX_JOURNAL_IMAGES,
   type DemoJournalEntryInput,
   type DemoJournalImage,
   type DemoJournalKind,
@@ -25,6 +26,7 @@ Page({
     saving: false,
     loading: false,
     imageUploading: false,
+    uploadProgress: '',
     loadError: '',
     editingEntryId: '',
     version: 0,
@@ -39,7 +41,7 @@ Page({
     categoryIndex: 0,
     categoryLabels: NOTE_CATEGORY_OPTIONS.map((item) => item.label),
     visibility: 'space' as DemoJournalVisibility,
-    image: null as DemoJournalImage | null,
+    images: [] as DemoJournalImage[],
     form: {
       title: '',
       content: '',
@@ -85,7 +87,7 @@ Page({
         category,
         categoryIndex,
         visibility: entry.visibility,
-        image: entry.image ?? null,
+        images: entry.images?.length ? entry.images : entry.image ? [entry.image] : [],
         form: {
           title: entry.title,
           content: entry.content,
@@ -145,56 +147,80 @@ Page({
 
   onChooseImage() {
     if (this.data.imageUploading) return
+    const remaining = MAX_JOURNAL_IMAGES - this.data.images.length
+    if (remaining <= 0) {
+      wx.showToast({ title: '最多添加 9 张图片', icon: 'none' })
+      return
+    }
     wx.chooseMedia({
-      count: 1,
+      count: remaining,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
       success: (result) => {
-        const file = result.tempFiles[0]
-        if (!file) return
-        if (file.size > 10 * 1024 * 1024) {
+        const files = result.tempFiles.filter((file) => file.size <= 10 * 1024 * 1024)
+        if (files.length !== result.tempFiles.length) {
           wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
-          return
         }
-        void this.uploadImage(file.tempFilePath, file.size)
+        if (files.length) void this.uploadImages(files)
       },
     })
   },
 
-  async uploadImage(filePath: string, fileSize: number) {
-    this.setData({ imageUploading: true })
+  async uploadImages(files: Array<{ tempFilePath: string; size: number }>) {
+    this.setData({ imageUploading: true, uploadProgress: `正在上传 1/${files.length}` })
+    let firstError: unknown
     try {
-      const asset = await mediaGateway.upload(filePath, 'journal', fileSize)
-      this.setData({
-        image: {
-          mediaId: asset.id,
-          src: asset.display.url,
-          thumbSrc: asset.thumb.url,
-          caption: this.data.image?.caption ?? '',
-        },
-      })
-      wx.showToast({ title: '图片已准备好', icon: 'success' })
-    } catch (error) {
-      showMediaUploadError(error, '图片上传没有完成')
+      for (const [index, file] of files.entries()) {
+        this.setData({ uploadProgress: `正在上传 ${index + 1}/${files.length}` })
+        try {
+          const asset = await mediaGateway.upload(file.tempFilePath, 'journal', file.size)
+          this.setData({
+            images: [...this.data.images, {
+              mediaId: asset.id,
+              src: asset.display.url,
+              thumbSrc: asset.thumb.url,
+              caption: '',
+            }].slice(0, MAX_JOURNAL_IMAGES),
+          })
+        } catch (error) {
+          firstError ??= error
+        }
+      }
+      if (firstError) {
+        showMediaUploadError(firstError, '有图片没有上传成功')
+      }
     } finally {
-      this.setData({ imageUploading: false })
+      this.setData({ imageUploading: false, uploadProgress: '' })
     }
   },
 
   onImageCaptionInput(event: { detail: { value: string } }) {
-    if (!this.data.image) return
-    this.setData({ 'image.caption': event.detail.value.slice(0, 120) })
+    if (!this.data.images.length) return
+    const images = [...this.data.images]
+    const primaryImage = images[0]
+    if (!primaryImage) return
+    images[0] = {
+      ...primaryImage,
+      caption: event.detail.value.slice(0, 120),
+    }
+    this.setData({ images })
   },
 
-  onRemoveImage() {
+  onRemoveImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
     if (this.data.imageUploading) return
-    this.setData({ image: null })
+    const index = Number(event.currentTarget.dataset.index)
+    if (!Number.isInteger(index) || index < 0) return
+    this.setData({ images: this.data.images.filter((_, imageIndex) => imageIndex !== index) })
   },
 
-  onPreviewImage() {
-    const src = this.data.image?.src
-    if (!src) return
-    wx.previewImage({ current: src, urls: [src] })
+  onPreviewImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    const index = Number(event.currentTarget.dataset.index ?? 0)
+    const images = this.data.images
+    const urls = images.map((image) => image.src || image.thumbSrc || '').filter(Boolean)
+    if (!urls.length) return
+    const selected = images[index]
+    const current = selected?.src || selected?.thumbSrc || urls[0]
+    wx.previewImage({ current, urls })
   },
 
   onCategoryChange(event: { detail: { value: string } }) {
@@ -237,10 +263,10 @@ Page({
       content: this.data.form.content,
       visibility: this.data.visibility,
       kind: this.data.kind,
-      imageMediaId: this.data.image?.mediaId ?? '',
-      imageCaption: this.data.image?.caption ?? '',
+      imageMediaId: this.data.images[0]?.mediaId ?? '',
+      imageCaption: this.data.images[0]?.caption ?? '',
+      images: this.data.images,
       ...(this.data.kind === 'note' ? { category: this.data.category } : {}),
-      ...(this.data.image ? { image: this.data.image } : {}),
     }
     try {
       if (this.data.editingEntryId) {

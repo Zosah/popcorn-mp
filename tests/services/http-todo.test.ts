@@ -33,6 +33,7 @@ const apiTodo: ApiTodoItem = {
   kind: 'travel',
   title: '去大理',
   note: '慢一点',
+  tag: '',
   done: false,
   dueDate: '2026-11-02',
   destination: '大理',

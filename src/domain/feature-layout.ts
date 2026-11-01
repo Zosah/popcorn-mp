@@ -53,3 +53,30 @@ export function moveFeatureWithinSlots(
   next.splice(toIndex, 0, moving)
   return next
 }
+
+/** 跨区域拖动时交换两个槽位，确保七个入口始终全局唯一。 */
+export function swapFeatureAcrossSlots(
+  sourceSlots: readonly FeatureId[],
+  sourceIndex: number,
+  targetSlots: readonly FeatureId[],
+  targetIndex: number,
+): { source: FeatureId[]; target: FeatureId[] } {
+  const source = [...sourceSlots]
+  const target = [...targetSlots]
+  if (
+    sourceIndex < 0
+    || targetIndex < 0
+    || sourceIndex >= source.length
+    || targetIndex >= target.length
+  ) {
+    return { source, target }
+  }
+
+  const moving = source[sourceIndex]
+  const replaced = target[targetIndex]
+  if (!moving || !replaced) return { source, target }
+
+  source[sourceIndex] = replaced
+  target[targetIndex] = moving
+  return { source, target }
+}

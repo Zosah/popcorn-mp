@@ -1,8 +1,9 @@
 import { appConfig } from '../../config/env'
 import {
-  FEATURE_CATALOG,
+  getFeatureCategoryGroups,
   getFeatureDefinition,
   isFeatureAvailableIn,
+  type FeatureCategoryDefinition,
   type FeatureDefinition,
   type FeatureId,
   type FeatureTone,
@@ -10,6 +11,7 @@ import {
 import {
   moveFeatureWithinSlots,
   placeFeatureInSlots,
+  swapFeatureAcrossSlots,
 } from '../../domain/feature-layout'
 import { hydrateAuthState } from '../../services/auth'
 import {
@@ -30,6 +32,7 @@ import { waitForMinimumLoading } from '../../utils/loading'
 
 type ConfigRegion = 'home' | 'tab'
 type DragSource = 'pool' | 'slot'
+type FeaturePlacement = 'home' | 'tab' | ''
 
 interface FeatureTileView {
   id: FeatureId
@@ -39,6 +42,15 @@ interface FeatureTileView {
   icon: string
   tone: FeatureTone
   tabEligible: boolean
+  placement: FeaturePlacement
+  placementLabel: string
+  occupied: boolean
+}
+
+interface FeatureCategoryView {
+  key: string
+  category: FeatureCategoryDefinition
+  items: FeatureTileView[]
 }
 
 interface PlacementSlotView extends FeatureTileView {
@@ -98,7 +110,17 @@ function withRegionSlots(
     : { ...config, tabSlots: slots }
 }
 
-function toFeatureTile(feature: FeatureDefinition): FeatureTileView {
+function placementForFeature(config: FeatureSettingsConfig, id: FeatureId): FeaturePlacement {
+  if (config.homeSlots.includes(id)) return 'home'
+  if (config.tabSlots.includes(id)) return 'tab'
+  return ''
+}
+
+function toFeatureTile(
+  feature: FeatureDefinition,
+  config: FeatureSettingsConfig,
+): FeatureTileView {
+  const placement = placementForFeature(config, feature.id)
   return {
     id: feature.id,
     label: feature.label,
@@ -107,20 +129,25 @@ function toFeatureTile(feature: FeatureDefinition): FeatureTileView {
     icon: feature.icon,
     tone: feature.tone,
     tabEligible: feature.tabEligible,
+    placement,
+    placementLabel: placement === 'home' ? '首页' : placement === 'tab' ? '导航' : '',
+    occupied: Boolean(placement),
   }
 }
 
-function buildFeatureTiles(): FeatureTileView[] {
-  return FEATURE_CATALOG
-    .filter((feature) => feature.homeEligible)
-    .map(toFeatureTile)
+function buildFeatureGroups(config: FeatureSettingsConfig): FeatureCategoryView[] {
+  return getFeatureCategoryGroups('list').map((group) => ({
+    key: group.category.id,
+    category: group.category,
+    items: group.items.map((feature) => toFeatureTile(feature, config)),
+  }))
 }
 
 function buildSlots(config: FeatureSettingsConfig, region: ConfigRegion): PlacementSlotView[] {
   return regionSlots(config, region).map((id, index) => {
     const feature = getFeatureDefinition(id)
     if (!feature) throw new Error(`配置引用了未知功能：${id}`)
-    return { ...toFeatureTile(feature), order: index + 1 }
+    return { ...toFeatureTile(feature, config), order: index + 1 }
   })
 }
 
@@ -137,7 +164,8 @@ Page({
     versionConflict: false,
     syncText: appConfig.demoMode ? '本机保存' : '已同步到空间',
     saveError: '',
-    features: [] as FeatureTileView[],
+    featureGroups: [] as FeatureCategoryView[],
+    featureCount: 0,
     homeSlots: [] as PlacementSlotView[],
     tabSlots: [] as PlacementSlotView[],
     version: 1,
@@ -156,7 +184,11 @@ Page({
   },
 
   onLoad() {
-    this.setData({ features: buildFeatureTiles() })
+    const initial = defaultConfig()
+    this.setData({
+      featureGroups: buildFeatureGroups(initial),
+      featureCount: initial.homeSlots.length + initial.tabSlots.length,
+    })
     void this.loadSettings()
   },
 
@@ -225,6 +257,8 @@ Page({
       savedConfig: saved,
       version: version ?? this.data.version,
       updatedAt: updatedAt ?? this.data.updatedAt,
+      featureGroups: buildFeatureGroups(normalized),
+      featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, saved),
@@ -237,6 +271,8 @@ Page({
     const normalized = cloneConfig(next)
     this.setData({
       config: normalized,
+      featureGroups: buildFeatureGroups(normalized),
+      featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, this.data.savedConfig),
@@ -342,6 +378,16 @@ Page({
     const touch = event.touches[0]
     const feature = getFeatureDefinition(dataset.id ?? '')
     if (!touch || !feature || !dataset.source) return
+    if (dataset.source === 'pool') {
+      const placement = placementForFeature(this.data.config, feature.id)
+      if (placement) {
+        wx.showToast({
+          title: placement === 'home' ? '这个功能已用于首页' : '这个功能已用于导航',
+          icon: 'none',
+        })
+        return
+      }
+    }
 
     this.clearPressTimer()
     dragEndHandled = false
@@ -475,20 +521,40 @@ Page({
 
   applyDrop(active: DragPending, region: ConfigRegion, targetIndex: number) {
     const current = cloneConfig(this.data.config)
-    const slots = regionSlots(current, region)
-    let nextSlots: FeatureId[]
+    let next = current
 
     if (
+      active.source === 'slot'
+      && active.sourceRegion
+      && active.sourceRegion !== region
+      && active.sourceIndex >= 0
+    ) {
+      const swapped = swapFeatureAcrossSlots(
+        regionSlots(current, active.sourceRegion),
+        active.sourceIndex,
+        regionSlots(current, region),
+        targetIndex,
+      )
+      next = withRegionSlots(current, active.sourceRegion, swapped.source)
+      next = withRegionSlots(next, region, swapped.target)
+    } else if (
       active.source === 'slot'
       && active.sourceRegion === region
       && active.sourceIndex >= 0
     ) {
-      nextSlots = moveFeatureWithinSlots(slots, active.sourceIndex, targetIndex)
+      next = withRegionSlots(
+        current,
+        region,
+        moveFeatureWithinSlots(regionSlots(current, region), active.sourceIndex, targetIndex),
+      )
     } else {
-      nextSlots = placeFeatureInSlots(slots, active.id, targetIndex)
+      next = withRegionSlots(
+        current,
+        region,
+        placeFeatureInSlots(regionSlots(current, region), active.id, targetIndex),
+      )
     }
 
-    const next = withRegionSlots(current, region, nextSlots)
     if (!configChanged(current, next)) return
     this.updateConfig(next)
   },

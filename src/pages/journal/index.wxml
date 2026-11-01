@@ -62,7 +62,6 @@
           <view class="journal-rail__dot"></view>
         </view>
         <view class="journal-card {{item.visibility === 'private' ? 'journal-card--private' : ''}}">
-          <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="journal-entry__photo" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
           <view class="journal-card__body">
             <view class="journal-card__tags">
               <text class="journal-tag journal-tag--peach">{{item.kindLabel}}</text>
@@ -70,6 +69,12 @@
             </view>
             <text class="journal-entry__title">{{item.title}}</text>
             <text wx:if="{{item.content}}" class="journal-entry__copy">{{item.content}}</text>
+            <view wx:if="{{item.images && item.images.length}}" class="journal-photo-grid journal-photo-grid--count{{item.images.length}}">
+              <view wx:for="{{item.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
+                <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load />
+                <view wx:else class="journal-photo-grid__placeholder"><line-icon name="image" size="24" tone="muted" /></view>
+              </view>
+            </view>
             <text wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</text>
             <view class="journal-entry__author">
               <view class="journal-entry__avatar">{{item.authorName || '见'}}</view>
@@ -137,7 +142,7 @@
     </view>
 
     <block wx:elif="{{visibleNoteGroups.length}}">
-      <view wx:for="{{visibleNoteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-section journal-note-section--{{group.key}}">
+      <view wx:for="{{visibleNoteGroups}}" wx:key="key" wx:for-item="group" wx:for-index="groupIndex" class="journal-note-section journal-note-section--{{group.key}}">
         <view class="journal-section-head">
           <view class="journal-section-head__title-row">
             <view class="journal-section-head__icon"><line-icon name="{{group.icon}}" size="23" tone="{{group.key === 'health' ? 'pink' : group.key === 'pet' ? 'gold' : 'green'}}" /></view>
@@ -146,10 +151,16 @@
           <text class="journal-section-head__count">{{group.entries.length}} 项</text>
         </view>
         <view class="journal-note-list">
-          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" class="journal-note-row" data-id="{{entry.id}}" hover-class="tap-dim" bindtap="onOpenEntry">
+          <view wx:for="{{group.entries}}" wx:key="id" wx:for-item="entry" wx:for-index="entryIndex" class="journal-note-row" data-id="{{entry.id}}" hover-class="tap-dim" bindtap="onOpenEntry">
             <view class="journal-note-row__body">
               <text class="journal-note-row__title">{{entry.title}}</text>
               <text class="journal-note-row__copy">{{entry.content}}</text>
+              <view wx:if="{{entry.images && entry.images.length}}" class="journal-photo-grid journal-photo-grid--note journal-photo-grid--count{{entry.images.length}}">
+                <view wx:for="{{entry.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
+                  <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load />
+                  <view wx:else class="journal-photo-grid__placeholder"><line-icon name="image" size="22" tone="muted" /></view>
+                </view>
+              </view>
               <text class="journal-note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
             </view>
             <text class="journal-note-row__arrow">›</text>

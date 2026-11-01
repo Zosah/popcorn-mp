@@ -4,21 +4,18 @@
   <page-loading show="{{initialLoading}}" title="正在整理功能" copy="把常用功能放到顺手的位置。" />
 
   <view class="config-head">
-    <view class="config-head__mark">
-      <line-icon name="list-todo" size="27" tone="green" />
-    </view>
     <view class="config-head__copy">
-      <text class="config-head__title">功能布置</text>
-      <text class="config-head__description">长按拖动，松手落位</text>
+      <text class="config-head__title">功能配置</text>
+      <text class="config-head__description">长按拖动，松手换位</text>
     </view>
     <view class="config-head__reset" hover-class="config-head__reset--pressed" bindtap="onResetDefault">
-      <line-icon name="rotate-ccw" size="20" tone="muted" />
+      <line-icon name="rotate-ccw" size="18" tone="muted" />
       <text>恢复</text>
     </view>
   </view>
 
   <view wx:if="{{saveError}}" class="config-error">
-    <line-icon name="circle-alert" size="24" tone="danger" />
+    <line-icon name="circle-alert" size="22" tone="danger" />
     <text class="config-error__copy">{{saveError}}</text>
     <text wx:if="{{versionConflict}}" class="config-error__action" bindtap="onReloadSettings">载入最新</text>
   </view>
@@ -27,32 +24,38 @@
     <view class="section-heading">
       <view class="section-heading__copy">
         <text class="section-heading__title">全部功能</text>
-        <text class="section-heading__description">按住拖到下方</text>
       </view>
-      <text class="section-heading__meta">{{features.length}} 个</text>
+      <text class="section-heading__meta">已用 {{featureCount}} / 8</text>
     </view>
 
-    <view class="feature-grid">
-      <view
-        wx:for="{{features}}"
-        wx:key="id"
-        class="feature-tile"
-        hover-class="feature-tile--pressed"
-        data-source="pool"
-        data-id="{{item.id}}"
-        aria-role="button"
-        aria-label="拖动{{item.shortLabel}}"
-        bindtap="onFeatureTap"
-        catchtouchstart="onDragTouchStart"
-        catchtouchmove="onDragTouchMove"
-        catchtouchend="onDragTouchEnd"
-        catchtouchcancel="onDragTouchCancel"
-      >
-        <view class="feature-tile__icon feature-tile__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="30" tone="{{item.tone}}" />
+    <view class="feature-category-grid">
+      <view wx:for="{{featureGroups}}" wx:key="key" class="feature-category feature-category--{{item.category.tone}}">
+        <text class="feature-category__title">{{item.category.title}}</text>
+        <view class="feature-category__items">
+          <view
+            wx:for="{{item.items}}"
+            wx:for-item="feature"
+            wx:key="id"
+            class="feature-tile {{feature.occupied ? 'feature-tile--occupied' : ''}}"
+            hover-class="{{feature.occupied ? 'none' : 'feature-tile--pressed'}}"
+            data-source="pool"
+            data-id="{{feature.id}}"
+            aria-role="button"
+            aria-disabled="{{feature.occupied}}"
+            aria-label="{{feature.occupied ? feature.shortLabel + '已用于' + feature.placementLabel : '拖动' + feature.shortLabel}}"
+            bindtap="onFeatureTap"
+            catchtouchstart="onDragTouchStart"
+            catchtouchmove="onDragTouchMove"
+            catchtouchend="onDragTouchEnd"
+            catchtouchcancel="onDragTouchCancel"
+          >
+            <view class="feature-tile__icon feature-tile__icon--{{feature.tone}}">
+              <line-icon name="{{feature.icon}}" size="25" tone="{{feature.tone}}" />
+            </view>
+            <text class="feature-tile__label">{{feature.shortLabel}}</text>
+            <text wx:if="{{feature.occupied}}" class="feature-tile__placement">{{feature.placementLabel}}</text>
+          </view>
         </view>
-        <text class="feature-tile__label">{{item.shortLabel}}</text>
-        <text wx:if="{{!item.tabEligible}}" class="feature-tile__limit">首页</text>
       </view>
     </view>
   </view>
@@ -61,9 +64,8 @@
     <view class="section-heading">
       <view class="section-heading__copy">
         <text class="section-heading__title">首页快捷</text>
-        <text class="section-heading__description">第一眼就能用到</text>
       </view>
-      <text class="section-heading__meta">4 个位置</text>
+      <text class="section-heading__meta">4 格</text>
     </view>
 
     <view class="home-drop-grid">
@@ -85,7 +87,7 @@
       >
         <text class="drop-slot__order">{{item.order}}</text>
         <view class="drop-slot__icon feature-tile__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="32" tone="{{item.tone}}" />
+          <line-icon name="{{item.icon}}" size="29" tone="{{item.tone}}" />
         </view>
         <text class="drop-slot__title">{{item.shortLabel}}</text>
       </view>
@@ -98,12 +100,12 @@
         <text class="section-heading__title">底部导航</text>
         <text class="section-heading__description">家与「我的」固定</text>
       </view>
-      <text class="section-heading__meta">3 个位置</text>
+      <text class="section-heading__meta">3 格</text>
     </view>
 
     <view class="tab-drop-preview">
       <view class="tab-fixed-item">
-        <line-icon name="house" size="27" tone="muted" />
+        <line-icon name="house" size="24" tone="muted" />
         <text>家</text>
       </view>
 
@@ -123,12 +125,12 @@
         catchtouchend="onDragTouchEnd"
         catchtouchcancel="onDragTouchCancel"
       >
-        <line-icon name="{{item.icon}}" size="28" tone="{{item.tone}}" />
+        <line-icon name="{{item.icon}}" size="25" tone="{{item.tone}}" />
         <text class="drop-slot__tab-label">{{item.shortLabel}}</text>
       </view>
 
       <view class="tab-fixed-item">
-        <line-icon name="user-round" size="27" tone="muted" />
+        <line-icon name="user-round" size="24" tone="muted" />
         <text>我的</text>
       </view>
     </view>
@@ -137,7 +139,6 @@
   <view class="save-dock">
     <view class="save-dock__meta">
       <text class="save-dock__status">{{dirty ? '有未保存修改' : syncText}}</text>
-      <text class="save-dock__hint">{{dirty ? '确认位置后统一保存' : '当前配置已是最新'}}</text>
     </view>
     <button
       class="save-dock__button {{dirty ? 'save-dock__button--ready' : ''}}"
@@ -145,7 +146,7 @@
       disabled="{{saving || !dirty}}"
       loading="{{saving}}"
       bindtap="onSave"
-    >保存配置</button>
+    >保存</button>
   </view>
 
   <view
@@ -153,7 +154,7 @@
     class="drag-ghost drag-ghost--{{dragTone}}"
     style="left: {{dragX}}px; top: {{dragY}}px;"
   >
-    <line-icon name="{{dragIcon}}" size="28" tone="{{dragTone}}" />
+    <line-icon name="{{dragIcon}}" size="26" tone="{{dragTone}}" />
     <text>{{dragLabel}}</text>
   </view>
 </view>

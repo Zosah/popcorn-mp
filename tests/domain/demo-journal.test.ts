@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  MAX_JOURNAL_IMAGES,
   createDemoJournalEntry,
   createDemoJournalSeedEntries,
   updateDemoJournalEntry,
@@ -47,6 +48,29 @@ describe('createDemoJournalEntry', () => {
     expect(entry.dateLabel).toBe('1月1日')
     expect(entry.timeLabel).toBe('10:05')
   })
+
+  it('最多保留九张图片，并让第一张兼容旧字段', () => {
+    const entry = createDemoJournalEntry(
+      {
+        title: '九宫格',
+        content: '',
+        visibility: 'space',
+        images: Array.from({ length: 10 }, (_, index) => ({
+          mediaId: `media-${index + 1}`,
+          src: `https://cdn.test/${index + 1}.jpg`,
+          caption: index === 0 ? '  封面  ' : '',
+        })),
+        imageCaption: '旧字段说明',
+      },
+      Date.UTC(2026, 9, 20),
+      () => 'entry-images',
+    )
+
+    expect(MAX_JOURNAL_IMAGES).toBe(9)
+    expect(entry.images).toHaveLength(9)
+    expect(entry.image).toMatchObject({ mediaId: 'media-1', caption: '封面' })
+    expect(entry.imageCaption).toBe('封面')
+  })
 })
 
 describe('updateDemoJournalEntry', () => {
@@ -73,6 +97,29 @@ describe('updateDemoJournalEntry', () => {
       createdAt: '2026-08-26T16:30:00.000Z',
       updatedAt: '2026-08-27T01:05:00.000Z',
     })
+  })
+
+  it('编辑时可以移除全部图片', () => {
+    const entry = createDemoJournalEntry(
+      {
+        title: '有图',
+        content: '',
+        visibility: 'space',
+        images: [{ mediaId: 'media-1', src: 'https://cdn.test/1.jpg' }],
+      },
+      Date.UTC(2026, 9, 20),
+      () => 'entry-remove-images',
+    )
+
+    const updated = updateDemoJournalEntry(
+      entry,
+      { title: '没图了', content: '', visibility: 'space', images: [] },
+      Date.UTC(2026, 9, 21),
+    )
+
+    expect(updated.images).toEqual([])
+    expect(updated.image).toBeUndefined()
+    expect(updated.imageCaption).toBeUndefined()
   })
 })
 

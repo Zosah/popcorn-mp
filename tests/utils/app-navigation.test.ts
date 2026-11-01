@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveAppRootNavigation } from '../../src/utils/app-navigation'
+import {
+  decodeQueryValue,
+  resolveAppRootNavigation,
+} from '../../src/utils/app-navigation'
 
 describe('自定义底栏根页面导航', () => {
+  it('安全解码查询参数里的中文标签', () => {
+    expect(decodeQueryValue('%E7%AA%81%E7%84%B6%E6%83%B3%E5%88%B0')).toBe('突然想到')
+    expect(decodeQueryValue('%E0%A4%A')).toBe('%E0%A4%A')
+  })
+
   it('当前页与目标一致时只回到顶部', () => {
     expect(
       resolveAppRootNavigation(

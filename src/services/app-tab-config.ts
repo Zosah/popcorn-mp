@@ -17,25 +17,8 @@ import {
   type FeatureSettingsConfig,
 } from './feature-settings-config'
 
-export type AppTabRootId =
-  | 'home'
-  | 'pets'
-  | 'journal'
-  | 'todo'
-  | 'menu'
-  | 'inventory'
-  | 'profile'
-
-export type AppTabSecondaryId =
-  | 'pet-care'
-  | 'pet-daily'
-  | 'travel'
-  | 'plan'
-  | 'fitness'
-  | 'expense'
-
-export type AppTabCustomId = Exclude<FeatureId, 'reminders' | 'pet-calendar'>
-export type AppTabId = AppTabRootId | FeatureId
+export type AppTabCustomId = FeatureId
+export type AppTabId = 'home' | 'profile' | FeatureId
 
 export interface AppTabConfig {
   slot2: AppTabCustomId
@@ -53,8 +36,8 @@ export interface AppTabOption {
   label: string
   shortLabel: string
   description: string
-  level: 'primary' | 'secondary'
-  parentId: AppTabRootId
+  level: 'primary'
+  parentId: FeatureId
   icon: string
   tone: 'blue' | 'green' | 'gold' | 'pink' | 'orange'
   path: string
@@ -65,7 +48,7 @@ export interface AppTabItem {
   id: AppTabId
   label: string
   description: string
-  parentId: AppTabRootId
+  parentId: AppTabId
   icon: string
   tone: 'blue' | 'green' | 'gold' | 'pink' | 'orange'
   path: string
@@ -82,7 +65,7 @@ function toAppTabOption(id: FeatureId): AppTabOption {
     shortLabel: feature.shortLabel,
     description: feature.description,
     level: feature.level,
-    parentId: feature.parentId as AppTabRootId,
+    parentId: feature.parentId,
     icon: feature.icon,
     tone: feature.tone,
     path: feature.path,

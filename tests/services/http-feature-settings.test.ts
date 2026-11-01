@@ -34,7 +34,7 @@ const session: ApiSession = {
 
 const settings: ApiFeatureSettings = {
   homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-  tabSlots: ['pets', 'menu', 'todo'],
+  tabSlots: ['menu', 'expense', 'fitness'],
   version: 4,
   updatedAt: '2026-11-01T03:00:00Z',
 }
@@ -111,7 +111,7 @@ describe('HTTP 功能配置网关', () => {
 
     const result = await new HttpFeatureSettingsGateway().update({
       homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-      tabSlots: ['pets', 'menu', 'todo'],
+      tabSlots: ['menu', 'expense', 'fitness'],
     }, 4)
 
     expect(result.version).toBe(5)
@@ -120,7 +120,7 @@ describe('HTTP 功能配置网关', () => {
     expect(requests[0]?.header?.['Idempotency-Key']).toMatch(/^feature_settings_update_/)
     expect(requests[0]?.data).toEqual({
       homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-      tabSlots: ['pets', 'menu', 'todo'],
+      tabSlots: ['menu', 'expense', 'fitness'],
     })
   })
 
@@ -141,7 +141,7 @@ describe('HTTP 功能配置网关', () => {
 
     const promise = new HttpFeatureSettingsGateway().update({
       homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-      tabSlots: ['pets', 'menu', 'todo'],
+      tabSlots: ['menu', 'expense', 'fitness'],
     }, 2)
 
     await expect(promise).rejects.toMatchObject({

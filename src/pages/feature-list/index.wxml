@@ -1,57 +1,43 @@
 <view class="feature-list-page">
   <view class="feature-list-head">
-    <view class="feature-list-head__topline">
-      <text class="feature-list-head__eyebrow">ALL FEATURES</text>
-      <view class="feature-list-head__config" hover-class="feature-list-head__config--pressed" bindtap="onOpenConfig">
-        <text>配置快捷</text>
-        <text>›</text>
-      </view>
+    <view class="feature-list-head__copy">
+      <text class="feature-list-head__title">全部功能</text>
+      <text class="feature-list-head__description">工具、生活、备忘与家里的成员</text>
     </view>
-    <text class="feature-list-head__title">我们的功能</text>
-    <text class="feature-list-head__copy">工具、备忘和家里成员，都在这里找到。</text>
+    <view class="feature-list-head__config" hover-class="feature-list-head__config--pressed" bindtap="onOpenConfig">
+      <line-icon name="list-todo" size="19" tone="muted" />
+      <text>配置</text>
+    </view>
   </view>
 
   <view wx:for="{{groups}}" wx:key="key" class="feature-group">
     <view class="feature-group__head">
-      <view class="feature-group__mark feature-group__mark--{{item.category.tone}}">
-        <line-icon name="{{item.category.icon}}" size="30" tone="{{item.category.tone}}" />
-      </view>
-      <view class="feature-group__copy">
-        <view class="feature-group__title-row">
-          <text class="feature-group__title">{{item.category.title}}</text>
-          <text class="feature-group__eyebrow">{{item.category.eyebrow}}</text>
-        </view>
-        <text class="feature-group__description">{{item.category.description}}</text>
-      </view>
+      <text class="feature-group__title">{{item.category.title}}</text>
+      <view class="feature-group__rule" />
+      <text class="feature-group__description">{{item.category.description}}</text>
     </view>
 
-    <view class="feature-group__list">
+    <view class="feature-grid">
       <view
         wx:for="{{item.items}}"
         wx:for-item="feature"
         wx:key="id"
-        class="feature-row"
-        hover-class="feature-row--pressed"
+        class="feature-tile"
+        hover-class="feature-tile--pressed"
         data-id="{{feature.id}}"
         bindtap="onOpenFeature"
       >
-        <view class="feature-row__icon feature-row__icon--{{feature.tone}}">
-          <line-icon name="{{feature.icon}}" size="31" tone="{{feature.tone}}" />
+        <view class="feature-tile__icon feature-tile__icon--{{feature.tone}}">
+          <line-icon name="{{feature.icon}}" size="30" tone="{{feature.tone}}" />
         </view>
-        <view class="feature-row__body">
-          <view class="feature-row__title-line">
-            <text class="feature-row__title">{{feature.label}}</text>
-            <text wx:if="{{feature.placementLabel}}" class="feature-row__placement">{{feature.placementLabel}}</text>
+        <view class="feature-tile__body">
+          <view class="feature-tile__title-line">
+            <text class="feature-tile__title">{{feature.label}}</text>
+            <text wx:if="{{feature.placementLabel}}" class="feature-tile__placement">{{feature.placementLabel}}</text>
           </view>
-          <text class="feature-row__description">{{feature.description}}</text>
+          <text class="feature-tile__description">{{feature.description}}</text>
         </view>
-        <text class="feature-row__arrow">›</text>
       </view>
     </view>
-  </view>
-
-  <view class="feature-list-note">
-    <line-icon name="notebook-tabs" size="21" tone="muted" />
-    <text>这里展示完整功能；首页和底部导航只放置常用的快捷入口。</text>
   </view>
 </view>

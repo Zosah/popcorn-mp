@@ -30,15 +30,15 @@ describe('待办本地存储', () => {
     vi.unstubAllGlobals()
   })
 
-  it('首次读取时写入五类示例，之后不重复初始化', () => {
+  it('首次读取时写入五类功能示例和待办标签，之后不重复初始化', () => {
     const firstRead = listDemoTodoItems()
 
-    expect(firstRead).toHaveLength(5)
+    expect(firstRead).toHaveLength(7)
     expect(storage.get(SEEDED_KEY)).toBe(true)
     expect(new Set(firstRead.map((item) => item.kind)).size).toBe(5)
 
     const secondRead = listDemoTodoItems()
-    expect(secondRead).toHaveLength(5)
+    expect(secondRead).toHaveLength(7)
   })
 
   it('支持新增、编辑、勾选和删除待办', () => {
@@ -92,15 +92,15 @@ describe('待办本地存储', () => {
     })
 
     expect(expense.done).toBe(true)
-    expect(listDemoTodoItems().filter((item) => !item.done)).toHaveLength(4)
+    expect(listDemoTodoItems().filter((item) => !item.done)).toHaveLength(6)
   })
 
-  it('重置后恢复五条示例待办', () => {
+  it('重置后恢复七条示例待办', () => {
     for (const item of listDemoTodoItems()) removeDemoTodoItem(item.id)
     expect(listDemoTodoItems()).toEqual([])
 
     resetDemoTodoData()
-    expect(listDemoTodoItems()).toHaveLength(5)
+    expect(listDemoTodoItems()).toHaveLength(7)
     expect(storage.has(STORAGE_KEY)).toBe(true)
   })
 })

@@ -12,7 +12,6 @@
           <line-icon name="calendar-days" size="22" tone="ink" />
         </view>
         <view class="pet-hero__actions">
-          <sync-badge state="{{syncState}}" text="{{uploadingAvatar ? '照片处理中' : syncState === 'synced' ? '已同步' : syncState === 'pending' ? '同步中' : '本机'}}" />
           <view class="pet-glass-button" bindtap="onAddPet" aria-label="添加宠物">
             <line-icon name="plus" size="22" tone="ink" />
           </view>

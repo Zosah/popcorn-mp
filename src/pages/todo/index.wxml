@@ -1,141 +1,123 @@
+<template name="todo-row">
+  <view class="todo-item {{done ? 'todo-item--done' : ''}}" data-id="{{id}}" bindlongpress="onLongPressItem">
+    <view class="todo-item__main" data-id="{{id}}" bindtap="onEditItem">
+      <view class="todo-check {{done ? 'todo-check--done' : ''}}" data-id="{{id}}" catchtap="onToggleItem">
+        <line-icon wx:if="{{done}}" name="check" size="15" tone="white" />
+      </view>
+      <view class="todo-item__body">
+        <view class="todo-item__title-row">
+          <text class="todo-item__title">{{title}}</text>
+          <text wx:if="{{tagLabel}}" class="todo-item__tag">{{tagLabel}}</text>
+        </view>
+        <text wx:if="{{note}}" class="todo-item__note">{{note}}</text>
+        <view class="todo-item__meta">
+          <text wx:if="{{dateLabel}}" class="{{overdue ? 'todo-item__date todo-item__date--late' : 'todo-item__date'}}">{{overdue ? '已过期 · ' : ''}}{{dateLabel}}</text>
+          <text wx:else class="todo-item__date">未设截止日期</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
 <view class="page-shell todo-page">
-  <page-loading show="{{loading && !hasLoaded}}" title="正在整理待办" copy="把今天要做的小事排好顺序。" />
+  <page-loading show="{{loading && !hasLoaded}}" title="正在整理待办" copy="把想到的事轻轻收好。" />
   <auth-preview-gate />
 
   <view class="todo-head">
     <view class="todo-head__body">
-      <text class="todo-eyebrow">一起生活</text>
-      <view class="todo-head__title">待办与小计划</view>
-      <view class="todo-head__sub">两个人的小事，也值得认真安排</view>
+      <text class="todo-head__title">{{pageTitle}}</text>
+      <text class="todo-head__sub">{{pageCopy}}</text>
     </view>
-    <view class="todo-create" bindtap="onCreate">
-      <line-icon name="pen-line" size="19" tone="ink" />
+    <view class="todo-create" hover-class="todo-create--pressed" bindtap="onCreate">
+      <line-icon name="plus" size="19" tone="ink" />
       <text>新建</text>
     </view>
   </view>
 
-  <view class="todo-progress">
-    <view class="todo-progress__body">
-      <text class="todo-progress__eyebrow">共同进度</text>
-      <view class="todo-progress__title">一起完成了 {{completedCount}} 件事</view>
-      <view class="todo-progress__copy">{{pendingCount ? '还剩 ' + pendingCount + ' 件，慢慢来就好' : '目前都做完了，可以再记一件'}}</view>
-    </view>
-    <view class="todo-progress__ring" style="background: conic-gradient(#c67d6d {{progressPercent}}%, rgba(255,255,255,.14) 0);">
-      <view class="todo-progress__inner">{{progressPercent}}<text>%</text></view>
-    </view>
-  </view>
-
-  <scroll-view class="todo-tabs" scroll-x enhanced show-scrollbar="{{false}}">
-    <view class="todo-tabs__row">
-      <view wx:for="{{filters}}" wx:key="value" class="todo-tab {{activeKind === item.value ? 'todo-tab--active' : ''}}" data-kind="{{item.value}}" bindtap="onSelectFilter">
-        <text>{{item.label}}</text>
-        <text wx:if="{{item.count}}">{{item.count}}</text>
+  <view wx:if="{{isPlanMode}}" class="todo-overview">
+    <view class="todo-overview__top">
+      <view class="todo-overview__copy">
+        <text class="todo-overview__eyebrow">待完成</text>
+        <view class="todo-overview__number">{{pendingCount}}<text> 件</text></view>
       </view>
+      <text class="todo-overview__progress">{{completedCount}} / {{totalCount}} 已完成</text>
     </view>
-  </scroll-view>
-
-  <view wx:if="{{loadError && items.length}}" class="todo-banner">
-    <line-icon name="circle-alert" size="21" tone="danger" />
-    <view class="todo-banner__body"><text>这次没有刷新完整</text><text>先显示已经收好的内容，稍后再同步一次。</text></view>
-    <view class="todo-banner__action" bindtap="onRetryLoad">重试</view>
+    <view class="todo-overview__track"><view class="todo-overview__fill" style="width: {{progressPercent}}%;"></view></view>
   </view>
 
-  <view wx:if="{{activeKind === 'meal'}}" class="todo-meal">
-    <view class="todo-meal__head">
-      <view class="todo-meal__label"><line-icon name="soup" size="21" tone="gold" /><text>今天吃什么</text></view>
-      <view class="todo-meal__shuffle" bindtap="onShuffleMealIdea">换一个</view>
-    </view>
-    <view class="todo-meal__title">{{mealIdea}}</view>
-    <view class="todo-meal__actions">
-      <view class="todo-meal__ghost" bindtap="onShuffleMealIdea">再想想</view>
-      <view class="todo-meal__primary" bindtap="onUseMealIdea">就吃这个</view>
+  <view wx:if="{{isPlanMode}}" class="todo-tag-section">
+    <scroll-view class="todo-tags" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="todo-tags__row">
+        <view
+          wx:for="{{tagFilters}}"
+          wx:key="value"
+          class="todo-tag {{activeTag === item.value ? 'todo-tag--active' : ''}}"
+          data-tag="{{item.value}}"
+          bindtap="onSelectTag"
+          bindlongpress="onLongPressTag"
+        >
+          <text>{{item.label}}</text>
+          <text wx:if="{{item.count}}" class="todo-tag__count">{{item.count}}</text>
+        </view>
+        <view class="todo-tag todo-tag--create" bindtap="onCreateTag">
+          <line-icon name="plus" size="15" tone="muted" />
+          <text>新标签</text>
+        </view>
+      </view>
+    </scroll-view>
+    <text wx:if="{{tagFilters.length > 2}}" class="todo-tag-section__hint">长按标签可重命名或删除</text>
+  </view>
+
+  <view wx:if="{{isPlanMode}}" class="todo-status">
+    <text class="todo-status__summary">{{statusFilter === 'pending' ? '还有 ' + visibleCount + ' 件' : '已完成 ' + visibleCount + ' 件'}}</text>
+    <view class="todo-status__switch">
+      <view class="todo-status__item {{statusFilter === 'pending' ? 'todo-status__item--active' : ''}}" data-status="pending" bindtap="onSelectStatus">待完成</view>
+      <view class="todo-status__item {{statusFilter === 'completed' ? 'todo-status__item--active' : ''}}" data-status="completed" bindtap="onSelectStatus">已完成</view>
     </view>
   </view>
 
-  <view class="todo-list-heading">
-    <view>
-      <text class="todo-list-heading__eyebrow">{{activeKind === 'all' ? '共同清单' : '当前分类'}}</text>
-      <text class="todo-list-heading__title">{{activeLabel}}</text>
-    </view>
-    <text>{{visiblePendingCount}} 项未完成</text>
+  <view wx:if="{{loadError && allItems.length}}" class="todo-banner">
+    <line-icon name="circle-alert" size="20" tone="danger" />
+    <text class="todo-banner__copy">这次没有刷新完整，先显示上次的内容。</text>
+    <text class="todo-banner__action" bindtap="onRetryLoad">重试</text>
   </view>
 
-  <view wx:if="{{loading && !items.length}}" class="todo-state">
-    <view class="todo-state__icon todo-state__icon--green"><line-icon name="notebook-tabs" size="34" tone="green" /></view>
-    <view class="todo-state__title">正在把待办轻轻收好</view>
-    <view class="todo-state__copy">稍等一下，马上就好。</view>
+  <view wx:if="{{loading && !allItems.length}}" class="todo-state">
+    <view class="todo-state__mark"><line-icon name="notebook-tabs" size="34" tone="green" /></view>
+    <text class="todo-state__title">正在整理待办</text>
+    <text class="todo-state__copy">稍等一下，马上就好。</text>
   </view>
 
-  <view wx:elif="{{loadError && !items.length}}" class="todo-state">
-    <view class="todo-state__icon todo-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
-    <view class="todo-state__title">暂时没有连上</view>
-    <view class="todo-state__copy">{{loadError}}</view>
+  <view wx:elif="{{loadError && !allItems.length}}" class="todo-state">
+    <view class="todo-state__mark todo-state__mark--error"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <text class="todo-state__title">暂时没有连上</text>
+    <text class="todo-state__copy">{{loadError}}</text>
     <view class="todo-state__action" bindtap="onRetryLoad">重新加载</view>
   </view>
 
-  <view wx:elif="{{items.length}}" class="todo-list">
-    <view wx:for="{{items}}" wx:key="id" class="todo-item {{item.done ? 'todo-item--done' : ''}}" data-id="{{item.id}}" bindlongpress="onLongPressItem">
-      <view class="todo-item__main" data-id="{{item.id}}" bindtap="onEditItem">
-        <view class="todo-check todo-check--{{item.kind}} {{item.done ? 'todo-check--done' : ''}}" data-id="{{item.id}}" catchtap="onToggleItem">
-          <line-icon wx:if="{{item.done}}" name="check" size="15" tone="white" />
-        </view>
-        <view class="todo-item__body">
-          <view class="todo-item__title">{{item.title}}</view>
-          <view class="todo-item__meta">{{item.kindLabel}} · {{item.meta || '找时间慢慢做'}}</view>
-          <view wx:if="{{item.note}}" class="todo-item__note">{{item.note}}</view>
-        </view>
-        <view class="todo-item__right">
-          <text wx:if="{{item.dateLabel}}" class="{{item.overdue ? 'todo-item__date todo-item__date--late' : 'todo-item__date'}}">{{item.overdue ? '已过期' : item.dateLabel}}</text>
-        </view>
+  <block wx:elif="{{isPlanMode && activeTag === '__all__' && tagGroups.length}}">
+    <view wx:for="{{tagGroups}}" wx:key="key" class="todo-group">
+      <view class="todo-group__head">
+        <text class="todo-group__title">{{item.label}}</text>
+        <text class="todo-group__count">{{item.count}}</text>
+        <view class="todo-group__rule"></view>
       </view>
-      <view wx:if="{{item.checklist.length}}" class="todo-checklist">
-        <view class="todo-checklist__head"><text>准备清单</text><text>{{item.checklistText}}</text></view>
-        <view wx:for="{{item.checklist}}" wx:for-item="check" wx:key="id" class="todo-checklist__row {{check.done ? 'todo-checklist__row--done' : ''}}" data-parent-id="{{item.id}}" data-checklist-id="{{check.id}}" catchtap="onToggleChecklist">
-          <view class="todo-checklist__check"><line-icon wx:if="{{check.done}}" name="check" size="11" tone="white" /></view>
-          <text class="todo-checklist__number">{{check.number}}</text>
-          <text class="todo-checklist__text">{{check.text}}</text>
-        </view>
+      <view class="todo-list">
+        <template wx:for="{{item.items}}" wx:for-item="todo" wx:key="id" is="todo-row" data="{{...todo}}" />
       </view>
     </view>
+  </block>
+
+  <view wx:elif="{{flatItems.length}}" class="todo-list todo-list--flat">
+    <template wx:for="{{flatItems}}" wx:key="id" is="todo-row" data="{{...item}}" />
   </view>
 
   <view wx:else class="todo-state">
-    <view class="todo-state__icon todo-state__icon--green"><line-icon name="{{emptyIcon}}" size="34" tone="green" /></view>
-    <view class="todo-state__title">{{emptyTitle}}</view>
-    <view class="todo-state__copy">{{emptyCopy}}</view>
+    <view class="todo-state__mark"><line-icon name="list-todo" size="34" tone="green" /></view>
+    <text class="todo-state__title">{{emptyTitle}}</text>
+    <text class="todo-state__copy">{{emptyCopy}}</text>
     <view class="todo-state__action" bindtap="onCreate">记下第一件事</view>
   </view>
 
-  <block wx:if="{{travelHighlight}}">
-    <view class="todo-list-heading todo-list-heading--section">
-      <view><text class="todo-list-heading__eyebrow">计划正在发生</text><text class="todo-list-heading__title">进行中的计划</text></view>
-    </view>
-    <view class="todo-trip" data-id="{{travelHighlight.id}}" bindtap="onEditItem">
-      <view class="todo-trip__top">
-        <view class="todo-trip__icon"><line-icon name="plane" size="25" tone="green" /></view>
-        <view class="todo-trip__body">
-          <text class="todo-trip__tag">旅行准备</text>
-          <view class="todo-trip__title">{{travelHighlight.title}}</view>
-          <view class="todo-trip__meta">{{travelHighlight.meta}}</view>
-        </view>
-        <text class="todo-trip__arrow">›</text>
-      </view>
-      <view class="todo-trip__progress"><view style="width: {{travelHighlight.progress}}%;"></view></view>
-      <view class="todo-trip__foot">{{travelHighlight.progressText}}</view>
-    </view>
-  </block>
-
-  <block wx:if="{{expenseHighlight}}">
-    <view class="todo-bill" data-id="{{expenseHighlight.id}}" bindtap="onEditItem">
-      <view class="todo-bill__icon"><line-icon name="wallet" size="24" tone="gold" /></view>
-      <view class="todo-bill__body">
-        <text>本月共同支出</text>
-        <view>{{expenseTotalLabel}}</view>
-        <text>{{expenseHighlight.latestMeta}}</text>
-      </view>
-      <text class="todo-bill__arrow">›</text>
-    </view>
-  </block>
-
-  <app-tab-bar active="todo" />
+  <app-tab-bar active="{{isPlanMode ? 'todo' : ''}}" />
 </view>

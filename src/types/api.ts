@@ -210,6 +210,7 @@ export interface ApiTodoItem {
   kind: ApiTodoKind
   title: string
   note: string
+  tag: string
   done: boolean
   dueDate: string | null
   destination: string
@@ -231,6 +232,7 @@ export interface ApiTodoWriteRequest {
   kind: ApiTodoKind
   title: string
   note?: string
+  tag?: string
   dueDate?: string | null
   destination?: string
   checklist?: ApiTodoChecklistItemInput[]
@@ -258,6 +260,12 @@ export type ApiJournalKind = 'moment' | 'note'
 export type ApiJournalVisibility = 'space' | 'private'
 export type ApiNoteCategory = 'home' | 'health' | 'pet' | 'other'
 
+export interface ApiJournalImage {
+  mediaId: string
+  caption: string
+  sortOrder: number
+}
+
 export interface ApiJournalItem {
   id: string
   spaceId: string
@@ -268,6 +276,7 @@ export interface ApiJournalItem {
   visibility: ApiJournalVisibility
   imageMediaId: string
   imageCaption: string
+  images: ApiJournalImage[]
   version: number
   createdBy: string
   authorName: string
@@ -284,6 +293,7 @@ export interface ApiJournalWriteRequest {
   visibility: ApiJournalVisibility
   imageMediaId: string
   imageCaption: string
+  images: ApiJournalImage[]
 }
 
 export type ApiMediaPurpose = 'journal' | 'avatar' | 'inventory' | 'menu' | 'pet' | 'other'

@@ -16,6 +16,8 @@ export const DEMO_NOTE_CATEGORY_LABELS: Record<DemoNoteCategory, string> = {
   other: '其他资料',
 }
 
+export const MAX_JOURNAL_IMAGES = 9
+
 export interface DemoJournalImage {
   mediaId?: string
   src: string
@@ -32,6 +34,7 @@ export interface DemoJournalEntryInput {
   imageMediaId?: string
   imageCaption?: string
   image?: DemoJournalImage
+  images?: DemoJournalImage[]
 }
 
 export interface DemoJournalEntry extends DemoJournalEntryInput {
@@ -49,6 +52,7 @@ export interface DemoJournalEntry extends DemoJournalEntryInput {
   createdAt: string
   updatedAt?: string
   image?: DemoJournalImage
+  images?: DemoJournalImage[]
 }
 
 const MONTH_LABELS = [
@@ -76,12 +80,41 @@ function visibilityLabel(visibility: DemoJournalVisibility): string {
   return visibility === 'space' ? '空间成员可见' : '仅自己可见'
 }
 
+function normalizeImage(image: DemoJournalImage): DemoJournalImage {
+  const caption = image.caption?.trim()
+  return {
+    ...image,
+    caption: caption ?? '',
+  }
+}
+
+function inputImages(input: DemoJournalEntryInput): DemoJournalImage[] {
+  const source =
+    input.images !== undefined
+      ? input.images
+      : input.image
+        ? [input.image]
+        : input.imageMediaId
+          ? [{ mediaId: input.imageMediaId, src: '' }]
+          : []
+  return source.slice(0, MAX_JOURNAL_IMAGES).map((image, index) =>
+    normalizeImage({
+      ...image,
+      ...(index === 0 && input.images === undefined && input.imageCaption !== undefined
+        ? { caption: input.imageCaption }
+        : {}),
+    }),
+  )
+}
+
 export function formatDemoJournalEntry(entry: DemoJournalEntry): DemoJournalEntry {
   const {
     category: _category,
     categoryLabel: _categoryLabel,
     ...baseEntry
   } = entry
+  const images = inputImages(entry)
+  const image = images[0]
   const kind = entry.kind ?? 'moment'
   const timestamp = Date.parse(entry.createdAt)
   const safeTimestamp = Number.isNaN(timestamp) ? Date.now() : timestamp
@@ -104,6 +137,19 @@ export function formatDemoJournalEntry(entry: DemoJournalEntry): DemoJournalEntr
     title: entry.title.trim(),
     content: entry.content.trim(),
     authorName: entry.authorName || '我',
+    ...(image
+      ? {
+          image,
+          images,
+          imageMediaId: image.mediaId ?? '',
+          imageCaption: image.caption ?? '',
+        }
+      : {
+          image: undefined,
+          images: entry.images !== undefined ? [] : undefined,
+          imageMediaId: undefined,
+          imageCaption: undefined,
+        }),
     visibilityLabel: visibilityLabel(entry.visibility),
     day: pad(safeDay),
     month: MONTH_LABELS[safeMonth - 1] ?? 'JAN',
@@ -129,16 +175,7 @@ export function createDemoJournalEntry(
     title: input.title,
     content: input.content,
     visibility: input.visibility,
-    ...(input.image
-      ? {
-          image: {
-            ...input.image,
-            ...(input.imageCaption?.trim()
-              ? { caption: input.imageCaption.trim() }
-              : { caption: '' }),
-          },
-        }
-      : {}),
+    ...(inputImages(input).length ? { images: inputImages(input) } : {}),
     kindLabel: '',
     authorName,
     visibilityLabel: '',
@@ -168,16 +205,7 @@ export function updateDemoJournalEntry(
     title: input.title,
     content: input.content,
     visibility: input.visibility,
-    ...(input.image
-      ? {
-          image: {
-            ...input.image,
-            ...(input.imageCaption?.trim()
-              ? { caption: input.imageCaption.trim() }
-              : { caption: '' }),
-          },
-        }
-      : { image: undefined }),
+    images: inputImages(input),
     updatedAt: new Date(nowMs).toISOString(),
   })
 }
@@ -235,13 +263,16 @@ export function createDemoJournalMomentSeedEntries(
     '阿屿',
   )
 
+  const flowerImage: DemoJournalImage = {
+    src: '/images/demo-flowers.jpg',
+    caption: '图片为公版艺术示例',
+  }
   return [
     {
       ...flowers,
-      image: {
-        src: '/images/demo-flowers.jpg',
-        caption: '图片为公版艺术示例',
-      },
+      image: flowerImage,
+      images: [flowerImage],
+      imageCaption: flowerImage.caption,
     },
     pet,
   ]

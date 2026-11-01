@@ -132,14 +132,19 @@ describe('待办数据规则', () => {
     })
   })
 
-  it('提供覆盖五类功能的示例待办', () => {
+  it('提供覆盖五类功能和待办标签的示例数据', () => {
     const items = createDemoTodoSeedItems(Date.UTC(2026, 9, 24))
 
-    expect(items).toHaveLength(5)
+    expect(items).toHaveLength(7)
     expect(new Set(items.map((item) => item.kind))).toEqual(
       new Set(['travel', 'plan', 'fitness', 'meal', 'expense']),
     )
     expect(items.find((item) => item.kind === 'travel')?.checklist).toHaveLength(4)
     expect(items.find((item) => item.kind === 'expense')?.done).toBe(true)
+    expect(items.filter((item) => item.kind === 'plan').map((item) => item.tag)).toEqual([
+      '下班买的东西',
+      '周末处理',
+      '突然想到',
+    ])
   })
 })

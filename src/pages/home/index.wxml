@@ -9,7 +9,7 @@
     <view class="home-header__space" hover-class="tap-dim" bindtap="onOpenSpaceSwitcher" aria-label="切换空间">
       <view class="home-header__name-row">
         <text class="home-header__name">{{spaceName}}</text>
-        <view class="home-header__switch"><line-icon name="users" size="22" tone="muted" /></view>
+        <view class="home-header__switch"><text class="home-header__chevron">⌄</text></view>
       </view>
       <text class="home-header__date">{{snapshot.dateLabel}} · {{snapshot.weekdayLabel}}</text>
     </view>
@@ -100,12 +100,12 @@
       <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="check" size="26" tone="white" /></view>
       <view class="scene-preview__body">
         <text class="scene-preview__title">{{todoSummary}}</text>
-        <text class="scene-preview__meta">待办与小计划 · 一起完成</text>
+        <text class="scene-preview__meta">待办 · 想到就记下</text>
       </view>
       <text class="scene-preview__time">今天</text>
     </view>
     <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenTodo">
-      <text>{{todoPendingCount ? '继续今天的计划' : '看看全部计划'}}</text>
+      <text>{{todoPendingCount ? '继续待办' : '看看全部待办'}}</text>
       <text class="scene-action__arrow">›</text>
     </view>
   </view>
@@ -125,7 +125,7 @@
     <view class="scene-preview">
       <view class="scene-preview__icon"><line-icon name="clock-3" size="26" tone="gold" /></view>
       <view class="scene-preview__body">
-        <text class="scene-preview__title">今天吃什么</text>
+        <text class="scene-preview__title">下厨</text>
         <text class="scene-preview__meta">{{menuCount}} 道收藏 · 去挑一道今天的菜</text>
       </view>
       <text class="scene-preview__time">去看</text>
