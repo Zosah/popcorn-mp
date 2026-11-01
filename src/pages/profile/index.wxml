@@ -2,105 +2,53 @@
   <page-loading show="{{initialLoading}}" title="正在准备你的空间" copy="登录状态和共同生活数据马上就好。" />
   <auth-preview-gate />
 
-  <view class="profile-head">
-    <view>
-      <text class="profile-eyebrow">共同生活</text>
-      <view class="profile-head__title">我的</view>
-    </view>
-    <view class="profile-head__setting" bindtap="onOpenTabSettings">
-      <line-icon name="notebook-tabs" size="24" tone="ink" />
-    </view>
-  </view>
-
-  <view class="profile-card" bindtap="onOpenAuth">
+  <view class="profile-card" hover-class="profile-card--pressed" bindtap="onOpenAuth">
     <view class="profile-avatar profile-avatar--{{avatarTone}}">
       <image wx:if="{{avatarUrl}}" class="profile-avatar__image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
       <text wx:else>{{avatarText}}</text>
     </view>
+
     <view class="profile-card__body">
       <view class="profile-card__name">{{displayName}}</view>
-      <view class="profile-card__meta">{{isLoggedIn ? identityMeta : '登录后认领空间身份，和朋友共享同一份生活。'}}</view>
-      <view class="profile-card__tags">
-        <text>{{identityBadge}}</text>
-        <text>{{spaceName}}</text>
+      <view class="profile-card__meta">{{profileMeta}}</view>
+    </view>
+
+    <view wx:if="{{isLoggedIn}}" class="profile-card__edit" aria-label="编辑个人资料">
+      <line-icon name="pen-line" size="24" tone="ink" />
+    </view>
+    <view wx:else class="profile-card__login">
+      <text>微信登录</text>
+      <text class="profile-card__login-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="space-card" hover-class="space-card--pressed" bindtap="onOpenSpace">
+    <view class="space-card__mark">
+      <line-icon name="house" size="36" tone="white" />
+    </view>
+    <view class="space-card__body">
+      <text class="space-card__label">共同空间</text>
+      <view class="space-card__title">{{spaceName}}</view>
+      <view class="space-card__meta">{{spaceMeta}}</view>
+    </view>
+    <text class="space-card__arrow">›</text>
+  </view>
+
+  <view class="settings-block">
+    <view class="settings-block__label">设置</view>
+    <view class="settings-list">
+      <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenReminders">
+        <line-icon name="bell" size="27" tone="muted" />
+        <text class="settings-row__title">提醒</text>
+        <text class="settings-row__arrow">›</text>
+      </view>
+      <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenTabSettings">
+        <line-icon name="notebook-tabs" size="27" tone="muted" />
+        <text class="settings-row__title">底部导航</text>
+        <text class="settings-row__arrow">›</text>
       </view>
     </view>
-    <view class="profile-card__edit">
-      <line-icon name="pen-line" size="20" tone="muted" />
-      <text>{{isLoggedIn ? '编辑' : '登录'}}</text>
-    </view>
   </view>
 
-  <view class="profile-space" bindtap="onOpenSpace">
-    <view class="profile-space__mark"><line-icon name="house" size="34" tone="white" /></view>
-    <view class="profile-space__body">
-      <text>当前共同空间</text>
-      <view>{{spaceName}}</view>
-      <view class="profile-space__members">
-        <view class="profile-space__avatars">
-          <view class="profile-space__avatar">
-            <image wx:if="{{avatarUrl}}" class="profile-space__avatar-image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
-            <text wx:else>{{avatarText}}</text>
-          </view>
-          <text>伴</text>
-        </view>
-        <text>{{spaceMembersCopy}}</text>
-      </view>
-    </view>
-    <text class="profile-space__arrow">›</text>
-  </view>
-
-  <view class="profile-weekly" bindtap="onOpenTodo">
-    <view class="profile-weekly__body">
-      <text class="profile-eyebrow">这周的我们</text>
-      <view class="profile-weekly__title">共同完成 {{todoCompletedCount}} 件小事</view>
-      <view class="profile-weekly__progress"><view style="width: {{todoProgress}}%;"></view></view>
-      <text class="profile-weekly__meta">{{todoPendingCount ? '还有 ' + todoPendingCount + ' 项待完成' : todoSummary}}</text>
-    </view>
-    <view class="profile-weekly__ring" style="background: conic-gradient(#c67d6d {{todoProgress}}%, rgba(255,255,255,.46) 0);">
-      <view><text>{{todoProgress}}%</text><text>进度</text></view>
-    </view>
-  </view>
-
-  <view class="profile-settings">
-    <view class="profile-row" bindtap="onOpenInvite">
-      <view class="profile-row__icon profile-row__icon--peach"><line-icon name="users" size="24" tone="pink" /></view>
-      <view class="profile-row__body"><text>成员与邀请</text><text>邀请家人加入共同空间</text></view>
-      <text class="profile-row__arrow">›</text>
-    </view>
-    <view class="profile-row" bindtap="onOpenTabSettings">
-      <view class="profile-row__icon profile-row__icon--sage"><line-icon name="house" size="24" tone="green" /></view>
-      <view class="profile-row__body"><text>底部导航</text><text>{{tabBarSummary}}</text></view>
-      <text class="profile-row__arrow">›</text>
-    </view>
-    <view class="profile-row" bindtap="onOpenReminders">
-      <view class="profile-row__icon profile-row__icon--lilac"><line-icon name="bell" size="24" tone="pink" /></view>
-      <view class="profile-row__body"><text>提醒偏好</text><text>临期、宠物照护与每周回顾</text></view>
-      <text class="profile-row__arrow">›</text>
-    </view>
-    <view class="profile-row" bindtap="onOpenSpace">
-      <view class="profile-row__icon profile-row__icon--blue"><line-icon name="lock" size="23" tone="blue" /></view>
-      <view class="profile-row__body"><text>隐私与可见范围</text><text>管理记录的默认可见范围</text></view>
-      <text class="profile-row__arrow">›</text>
-    </view>
-  </view>
-
-  <view class="profile-settings profile-settings--compact">
-    <view class="profile-row" bindtap="onOpenAuth">
-      <view class="profile-row__body"><text>账号与登录</text><text>{{accountMeta}}</text></view>
-      <text class="profile-row__tag">{{accountTag}}</text>
-      <text class="profile-row__arrow">›</text>
-    </view>
-    <view wx:if="{{showResetDemo}}" class="profile-row" bindtap="onResetDemo">
-      <view class="profile-row__body"><text>Demo 数据重置</text><text>恢复初始示例，不影响登录信息</text></view>
-      <line-icon name="rotate-ccw" size="21" tone="muted" />
-    </view>
-    <view class="profile-row" bindtap="onClearLocalData">
-      <view class="profile-row__body"><text>清除本机数据</text><text>退出登录并清理缓存，不删除共同空间云端内容</text></view>
-      <line-icon name="rotate-ccw" size="21" tone="danger" />
-    </view>
-  </view>
-
-  <view class="profile-version">时刻见 {{version}} · 把普通日子安放在一起</view>
   <app-tab-bar active="profile" />
 </view>
