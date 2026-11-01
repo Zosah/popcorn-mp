@@ -1,4 +1,4 @@
-import { addCalendarDays, getShanghaiDateOnly } from './expiry'
+import { getShanghaiDateOnly } from './expiry'
 
 export type PetEventType =
   | 'vaccine'
@@ -128,8 +128,6 @@ export interface PetTimelineItem {
 export interface PetCareCard {
   type: PetCareType
   title: string
-  intervalLabel: string
-  intervalDays: number
   lastOn: string | null
   elapsedLabel: string
   nextOn: string | null
@@ -187,9 +185,15 @@ export const PET_SUPPLY_CATEGORY_LABELS: Record<PetSupplyCategory, string> = {
 }
 
 export const PET_SUPPLY_PREFERENCE_LABELS: Record<PetSupplyPreference, string> = {
-  loved: '种草',
-  neutral: '一般',
-  dropped: '拔草',
+  loved: '超爱',
+  neutral: '还行',
+  dropped: '不爱',
+}
+
+export const PET_SUPPLY_PREFERENCE_HEARTS: Record<PetSupplyPreference, string> = {
+  loved: '♥♥♥',
+  neutral: '♥♥',
+  dropped: '♥',
 }
 
 export const PET_DAILY_LOG_LABELS: Record<PetDailyLogType, string> = {
@@ -202,8 +206,8 @@ export const PET_DAILY_LOG_LABELS: Record<PetDailyLogType, string> = {
 }
 
 export const PET_BACKGROUND_LABELS: Record<PetBackgroundKey, string> = {
-  sage: '鼠尾草',
-  apricot: '暖杏',
+  sage: '浅粉',
+  apricot: '奶杏',
   mist: '雾蓝',
 }
 
@@ -222,11 +226,10 @@ export function getPetSupplyPreferenceLabel(
   return PET_SUPPLY_PREFERENCE_LABELS[preference]
 }
 
-export const PET_CARE_INTERVALS: Record<PetCareType, number> = {
-  vaccine: 365,
-  grooming: 30,
-  'internal-deworm': 90,
-  'external-deworm': 30,
+export function getPetSupplyPreferenceHearts(
+  preference: PetSupplyPreference,
+): string {
+  return PET_SUPPLY_PREFERENCE_HEARTS[preference]
 }
 
 export const PET_CARE_TYPES: readonly PetCareType[] = [
@@ -237,10 +240,6 @@ export const PET_CARE_TYPES: readonly PetCareType[] = [
 
 export function isPetCareType(type: PetEventType): type is PetCareType {
   return PET_CARE_TYPES.includes(type as PetCareType)
-}
-
-export function getDefaultPetCareInterval(type: PetCareType): number {
-  return PET_CARE_INTERVALS[type]
 }
 
 function parseDateOnly(value: string): number {
@@ -425,19 +424,10 @@ export function buildPetCareCards(
         right.occurredOn.localeCompare(left.occurredOn) ||
         right.createdAt.localeCompare(left.createdAt),
       )[0]
-    const interval = latest?.recurrenceDays && latest.recurrenceDays > 0
-      ? latest.recurrenceDays
-      : PET_CARE_INTERVALS[type]
-    const nextOn = latest
-      ? latest.nextOn || addCalendarDays(latest.occurredOn, interval)
-      : null
-
-    if (!latest || !nextOn) {
+    if (!latest) {
       return {
         type,
         title: PET_EVENT_LABELS[type],
-        intervalLabel: `每 ${interval} 天`,
-        intervalDays: interval,
         lastOn: null,
         elapsedLabel: '还没有记录',
         nextOn: null,
@@ -446,22 +436,23 @@ export function buildPetCareCards(
       }
     }
 
-    const days = Math.round((parseDateOnly(nextOn) - parseDateOnly(today)) / 86400000)
-    const status = days < 0 ? 'overdue' : days <= 7 ? 'due-soon' : 'normal'
+    const nextOn = latest.nextOn || null
+    const days = nextOn
+      ? Math.round((parseDateOnly(nextOn) - parseDateOnly(today)) / 86400000)
+      : null
+    const status = days === null ? 'normal' : days < 0 ? 'overdue' : days <= 7 ? 'due-soon' : 'normal'
     const statusLabel =
-      days < 0
-        ? `已超期 ${Math.abs(days)} 天`
-        : days === 0
-          ? '今天该做'
-          : days <= 7
-            ? `${days} 天后`
-            : `下次 ${nextOn}`
+      days === null
+        ? '由你安排'
+        : days < 0
+          ? `计划日已过 ${Math.abs(days)} 天`
+          : days === 0
+            ? '计划在今天'
+            : `${days} 天后`
 
     return {
       type,
       title: PET_EVENT_LABELS[type],
-      intervalLabel: `每 ${interval} 天`,
-      intervalDays: interval,
       lastOn: latest.occurredOn,
       elapsedLabel: formatPetElapsed(latest.occurredOn, today),
       nextOn,

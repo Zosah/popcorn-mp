@@ -47,3 +47,21 @@
 .event-actions button { width: 100%; gap: 9rpx; }
 .event-delete { margin-top: 13rpx; }
 .event-tip { display: flex; align-items: center; justify-content: center; margin-top: 16rpx; color: var(--event-ink-3); gap: 6rpx; font-size: 22rpx; }
+
+/* 与宠物页一致：主操作弱化为浅粉，不再使用黑色强调按钮 */
+.event-actions .primary-button {
+  height: 78rpx;
+  border: 0;
+  border-radius: 999rpx;
+  background: #f1dce1;
+  color: #82545e;
+  box-shadow: none;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 78rpx;
+}
+.event-actions .primary-button::after { border: 0; }
+.event-actions .event-delete {
+  border-color: #efd8dc;
+  background: #fbf1f2;
+}

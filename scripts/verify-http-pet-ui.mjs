@@ -13,6 +13,13 @@ const identityKey = 'popcorn_api_mock_identity_v1'
 const suffix = Date.now().toString(36).slice(-8)
 const petName = `团子${suffix.slice(-3)}`
 const image = await readFile(new URL('../src/images/demo-menu-still-life.jpg', import.meta.url))
+const petsWxml = await readFile(new URL('../src/pages/pets/index.wxml', import.meta.url), 'utf8')
+assert.match(petsWxml, /\{\{item\.hearts\}\} \{\{item\.label\}\}/)
+assert.ok(petsWxml.includes('catchtap="onChangeSupplyStatus"'))
+assert.ok(!petsWxml.includes('onRemoveAvatar'))
+const supplyRowTag = petsWxml.match(/<view wx:for="\{\{supplies\}\}"[^>]*>/)?.[0]
+assert.ok(supplyRowTag, '用品行结构不存在')
+assert.ok(!supplyRowTag.includes('onChangeSupplyStatus'), '用品整行不应直接触发偏好修改')
 const miniProgram = await automator.connect({ wsEndpoint })
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -200,10 +207,13 @@ try {
   await assertNoHorizontalOverflow(page, '宠物档案')
   await screenshot('profile-empty-avatar')
   await callPageMethod('onOpenAvatarPreview')
-  assert.equal((await page.data()).avatarPreviewOpen, true)
+  const previewData = await page.data()
+  assert.equal(previewData.avatarPreviewOpen, true)
+  assert.equal(previewData.uploadingAvatar, false)
+  assert.equal(previewData.profile.avatarMediaId, '')
   await screenshot('avatar-preview')
   await callPageMethod('onCloseAvatarPreview')
-  console.log('PASS 宠物档案读取真实接口并回退插画头像，头像可放大预览')
+  console.log('PASS 头像只做放大预览，不触发上传；更换入口保持明确')
 
   const tempImage = await writeTempImage(image)
   assert.ok(tempImage.size > 1000)
@@ -257,21 +267,11 @@ try {
   await screenshot('profile-avatar-upload-error')
   console.log('PASS 宠物头像上传失败时保留原头像并展示错误')
 
-  await mockWxSuccess('showModal', { confirm: true, cancel: false })
-  await callPageMethod('onRemoveAvatar')
-  await waitFor(async () => {
-    const data = await page.data()
-    return !data.uploadingAvatar
-      && data.profile?.avatarMediaId === ''
-      && data.profile?.avatarUrl === ''
-      ? data
-      : false
-  }, '宠物头像移除')
-  const latestAfterRemoval = (await listPets(owner.token, owner.activeSpaceId)).items
-    .find((item) => item.id === pet.id)
-  assert.equal(latestAfterRemoval?.avatarMediaId, '')
-  await screenshot('profile-avatar-removed')
-  console.log('PASS 宠物头像移除后清空媒体引用并回退插画头像')
+  await callPageMethod('onOpenAvatarPreview')
+  const finalPreviewData = await page.data()
+  assert.equal(finalPreviewData.avatarPreviewOpen, true)
+  assert.equal(finalPreviewData.profile.avatarMediaId, replacementMediaId)
+  await callPageMethod('onCloseAvatarPreview')
 
   await callPageMethod('onOpenBackgroundPicker')
   assert.equal((await page.data()).backgroundPickerOpen, true)
@@ -353,17 +353,16 @@ try {
   console.log('PASS 体重、吃喝拉撒与换猫砂/换水写入服务端，并生成小时级间隔摘要')
 
   const careOccurredOn = todayShanghai()
+  const plannedNextOn = addDays(careOccurredOn, 45)
   const form = await open('/pages/pet-event-form/index?type=external-deworm')
   const formData = await waitFor(async () => {
     const data = await form.data()
     return !data.loading ? data : false
-  }, '宠物周期照护表单')
-  assert.equal(formData.isCareEvent, true)
-  assert.equal(formData.careIntervalDays, '30')
-  assert.equal(formData.nextCarePreview, addDays(formData.form.occurredOn, 30))
+  }, '宠物护理表单')
+  assert.equal(formData.hasNextDate, false)
+  assert.equal(formData.form.nextOn, '')
+  assert.equal('isCareEvent' in formData, false)
   await form.setData({
-    careIntervalDays: '45',
-    nextCarePreview: addDays(careOccurredOn, 45),
     form: {
       ...formData.form,
       type: 'external-deworm',
@@ -372,20 +371,20 @@ try {
       note: '滴剂使用后观察正常',
       provider: '社区宠物医院',
       cost: '180',
-      nextOn: '',
+      nextOn: plannedNextOn,
     },
-    hasNextDate: false,
+    hasNextDate: true,
   })
-  await screenshot('event-form-recurrence')
+  await screenshot('event-form-schedule')
   await callPageMethod('onSave')
   const event = await waitFor(async () => {
     const collection = await listPets(owner.token, owner.activeSpaceId)
     const latest = collection.items.find((item) => item.id === pet.id)
     return latest?.events.find((item) => item.title === '年度体外驱虫') ?? false
-  }, '周期照护事件保存')
-  assert.equal(event.recurrenceDays, 45)
-  assert.equal(event.nextOn, addDays(careOccurredOn, 45))
-  console.log('PASS 周期照护表单提交 recurrenceDays + nextOn:null，后端自动推算下次日期', event.id)
+  }, '护理事件保存')
+  assert.equal(event.recurrenceDays, 0)
+  assert.equal(event.nextOn, plannedNextOn)
+  console.log('PASS 护理不再自动推算周期，仅在用户明确选择计划日期时保存 nextOn', event.id)
 
   const detail = await open(`/pages/pet-event-detail/index?id=${encodeURIComponent(event.id)}`)
   const detailData = await waitFor(async () => {
@@ -393,60 +392,89 @@ try {
     return !data.loading && data.event?.id === event.id ? data : false
   }, '事件详情')
   assert.equal(detailData.event.version, 1)
-  assert.equal(detailData.event.recurrenceDays, 45)
-  assert.equal(detailData.event.nextOn, addDays(careOccurredOn, 45))
+  assert.equal(detailData.event.recurrenceDays, 0)
+  assert.equal(detailData.event.nextOn, plannedNextOn)
   assert.equal(detailData.petName, petName)
   await assertNoHorizontalOverflow(detail, '事件详情')
-  await screenshot('event-detail-recurrence')
+  await screenshot('event-detail-schedule')
 
   const edit = await open(`/pages/pet-event-form/index?id=${encodeURIComponent(event.id)}`)
   const editData = await waitFor(async () => {
     const data = await edit.data()
     return !data.loading && data.editingEventId === event.id ? data : false
-  }, '周期照护编辑页')
-  assert.equal(editData.isCareEvent, true)
-  assert.equal(editData.careIntervalDays, '45')
-  await edit.setData({
-    careIntervalDays: '60',
-    nextCarePreview: addDays(careOccurredOn, 60),
-  })
+  }, '护理编辑页')
+  assert.equal(editData.hasNextDate, true)
+  assert.equal(editData.form.nextOn, plannedNextOn)
+  assert.equal('isCareEvent' in editData, false)
+  const editedNextOn = addDays(careOccurredOn, 60)
+  await edit.setData({ 'form.nextOn': editedNextOn })
   await callPageMethod('onSave')
   const editedEvent = await waitFor(async () => {
     const collection = await listPets(owner.token, owner.activeSpaceId)
     const latest = collection.items.find((item) => item.id === pet.id)
     return latest?.events.find((item) => item.id === event.id && item.version === 2) ?? false
-  }, '周期照护编辑保存')
-  assert.equal(editedEvent.recurrenceDays, 60)
-  assert.equal(editedEvent.nextOn, addDays(careOccurredOn, 60))
-  console.log('PASS 编辑周期后版本推进到 2，If-Match 由 http-pet 单测覆盖，下次日期同步重算')
+  }, '护理计划日期编辑保存')
+  assert.equal(editedEvent.recurrenceDays, 0)
+  assert.equal(editedEvent.nextOn, editedNextOn)
+  console.log('PASS 编辑护理只修改明确的计划日期，不引入周期字段')
+
+  for (let index = 0; index < 5; index += 1) {
+    await apiOk(`/spaces/${encodeURIComponent(owner.activeSpaceId)}/pets/${encodeURIComponent(pet.id)}/events`, {
+      method: 'POST',
+      token: owner.token,
+      headers: { 'Idempotency-Key': `pet_ui_extra_${suffix}_${index}` },
+      body: {
+        type: ['grooming', 'internal-deworm', 'external-deworm'][index % 3],
+        occurredOn: addDays(careOccurredOn, -(index + 1)),
+        title: `护理补记 ${index + 1}`,
+        note: '时间线折叠验收',
+        provider: '',
+        cost: '',
+        nextOn: null,
+        recurrenceDays: 0,
+      },
+    })
+  }
+
+  page = await open('/pages/pets/index')
+  const profileTimelineData = await waitFor(async () => {
+    const data = await page.data()
+    return !data.loading && data.timeline.length > 5 ? data : false
+  }, '档案时间线折叠')
+  assert.equal(profileTimelineData.timelineVisible.length, 5)
+  assert.match(profileTimelineData.timeline[0].yearLabel, /^\d{4}$/)
+  assert.match(profileTimelineData.timeline[0].dateLabel, /月.+日/)
+  await callPageMethod('onToggleTimeline')
+  const expandedTimeline = await page.data()
+  assert.equal(expandedTimeline.timelineExpanded, true)
+  assert.equal(expandedTimeline.timelineVisible.length, expandedTimeline.timeline.length)
+  await screenshot('timeline-expanded')
 
   page = await open('/pages/pets/index?section=care')
   const carePageData = await waitFor(async () => {
     const data = await page.data()
-    return !data.loading && data.careCards?.length === 3 ? data : false
-  }, '宠物周期照护卡片')
+    return !data.loading && data.careTimeline.length > 5 ? data : false
+  }, '护理时间线折叠')
+  assert.equal(carePageData.careTimelineVisible.length, 5)
   const externalDewormCard = carePageData.careCards.find((item) => item.type === 'external-deworm')
-  assert.equal(externalDewormCard?.intervalDays, 60)
-  await mockWxSuccess('showModal', { confirm: true, cancel: false })
-  await callPageMethod('onCompleteCare', {
-    currentTarget: {
-      dataset: {
-        type: 'external-deworm',
-        intervalDays: externalDewormCard.intervalDays,
-      },
-    },
+  assert.ok(externalDewormCard)
+  assert.equal(externalDewormCard.nextOn, editedNextOn)
+  assert.equal('intervalDays' in externalDewormCard, false)
+  await callPageMethod('onToggleCareTimeline')
+  assert.equal((await page.data()).careTimelineVisible.length, carePageData.careTimeline.length)
+  await screenshot('care')
+  await callPageMethod('onRecordCare', {
+    currentTarget: { dataset: { type: 'external-deworm' } },
   })
-  const completedEvent = await waitFor(async () => {
-    const collection = await listPets(owner.token, owner.activeSpaceId)
-    const latest = collection.items.find((item) => item.id === pet.id)
-    return latest?.events.find(
-      (item) => item.title === '完成体外驱虫' && item.occurredOn === careOccurredOn,
-    ) ?? false
-  }, '完成一次周期照护')
-  assert.equal(completedEvent.recurrenceDays, 60)
-  assert.equal(completedEvent.nextOn, addDays(careOccurredOn, 60))
-  await screenshot('care-completed')
-  console.log('PASS 照护卡片完成一次后新建今日事件，并按当前周期推进下次日期')
+  const careForm = await waitFor(async () => {
+    const current = await miniProgram.currentPage()
+    return current?.path === 'pages/pet-event-form/index' ? current : false
+  }, '护理记一下跳转')
+  const careFormData = await careForm.data()
+  assert.equal(careFormData.requestedType, 'external-deworm')
+  assert.equal(careFormData.hasNextDate, false)
+  await screenshot('care-record-entry')
+  console.log('PASS 时间线超过 5 条可折叠，护理按钮弱化为进入记录表单')
 
   const calendar = await open('/pages/pet-calendar/index')
   await waitFor(async () => {
@@ -473,10 +501,18 @@ try {
   const supplyId = supply.supplies[0]?.id
   if (!supplyId) throw new Error('宠物用品没有创建成功')
   page = await open('/pages/pets/index?section=supplies')
-  await waitFor(async () => {
+  const supplyPageData = await waitFor(async () => {
     const data = await page.data()
     return !data.loading && data.supplies.some((item) => item.id === supplyId) ? data : false
   }, '用品列表')
+  assert.deepEqual(
+    supplyPageData.supplyPreferenceOptions.map(({ label, hearts }) => ({ label, hearts })),
+    [
+      { label: '超爱', hearts: '♥♥♥' },
+      { label: '还行', hearts: '♥♥' },
+      { label: '不爱', hearts: '♥' },
+    ],
+  )
   await mockWxSuccess('showActionSheet', { tapIndex: 0, cancel: false })
   await callPageMethod('onChangeSupplyStatus', {
     currentTarget: { dataset: { id: supplyId } },
@@ -487,6 +523,7 @@ try {
     return latest?.supplies.find((item) => item.id === supplyId && item.preference === 'loved')
   }, '用品状态更新')
   assert.equal(changedSupply.version, 2)
+  assert.equal(changedSupply.preference, 'loved')
   await callPageMethod('onOpenSupplyEditor')
   await page.setData({
     supplyDraft: {
@@ -523,8 +560,9 @@ try {
   assert.equal(savedCustom.brand, 'PIDAN')
   assert.equal(savedCustom.preference, 'loved')
   assert.match(savedCustom.mediaUrl, /^https:\/\//)
+  await callPageMethod('onCloseSupplyEditor')
   await screenshot('supplies')
-  console.log('PASS 用品偏好可切换，自定义类型/品牌/偏好/图片完整写回服务端')
+  console.log('PASS 用品爱心标签调整偏好，整行不直接响应；自定义类型/品牌/图片完整写回服务端')
 
   const home = await open('/pages/home/index')
   const homeData = await waitFor(async () => {

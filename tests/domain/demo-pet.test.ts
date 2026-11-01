@@ -9,8 +9,8 @@ import {
   filterPetSupplies,
   formatPetAge,
   formatPetWeight,
-  getDefaultPetCareInterval,
   getCurrentPetSupplies,
+  getPetSupplyPreferenceHearts,
   getPetSupplyPreferenceLabel,
   shiftPetCalendarMonth,
 } from '../../src/domain/demo-pet'
@@ -67,8 +67,8 @@ describe('首页宠物动态', () => {
   })
 })
 
-describe('周期照护', () => {
-  it('照护页覆盖洗护和内外驱，并按最近一次记录计算下次日期', () => {
+describe('护理记录', () => {
+  it('照护页覆盖洗护和内外驱，未明确安排时不自动推算下次日期', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const cards = buildPetCareCards(state.events, '2026-08-27')
 
@@ -79,36 +79,52 @@ describe('周期照护', () => {
     ])
     expect(cards.find((item) => item.type === 'internal-deworm')).toMatchObject({
       type: 'internal-deworm',
-      nextOn: '2026-09-06',
+      nextOn: null,
       status: 'normal',
+      statusLabel: '由你安排',
     })
     expect(cards.find((item) => item.type === 'external-deworm')).toMatchObject({
       type: 'external-deworm',
+      nextOn: null,
+      status: 'normal',
+      statusLabel: '由你安排',
+    })
+  })
+
+  it('只在用户明确设置计划日期后展示临期与过期状态', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const external = state.events.find((item) => item.type === 'external-deworm')
+    if (!external) throw new Error('体外驱虫示例缺失')
+    external.nextOn = '2026-09-02'
+
+    expect(
+      buildPetCareCards(state.events, '2026-08-27').find(
+        (item) => item.type === 'external-deworm',
+      ),
+    ).toMatchObject({
       nextOn: '2026-09-02',
       status: 'due-soon',
       statusLabel: '6 天后',
     })
+
+    external.nextOn = '2026-09-20'
+    expect(
+      buildPetCareCards(state.events, '2026-10-01').find(
+        (item) => item.type === 'external-deworm',
+      ),
+    ).toMatchObject({
+      nextOn: '2026-09-20',
+      status: 'overdue',
+      statusLabel: '计划日已过 11 天',
+    })
   })
 
-  it('没有记录和已经超期时显示明确状态', () => {
+  it('没有护理记录时显示未记录状态', () => {
     expect(
       buildPetCareCards([], '2026-08-27').every(
         (item) => item.status === 'unrecorded',
       ),
     ).toBe(true)
-    const state = createDemoPetState(Date.UTC(2026, 7, 27))
-    expect(
-      buildPetCareCards(state.events, '2026-10-01').find(
-        (item) => item.type === 'internal-deworm',
-      )?.status,
-    ).toBe('overdue')
-  })
-
-  it('为护理项目提供默认天数', () => {
-    expect(getDefaultPetCareInterval('vaccine')).toBe(365)
-    expect(getDefaultPetCareInterval('grooming')).toBe(30)
-    expect(getDefaultPetCareInterval('internal-deworm')).toBe(90)
-    expect(getDefaultPetCareInterval('external-deworm')).toBe(30)
   })
 })
 
@@ -124,7 +140,7 @@ describe('吃喝拉撒用品集合', () => {
     ).toBe(true)
   })
 
-  it('种草用品优先，并可生成当前配置', () => {
+  it('超爱用品优先，并可生成当前配置', () => {
     expect(filterPetSupplies(state.supplies, 'all')[0]?.preference).toBe('loved')
     expect(getCurrentPetSupplies(state.supplies).map((item) => item.category)).toEqual([
       'can',
@@ -136,10 +152,13 @@ describe('吃喝拉撒用品集合', () => {
     expect(filterPetSupplies(state.supplies, 'all')[0]).not.toBe(state.supplies[0])
   })
 
-  it('用品偏好统一使用种草、一般和拔草', () => {
-    expect(getPetSupplyPreferenceLabel('loved')).toBe('种草')
-    expect(getPetSupplyPreferenceLabel('neutral')).toBe('一般')
-    expect(getPetSupplyPreferenceLabel('dropped')).toBe('拔草')
+  it('用品偏好使用超爱、还行和不爱，并展示对应爱心指数', () => {
+    expect(getPetSupplyPreferenceLabel('loved')).toBe('超爱')
+    expect(getPetSupplyPreferenceLabel('neutral')).toBe('还行')
+    expect(getPetSupplyPreferenceLabel('dropped')).toBe('不爱')
+    expect(getPetSupplyPreferenceHearts('loved')).toBe('♥♥♥')
+    expect(getPetSupplyPreferenceHearts('neutral')).toBe('♥♥')
+    expect(getPetSupplyPreferenceHearts('dropped')).toBe('♥')
   })
 })
 

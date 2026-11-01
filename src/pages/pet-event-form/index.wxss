@@ -80,3 +80,27 @@
 .event-save { width: 100%; margin-top: 28rpx; gap: 9rpx; }
 .event-save-error { display: flex; align-items: center; margin-top: 22rpx; padding: 16rpx 18rpx; border: 1rpx solid #f0cbc5; border-radius: 20rpx; background: #fff7f5; color: var(--event-ink-2); gap: 9rpx; font-size: 23rpx; line-height: 1.55; }
 .event-note { display: flex; align-items: center; justify-content: center; margin-top: 16rpx; color: var(--event-ink-3); gap: 6rpx; font-size: 22rpx; }
+
+/* 与宠物页保持同一套浅粉语气，保存动作弱化成辅助按钮 */
+.pet-event-form {
+  --event-pink: #b66f7d;
+  --event-pink-soft: #f7e6e9;
+  background: #fbf7f6;
+}
+.event-hero__mark { background: #f7e6e9; }
+.paper-card { border-color: #eee1e3; background: rgba(255, 255, 255, 0.9); box-shadow: 0 12rpx 30rpx rgba(91, 57, 65, 0.045); }
+.event-textarea { background: #faf3f4; }
+.event-save {
+  display: flex;
+  height: 78rpx;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999rpx;
+  background: #f1dce1;
+  color: #82545e;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 78rpx;
+}
+.event-save::after { border: 0; }

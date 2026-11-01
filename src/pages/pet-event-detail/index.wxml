@@ -26,7 +26,6 @@
     <view class="event-detail-row"><text>发生日期</text><text>{{event.occurredOn}}</text></view>
     <view wx:if="{{event.provider}}" class="event-detail-row"><text>机构 / 地点</text><text>{{event.provider}}</text></view>
     <view wx:if="{{event.cost}}" class="event-detail-row"><text>费用</text><text>¥{{event.cost}}</text></view>
-    <view wx:if="{{event.recurrenceDays}}" class="event-detail-row"><text>照护周期</text><text>每 {{event.recurrenceDays}} 天</text></view>
     <view wx:if="{{event.nextOn}}" class="event-detail-row"><text>下次计划</text><text>{{event.nextOn}}</text></view>
     <view class="event-detail-note">
       <view class="event-detail-note__label"><line-icon name="pen-line" size="18" tone="pink" /><text>详细记录</text></view>
@@ -35,7 +34,7 @@
   </view>
 
   <view wx:if="{{event}}" class="event-actions">
-    <button class="primary-button" disabled="{{deleting}}" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑事件</text></button>
+    <button class="primary-button" disabled="{{deleting}}" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="pink" /><text>编辑事件</text></button>
     <button class="danger-button event-delete" loading="{{deleting}}" disabled="{{deleting}}" bindtap="onDelete"><line-icon name="circle-alert" size="22" tone="danger" /><text>{{deleting ? '正在删除' : '删除事件'}}</text></button>
   </view>
   <view class="event-tip"><line-icon name="circle-alert" size="17" tone="muted" /><text>医疗信息只作家庭生活记录，不构成诊疗建议。</text></view>

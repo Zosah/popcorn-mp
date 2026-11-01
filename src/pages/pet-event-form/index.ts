@@ -1,11 +1,9 @@
 import {
-  getDefaultPetCareInterval,
-  isPetCareType,
   PET_EVENT_LABELS,
   type PetEventType,
 } from '../../domain/demo-pet'
 import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
-import { addCalendarDays, getShanghaiDateOnly } from '../../domain/expiry'
+import { getShanghaiDateOnly } from '../../domain/expiry'
 import { petGateway } from '../../services/pet'
 import {
   activePetFrom,
@@ -17,19 +15,6 @@ const EVENT_TYPES = Object.entries(PET_EVENT_LABELS).map(([value, label]) => ({
   value: value as PetEventType,
   label,
 }))
-
-function buildCarePreview(occurredOn: string, rawInterval: string): string {
-  const intervalDays = Number(rawInterval)
-  if (
-    !occurredOn ||
-    !Number.isInteger(intervalDays) ||
-    intervalDays < 1 ||
-    intervalDays > 3650
-  ) {
-    return ''
-  }
-  return addCalendarDays(occurredOn, intervalDays)
-}
 
 Page({
   data: {
@@ -51,9 +36,6 @@ Page({
     eventTypeIconNames: EVENT_TYPES.map(
       (item) => PET_EVENT_ICON_NAMES[item.value],
     ),
-    isCareEvent: false,
-    careIntervalDays: '',
-    nextCarePreview: '',
     hasNextDate: false,
     form: {
       type: 'vaccine' as PetEventType,
@@ -97,14 +79,6 @@ Page({
       )
       const eventType = EVENT_TYPES[eventTypeIndex] ?? EVENT_TYPES[0]!
       const occurredOn = editingEvent?.occurredOn ?? requestedDate
-      const careType = isPetCareType(eventType.value) ? eventType.value : null
-      const isCareEvent = careType !== null
-      const careIntervalDays = careType
-        ? String(
-            editingEvent?.recurrenceDays ||
-              getDefaultPetCareInterval(careType),
-          )
-        : ''
       this.setData({
         petName: pet.profile.name,
         petId: pet.profile.id,
@@ -113,12 +87,7 @@ Page({
         pageTitle: editingEvent ? '编辑这件事' : '记录一件事',
         saveText: editingEvent ? '保存修改' : '保存到时间线',
         eventTypeIndex,
-        isCareEvent,
-        careIntervalDays,
-        nextCarePreview: isCareEvent
-          ? buildCarePreview(occurredOn, careIntervalDays)
-          : '',
-        hasNextDate: !isCareEvent && Boolean(editingEvent?.nextOn),
+        hasNextDate: Boolean(editingEvent?.nextOn),
         form: {
           ...this.data.form,
           type: eventType.value,
@@ -155,18 +124,8 @@ Page({
     const index = Number(event.detail.value)
     const option = EVENT_TYPES[index]
     if (!option) return
-    const careType = isPetCareType(option.value) ? option.value : null
-    const isCareEvent = careType !== null
-    const careIntervalDays = careType
-      ? String(getDefaultPetCareInterval(careType))
-      : ''
     this.setData({
       eventTypeIndex: index,
-      isCareEvent,
-      careIntervalDays,
-      nextCarePreview: isCareEvent
-        ? buildCarePreview(this.data.form.occurredOn, careIntervalDays)
-        : '',
       hasNextDate: false,
       'form.type': option.value,
       'form.title': `${option.label}记录`,
@@ -175,24 +134,7 @@ Page({
   },
 
   onDateChange(event: { detail: { value: string } }) {
-    const occurredOn = event.detail.value
-    this.setData({
-      'form.occurredOn': occurredOn,
-      nextCarePreview: this.data.isCareEvent
-        ? buildCarePreview(occurredOn, this.data.careIntervalDays)
-        : '',
-    })
-  },
-
-  onCareIntervalInput(event: { detail: { value: string } }) {
-    const careIntervalDays = event.detail.value.replace(/[^\d]/g, '')
-    this.setData({
-      careIntervalDays,
-      nextCarePreview: buildCarePreview(
-        this.data.form.occurredOn,
-        careIntervalDays,
-      ),
-    })
+    this.setData({ 'form.occurredOn': event.detail.value })
   },
 
   onTitleInput(event: { detail: { value: string } }) {
@@ -232,28 +174,12 @@ Page({
       wx.showToast({ title: '请选择发生日期', icon: 'none' })
       return
     }
-    if (!this.data.isCareEvent && this.data.hasNextDate && !form.nextOn) {
-      wx.showToast({ title: '请选择下次日期', icon: 'none' })
+    if (this.data.hasNextDate && !form.nextOn) {
+      wx.showToast({ title: '请选择计划日期', icon: 'none' })
       return
     }
-    if (
-      !this.data.isCareEvent &&
-      this.data.hasNextDate &&
-      form.nextOn < form.occurredOn
-    ) {
-      wx.showToast({ title: '下次日期不能早于发生日期', icon: 'none' })
-      return
-    }
-    const recurrenceDays = this.data.isCareEvent
-      ? Number(this.data.careIntervalDays)
-      : 0
-    if (
-      this.data.isCareEvent &&
-      (!Number.isInteger(recurrenceDays) ||
-        recurrenceDays < 1 ||
-        recurrenceDays > 3650)
-    ) {
-      wx.showToast({ title: '照护周期需为 1 到 3650 天', icon: 'none' })
+    if (this.data.hasNextDate && form.nextOn < form.occurredOn) {
+      wx.showToast({ title: '计划日期不能早于发生日期', icon: 'none' })
       return
     }
     if (
@@ -271,9 +197,8 @@ Page({
       note: form.note,
       provider: form.provider,
       cost: form.cost,
-      nextOn:
-        !this.data.isCareEvent && this.data.hasNextDate ? form.nextOn : null,
-      recurrenceDays,
+      nextOn: this.data.hasNextDate ? form.nextOn : null,
+      recurrenceDays: 0,
     }
     if (!this.data.petId) {
       wx.showToast({ title: '还没有宠物档案', icon: 'none' })

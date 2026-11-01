@@ -48,9 +48,6 @@
             </view>
           </block>
           <view wx:else class="pet-portrait__initial">{{profileInitial}}</view>
-          <view class="pet-portrait__camera">
-            <line-icon name="camera" size="17" tone="white" />
-          </view>
         </view>
       </view>
 
@@ -80,23 +77,12 @@
           <view class="profile-fact"><text class="profile-fact__label">最近疫苗</text><text class="profile-fact__value">{{latestVaccineLabel}}</text><text class="profile-fact__hint">{{vaccineNextLabel}}</text></view>
           <view class="profile-fact"><text class="profile-fact__label">绝育</text><text class="profile-fact__value">{{profile.neuteredOn ? neuteredOnLabel : '未绝育'}}</text></view>
         </view>
-        <view bindtap="onAddEvent" class="pet-inline-action">
-          <line-icon name="plus" size="17" tone="green" />
-          <text>补充疫苗或健康事件</text>
-        </view>
-
         <view wx:if="{{editingProfile}}" class="profile-editor">
           <view class="profile-field"><text>出生日期</text><picker mode="date" value="{{profileDraft.birthday}}" bindchange="onBirthdayChange"><view>{{profileDraft.birthday || '选择日期'}} ›</view></picker></view>
           <view class="profile-field"><text>到家日期</text><picker mode="date" value="{{profileDraft.homeOn}}" bindchange="onHomeDateChange"><view>{{profileDraft.homeOn || '选择日期'}} ›</view></picker></view>
           <view class="profile-field"><text>是否绝育</text><switch checked="{{profileDraft.neuteredOn}}" color="#5f7d70" bindchange="onNeuteredToggle" /></view>
           <view wx:if="{{profileDraft.neuteredOn}}" class="profile-field"><text>绝育日期</text><picker mode="date" value="{{profileDraft.neuteredOn}}" bindchange="onNeuteredDateChange"><view>{{profileDraft.neuteredOn}} ›</view></picker></view>
           <button class="profile-editor__save" bindtap="onSaveProfile">保存档案</button>
-        </view>
-
-        <view wx:if="{{nextCare}}" class="next-care" bindtap="onOpenCalendar">
-          <view class="next-care__date"><text>{{nextCare.monthLabel}}</text><text class="next-care__day">{{nextCare.dayLabel}}</text></view>
-          <view class="next-care__body"><text class="next-care__eyebrow">下一次护理</text><view class="next-care__title">{{nextCare.title}}</view><view class="next-care__meta">{{nextCare.meta}}</view></view>
-          <text class="next-care__arrow">›</text>
         </view>
 
         <view class="pet-section-head"><view><text class="pet-eyebrow">今天</text><text class="pet-section-head__title">{{profile.name}}的日常</text></view><view data-value="daily" bindtap="onSwitchSection">全部</view></view>
@@ -116,10 +102,15 @@
           </view>
         </view>
 
-        <view class="pet-section-head"><view><text class="pet-eyebrow">成长时间线</text><text class="pet-section-head__title">最近的{{profile.name}}</text></view><view bindtap="onAddEvent">＋ 记录</view></view>
+        <view class="pet-section-head"><view><text class="pet-eyebrow">成长时间线</text><text class="pet-section-head__title">最近的{{profile.name}}</text></view><view bindtap="onAddEvent">记一下</view></view>
         <view class="pet-timeline">
-          <view wx:for="{{timeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent"><view class="pet-timeline__dot"></view><view class="pet-timeline__date">{{item.occurredOn}}</view><view class="pet-timeline__title">{{item.title}}</view><view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view></view>
+          <view wx:for="{{timelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
+            <view class="timeline-row__date"><text class="timeline-row__year">{{item.yearLabel}}</text><text class="timeline-row__day">{{item.dateLabel}}</text></view>
+            <view class="timeline-row__rail"><view class="timeline-row__dot"></view><view class="timeline-row__line"></view></view>
+            <view class="timeline-row__body"><view class="timeline-row__title">{{item.title}}</view><text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text></view>
+          </view>
         </view>
+        <view wx:if="{{timeline.length > 5}}" class="timeline-more" bindtap="onToggleTimeline">{{timelineExpanded ? '收起较早记录' : '展开更早记录'}}<text>{{timelineExpanded ? '↑' : '↓'}}</text></view>
 
         <view class="profile-danger-zone"><view><text>删除宠物档案</text><text>同时移除照护与用品记录</text></view><button bindtap="onDeletePet">删除{{profile.name}}的档案</button></view>
       </block>
@@ -127,22 +118,29 @@
       <block wx:elif="{{activeSection === 'care'}}">
         <view class="pet-intro">
           <view class="pet-intro__icon"><line-icon name="heart-pulse" size="27" tone="pink" /></view>
-          <view><text>不靠记忆，按上次推算下次</text><text>洗澡、体内驱虫和体外驱虫都会保留最近一次记录与间隔。</text></view>
+          <view><text>只记发生过的事</text><text>下次什么时候做，由你决定。想安排时可以顺手记下日期。</text></view>
         </view>
-        <view class="pet-section-head"><view><text class="pet-eyebrow">护理周期</text><text class="pet-section-head__title">最近做了什么</text></view><view bindtap="onOpenCalendar">月历</view></view>
+        <view class="pet-section-head"><view><text class="pet-eyebrow">护理记录</text><text class="pet-section-head__title">最近一次</text></view><view bindtap="onOpenCalendar">月历</view></view>
         <view class="care-list">
-          <view wx:for="{{careCards}}" wx:key="type" class="care-card care-card--{{item.status}}">
-            <view class="care-card__top"><text>{{item.title}}</text><text>{{item.intervalLabel}}</text></view>
-            <view class="care-card__elapsed">距上次 <text>{{item.elapsedLabel}}</text></view>
-            <view wx:if="{{item.statusLabel !== item.elapsedLabel}}" class="care-card__status">{{item.statusLabel}}</view>
-            <view class="care-card__meta"><text>上次 {{item.lastOn || '未记录'}}</text><text>下次 {{item.nextOn || '待记录'}}</text></view>
-            <button data-type="{{item.type}}" data-interval-days="{{item.intervalDays}}" bindtap="onCompleteCare">今天完成</button>
+          <view wx:for="{{careCards}}" wx:key="type" class="care-row care-row--{{item.status}}">
+            <view class="care-row__body">
+              <view class="care-row__title">{{item.title}}</view>
+              <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOn}} · 已过 <text>{{item.elapsedLabel}}</text></view>
+              <view wx:else class="care-row__elapsed">还没有记录</view>
+              <view wx:if="{{item.nextOn}}" class="care-row__plan">计划 {{item.nextOn}}</view>
+            </view>
+            <button class="care-row__action" data-type="{{item.type}}" bindtap="onRecordCare"><line-icon name="plus" size="16" tone="pink" /><text>记一下</text></button>
           </view>
         </view>
-        <view class="pet-section-head"><view><text class="pet-eyebrow">最近护理</text><text class="pet-section-head__title">护理时间线</text></view><view bindtap="onAddEvent">＋ 记录</view></view>
+        <view class="pet-section-head"><view><text class="pet-eyebrow">最近护理</text><text class="pet-section-head__title">护理时间线</text></view><view bindtap="onAddEvent">记一下</view></view>
         <view class="pet-timeline">
-          <view wx:for="{{careTimeline}}" wx:key="id" class="pet-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent"><view class="pet-timeline__dot pet-timeline__dot--pink"></view><view class="pet-timeline__date">{{item.occurredOn}}</view><view class="pet-timeline__title">{{item.title}}</view><view class="pet-timeline__copy">{{item.detailText || item.typeLabel}}</view></view>
+          <view wx:for="{{careTimelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
+            <view class="timeline-row__date"><text class="timeline-row__year">{{item.yearLabel}}</text><text class="timeline-row__day">{{item.dateLabel}}</text></view>
+            <view class="timeline-row__rail"><view class="timeline-row__dot timeline-row__dot--pink"></view><view class="timeline-row__line"></view></view>
+            <view class="timeline-row__body"><view class="timeline-row__title">{{item.title}}</view><text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text></view>
+          </view>
         </view>
+        <view wx:if="{{careTimeline.length > 5}}" class="timeline-more" bindtap="onToggleCareTimeline">{{careTimelineExpanded ? '收起较早记录' : '展开更早记录'}}<text>{{careTimelineExpanded ? '↑' : '↓'}}</text></view>
       </block>
 
       <block wx:elif="{{activeSection === 'daily'}}">
@@ -163,36 +161,35 @@
       </block>
 
       <block wx:else>
-        <view class="pet-section-head"><view><text class="pet-eyebrow">种草与拔草</text><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
+        <view class="pet-section-head"><view><text class="pet-eyebrow">家里的好物</text><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
         <view wx:if="{{currentSupplies.length}}" class="current-supplies-wrap">
-          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply"><text class="current-supply__label">种草</text><view class="current-supply__name">{{item.name}}</view><view class="current-supply__note">{{item.categoryLabel}} · {{item.note || '很喜欢'}}</view></view></view></scroll-view>
+          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply"><text class="current-supply__label">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__name">{{item.name}}</view><view class="current-supply__note">{{item.categoryLabel}} · {{item.note || '用着不错'}}</view></view></view></scroll-view>
         </view>
         <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}"><view class="supply-filter__row"><view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view></view></scroll-view>
         <view class="supply-list">
-          <view wx:for="{{supplies}}" wx:key="id" class="supply-row" data-id="{{item.id}}" bindtap="onChangeSupplyStatus">
+          <view wx:for="{{supplies}}" wx:key="id" class="supply-row">
             <image wx:if="{{item.mediaUrl}}" class="supply-row__image" src="{{item.mediaUrl}}" mode="aspectFill" />
             <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="24" tone="gold" /></view>
             <view class="supply-row__body"><view class="supply-row__title">{{item.name}}</view><text>{{item.brand || '未记品牌'}} · {{item.categoryLabel}}</text><text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text></view>
-            <view class="supply-preference supply-preference--{{item.preference}}">{{item.preferenceLabel}}</view>
+            <view class="supply-preference supply-preference--{{item.preference}}" data-id="{{item.id}}" catchtap="onChangeSupplyStatus"><text class="supply-preference__hearts">{{item.preferenceHearts}}</text><text>{{item.preferenceLabel}}</text></view>
           </view>
         </view>
         <view wx:if="{{!supplies.length}}" class="pet-empty-line" bindtap="onAddSupply">还没有用品，先记一件家里正在用的东西</view>
-        <view class="supply-tip">点击偏好可以改成种草、一般或拔草。</view>
+        <view class="supply-tip">点爱心调整喜欢程度，不会改动其它资料。</view>
       </block>
     </view>
 
     <view wx:if="{{avatarPreviewOpen}}" class="pet-modal" catchtap="onCloseAvatarPreview">
       <view class="avatar-preview" catchtap="noop">
-        <view class="avatar-preview__visual" bindtap="onChooseAvatar">
+        <view class="avatar-preview__visual">
           <image wx:if="{{profile.avatarUrl}}" src="{{profile.avatarUrl}}" mode="aspectFill" />
           <block wx:elif="{{profile.species === 'cat'}}"><view class="avatar-preview__initial">猫</view></block>
           <view wx:else class="avatar-preview__initial">{{profileInitial}}</view>
         </view>
+        <view class="avatar-preview__close" catchtap="onCloseAvatarPreview" aria-label="关闭"><text>×</text></view>
         <view class="avatar-preview__name">{{profile.name}}</view>
-        <view class="avatar-preview__copy">照片会按 1:1 裁切后保存</view>
+        <view class="avatar-preview__copy">更换时可按 1:1 裁切</view>
         <button class="avatar-preview__button" bindtap="onChooseAvatar">{{uploadingAvatar ? '处理中…' : profile.avatarUrl ? '更换照片' : '添加照片'}}</button>
-        <button wx:if="{{profile.avatarUrl}}" class="avatar-preview__remove" bindtap="onRemoveAvatar">移除照片</button>
-        <view class="sheet-close" bindtap="onCloseAvatarPreview">关闭</view>
       </view>
     </view>
 
@@ -217,7 +214,7 @@
           <view wx:if="{{supplyDraft.category === 'custom'}}" class="supply-field"><text>自定义类型</text><input value="{{supplyDraft.categoryLabel}}" maxlength="32" placeholder="例如：玩具、护理" data-field="categoryLabel" bindinput="onSupplyFieldInput" /></view>
           <view class="supply-field"><text>名称</text><input value="{{supplyDraft.name}}" maxlength="60" placeholder="例如：鸡肉主食罐" data-field="name" bindinput="onSupplyFieldInput" /></view>
           <view class="supply-field"><text>品牌</text><input value="{{supplyDraft.brand}}" maxlength="40" placeholder="选填" data-field="brand" bindinput="onSupplyFieldInput" /></view>
-          <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.label}}</view></view></view>
+          <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view></view>
           <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" /></view>
           <view class="supply-editor-section"><text class="supply-editor-label">图片</text><view wx:if="{{supplyDraft.mediaUrl}}" class="supply-editor-image"><image src="{{supplyDraft.mediaUrl}}" mode="aspectFill" /><view bindtap="onRemoveSupplyImage">移除</view></view><view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view></view>
           <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">保存用品</button>
@@ -228,7 +225,7 @@
 
   <view wx:else class="pet-empty-state">
     <view class="pet-empty-state__art"><view class="pet-empty-state__ear pet-empty-state__ear--left"></view><view class="pet-empty-state__ear pet-empty-state__ear--right"></view><view class="pet-empty-state__face"><line-icon name="heart" size="34" tone="green" /></view></view>
-    <text class="pet-eyebrow">PET CARE</text>
+    <text class="pet-eyebrow">毛孩子的家</text>
     <view class="pet-empty-state__title">{{loading ? '正在同步宠物照护…' : '还没有宠物档案'}}</view>
     <view wx:if="{{errorText}}" class="pet-empty-state__copy">{{errorText}}</view>
     <view wx:else class="pet-empty-state__copy">添加第一只伙伴，把疫苗、体重、日常和喜欢的东西慢慢记下来。</view>

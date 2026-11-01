@@ -12,8 +12,8 @@ import {
   filterPetSupplies,
   formatPetAge,
   formatPetWeight,
-  getDefaultPetCareInterval,
   getCurrentPetSupplies,
+  getPetSupplyPreferenceHearts,
   getPetSupplyPreferenceLabel,
   PET_BACKGROUND_LABELS,
   PET_DAILY_LOG_LABELS,
@@ -97,10 +97,11 @@ const SUPPLY_CATEGORIES: Array<{
 const SUPPLY_PREFERENCE_OPTIONS: Array<{
   value: PetSupplyPreference
   label: string
+  hearts: string
 }> = [
-  { value: 'loved', label: '种草' },
-  { value: 'neutral', label: '一般' },
-  { value: 'dropped', label: '拔草' },
+  { value: 'loved', label: '超爱', hearts: '♥♥♥' },
+  { value: 'neutral', label: '还行', hearts: '♥♥' },
+  { value: 'dropped', label: '不爱', hearts: '♥' },
 ]
 
 const SUPPLY_EDITOR_CATEGORIES: Array<{
@@ -124,7 +125,7 @@ const DAILY_LOG_DEFAULTS: Record<PetDailyLogType, string> = {
   'water-change': '清洗水碗，换上干净饮水',
 }
 
-const PET_PAGE_CACHE_KEY = 'pets:overview'
+const PET_PAGE_CACHE_KEY = 'pets:overview:v2'
 
 function formatShortDate(value: string | null): string {
   if (!value) return '待补充'
@@ -196,13 +197,6 @@ Page({
     latestWeight: '—',
     companionDays: 0,
     dailyDoneCount: 0,
-    nextCare: null as {
-      title: string
-      monthLabel: string
-      dayLabel: string
-      meta: string
-      statusLabel: string
-    } | null,
     featuredSupply: null as {
       id: string
       categoryLabel: string
@@ -221,15 +215,37 @@ Page({
       ReturnType<typeof buildPetTimeline>[number] & {
         iconName: string
         detailText: string
+        yearLabel: string
+        dateLabel: string
       }
     >,
+    timelineVisible: [] as Array<
+      ReturnType<typeof buildPetTimeline>[number] & {
+        iconName: string
+        detailText: string
+        yearLabel: string
+        dateLabel: string
+      }
+    >,
+    timelineExpanded: false,
     careCards: [] as Array<ReturnType<typeof buildPetCareCards>[number]>,
     careTimeline: [] as Array<
       ReturnType<typeof buildPetTimeline>[number] & {
         iconName: string
         detailText: string
+        yearLabel: string
+        dateLabel: string
       }
     >,
+    careTimelineVisible: [] as Array<
+      ReturnType<typeof buildPetTimeline>[number] & {
+        iconName: string
+        detailText: string
+        yearLabel: string
+        dateLabel: string
+      }
+    >,
+    careTimelineExpanded: false,
     dailySummary: [] as Array<
       ReturnType<typeof buildPetDailySummary>[number] & {
         iconName: string
@@ -250,6 +266,8 @@ Page({
       categoryLabel: string
       name: string
       note: string
+      preferenceLabel: string
+      preferenceHearts: string
     }>,
     supplies: [] as Array<{
       id: string
@@ -261,6 +279,7 @@ Page({
       mediaUrl: string
       preference: PetSupplyPreference
       preferenceLabel: string
+      preferenceHearts: string
       note: string
       recordedOn: string
     }>,
@@ -434,13 +453,14 @@ Page({
   async runPetMutation(
     operation: () => Promise<DemoPetState>,
     successText: string,
+    showSuccess = true,
   ): Promise<boolean> {
     if (!requireAuthForWrite()) return false
     this.setData({ syncing: true, syncState: 'pending', errorText: '' })
     try {
       const state = await operation()
       this.applyPetState(state)
-      wx.showToast({ title: successText, icon: 'success' })
+      if (showSuccess) wx.showToast({ title: successText, icon: 'success' })
       return true
     } catch (error) {
       const message = getPetErrorMessage(error, '这次没有保存成功')
@@ -462,10 +482,31 @@ Page({
     this.setData({ activeSection: event.currentTarget.dataset.value })
   },
 
+  onToggleTimeline() {
+    const timelineExpanded = !this.data.timelineExpanded
+    this.setData({
+      timelineExpanded,
+      timelineVisible: timelineExpanded
+        ? this.data.timeline
+        : this.data.timeline.slice(0, 5),
+    })
+  },
+
+  onToggleCareTimeline() {
+    const careTimelineExpanded = !this.data.careTimelineExpanded
+    this.setData({
+      careTimelineExpanded,
+      careTimelineVisible: careTimelineExpanded
+        ? this.data.careTimeline
+        : this.data.careTimeline.slice(0, 5),
+    })
+  },
+
   loadState(state: DemoPetState) {
     const today = getShanghaiDateOnly(Date.now())
     const timeline = buildPetTimeline(state).map((item) => {
       const event = state.events.find((candidate) => candidate.id === item.id)
+      const [, month = '', day = ''] = item.occurredOn.split('-')
       return {
         ...item,
         iconName: PET_TIMELINE_ICON_NAMES[item.type],
@@ -476,6 +517,8 @@ Page({
         ]
           .filter(Boolean)
           .join(' · '),
+        yearLabel: item.occurredOn.slice(0, 4) || '日期',
+        dateLabel: month && day ? `${Number(month)}月${Number(day)}日` : item.occurredOn,
       }
     })
     const weights = state.weights.slice(-6)
@@ -516,23 +559,17 @@ Page({
       ? `下次 ${formatShortDate(latestVaccine.nextOn)}`
       : ''
     const careCards = buildPetCareCards(state.events, today)
-    const carePriority: Record<string, number> = {
-      overdue: 0,
-      'due-soon': 1,
-      normal: 2,
-      unrecorded: 3,
-    }
-    const nextCareCard = [...careCards].sort((left, right) =>
-      (carePriority[left.status] ?? 9) - (carePriority[right.status] ?? 9) ||
-      (left.nextOn ?? '9999-12-31').localeCompare(right.nextOn ?? '9999-12-31'),
-    )[0]
-    const nextOnParts = nextCareCard?.nextOn?.split('-') ?? []
+    const careTimeline = timeline.filter((item) =>
+      ['vaccine', 'grooming', 'internal-deworm', 'external-deworm', 'visit', 'illness'].includes(item.type),
+    )
     const currentSupplies = getCurrentPetSupplies(state.supplies).map((item) => ({
       id: item.id,
       categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
       iconName: PET_SUPPLY_ICON_NAMES[item.category],
       name: item.name,
       note: item.note,
+      preferenceLabel: getPetSupplyPreferenceLabel(item.preference),
+      preferenceHearts: getPetSupplyPreferenceHearts(item.preference),
     }))
     const homeTimestamp = Date.parse(`${state.profile.homeOn}T00:00:00.000Z`)
     const todayTimestamp = Date.parse(`${today}T00:00:00.000Z`)
@@ -556,23 +593,16 @@ Page({
       latestWeight: latestValue ? formatPetWeight(latestValue.value) : '—',
       companionDays,
       dailyDoneCount: dailySummary.filter((item) => item.done).length,
-      nextCare: nextCareCard
-        ? {
-            title: nextCareCard.title,
-            monthLabel: nextOnParts[1] ? `${Number(nextOnParts[1])}月` : '待定',
-            dayLabel: nextOnParts[2] ? String(Number(nextOnParts[2])) : '—',
-            meta: `${nextCareCard.statusLabel} · ${nextCareCard.intervalLabel}`,
-            statusLabel: nextCareCard.statusLabel,
-          }
-        : null,
       featuredSupply: currentSupplies[0] ?? null,
       weightPoints,
       weightTrendLabel,
       timeline,
+      timelineVisible: this.data.timelineExpanded ? timeline : timeline.slice(0, 5),
       careCards,
-      careTimeline: timeline
-        .filter((item) => item.type !== 'birthday' && item.type !== 'home')
-        .slice(0, 6),
+      careTimeline,
+      careTimelineVisible: this.data.careTimelineExpanded
+        ? careTimeline
+        : careTimeline.slice(0, 5),
       dailySummary: dailySummary.map((item) => ({
         ...item,
         interval: item.type === 'litter-change' || item.type === 'water-change',
@@ -594,6 +624,7 @@ Page({
         iconName: PET_SUPPLY_ICON_NAMES[item.category],
         mediaUrl: item.mediaUrl ?? '',
         preferenceLabel: getPetSupplyPreferenceLabel(item.preference),
+        preferenceHearts: getPetSupplyPreferenceHearts(item.preference),
       })),
     }, () => this.cacheCurrentPage())
   },
@@ -1089,36 +1120,13 @@ Page({
     wx.navigateTo({ url: '/pages/pet-calendar/index' })
   },
 
-  onCompleteCare(event: {
-    currentTarget: { dataset: { type: PetCareType; intervalDays: number } }
+  onRecordCare(event: {
+    currentTarget: { dataset: { type: PetCareType } }
   }) {
     if (!requireAuthForWrite()) return
     const type = event.currentTarget.dataset.type
-    const intervalDays = Number(event.currentTarget.dataset.intervalDays)
-    const recurrenceDays = Number.isInteger(intervalDays) && intervalDays > 0
-      ? intervalDays
-      : getDefaultPetCareInterval(type)
-    const title = `完成${PET_EVENT_LABELS[type]}`
-    wx.showModal({
-      title,
-      content: '确认今天已经完成？记录后会自动计算下一次日期。',
-      confirmText: '完成并记录',
-      success: async (result) => {
-        if (!result.confirm) return
-        await this.runPetMutation(
-          () => petGateway.createEvent(
-            this.data.petState.profile.id,
-            {
-              type,
-              title,
-              note: '',
-              occurredOn: getShanghaiDateOnly(Date.now()),
-              recurrenceDays,
-            },
-          ),
-          '下次日期已更新',
-        )
-      },
+    wx.navigateTo({
+      url: `/pages/pet-event-form/index?type=${type}&date=${getShanghaiDateOnly(Date.now())}`,
     })
   },
 
@@ -1178,7 +1186,8 @@ Page({
             preference.value,
             supply.version ?? 1,
           ),
-          `已标记为${preference.label}`,
+          '',
+          false,
         )
       },
     })
