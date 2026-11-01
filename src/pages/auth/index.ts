@@ -12,7 +12,6 @@ import {
   hydrateAuthState,
   loginAuth,
   logoutAuth,
-  resetAuthAccount,
   saveAuthProfile,
 } from '../../services/auth'
 import { syncAppTabSettings } from '../../services/app-tab-settings'
@@ -42,18 +41,12 @@ interface AuthPageData {
   accountAvatarMediaId: string
   accountAvatarUrl: string
   accountCreatedAt: string
-  accountId: string
   spaceName: string
   backLabel: string
-  loginVignetteNote: string
+  loginNotice: string
   loginFootnote: string
   registerCopy: string
-  profilePreviewLabel: string
-  profilePreviewMeta: string
-  accountHeadCopy: string
   accountTypeLabel: string
-  accountScopeCopy: string
-  clearAccountLabel: string
 }
 
 function formatAccountDate(isoDate: string): string {
@@ -85,38 +78,22 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     accountAvatarMediaId: '',
     accountAvatarUrl: '',
     accountCreatedAt: '',
-    accountId: '',
     spaceName: '我们的家',
     backLabel: '← 返回我的',
-    loginVignetteNote: appConfig.demoMode
-      ? '当前为本地 Demo，头像和昵称只保存在本机。'
-      : '登录只获取微信身份；头像和昵称需要你在微信官方控件中确认。',
+    loginNotice: '',
     loginFootnote: appConfig.demoMode
-      ? 'Demo 阶段使用本机体验身份，不会读取手机号。'
-      : '不读取手机号；微信登录状态会在下次打开小程序时自动恢复。',
+      ? '本地体验不会读取手机号'
+      : '仅使用微信身份登录，不读取手机号',
     registerCopy: appConfig.demoMode
-      ? '昵称和头像只保存在当前设备。'
-      : '昵称和头像会保存到你的账号，并同步到当前空间。',
-    profilePreviewLabel: appConfig.demoMode ? '你的本机身份' : '你的空间身份',
-    profilePreviewMeta: appConfig.demoMode
-      ? 'Demo 账号'
-      : '时刻见账号',
-    accountHeadCopy: appConfig.demoMode
-      ? '这是你在「时刻见」的本机体验身份。'
-      : '这是你在「时刻见」的微信账号。',
+      ? '修改只会更新当前设备上的资料。'
+      : '修改后会同步到当前空间。',
     accountTypeLabel: appConfig.demoMode ? '本机体验账号' : '微信账号',
-    accountScopeCopy: appConfig.demoMode
-      ? '仅保存在当前设备'
-      : '已连接时刻见服务',
-    clearAccountLabel: appConfig.demoMode
-      ? '清除本机账号（不影响其他 Demo 数据）'
-      : '清除本机登录信息',
   },
 
   onLoad(options: Record<string, string | undefined>) {
     if (options.reason === 'session-expired') {
       this.setData({
-        loginVignetteNote: '登录状态已经过期，重新登录后会回到刚才的页面。',
+        loginNotice: '登录已过期，请重新登录',
       })
     }
     void this.bootstrap(options.mode)
@@ -193,7 +170,6 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       accountAvatarMediaId: user.avatarMediaId,
       accountAvatarUrl: '',
       accountCreatedAt: formatAccountDate(user.createdAt),
-      accountId: user.id.slice(-8).toUpperCase(),
       spaceName: state.spaceName,
       backLabel: '← 返回我的',
     })
@@ -403,26 +379,4 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     wx.showToast({ title: '已退出登录', icon: 'success' })
   },
 
-  onClearAccount() {
-    wx.showModal({
-      title: '清除本机登录信息？',
-      content: appConfig.demoMode
-        ? '只删除登录资料，不会删除库存、记录和其他 Demo 数据。'
-        : '会撤销当前会话并清除本机 Token，不会删除服务端账号与空间数据。',
-      confirmText: '清除',
-      confirmColor: '#df6f7d',
-      success: (result) => {
-        if (!result.confirm) return
-        void this.finishClearAccount()
-      },
-    })
-  },
-
-  async finishClearAccount() {
-    wx.showLoading({ title: '正在清除', mask: true })
-    await resetAuthAccount()
-    wx.hideLoading()
-    this.showLogin()
-    wx.showToast({ title: '登录信息已清除', icon: 'success' })
-  },
 })
