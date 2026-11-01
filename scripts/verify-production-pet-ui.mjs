@@ -188,19 +188,29 @@ async function writeTempImage(bytes) {
 }
 
 async function createPetThroughUi(page, name) {
-  await miniProgram.mockWxMethod('showActionSheet', { tapIndex: 0, cancel: false })
-  await miniProgram.mockWxMethod('showModal', {
-    confirm: true,
-    cancel: false,
-    content: name,
-  })
   await page.callMethod('onAddPet')
+  const formPage = await waitFor(async () => {
+    const current = await miniProgram.currentPage()
+    return current.path === 'pages/pet-form/index' ? current : false
+  }, `打开宠物创建表单 ${name}`)
+  await formPage.setData({
+    'form.name': name,
+    'form.species': 'cat',
+    'form.sex': 'female',
+    'form.breed': '中华田园猫',
+    'form.birthday': addDays(todayShanghai(), -365),
+    'form.homeOn': todayShanghai(),
+    'form.status': '生产验收新成员',
+  })
+  await formPage.callMethod('onSave')
   const data = await waitFor(async () => {
-    const current = await page.data()
-    return current.profile?.name === name && current.profile?.id ? current : false
+    const currentPage = await miniProgram.currentPage()
+    if (currentPage.path !== 'pages/pets/index') return false
+    const current = await currentPage.data()
+    return !current.syncing && current.profile?.name === name && current.profile?.id
+      ? current
+      : false
   }, `页面创建宠物 ${name}`)
-  await miniProgram.restoreWxMethod('showActionSheet')
-  await miniProgram.restoreWxMethod('showModal')
   createdPetIds.add(data.profile.id)
   return data.profile
 }
@@ -229,6 +239,7 @@ try {
 
   const primary = await createPetThroughUi(page, petName)
   primaryPetId = primary.id
+  page = await miniProgram.currentPage()
   await waitFor(async () => {
     const data = await page.data()
     return !data.syncing && data.hasActivePet && data.profile?.id === primaryPetId ? data : false
@@ -239,6 +250,7 @@ try {
 
   const backup = await createPetThroughUi(page, backupPetName)
   backupPetId = backup.id
+  page = await miniProgram.currentPage()
   await page.callMethod('refreshPetData', primaryPetId)
   await waitFor(async () => {
     const data = await page.data()

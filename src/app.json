@@ -10,6 +10,7 @@
     "pages/menu-cook/index",
     "pages/menu-form/index",
     "pages/pets/index",
+    "pages/pet-form/index",
     "pages/pet-event-form/index",
     "pages/pet-event-detail/index",
     "pages/pet-calendar/index",

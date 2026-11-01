@@ -1,0 +1,100 @@
+<view class="pet-form-page">
+  <view class="pet-form-hero">
+    <view class="pet-form-hero__copy">
+      <text class="pet-form-eyebrow">NEW COMPANION</text>
+      <view class="pet-form-hero__title">把新伙伴写进这个家</view>
+      <view class="pet-form-hero__sub">先留下名字和生日，其他照护记录可以慢慢补。</view>
+    </view>
+    <view class="pet-form-hero__mark"><line-icon name="paw-print" size="34" tone="green" /></view>
+  </view>
+
+  <view class="pet-form-avatar-card">
+    <view class="pet-form-avatar" bindtap="onAvatarTap">
+      <image wx:if="{{avatar}}" src="{{avatar.src}}" mode="aspectFill" />
+      <view wx:elif="{{avatarUploading}}" class="pet-form-avatar__placeholder pet-form-avatar__placeholder--loading">
+        <line-icon name="image" size="35" tone="green" />
+        <text>正在上传</text>
+      </view>
+      <view wx:else class="pet-form-avatar__placeholder">
+        <line-icon name="camera" size="34" tone="green" />
+        <text>添加照片</text>
+      </view>
+    </view>
+    <view class="pet-form-avatar__copy">
+      <text>给它一张照片</text>
+      <text>{{avatar ? '轻触照片可预览，也可以重新选择' : '可选，支持相册或现在拍一张'}}</text>
+    </view>
+    <view wx:if="{{avatar}}" class="pet-form-avatar__actions">
+      <text bindtap="onChooseAvatar">更换</text>
+      <text bindtap="onRemoveAvatar">移除</text>
+    </view>
+  </view>
+
+  <view class="pet-form-section-head"><text>基本信息</text><text>带 * 为必填</text></view>
+  <view class="pet-form-card">
+    <view class="pet-form-field pet-form-field--lead">
+      <text class="pet-form-label">名字 *</text>
+      <input value="{{form.name}}" maxlength="20" placeholder="例如：糯米、团子" data-field="name" bindinput="onFieldInput" />
+    </view>
+
+    <view class="pet-form-field">
+      <text class="pet-form-label">它是</text>
+      <view class="pet-form-options pet-form-options--species">
+        <view wx:for="{{speciesOptions}}" wx:key="value" class="pet-form-option {{form.species === item.value ? 'pet-form-option--active' : ''}}" data-value="{{item.value}}" bindtap="onSpeciesSelect">
+          <view class="pet-form-option__icon"><line-icon name="{{item.icon}}" size="24" tone="{{form.species === item.value ? 'white' : 'green'}}" /></view>
+          <view class="pet-form-option__copy"><text>{{item.label}}</text><text>{{item.hint}}</text></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="pet-form-field">
+      <text class="pet-form-label">性别</text>
+      <view class="pet-form-options pet-form-options--sex">
+        <view wx:for="{{sexOptions}}" wx:key="value" class="pet-form-sex {{form.sex === item.value ? 'pet-form-sex--active' : ''}}" data-value="{{item.value}}" bindtap="onSexSelect">{{item.label}}</view>
+      </view>
+    </view>
+
+    <view class="pet-form-field">
+      <text class="pet-form-label">品种</text>
+      <input value="{{form.breed}}" maxlength="30" placeholder="例如：英国短毛猫、柯基" data-field="breed" bindinput="onFieldInput" />
+    </view>
+
+    <view class="pet-form-grid">
+      <view class="pet-form-field">
+        <text class="pet-form-label">出生日期 *</text>
+        <picker mode="date" value="{{form.birthday}}" end="{{maxDate}}" bindchange="onBirthdayChange">
+          <view class="pet-form-date">{{form.birthday}} <text>›</text></view>
+        </picker>
+      </view>
+      <view class="pet-form-field">
+        <text class="pet-form-label">到家日期 *</text>
+        <picker mode="date" value="{{form.homeOn}}" end="{{maxDate}}" bindchange="onHomeDateChange">
+          <view class="pet-form-date">{{form.homeOn}} <text>›</text></view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="pet-form-field">
+      <view class="pet-form-field__row">
+        <view><text class="pet-form-label">绝育日期</text><text class="pet-form-field__hint">还没有绝育可以不填</text></view>
+        <view class="pet-form-toggle {{form.neuteredOn ? 'pet-form-toggle--active' : ''}}" bindtap="onNeuteredToggle">{{form.neuteredOn ? '已记录' : '去记录'}}</view>
+      </view>
+      <picker wx:if="{{form.neuteredOn}}" mode="date" value="{{form.neuteredOn}}" end="{{maxDate}}" bindchange="onNeuteredDateChange">
+        <view class="pet-form-date">{{form.neuteredOn}} <text>›</text></view>
+      </picker>
+    </view>
+
+    <view class="pet-form-field pet-form-field--last">
+      <text class="pet-form-label">最近状态</text>
+      <input value="{{form.status}}" maxlength="30" placeholder="例如：刚刚加入这个家" data-field="status" bindinput="onFieldInput" />
+    </view>
+  </view>
+
+  <view wx:if="{{errorText}}" class="pet-form-error"><line-icon name="circle-alert" size="20" tone="danger" /><text>{{errorText}}</text></view>
+
+  <button class="primary-button pet-form-save" loading="{{saving}}" disabled="{{saving || avatarUploading}}" bindtap="onSave">
+    <line-icon name="heart" size="22" tone="white" />
+    <text>{{saving ? '正在加入这个家' : '加入这个家'}}</text>
+  </button>
+  <view class="pet-form-back" bindtap="onBack">先不添加，返回宠物页</view>
+</view>

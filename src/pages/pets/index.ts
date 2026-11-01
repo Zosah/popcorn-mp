@@ -246,7 +246,6 @@ Page({
     promptAuthGateIfNeeded()
     const firstShow = !this.data.hasShown
     if (firstShow) this.setData({ hasShown: true })
-    if (firstShow && this.data.cacheFresh) return
     void this.refreshPetData()
   },
 
@@ -578,32 +577,7 @@ Page({
 
   onAddPet() {
     if (!requireAuthForWrite()) return
-    const species: Array<{ value: PetSpecies; label: string }> = [
-      { value: 'cat', label: '猫咪' },
-      { value: 'dog', label: '狗狗' },
-      { value: 'other', label: '其他伙伴' },
-    ]
-    wx.showActionSheet({
-      itemList: species.map((item) => item.label),
-      success: (selection) => {
-        const selected = species[selection.tapIndex]
-        if (!selected) return
-        wx.showModal({
-          title: `添加${selected.label}`,
-          editable: true,
-          placeholderText: '它叫什么名字？',
-          confirmText: '加入这个家',
-          success: async (result) => {
-            const name = result.content?.trim()
-            if (!result.confirm || !name) return
-            await this.runPetMutation(
-              () => petGateway.createPet({ name, species: selected.value }),
-              `${name}已加入`,
-            )
-          },
-        })
-      },
-    })
+    wx.navigateTo({ url: '/pages/pet-form/index' })
   },
 
   onToggleProfileEditor() {

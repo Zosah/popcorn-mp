@@ -1,0 +1,82 @@
+.pet-form-page {
+  --pet-form-paper: #f6f2eb;
+  --pet-form-ink: var(--c-text, #252b27);
+  --pet-form-ink-2: var(--c-text-2, #5f5a53);
+  --pet-form-ink-3: var(--c-muted, #837f76);
+  --pet-form-line: var(--c-line, #e9e6e1);
+  min-height: 100vh;
+  padding: 28rpx 34rpx calc(80rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: radial-gradient(circle at 92% 3%, rgba(222, 232, 215, 0.72), transparent 26%), var(--pet-form-paper);
+  color: var(--pet-form-ink);
+}
+
+.pet-form-hero {
+  display: flex;
+  min-height: 220rpx;
+  padding: 34rpx;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 255, 255, 0.72);
+  border-radius: 34rpx;
+  background: linear-gradient(145deg, #e8eee2, #dce6d5);
+  box-shadow: 0 20rpx 50rpx -34rpx rgba(47, 67, 51, 0.42);
+  box-sizing: border-box;
+}
+
+.pet-form-hero__copy { min-width: 0; flex: 1; }
+.pet-form-eyebrow { color: #788476; font-size: 19rpx; font-weight: 700; letter-spacing: 3rpx; }
+.pet-form-hero__title { margin-top: 12rpx; font-family: var(--font-serif); font-size: 46rpx; font-weight: 700; letter-spacing: -1.5rpx; line-height: 1.34; }
+.pet-form-hero__sub { margin-top: 10rpx; color: #6d756a; font-size: 24rpx; line-height: 1.65; }
+.pet-form-hero__mark { display: flex; width: 104rpx; height: 104rpx; align-items: center; justify-content: center; border-radius: 34rpx; background: rgba(255, 255, 255, 0.52); flex: 0 0 auto; }
+
+.pet-form-avatar-card { display: flex; margin-top: 24rpx; padding: 24rpx; align-items: center; gap: 20rpx; border: 1rpx solid var(--pet-form-line); border-radius: 30rpx; background: rgba(255, 255, 255, 0.9); box-shadow: 0 14rpx 34rpx -30rpx rgba(46, 59, 49, 0.5); }
+.pet-form-avatar { width: 116rpx; height: 116rpx; overflow: hidden; border: 5rpx solid #f5f0e8; border-radius: 50%; background: #edf2e9; flex: 0 0 auto; }
+.pet-form-avatar image { width: 100%; height: 100%; }
+.pet-form-avatar__placeholder { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; flex-direction: column; gap: 4rpx; color: #6f806e; font-size: 18rpx; font-weight: 600; }
+.pet-form-avatar__placeholder--loading { background: #f3f6f1; }
+.pet-form-avatar__copy { min-width: 0; flex: 1; }
+.pet-form-avatar__copy text { display: block; }
+.pet-form-avatar__copy text:first-child { font-size: 29rpx; font-weight: 700; }
+.pet-form-avatar__copy text:last-child { margin-top: 7rpx; color: var(--pet-form-ink-3); font-size: 22rpx; line-height: 1.55; }
+.pet-form-avatar__actions { display: flex; flex-direction: column; gap: 13rpx; color: var(--c-primary-link, #b86757); font-size: 22rpx; font-weight: 600; }
+
+.pet-form-section-head { display: flex; margin: 34rpx 4rpx 13rpx; align-items: baseline; justify-content: space-between; }
+.pet-form-section-head text:first-child { font-size: 33rpx; font-weight: 700; }
+.pet-form-section-head text:last-child { color: var(--pet-form-ink-3); font-size: 21rpx; }
+.pet-form-card { overflow: hidden; padding: 0 24rpx; border: 1rpx solid var(--pet-form-line); border-radius: 30rpx; background: rgba(255, 255, 255, 0.94); box-shadow: 0 14rpx 34rpx -30rpx rgba(46, 59, 49, 0.45); }
+.pet-form-field { padding: 23rpx 0; border-bottom: 1rpx solid var(--pet-form-line); }
+.pet-form-field--lead { padding-top: 25rpx; }
+.pet-form-field--last { border-bottom: 0; }
+.pet-form-label { display: block; color: var(--pet-form-ink-3); font-size: 22rpx; font-weight: 600; letter-spacing: 0.4rpx; }
+.pet-form-field input { height: 66rpx; color: var(--pet-form-ink); font-size: 31rpx; font-weight: 600; }
+.pet-form-field input::placeholder { color: #aaa69f; font-weight: 400; }
+.pet-form-field__row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.pet-form-field__hint { display: block; margin-top: 7rpx; color: var(--pet-form-ink-3); font-size: 21rpx; }
+.pet-form-toggle { min-width: 112rpx; padding: 12rpx 20rpx; border-radius: 999rpx; background: #edf2e9; color: #667764; font-size: 22rpx; font-weight: 700; text-align: center; }
+.pet-form-toggle--active { background: #2e3931; color: #fff; }
+
+.pet-form-options--species { display: flex; margin-top: 14rpx; gap: 12rpx; }
+.pet-form-option { display: flex; min-width: 0; padding: 15rpx 13rpx; align-items: center; gap: 10rpx; border: 1rpx solid transparent; border-radius: 22rpx; background: #f6f4ef; flex: 1; }
+.pet-form-option--active { border-color: #d6e1d2; background: #e8eee2; }
+.pet-form-option__icon { display: flex; width: 52rpx; height: 52rpx; align-items: center; justify-content: center; border-radius: 17rpx; background: #fff; flex: 0 0 auto; }
+.pet-form-option--active .pet-form-option__icon { background: #2e3931; }
+.pet-form-option__copy { min-width: 0; }
+.pet-form-option__copy text { display: block; }
+.pet-form-option__copy text:first-child { font-size: 24rpx; font-weight: 700; }
+.pet-form-option__copy text:last-child { display: none; color: #758173; font-size: 18rpx; }
+
+.pet-form-options--sex { display: flex; margin-top: 13rpx; gap: 12rpx; }
+.pet-form-sex { display: flex; min-width: 150rpx; padding: 15rpx 30rpx; align-items: center; justify-content: center; border-radius: 999rpx; background: #f5f3ee; color: var(--pet-form-ink-2); font-size: 25rpx; font-weight: 600; box-sizing: border-box; }
+.pet-form-sex--active { background: #2e3931; color: #fff; }
+
+.pet-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24rpx; }
+.pet-form-grid .pet-form-field:first-child { border-right: 1rpx solid var(--pet-form-line); padding-right: 20rpx; }
+.pet-form-date { display: flex; height: 58rpx; align-items: center; justify-content: space-between; color: var(--pet-form-ink); font-size: 25rpx; font-weight: 600; }
+.pet-form-date text { color: var(--pet-form-ink-3); font-size: 29rpx; }
+
+.pet-form-error { display: flex; margin: 22rpx 4rpx 0; padding: 18rpx 20rpx; align-items: center; gap: 10rpx; border-radius: 18rpx; background: #fbece7; color: #a5574d; font-size: 23rpx; line-height: 1.55; }
+.pet-form-save { width: 100%; margin-top: 30rpx; gap: 10rpx; }
+.pet-form-back { padding: 26rpx 0 4rpx; color: var(--pet-form-ink-3); font-size: 23rpx; text-align: center; }

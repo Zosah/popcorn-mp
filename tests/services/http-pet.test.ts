@@ -245,10 +245,13 @@ describe('HTTP 宠物网关', () => {
   })
 
   it('读取空间宠物列表，映射版本并通过私有媒体换取缩略图', async () => {
+    storage.set('popcorn_active_pet_id', apiPet.id)
     const gateway = new HttpPetGateway()
     const collection = await gateway.list()
 
     expect(collection.activePetId).toBe(apiPet.id)
+    expect(storage.get(`popcorn_active_pet_id:${session.activeSpaceId}`)).toBe(apiPet.id)
+    expect(storage.has('popcorn_active_pet_id')).toBe(false)
     expect(collection.pets[0]).toMatchObject({
       profile: {
         id: apiPet.id,
@@ -278,7 +281,8 @@ describe('HTTP 宠物网关', () => {
     })
 
     expect(created.profile).toMatchObject({ id: 'e_created001', name: '团子' })
-    expect(storage.get('popcorn_active_pet_id')).toBe('e_created001')
+    expect(storage.get(`popcorn_active_pet_id:${session.activeSpaceId}`)).toBe('e_created001')
+    expect(storage.has('popcorn_active_pet_id')).toBe(false)
     const request = requests.find((item) => item.method === 'POST')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_create_/)
     expect(request?.data).toMatchObject({ name: '团子', species: 'other' })
@@ -379,7 +383,7 @@ describe('HTTP 宠物网关', () => {
   })
 
   it('删除宠物档案使用档案版本并清理活动缓存', async () => {
-    storage.set('popcorn_active_pet_id', apiPet.id)
+    storage.set(`popcorn_active_pet_id:${session.activeSpaceId}`, apiPet.id)
     const gateway = new HttpPetGateway()
     await gateway.remove(apiPet.id, apiPet.version)
 
@@ -389,7 +393,27 @@ describe('HTTP 宠物网关', () => {
     )
     expect(request?.header?.['If-Match']).toBe('"3"')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_pet-delete_/)
+    expect(storage.has(`popcorn_active_pet_id:${session.activeSpaceId}`)).toBe(false)
+  })
+
+  it('空宠物列表会清理当前空间与旧版残留的当前宠物', async () => {
+    vi.unstubAllGlobals()
+    vi.stubGlobal('wx', {
+      getStorageSync: (key: string) => storage.get(key) ?? '',
+      setStorageSync: (key: string, value: unknown) => storage.set(key, value),
+      removeStorageSync: (key: string) => storage.delete(key),
+      request: (options: WechatMiniprogram.RequestOption) => {
+        succeed(options, { items: [] })
+      },
+    })
+    storage.set('popcorn_active_pet_id', apiPet.id)
+    storage.set(`popcorn_active_pet_id:${session.activeSpaceId}`, apiPet.id)
+
+    const collection = await new HttpPetGateway().list()
+
+    expect(collection).toEqual({ activePetId: '', pets: [] })
     expect(storage.has('popcorn_active_pet_id')).toBe(false)
+    expect(storage.has(`popcorn_active_pet_id:${session.activeSpaceId}`)).toBe(false)
   })
 
   it('网络失败自动重试一次', async () => {

@@ -35,7 +35,8 @@ import {
 } from './pet-gateway'
 import { TransportError } from './transport'
 
-const ACTIVE_PET_STORAGE_KEY = 'popcorn_active_pet_id'
+const LEGACY_ACTIVE_PET_STORAGE_KEY = 'popcorn_active_pet_id'
+const ACTIVE_PET_STORAGE_KEY_PREFIX = 'popcorn_active_pet_id:'
 const DEFAULT_SPECIES_LABEL: Record<PetSpecies, string> = {
   cat: '猫咪',
   dog: '狗狗',
@@ -56,18 +57,19 @@ export class HttpPetGateway implements PetGateway {
         { token: context.token },
       ))
       const pets = await Promise.all(response.data.items.map(toPetState))
-      return withActivePet(pets)
+      return withActivePet(pets, context.spaceId)
     } catch (error) {
       throw toGatewayError(error)
     }
   }
 
   async setActivePet(id: string): Promise<PetCollection> {
+    const context = petContext()
     const current = await this.list()
     if (!current.pets.some((pet) => pet.profile.id === id)) {
       throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
     }
-    wx.setStorageSync(ACTIVE_PET_STORAGE_KEY, id)
+    storeActivePetId(context.spaceId, id)
     return { ...current, activePetId: id }
   }
 
@@ -131,9 +133,7 @@ export class HttpPetGateway implements PetGateway {
           },
         },
       ))
-      if (String(wx.getStorageSync(ACTIVE_PET_STORAGE_KEY) || '') === petId) {
-        wx.removeStorageSync(ACTIVE_PET_STORAGE_KEY)
-      }
+      clearActivePetIdIfMatches(context.spaceId, petId)
     } catch (error) {
       throw toGatewayError(error)
     }
@@ -252,7 +252,7 @@ export class HttpPetGateway implements PetGateway {
           headers: { 'Idempotency-Key': createIdempotencyKey(action) },
         },
       ))
-      wx.setStorageSync(ACTIVE_PET_STORAGE_KEY, response.data.id)
+      storeActivePetId(context.spaceId, response.data.id)
       return toPetState(response.data)
     } catch (error) {
       throw toGatewayError(error)
@@ -311,15 +311,45 @@ function petPath(spaceId: string, petId: string): string {
   return `${petListPath(spaceId)}/${encodeURIComponent(petId)}`
 }
 
-function withActivePet(pets: DemoPetState[]): PetCollection {
-  const saved = String(wx.getStorageSync(ACTIVE_PET_STORAGE_KEY) || '')
+function withActivePet(pets: DemoPetState[], spaceId: string): PetCollection {
+  const saved = readActivePetId(spaceId)
   const active = pets.find((pet) => pet.profile.id === saved) ?? pets[0]
-  if (active && active.profile.id !== saved) {
-    wx.setStorageSync(ACTIVE_PET_STORAGE_KEY, active.profile.id)
+  if (active) {
+    storeActivePetId(spaceId, active.profile.id)
+  } else {
+    clearActivePetId(spaceId)
   }
   return {
     activePetId: active?.profile.id ?? '',
     pets,
+  }
+}
+
+function activePetStorageKey(spaceId: string): string {
+  return `${ACTIVE_PET_STORAGE_KEY_PREFIX}${spaceId}`
+}
+
+function readActivePetId(spaceId: string): string {
+  const scoped = String(wx.getStorageSync(activePetStorageKey(spaceId)) || '')
+  if (scoped) return scoped
+  return String(wx.getStorageSync(LEGACY_ACTIVE_PET_STORAGE_KEY) || '')
+}
+
+function storeActivePetId(spaceId: string, petId: string): void {
+  wx.setStorageSync(activePetStorageKey(spaceId), petId)
+  wx.removeStorageSync(LEGACY_ACTIVE_PET_STORAGE_KEY)
+}
+
+function clearActivePetId(spaceId: string): void {
+  wx.removeStorageSync(activePetStorageKey(spaceId))
+  wx.removeStorageSync(LEGACY_ACTIVE_PET_STORAGE_KEY)
+}
+
+function clearActivePetIdIfMatches(spaceId: string, petId: string): void {
+  const key = activePetStorageKey(spaceId)
+  if (String(wx.getStorageSync(key) || '') === petId) wx.removeStorageSync(key)
+  if (String(wx.getStorageSync(LEGACY_ACTIVE_PET_STORAGE_KEY) || '') === petId) {
+    wx.removeStorageSync(LEGACY_ACTIVE_PET_STORAGE_KEY)
   }
 }
 
