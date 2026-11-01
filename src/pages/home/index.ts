@@ -1,5 +1,9 @@
 import { appConfig } from '../../config/env'
 import {
+  getFeatureDefinition,
+  type FeatureDefinition,
+} from '../../domain/feature-catalog'
+import {
   buildHomeSnapshotFromSummary,
   type HomeSnapshot,
 } from '../../domain/home'
@@ -14,7 +18,7 @@ import {
 } from '../../domain/demo-pet'
 import { journalGateway } from '../../services/journal'
 import type { JournalItem } from '../../services/journal-gateway'
-import { hydrateAuthState } from '../../services/auth'
+import { getAuthState, hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { inventoryGateway } from '../../services/inventory'
 import { menuGateway } from '../../services/menu'
@@ -33,6 +37,11 @@ import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
+import {
+  buildFeatureSettingsOwnerId,
+  getFeatureSettingsConfig,
+  subscribeFeatureSettings,
+} from '../../services/feature-settings-config'
 
 interface HomeMemberView {
   userId: string
@@ -47,6 +56,11 @@ interface HomePetActivity extends PetHomeActivity {
   tone: 'blue' | 'green' | 'pink'
 }
 
+type HomeFeatureShortcut = Pick<
+  FeatureDefinition,
+  'id' | 'shortLabel' | 'icon' | 'tone' | 'path' | 'query' | 'launchMode'
+>
+
 const EMPTY_SNAPSHOT: HomeSnapshot = {
   today: '',
   dateLabel: '',
@@ -60,6 +74,27 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
 
 const homeRequestGate = createRequestGate()
 const HOME_PAGE_CACHE_KEY = 'home:overview'
+let unsubscribeHomeFeatureSettings: (() => void) | undefined
+
+function buildHomeFeatureShortcuts(): HomeFeatureShortcut[] {
+  const auth = getAuthState()
+  const ownerId = auth.isLoggedIn
+    ? buildFeatureSettingsOwnerId(auth.user?.id ?? '', auth.activeSpaceId)
+    : 'guest'
+  return getFeatureSettingsConfig(ownerId).homeSlots.flatMap((id) => {
+    const feature = getFeatureDefinition(id)
+    if (!feature) return []
+    return [{
+      id: feature.id,
+      shortLabel: feature.shortLabel,
+      icon: feature.icon,
+      tone: feature.tone,
+      path: feature.path,
+      query: feature.query,
+      launchMode: feature.launchMode,
+    }]
+  })
+}
 
 function isCreatedToday(entry: JournalItem | null, today: string): boolean {
   if (!entry) return false
@@ -87,6 +122,7 @@ Page({
     cacheFresh: false,
     hasShown: false,
     snapshot: EMPTY_SNAPSHOT,
+    homeShortcuts: buildHomeFeatureShortcuts(),
     inventoryError: '',
     latestEntry: null as JournalItem | null,
     latestEntryIsToday: false,
@@ -143,6 +179,12 @@ Page({
       })
     }
     this.measureNavBar()
+    this.refreshHomeShortcuts()
+    unsubscribeHomeFeatureSettings?.()
+    unsubscribeHomeFeatureSettings = subscribeFeatureSettings(() => {
+      this.refreshHomeShortcuts()
+      this.writePageCache()
+    })
   },
 
   /**
@@ -166,6 +208,7 @@ Page({
   },
 
   onShow() {
+    this.refreshHomeShortcuts()
     promptAuthGateIfNeeded()
     const firstShow = !this.data.hasShown
     if (firstShow) this.setData({ hasShown: true })
@@ -175,6 +218,15 @@ Page({
 
   onPullDownRefresh() {
     void this.loadSnapshot(true)
+  },
+
+  onUnload() {
+    unsubscribeHomeFeatureSettings?.()
+    unsubscribeHomeFeatureSettings = undefined
+  },
+
+  refreshHomeShortcuts() {
+    this.setData({ homeShortcuts: buildHomeFeatureShortcuts() })
   },
 
   async loadSnapshot(fromPullDown = false) {
@@ -524,6 +576,18 @@ Page({
 
   onOpenReminders() {
     wx.navigateTo({ url: '/pages/reminder-settings/index' })
+  },
+
+  onOpenHomeShortcut(event: {
+    currentTarget: { dataset: { id?: string } }
+  }) {
+    const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
+    if (!feature) return
+    if (feature.launchMode === 'root') {
+      openAppRoot(feature.path)
+      return
+    }
+    wx.navigateTo({ url: feature.path })
   },
 
   onOpenPets() {

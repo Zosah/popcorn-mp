@@ -145,9 +145,9 @@ Page({
     wx.navigateTo({ url: '/pages/reminder-settings/index' })
   },
 
-  onOpenTabSettings() {
+  onOpenFeatureSettings() {
     if (!this.ensureLoggedIn()) return
-    wx.navigateTo({ url: '/pages/tab-settings/index' })
+    wx.navigateTo({ url: '/pages/feature-settings/index' })
   },
 
   onUnload() {

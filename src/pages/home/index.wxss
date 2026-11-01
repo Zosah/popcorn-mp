@@ -255,19 +255,20 @@
     0 8rpx 20rpx rgba(70, 60, 52, 0.06);
 }
 
-.function-icon--peach {
+.function-icon--orange {
   background: linear-gradient(145deg, #fae4de, #f1d3cb);
 }
 
-.function-icon--mint {
+.function-icon--green {
   background: linear-gradient(145deg, #e6f2ec, #d8e8df);
 }
 
-.function-icon--butter {
+.function-icon--gold {
   background: linear-gradient(145deg, #f8eed4, #efe0bd);
 }
 
-.function-icon--cream {
+.function-icon--pink,
+.function-icon--blue {
   background: linear-gradient(145deg, #f1e9ed, #e5dce7);
 }
 
@@ -275,7 +276,7 @@
   overflow: hidden;
   max-width: 100%;
   color: #6f6963;
-  font-size: 20rpx;
+  font-size: 23rpx;
   font-weight: 600;
   line-height: 1.35;
   text-overflow: ellipsis;

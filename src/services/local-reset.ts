@@ -1,5 +1,5 @@
 import { resetAuthPreviewSession } from './auth-preview'
-import { refreshAppTabGateway } from './app-tab-settings'
+import { refreshFeatureSettingsGateway } from './feature-settings'
 import { refreshInventoryGateway } from './inventory'
 import { refreshJournalGateway } from './journal'
 import { refreshMediaGateway } from './media'
@@ -17,7 +17,7 @@ export function clearAllLocalData(): void {
   clearPageCache()
   resetAuthPreviewSession()
   wx.clearStorageSync()
-  refreshAppTabGateway()
+  refreshFeatureSettingsGateway()
   refreshInventoryGateway()
   refreshJournalGateway()
   refreshMediaGateway()

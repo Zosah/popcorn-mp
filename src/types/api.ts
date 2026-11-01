@@ -514,6 +514,18 @@ export interface ApiAppTabSettingsUpdateRequest {
   slot4: string
 }
 
+export interface ApiFeatureSettings {
+  homeSlots: string[]
+  tabSlots: string[]
+  version: number
+  updatedAt: string
+}
+
+export interface ApiFeatureSettingsUpdateRequest {
+  homeSlots: string[]
+  tabSlots: string[]
+}
+
 export interface ApiReminderSettings {
   expiry: boolean
   petCare: boolean

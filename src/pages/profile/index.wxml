@@ -45,19 +45,19 @@
         </view>
         <text class="settings-row__arrow">›</text>
       </view>
-      <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenReminders">
-        <line-icon name="bell" size="27" tone="muted" />
+      <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenFeatureSettings">
+        <line-icon name="list-todo" size="27" tone="muted" />
         <view class="settings-row__body">
-          <text class="settings-row__title">提醒</text>
-          <text class="settings-row__meta">通知与订阅</text>
+          <text class="settings-row__title">功能配置</text>
+          <text class="settings-row__meta">首页与底栏</text>
         </view>
         <text class="settings-row__arrow">›</text>
       </view>
-      <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenTabSettings">
-        <line-icon name="notebook-tabs" size="27" tone="muted" />
+      <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenReminders">
+        <line-icon name="bell" size="27" tone="muted" />
         <view class="settings-row__body">
-          <text class="settings-row__title">底部导航</text>
-          <text class="settings-row__meta">常用入口</text>
+          <text class="settings-row__title">提醒设置</text>
+          <text class="settings-row__meta">通知与订阅</text>
         </view>
         <text class="settings-row__arrow">›</text>
       </view>

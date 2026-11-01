@@ -1,10 +1,10 @@
 import { appConfig } from './config/env'
-import { syncAppTabSettings } from './services/app-tab-settings'
+import { syncFeatureSettings } from './services/feature-settings'
 
 App({
   onLaunch() {
-    void syncAppTabSettings().catch(() => {
-      // 底栏已有本机缓存；后台同步失败不阻塞启动。
+    void syncFeatureSettings().catch(() => {
+      // 首页和底栏已有本机缓存；后台同步失败不阻塞启动。
     })
   },
 

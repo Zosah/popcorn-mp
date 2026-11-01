@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "功能配置",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index",
+    "page-loading": "/components/page-loading/index"
+  }
+}

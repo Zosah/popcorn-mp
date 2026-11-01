@@ -11,7 +11,7 @@
     <text class="feature-list-head__copy">工具、备忘和家里成员，都在这里找到。</text>
   </view>
 
-  <view wx:for="{{groups}}" wx:key="category.id" class="feature-group">
+  <view wx:for="{{groups}}" wx:key="key" class="feature-group">
     <view class="feature-group__head">
       <view class="feature-group__mark feature-group__mark--{{item.category.tone}}">
         <line-icon name="{{item.category.icon}}" size="30" tone="{{item.category.tone}}" />

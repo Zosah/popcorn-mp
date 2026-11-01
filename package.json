@@ -1,6 +1,6 @@
 {
   "name": "popcorn-mp",
-  "version": "1.25.1",
+  "version": "1.26.0",
   "private": true,
   "type": "module",
   "description": "我回来啦，把日子安放在一起。",
@@ -27,7 +27,8 @@
     "verify:production-todo-ui": "node scripts/verify-production-todo-ui.mjs",
     "verify:http-reminders-configured": "EXPECT_SUBSCRIPTION_CONFIGURED=1 node scripts/verify-http-reminders.mjs",
     "verify:production-reminder-ui": "node scripts/verify-production-reminder-ui.mjs",
-    "verify:production-avatar-ui": "node scripts/verify-production-avatar-ui.mjs"
+    "verify:production-avatar-ui": "node scripts/verify-production-avatar-ui.mjs",
+    "verify:http-feature-settings": "node scripts/verify-http-feature-settings.mjs"
   },
   "repository": {
     "type": "git",

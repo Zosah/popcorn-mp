@@ -5,10 +5,10 @@ import {
   type FeatureDefinition,
 } from '../../domain/feature-catalog'
 import {
-  buildAppTabOwnerId,
-  getAppTabConfig,
-  subscribeAppTabConfig,
-} from '../../services/app-tab-config'
+  buildFeatureSettingsOwnerId,
+  getFeatureSettingsConfig,
+  subscribeFeatureSettings,
+} from '../../services/feature-settings-config'
 import { getAuthState } from '../../services/auth'
 import { openAppRoot } from '../../utils/app-navigation'
 
@@ -17,6 +17,7 @@ interface FeatureListItemView extends FeatureDefinition {
 }
 
 interface FeatureCategoryView {
+  key: string
   category: FeatureCategoryDefinition
   items: FeatureListItemView[]
 }
@@ -25,20 +26,28 @@ let unsubscribeAppTabConfig: (() => void) | undefined
 
 function buildGroups(): FeatureCategoryView[] {
   const auth = getAuthState()
-  const tabConfig = auth.isLoggedIn
-    ? getAppTabConfig(buildAppTabOwnerId(auth.user?.id ?? '', auth.activeSpaceId))
+  const settings = auth.isLoggedIn
+    ? getFeatureSettingsConfig(buildFeatureSettingsOwnerId(
+      auth.user?.id ?? '',
+      auth.activeSpaceId,
+    ))
     : null
-  const tabSlots = tabConfig
-    ? [tabConfig.slot2, tabConfig.slot3, tabConfig.slot4]
-    : []
 
   return getFeatureCategoryGroups('list').map((group) => ({
+    key: group.category.id,
     category: group.category,
     items: group.items.map((feature) => {
-      const tabIndex = tabSlots.findIndex((id) => id === feature.id)
+      const onHome = settings?.homeSlots.includes(feature.id) ?? false
+      const onTab = settings?.tabSlots.includes(feature.id) ?? false
       return {
         ...feature,
-        placementLabel: tabIndex >= 0 ? '已放底栏' : '',
+        placementLabel: onHome && onTab
+          ? '首页 · 底栏'
+          : onHome
+            ? '首页'
+            : onTab
+              ? '底栏'
+              : '',
       }
     }),
   }))
@@ -53,7 +62,7 @@ Page({
   onLoad() {
     this.refresh()
     unsubscribeAppTabConfig?.()
-    unsubscribeAppTabConfig = subscribeAppTabConfig(() => this.refresh())
+    unsubscribeAppTabConfig = subscribeFeatureSettings(() => this.refresh())
   },
 
   onShow() {
@@ -90,6 +99,6 @@ Page({
       wx.navigateTo({ url: '/pages/auth/index?mode=login' })
       return
     }
-    wx.navigateTo({ url: '/pages/tab-settings/index' })
+    wx.navigateTo({ url: '/pages/feature-settings/index' })
   },
 })

@@ -25,7 +25,7 @@ export interface AppConfig {
 
 export const appConfig: AppConfig = {
   env: 'production',
-  version: '1.25.1',
+  version: '1.26.0',
   demoMode: false,
   apiBaseUrl: 'https://popcorn-api.simiway.cc',
   apiAuthMode: 'wechat',

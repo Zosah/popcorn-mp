@@ -1,6 +1,6 @@
 # 功能清单与快捷配置设计
 
-> 状态：方案设计稿，待进入实现切片
+> 状态：已于 v1.26.0 实现，待完成体验版真机验收
 > 版本目标：v1.26.0
 > 范围：个人页入口、功能清单、首页快捷入口、底部导航快捷入口、拖拽排序与空间级配置同步
 
@@ -319,8 +319,7 @@ src/services/app-tab-config.ts         兼容层，改为从功能注册表解�
 src/pages/feature-list/                功能清单页
 src/pages/feature-settings/            新版功能配置页
 src/pages/tab-settings/                一个版本的重定向兼容页
-src/components/feature-slot-strip/     可拖拽槽位组件（首页与底栏共用）
-src/components/feature-picker-sheet/   分类选择底部面板
+src/pages/feature-settings/            首页与底栏统一配置页（含拖拽、恢复默认和选择面板）
 ```
 
 首页：

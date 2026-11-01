@@ -1,5 +1,21 @@
-import { getFeatureDefinition } from '../domain/feature-catalog'
-import { getAuthState } from './auth'
+import {
+  FEATURE_CATALOG,
+  getFeatureDefinition,
+  type FeatureId,
+} from '../domain/feature-catalog'
+import {
+  DEFAULT_FEATURE_SETTINGS,
+  buildFeatureSettingsOwnerId,
+  getFeatureSettingsConfig,
+  getFeatureSettingsOwnerId,
+  getFeatureSettingsSnapshot,
+  getFeatureSettingsStorageKey,
+  normalizeFeatureSettings,
+  saveFeatureSettingsConfig,
+  saveFeatureSettingsSnapshot,
+  subscribeFeatureSettings,
+  type FeatureSettingsConfig,
+} from './feature-settings-config'
 
 export type AppTabRootId =
   | 'home'
@@ -18,11 +34,8 @@ export type AppTabSecondaryId =
   | 'fitness'
   | 'expense'
 
-export type AppTabCustomId =
-  | Exclude<AppTabRootId, 'home' | 'profile'>
-  | AppTabSecondaryId
-
-export type AppTabId = AppTabRootId | AppTabSecondaryId
+export type AppTabCustomId = Exclude<FeatureId, 'reminders' | 'pet-calendar'>
+export type AppTabId = AppTabRootId | FeatureId
 
 export interface AppTabConfig {
   slot2: AppTabCustomId
@@ -60,26 +73,11 @@ export interface AppTabItem {
   fixed: boolean
 }
 
-// 只保留顺序；标题、图标、路由等元数据统一来自功能注册表。
-const TAB_FEATURE_ORDER = [
-  'pets',
-  'journal',
-  'todo',
-  'menu',
-  'inventory',
-  'pet-care',
-  'pet-daily',
-  'travel',
-  'plan',
-  'fitness',
-  'expense',
-] as const satisfies readonly AppTabCustomId[]
-
-function toAppTabOption(id: AppTabCustomId): AppTabOption {
+function toAppTabOption(id: FeatureId): AppTabOption {
   const feature = getFeatureDefinition(id)
-  if (!feature) throw new Error(`底部导航引用了未知功能：${id}`)
+  if (!feature || !feature.tabEligible) throw new Error(`底部导航引用了未知功能：${id}`)
   return {
-    id,
+    id: feature.id as AppTabCustomId,
     label: feature.label,
     shortLabel: feature.shortLabel,
     description: feature.description,
@@ -92,155 +90,118 @@ function toAppTabOption(id: AppTabCustomId): AppTabOption {
   }
 }
 
-export const APP_TAB_OPTIONS: readonly AppTabOption[] =
-  TAB_FEATURE_ORDER.map(toAppTabOption)
+export const APP_TAB_OPTIONS: readonly AppTabOption[] = FEATURE_CATALOG
+  .filter((feature) => feature.tabEligible)
+  .map((feature) => toAppTabOption(feature.id))
 
 export const DEFAULT_APP_TAB_CONFIG: AppTabConfig = {
-  slot2: 'pets',
-  slot3: 'journal',
-  slot4: 'todo',
+  slot2: DEFAULT_FEATURE_SETTINGS.tabSlots[0] as AppTabCustomId,
+  slot3: DEFAULT_FEATURE_SETTINGS.tabSlots[1] as AppTabCustomId,
+  slot4: DEFAULT_FEATURE_SETTINGS.tabSlots[2] as AppTabCustomId,
 }
 
-const STORAGE_PREFIX = 'popcorn_app_tab_config_v1'
-const configListeners = new Set<() => void>()
-
 export function subscribeAppTabConfig(listener: () => void): () => void {
-  configListeners.add(listener)
-  return () => configListeners.delete(listener)
+  return subscribeFeatureSettings(listener)
+}
+
+export function getAppTabOwnerId(): string {
+  return getFeatureSettingsOwnerId()
+}
+
+export function buildAppTabOwnerId(userId: string, spaceId: string): string {
+  return buildFeatureSettingsOwnerId(userId, spaceId)
+}
+
+export function getAppTabStorageKey(ownerId = getAppTabOwnerId()): string {
+  return getFeatureSettingsStorageKey(ownerId)
 }
 
 function isAppTabCustomId(value: unknown): value is AppTabCustomId {
   return APP_TAB_OPTIONS.some((option) => option.id === value)
 }
 
-export function getAppTabOwnerId(): string {
-  const auth = getAuthState()
-  return buildAppTabOwnerId(auth.user?.id ?? '', auth.activeSpaceId)
-}
-
-export function buildAppTabOwnerId(userId: string, spaceId: string): string {
-  const normalizedUser = userId.trim()
-  const normalizedSpace = spaceId.trim()
-  if (normalizedUser && normalizedSpace) return `${normalizedSpace}:${normalizedUser}`
-  return normalizedUser || normalizedSpace || 'guest'
-}
-
-export function getAppTabStorageKey(ownerId = getAppTabOwnerId()): string {
-  return `${STORAGE_PREFIX}:${ownerId}`
-}
-
 export function normalizeAppTabConfig(value: unknown): AppTabConfig {
   const record = value && typeof value === 'object'
     ? value as Record<string, unknown>
     : {}
-  const used = new Set<AppTabCustomId>()
-
-  const take = (
-    candidate: unknown,
-    fallback: AppTabCustomId,
-  ): AppTabCustomId => {
-    if (isAppTabCustomId(candidate) && !used.has(candidate)) {
-      used.add(candidate)
-      return candidate
-    }
-    const safeFallback = used.has(fallback)
-      ? APP_TAB_OPTIONS.find((option) => !used.has(option.id))?.id ?? 'pets'
-      : fallback
-    used.add(safeFallback)
-    return safeFallback
+  const normalized = normalizeFeatureSettings({
+    homeSlots: DEFAULT_FEATURE_SETTINGS.homeSlots,
+    tabSlots: [record.slot2, record.slot3, record.slot4],
+  })
+  return {
+    slot2: normalized.tabSlots[0] as AppTabCustomId,
+    slot3: normalized.tabSlots[1] as AppTabCustomId,
+    slot4: normalized.tabSlots[2] as AppTabCustomId,
   }
-
-  const slot2 = take(record.slot2, DEFAULT_APP_TAB_CONFIG.slot2)
-  const slot3 = take(record.slot3, DEFAULT_APP_TAB_CONFIG.slot3)
-  const slot4 = take(record.slot4, DEFAULT_APP_TAB_CONFIG.slot4)
-  return { slot2, slot3, slot4 }
 }
 
 export function getAppTabSnapshot(
   ownerId = getAppTabOwnerId(),
 ): AppTabSnapshot {
-  const storageKey = getAppTabStorageKey(ownerId)
-  let value = wx.getStorageSync<unknown>(storageKey)
-  if ((!value || typeof value !== 'object') && ownerId.includes(':')) {
-    // 兼容从 v1.12.0 之前只按用户 ID 保存的本机配置。
-    value = wx.getStorageSync<unknown>(
-      getAppTabStorageKey(ownerId.split(':').slice(1).join(':')),
-    )
-  }
-  const record = value && typeof value === 'object'
-    ? value as Record<string, unknown>
-    : {}
-  const source = record.config && typeof record.config === 'object'
-    ? record.config
-    : record
-  const version = typeof record.version === 'number' && record.version > 0
-    ? Math.trunc(record.version)
-    : 1
+  const snapshot = getFeatureSettingsSnapshot(ownerId)
   return {
-    ...normalizeAppTabConfig(source),
-    version,
-    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : '',
+    slot2: snapshot.tabSlots[0] as AppTabCustomId,
+    slot3: snapshot.tabSlots[1] as AppTabCustomId,
+    slot4: snapshot.tabSlots[2] as AppTabCustomId,
+    version: snapshot.version,
+    updatedAt: snapshot.updatedAt,
   }
 }
 
 export function getAppTabConfig(ownerId = getAppTabOwnerId()): AppTabConfig {
-  const { slot2, slot3, slot4 } = getAppTabSnapshot(ownerId)
-  return { slot2, slot3, slot4 }
+  const { tabSlots } = getFeatureSettingsConfig(ownerId)
+  return {
+    slot2: tabSlots[0] as AppTabCustomId,
+    slot3: tabSlots[1] as AppTabCustomId,
+    slot4: tabSlots[2] as AppTabCustomId,
+  }
 }
 
 export function saveAppTabSnapshot(
   snapshot: AppTabSnapshot,
   ownerId = getAppTabOwnerId(),
 ): AppTabSnapshot {
-  const saved: AppTabSnapshot = {
-    ...normalizeAppTabConfig(snapshot),
-    version: snapshot.version > 0 ? Math.trunc(snapshot.version) : 1,
+  const current = getFeatureSettingsSnapshot(ownerId)
+  const saved = saveFeatureSettingsSnapshot({
+    homeSlots: current.homeSlots,
+    tabSlots: [snapshot.slot2, snapshot.slot3, snapshot.slot4],
+    version: snapshot.version,
     updatedAt: snapshot.updatedAt,
+  }, ownerId)
+  return {
+    slot2: saved.tabSlots[0] as AppTabCustomId,
+    slot3: saved.tabSlots[1] as AppTabCustomId,
+    slot4: saved.tabSlots[2] as AppTabCustomId,
+    version: saved.version,
+    updatedAt: saved.updatedAt,
   }
-  wx.setStorageSync(getAppTabStorageKey(ownerId), saved)
-  for (const listener of configListeners) listener()
-  return saved
 }
 
 export function saveAppTabConfig(
   config: AppTabConfig,
   ownerId = getAppTabOwnerId(),
 ): AppTabConfig {
-  const current = getAppTabSnapshot(ownerId)
-  const saved = saveAppTabSnapshot({
-    ...normalizeAppTabConfig(config),
-    version: current.version + 1,
-    updatedAt: new Date().toISOString(),
+  const current = getFeatureSettingsConfig(ownerId)
+  const saved = saveFeatureSettingsConfig({
+    homeSlots: current.homeSlots,
+    tabSlots: [config.slot2, config.slot3, config.slot4],
   }, ownerId)
-  return { slot2: saved.slot2, slot3: saved.slot3, slot4: saved.slot4 }
+  return {
+    slot2: saved.tabSlots[0] as AppTabCustomId,
+    slot3: saved.tabSlots[1] as AppTabCustomId,
+    slot4: saved.tabSlots[2] as AppTabCustomId,
+  }
 }
 
 export function getAppTabOption(id: AppTabId): AppTabItem {
   if (id === 'home') {
-    return {
-      id: 'home',
-      label: '家',
-      description: '今天的家',
-      parentId: 'home',
-      icon: 'house',
-      tone: 'blue',
-      path: '/pages/home/index',
-      fixed: true,
-    }
+    return fixedTabOption(id, '家', '今天的家', 'house', '/pages/home/index')
   }
   if (id === 'profile') {
-    return {
-      id: 'profile',
-      label: '我的',
-      description: '账号与设置',
-      parentId: 'profile',
-      icon: 'user-round',
-      tone: 'green',
-      path: '/pages/profile/index',
-      fixed: true,
-    }
+    return fixedTabOption(id, '我的', '账号与设置', 'user-round', '/pages/profile/index')
   }
-  const option = APP_TAB_OPTIONS.find((item) => item.id === id) ?? APP_TAB_OPTIONS[0]!
+  const option = APP_TAB_OPTIONS.find((item) => item.id === id)
+  if (!option) throw new Error(`底部导航引用了未知功能：${id}`)
   return {
     id: option.id,
     label: option.shortLabel,
@@ -251,6 +212,25 @@ export function getAppTabOption(id: AppTabId): AppTabItem {
     path: option.path,
     query: option.query,
     fixed: false,
+  }
+}
+
+function fixedTabOption(
+  id: 'home' | 'profile',
+  label: string,
+  description: string,
+  icon: string,
+  path: string,
+): AppTabItem {
+  return {
+    id,
+    label,
+    description,
+    parentId: id,
+    icon,
+    tone: id === 'home' ? 'blue' : 'green',
+    path,
+    fixed: true,
   }
 }
 
@@ -298,3 +278,5 @@ export function resolveActiveAppTabItemId(
 
   return ''
 }
+
+export type { FeatureSettingsConfig }

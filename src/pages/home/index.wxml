@@ -42,29 +42,18 @@
   </view>
 
   <view class="function-glass">
-    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenJournal">
-      <view class="function-icon function-icon--peach">
-        <line-icon name="notebook-tabs" size="38" tone="danger" />
+    <view
+      wx:for="{{homeShortcuts}}"
+      wx:key="id"
+      class="function-item"
+      hover-class="function-item--pressed"
+      data-id="{{item.id}}"
+      bindtap="onOpenHomeShortcut"
+    >
+      <view class="function-icon function-icon--{{item.tone}}">
+        <line-icon name="{{item.icon}}" size="38" tone="{{item.tone}}" />
       </view>
-      <text class="function-item__label">生活记录</text>
-    </view>
-    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenInventory">
-      <view class="function-icon function-icon--butter">
-        <line-icon name="package" size="38" tone="gold" />
-      </view>
-      <text class="function-item__label">家庭库存</text>
-    </view>
-    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenTodo">
-      <view class="function-icon function-icon--mint">
-        <line-icon name="check" size="38" tone="green" />
-      </view>
-      <text class="function-item__label">待办计划</text>
-    </view>
-    <view class="function-item" hover-class="function-item--pressed" bindtap="onOpenPets">
-      <view class="function-icon function-icon--cream">
-        <line-icon name="paw-print" size="38" tone="pink" />
-      </view>
-      <text class="function-item__label">宠物照护</text>
+      <text class="function-item__label">{{item.shortLabel}}</text>
     </view>
   </view>
 
