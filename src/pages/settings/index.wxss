@@ -1,0 +1,116 @@
+.settings-page {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  padding: 42rpx 34rpx calc(64rpx + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 100% 0, rgba(242, 217, 204, 0.38), transparent 27%),
+    linear-gradient(180deg, #fffaf5 0%, #f5f2ec 100%);
+  box-sizing: border-box;
+  color: var(--c-text);
+}
+
+.settings-head {
+  display: flex;
+  padding: 4rpx 5rpx 42rpx;
+  flex-direction: column;
+}
+
+.settings-head__title {
+  font-family: var(--font-serif);
+  font-size: 54rpx;
+  font-weight: 760;
+  letter-spacing: -1.4rpx;
+  line-height: 1.24;
+}
+
+.settings-head__copy {
+  margin-top: 10rpx;
+  color: var(--c-muted);
+  font-size: 25rpx;
+  line-height: 1.55;
+}
+
+.settings-section + .settings-section {
+  margin-top: 38rpx;
+}
+
+.settings-section__label {
+  display: block;
+  padding: 0 8rpx 11rpx;
+  color: var(--c-faint);
+  font-size: 21rpx;
+  font-weight: 650;
+  letter-spacing: 1.8rpx;
+  line-height: 1.4;
+}
+
+.settings-card {
+  overflow: hidden;
+  padding: 0 23rpx;
+  border: 1rpx solid rgba(225, 218, 208, 0.88);
+  border-radius: 31rpx;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 20rpx 48rpx -42rpx rgba(88, 70, 57, 0.36),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.92);
+}
+
+.settings-row {
+  display: flex;
+  min-height: 116rpx;
+  align-items: center;
+  border-bottom: 1rpx solid var(--c-line);
+  gap: 15rpx;
+  transition: opacity 120ms ease;
+}
+
+.settings-row:last-child {
+  border-bottom: 0;
+}
+
+.settings-row--pressed {
+  opacity: 0.56;
+}
+
+.settings-row__icon {
+  display: flex;
+  width: 62rpx;
+  height: 62rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 19rpx;
+  background: rgba(239, 235, 228, 0.86);
+  flex: 0 0 auto;
+}
+
+.settings-row__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.settings-row__title {
+  color: var(--c-text);
+  font-size: 29rpx;
+  font-weight: 680;
+  line-height: 1.4;
+}
+
+.settings-row__description {
+  overflow: hidden;
+  color: var(--c-muted);
+  font-size: 22rpx;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-row__arrow {
+  color: #beb7ae;
+  flex: 0 0 auto;
+  font-size: 38rpx;
+  font-weight: 300;
+}

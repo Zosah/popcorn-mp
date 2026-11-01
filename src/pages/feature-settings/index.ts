@@ -1,11 +1,16 @@
 import { appConfig } from '../../config/env'
 import {
-  getFeatureCategoryGroups,
+  FEATURE_CATALOG,
   getFeatureDefinition,
-  type FeatureCategoryDefinition,
+  isFeatureAvailableIn,
   type FeatureDefinition,
   type FeatureId,
+  type FeatureTone,
 } from '../../domain/feature-catalog'
+import {
+  moveFeatureWithinSlots,
+  placeFeatureInSlots,
+} from '../../domain/feature-layout'
 import { hydrateAuthState } from '../../services/auth'
 import {
   buildFeatureSettingsOwnerId,
@@ -24,52 +29,59 @@ import {
 import { waitForMinimumLoading } from '../../utils/loading'
 
 type ConfigRegion = 'home' | 'tab'
+type DragSource = 'pool' | 'slot'
 
-interface SlotView {
+interface FeatureTileView {
   id: FeatureId
   label: string
   shortLabel: string
   description: string
   icon: string
-  tone: 'blue' | 'green' | 'gold' | 'pink' | 'orange'
+  tone: FeatureTone
+  tabEligible: boolean
 }
 
-interface TabPreviewItem extends SlotView {
-  fixed: boolean
+interface PlacementSlotView extends FeatureTileView {
+  order: number
 }
 
-interface CandidateView extends FeatureDefinition {
-  selected: boolean
-  disabled: boolean
-  stateLabel: string
+interface DragPending {
+  source: DragSource
+  id: FeatureId
+  sourceRegion: ConfigRegion | ''
+  sourceIndex: number
+  startX: number
+  startY: number
 }
 
-interface CandidateGroupView {
-  key: string
-  category: FeatureCategoryDefinition
-  items: CandidateView[]
+interface DropRect {
+  region: ConfigRegion
+  index: number
+  left: number
+  top: number
+  right: number
+  bottom: number
 }
 
-interface SlotRect {
-  centerX: number
-  centerY: number
-}
+const DRAG_ACTIVATION_MS = 280
+const DRAG_MOVE_TOLERANCE = 12
 
-const SLOT_LABELS: Record<ConfigRegion, string[]> = {
-  home: ['第一个快捷', '第二个快捷', '第三个快捷', '第四个快捷'],
-  tab: ['左一入口', '左二入口', '左三入口'],
-}
-
-let longPressTimer: ReturnType<typeof setTimeout> | undefined
+let pressTimer: ReturnType<typeof setTimeout> | undefined
 let suppressTapTimer: ReturnType<typeof setTimeout> | undefined
-let suppressSlotTap = false
-let slotRects: SlotRect[] = []
+let pendingDrag: DragPending | undefined
+let dropRects: DropRect[] = []
+let suppressTap = false
+let dragEndHandled = false
 
 function cloneConfig(config: FeatureSettingsConfig): FeatureSettingsConfig {
   return normalizeFeatureSettings({
     homeSlots: [...config.homeSlots],
     tabSlots: [...config.tabSlots],
   })
+}
+
+function defaultConfig(): FeatureSettingsConfig {
+  return normalizeFeatureSettings({})
 }
 
 function regionSlots(config: FeatureSettingsConfig, region: ConfigRegion): FeatureId[] {
@@ -86,9 +98,7 @@ function withRegionSlots(
     : { ...config, tabSlots: slots }
 }
 
-function toSlotView(id: FeatureId): SlotView {
-  const feature = getFeatureDefinition(id)
-  if (!feature) throw new Error(`配置引用了未知功能：${id}`)
+function toFeatureTile(feature: FeatureDefinition): FeatureTileView {
   return {
     id: feature.id,
     label: feature.label,
@@ -96,59 +106,26 @@ function toSlotView(id: FeatureId): SlotView {
     description: feature.description,
     icon: feature.icon,
     tone: feature.tone,
+    tabEligible: feature.tabEligible,
   }
 }
 
-function buildSlotViews(config: FeatureSettingsConfig, region: ConfigRegion): SlotView[] {
-  return regionSlots(config, region).map(toSlotView)
+function buildFeatureTiles(): FeatureTileView[] {
+  return FEATURE_CATALOG
+    .filter((feature) => feature.homeEligible)
+    .map(toFeatureTile)
 }
 
-function buildTabPreview(config: FeatureSettingsConfig): TabPreviewItem[] {
-  const middle = config.tabSlots.map((id) => ({ ...toSlotView(id), fixed: false }))
-  return [
-    {
-      id: 'journal',
-      label: '家',
-      shortLabel: '家',
-      description: '首页',
-      icon: 'house',
-      tone: 'blue',
-      fixed: true,
-    },
-    ...middle,
-    {
-      id: 'pets',
-      label: '我的',
-      shortLabel: '我的',
-      description: '个人中心',
-      icon: 'user-round',
-      tone: 'green',
-      fixed: true,
-    },
-  ]
+function buildSlots(config: FeatureSettingsConfig, region: ConfigRegion): PlacementSlotView[] {
+  return regionSlots(config, region).map((id, index) => {
+    const feature = getFeatureDefinition(id)
+    if (!feature) throw new Error(`配置引用了未知功能：${id}`)
+    return { ...toFeatureTile(feature), order: index + 1 }
+  })
 }
 
-function buildCandidateGroups(
-  config: FeatureSettingsConfig,
-  region: ConfigRegion,
-  editingIndex: number,
-): CandidateGroupView[] {
-  const slots = regionSlots(config, region)
-  const currentId = slots[editingIndex]
-  return getFeatureCategoryGroups(region).map((group) => ({
-    key: group.category.id,
-    category: group.category,
-    items: group.items.map((feature) => {
-      const selected = feature.id === currentId
-      const duplicated = !selected && slots.includes(feature.id)
-      return {
-        ...feature,
-        selected,
-        disabled: duplicated,
-        stateLabel: selected ? '当前' : duplicated ? '已在本区' : '',
-      }
-    }),
-  }))
+function configChanged(current: FeatureSettingsConfig, saved: FeatureSettingsConfig): boolean {
+  return JSON.stringify(current) !== JSON.stringify(saved)
 }
 
 Page({
@@ -156,43 +133,49 @@ Page({
     initialLoading: true,
     hasLoaded: false,
     saving: false,
-    syncText: appConfig.demoMode ? '本机保存' : '正在同步',
-    errorText: '',
-    activeRegion: 'home' as ConfigRegion,
-    regionTitle: '首页快捷',
-    regionCopy: '打开小程序，第一眼就能用到',
-    slots: [] as SlotView[],
-    tabPreview: [] as TabPreviewItem[],
-    candidateGroups: [] as CandidateGroupView[],
-    pickerOpen: false,
-    editingIndex: -1,
-    pickerTitle: '',
+    dirty: false,
+    versionConflict: false,
+    syncText: appConfig.demoMode ? '本机保存' : '已同步到空间',
+    saveError: '',
+    features: [] as FeatureTileView[],
+    homeSlots: [] as PlacementSlotView[],
+    tabSlots: [] as PlacementSlotView[],
     version: 1,
     updatedAt: '',
-    config: cloneConfig({
-      homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-      tabSlots: ['pets', 'journal', 'todo'],
-    }),
-    savedConfig: cloneConfig({
-      homeSlots: ['journal', 'inventory', 'todo', 'pets'],
-      tabSlots: ['pets', 'journal', 'todo'],
-    }),
-    draggingIndex: -1,
+    config: defaultConfig(),
+    savedConfig: defaultConfig(),
+    dragActive: false,
+    dragLabel: '',
+    dragIcon: '',
+    dragTone: 'green' as FeatureTone,
+    dragX: 0,
+    dragY: 0,
+    dropRegion: '' as ConfigRegion | '',
+    dropIndex: -1,
+    dropBlocked: false,
   },
 
   onLoad() {
+    this.setData({ features: buildFeatureTiles() })
     void this.loadSettings()
   },
 
   onUnload() {
-    this.clearLongPress()
+    this.clearPressTimer()
     if (suppressTapTimer) clearTimeout(suppressTapTimer)
+    pendingDrag = undefined
+    dropRects = []
   },
 
   async loadSettings() {
     const startedAt = Date.now()
     const firstLoad = !this.data.hasLoaded
-    this.setData({ initialLoading: firstLoad, errorText: '' })
+    this.setData({
+      initialLoading: firstLoad,
+      saveError: '',
+      versionConflict: false,
+    })
+
     const auth = await hydrateAuthState()
     if (!auth.isLoggedIn) {
       this.setData({ initialLoading: false, hasLoaded: true })
@@ -204,13 +187,8 @@ Page({
     const local = getFeatureSettingsSnapshot(ownerId)
     this.applySettings(local, local, local.version, local.updatedAt)
     if (firstLoad) await waitForMinimumLoading(startedAt)
-
     if (appConfig.demoMode) {
-      this.setData({
-        initialLoading: false,
-        hasLoaded: true,
-        syncText: '本机保存',
-      })
+      this.setData({ initialLoading: false, hasLoaded: true, syncText: '本机保存' })
       return
     }
 
@@ -228,8 +206,8 @@ Page({
       this.setData({
         initialLoading: false,
         hasLoaded: true,
-        errorText: getFeatureSettingsErrorMessage(error, '功能配置暂时没有同步过来'),
-        syncText: '使用本机版本',
+        saveError: getFeatureSettingsErrorMessage(error, '暂时无法读取空间配置，当前显示本机版本'),
+        syncText: '当前为本机版本',
       })
     }
   },
@@ -240,267 +218,291 @@ Page({
     version?: number,
     updatedAt?: string,
   ) {
-    const nextVersion = version ?? this.data.version
-    const nextUpdatedAt = updatedAt ?? this.data.updatedAt
     const normalized = cloneConfig(config)
     const saved = cloneConfig(savedConfig)
     this.setData({
       config: normalized,
       savedConfig: saved,
-      version: nextVersion,
-      updatedAt: nextUpdatedAt,
-      slots: buildSlotViews(normalized, this.data.activeRegion),
-      tabPreview: buildTabPreview(normalized),
-      candidateGroups: [],
-      pickerOpen: false,
-      editingIndex: -1,
-      draggingIndex: -1,
-    }, () => this.prepareSlotRects())
+      version: version ?? this.data.version,
+      updatedAt: updatedAt ?? this.data.updatedAt,
+      homeSlots: buildSlots(normalized, 'home'),
+      tabSlots: buildSlots(normalized, 'tab'),
+      dirty: configChanged(normalized, saved),
+      saveError: '',
+      versionConflict: false,
+    })
   },
 
-  renderConfig(
-    config: FeatureSettingsConfig,
-    options: { saved?: boolean; version?: number; updatedAt?: string } = {},
-  ) {
-    const normalized = cloneConfig(config)
-    const savedConfig = options.saved ? normalized : this.data.savedConfig
+  updateConfig(next: FeatureSettingsConfig) {
+    const normalized = cloneConfig(next)
     this.setData({
       config: normalized,
-      savedConfig,
-      version: options.version ?? this.data.version,
-      updatedAt: options.updatedAt ?? this.data.updatedAt,
-      slots: buildSlotViews(normalized, this.data.activeRegion),
-      tabPreview: buildTabPreview(normalized),
-      candidateGroups: [],
-      pickerOpen: false,
-      editingIndex: -1,
-      draggingIndex: -1,
-    }, () => this.prepareSlotRects())
+      homeSlots: buildSlots(normalized, 'home'),
+      tabSlots: buildSlots(normalized, 'tab'),
+      dirty: configChanged(normalized, this.data.savedConfig),
+      saveError: '',
+      versionConflict: false,
+    })
   },
 
-  onSwitchRegion(event: {
-    currentTarget: { dataset: { region?: ConfigRegion } }
-  }) {
-    const region = event.currentTarget.dataset.region
-    if (!region || region === this.data.activeRegion || this.data.saving) return
-    this.setData({
-      activeRegion: region,
-      regionTitle: region === 'home' ? '首页快捷' : '底部导航',
-      regionCopy: region === 'home'
-        ? '打开小程序，第一眼就能用到'
-        : '家和我之间，放最常去的地方',
-      slots: buildSlotViews(this.data.config, region),
-      tabPreview: buildTabPreview(this.data.config),
-      pickerOpen: false,
-      editingIndex: -1,
-      draggingIndex: -1,
-    }, () => this.prepareSlotRects())
+  onSave() {
+    if (this.data.saving) return
+    if (!this.data.dirty) {
+      wx.showToast({ title: '配置没有变化', icon: 'none' })
+      return
+    }
+    void this.saveConfig()
   },
 
-  prepareSlotRects() {
-    wx.createSelectorQuery()
-      .selectAll('.feature-slot')
-      .boundingClientRect((result) => {
-        slotRects = (result as unknown as Array<{
-          left: number
-          top: number
-          width: number
-          height: number
-        }>).map((rect) => ({
-          centerX: rect.left + rect.width / 2,
-          centerY: rect.top + rect.height / 2,
-        }))
+  async saveConfig() {
+    this.setData({ saving: true, saveError: '', versionConflict: false, syncText: '正在保存' })
+    try {
+      const saved = await featureSettingsGateway.update(this.data.config, this.data.version)
+      this.applySettings(saved, saved, saved.version, saved.updatedAt)
+      this.setData({
+        saving: false,
+        syncText: appConfig.demoMode ? '已保存在本机' : '已同步到空间',
       })
-      .exec()
+      wx.showToast({ title: '配置已保存', icon: 'success' })
+    } catch (error) {
+      const conflict = isFeatureSettingsVersionConflict(error)
+      this.setData({
+        saving: false,
+        syncText: '尚未保存',
+        versionConflict: conflict,
+        saveError: conflict
+          ? '配置已在另一台设备更新。当前修改还在，你可以先载入最新版本再重新调整。'
+          : getFeatureSettingsErrorMessage(error, '保存失败，请检查网络后再试'),
+      })
+    }
   },
 
-  onSlotTouchStart(event: WechatMiniprogram.TouchEvent) {
+  onReloadSettings() {
     if (this.data.saving) return
-    const index = Number(event.currentTarget.dataset.index)
-    if (!Number.isInteger(index)) return
-    this.clearLongPress()
-    this.prepareSlotRects()
-    longPressTimer = setTimeout(() => {
-      this.setData({ draggingIndex: index })
-      wx.vibrateShort?.({ type: 'light' })
-    }, 350)
-  },
-
-  onSlotTouchMove(event: WechatMiniprogram.TouchEvent) {
-    const index = this.data.draggingIndex
-    if (index < 0 || slotRects.length === 0) return
-    const touch = event.touches[0]
-    if (!touch) return
-    let targetIndex = -1
-    let nearestDistance = Number.POSITIVE_INFINITY
-    slotRects.forEach((rect, rectIndex) => {
-      const distance = Math.hypot(
-        touch.clientX - rect.centerX,
-        touch.clientY - rect.centerY,
-      )
-      if (distance < nearestDistance) {
-        nearestDistance = distance
-        targetIndex = rectIndex
-      }
+    wx.showModal({
+      title: '载入最新配置？',
+      content: '当前未保存的调整会被放弃。',
+      confirmText: '载入最新',
+      confirmColor: '#5d7567',
+      success: (result) => {
+        if (result.confirm) void this.loadSettings()
+      },
     })
-    if (targetIndex < 0 || targetIndex === index) return
-    this.moveSlot(index, targetIndex)
-  },
-
-  onSlotTouchEnd() {
-    this.clearLongPress()
-    const index = this.data.draggingIndex
-    if (index < 0) return
-    const changed = JSON.stringify(this.data.config) !== JSON.stringify(this.data.savedConfig)
-    suppressSlotTap = changed
-    if (suppressTapTimer) clearTimeout(suppressTapTimer)
-    if (changed) {
-      suppressTapTimer = setTimeout(() => {
-        suppressSlotTap = false
-      }, 400)
-    }
-    this.setData({ draggingIndex: -1 })
-    if (changed) void this.persistConfig(this.data.config, this.data.savedConfig, '顺序已保存')
-  },
-
-  moveSlot(fromIndex: number, toIndex: number) {
-    const region = this.data.activeRegion
-    const slots = [...regionSlots(this.data.config, region)]
-    const [moving] = slots.splice(fromIndex, 1)
-    if (!moving) return
-    slots.splice(toIndex, 0, moving)
-    const next = withRegionSlots(cloneConfig(this.data.config), region, slots)
-    this.setData({
-      config: next,
-      savedConfig: this.data.savedConfig,
-      slots: buildSlotViews(next, region),
-      tabPreview: buildTabPreview(next),
-      draggingIndex: toIndex,
-    }, () => this.prepareSlotRects())
-  },
-
-  onEditSlot(event: {
-    currentTarget: { dataset: { index?: number } }
-  }) {
-    if (suppressSlotTap || this.data.saving || this.data.draggingIndex >= 0) return
-    const index = Number(event.currentTarget.dataset.index)
-    if (!Number.isInteger(index) || index < 0) return
-    this.openPicker(index)
-  },
-
-  openPicker(index: number) {
-    const region = this.data.activeRegion
-    this.setData({
-      pickerOpen: true,
-      editingIndex: index,
-      pickerTitle: SLOT_LABELS[region][index] ?? '更换功能',
-      candidateGroups: buildCandidateGroups(this.data.config, region, index),
-    })
-  },
-
-  onClosePicker() {
-    if (this.data.saving) return
-    this.setData({ pickerOpen: false, editingIndex: -1, candidateGroups: [] })
-  },
-
-  onKeepPicker() {
-    // 阻止点击面板内部时冒泡关闭。
-  },
-
-  onSelectCandidate(event: {
-    currentTarget: { dataset: { id?: string } }
-  }) {
-    const id = event.currentTarget.dataset.id as FeatureId | undefined
-    const feature = id ? getFeatureDefinition(id) : undefined
-    if (!feature || this.data.saving) return
-    const region = this.data.activeRegion
-    const slots = [...regionSlots(this.data.config, region)]
-    const index = this.data.editingIndex
-    if (index < 0) return
-    if (slots[index] === feature.id) {
-      this.onClosePicker()
-      return
-    }
-    if (slots.includes(feature.id)) {
-      wx.showToast({ title: '这个功能已经在当前快捷里', icon: 'none' })
-      return
-    }
-    slots[index] = feature.id
-    const next = withRegionSlots(cloneConfig(this.data.config), region, slots)
-    this.renderConfig(next)
-    void this.persistConfig(next, this.data.savedConfig, '快捷入口已更新')
   },
 
   onResetDefault() {
     if (this.data.saving) return
     wx.showModal({
-      title: '恢复默认排列？',
-      content: '首页快捷和底部导航都会恢复成初始的 4 个和 3 个功能。',
+      title: '恢复默认布局？',
+      content: '只恢复当前页面里的排列，点击保存后才会生效。',
       confirmText: '恢复默认',
       confirmColor: '#5d7567',
       success: (result) => {
         if (!result.confirm) return
-        const next = normalizeFeatureSettings({})
-        this.renderConfig(next)
-        void this.persistConfig(next, this.data.savedConfig, '已恢复默认排列')
+        this.updateConfig(defaultConfig())
       },
     })
   },
 
-  async persistConfig(
-    nextConfig: FeatureSettingsConfig,
-    fallbackConfig: FeatureSettingsConfig,
-    successText: string,
-  ) {
-    this.setData({
-      saving: true,
-      errorText: '',
-      syncText: '正在保存',
-      pickerOpen: false,
-      editingIndex: -1,
-    })
-    try {
-      const saved = await featureSettingsGateway.update(nextConfig, this.data.version)
-      this.renderConfig(saved, {
-        saved: true,
-        version: saved.version,
-        updatedAt: saved.updatedAt,
-      })
-      this.setData({
-        saving: false,
-        syncText: appConfig.demoMode ? '已保存在本机' : '已同步到空间',
-      })
-      wx.showToast({ title: successText, icon: 'none' })
-    } catch (error) {
-      const conflict = isFeatureSettingsVersionConflict(error)
-      this.renderConfig(fallbackConfig)
-      this.setData({
-        saving: false,
-        syncText: '保留上一次设置',
-        errorText: conflict
-          ? '配置已在另一台设备更新，已回到你上次保存的版本，请下拉刷新后再改。'
-          : getFeatureSettingsErrorMessage(error, '这次没有保存成功，请稍后再试'),
-      })
-    }
-  },
-
-  onRetry() {
-    if (this.data.saving || this.data.initialLoading) return
-    void this.loadSettings()
-  },
-
   onPullDownRefresh() {
+    if (this.data.dirty) {
+      wx.showModal({
+        title: '放弃未保存的修改？',
+        content: '刷新会载入空间里的最新配置。',
+        confirmText: '放弃并刷新',
+        confirmColor: '#8a5e50',
+        success: (result) => {
+          if (result.confirm) void this.loadSettings().finally(() => wx.stopPullDownRefresh())
+          else wx.stopPullDownRefresh()
+        },
+      })
+      return
+    }
     void this.loadSettings().finally(() => wx.stopPullDownRefresh())
   },
 
-  onOpenFeatureList() {
-    wx.navigateTo({ url: '/pages/feature-list/index' })
+  onFeatureTap() {
+    if (suppressTap || this.data.dragActive) return
+    wx.showToast({ title: '长按功能，拖到下方位置', icon: 'none' })
   },
 
-  clearLongPress() {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer)
-      longPressTimer = undefined
+  onSlotTap() {
+    if (suppressTap || this.data.dragActive) return
+    wx.showToast({ title: '长按拖动，可调整位置', icon: 'none' })
+  },
+
+  onDragTouchStart(event: WechatMiniprogram.TouchEvent) {
+    if (this.data.saving) return
+    const dataset = event.currentTarget.dataset as {
+      source?: DragSource
+      id?: string
+      region?: ConfigRegion
+      index?: number
+    }
+    const touch = event.touches[0]
+    const feature = getFeatureDefinition(dataset.id ?? '')
+    if (!touch || !feature || !dataset.source) return
+
+    this.clearPressTimer()
+    dragEndHandled = false
+    pendingDrag = {
+      source: dataset.source,
+      id: feature.id,
+      sourceRegion: dataset.region ?? '',
+      sourceIndex: Number.isInteger(Number(dataset.index)) ? Number(dataset.index) : -1,
+      startX: touch.clientX,
+      startY: touch.clientY,
+    }
+    this.prepareDropRects()
+
+    pressTimer = setTimeout(() => {
+      const active = pendingDrag
+      if (!active) return
+      this.setData({
+        dragActive: true,
+        dragLabel: feature.shortLabel,
+        dragIcon: feature.icon,
+        dragTone: feature.tone,
+        dragX: active.startX,
+        dragY: active.startY,
+      })
+      wx.vibrateShort?.({ type: 'light' })
+      this.updateDropTarget(active.startX, active.startY)
+    }, DRAG_ACTIVATION_MS)
+  },
+
+  onDragTouchMove(event: WechatMiniprogram.TouchEvent) {
+    const active = pendingDrag
+    const touch = event.touches[0]
+    if (!active || !touch) return
+
+    if (!this.data.dragActive) {
+      const distance = Math.hypot(touch.clientX - active.startX, touch.clientY - active.startY)
+      if (distance > DRAG_MOVE_TOLERANCE) this.clearPressTimer()
+      return
+    }
+
+    this.setData({ dragX: touch.clientX, dragY: touch.clientY })
+    this.updateDropTarget(touch.clientX, touch.clientY)
+  },
+
+  onDragTouchEnd() {
+    if (dragEndHandled) return
+    dragEndHandled = true
+    const active = pendingDrag
+    const wasActive = this.data.dragActive
+    const region = this.data.dropRegion
+    const index = this.data.dropIndex
+    const blocked = this.data.dropBlocked
+    this.clearPressTimer()
+    pendingDrag = undefined
+    this.setData({
+      dragActive: false,
+      dropRegion: '',
+      dropIndex: -1,
+      dropBlocked: false,
+    })
+
+    if (!wasActive) return
+    this.suppressNextTap()
+    if (!active || !region || index < 0) return
+    if (blocked) {
+      wx.showToast({ title: '这个功能不能放到下方导航', icon: 'none' })
+      return
+    }
+    this.applyDrop(active, region, index)
+  },
+
+  onDragTouchCancel() {
+    this.onDragTouchEnd()
+  },
+
+  prepareDropRects() {
+    const query = wx.createSelectorQuery().in(this)
+    query.selectAll('.drop-slot--home').boundingClientRect()
+    query.selectAll('.drop-slot--tab').boundingClientRect()
+    query.exec((result) => {
+      const toRects = (
+        value: unknown,
+        region: ConfigRegion,
+      ): DropRect[] => (value as Array<{
+        left: number
+        top: number
+        right: number
+        bottom: number
+      }> | null ?? []).map((rect, index) => ({
+        region,
+        index,
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+      }))
+      dropRects = [
+        ...toRects(result[0], 'home'),
+        ...toRects(result[1], 'tab'),
+      ]
+    })
+  },
+
+  updateDropTarget(x: number, y: number) {
+    const target = dropRects.find((rect) => (
+      x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+    ))
+    if (!target) {
+      if (this.data.dropRegion || this.data.dropIndex >= 0 || this.data.dropBlocked) {
+        this.setData({ dropRegion: '', dropIndex: -1, dropBlocked: false })
+      }
+      return
+    }
+
+    const active = pendingDrag
+    const feature = active ? getFeatureDefinition(active.id) : undefined
+    const blocked = target.region === 'tab' && (!feature || !isFeatureAvailableIn(feature, 'tab'))
+    if (
+      this.data.dropRegion === target.region
+      && this.data.dropIndex === target.index
+      && this.data.dropBlocked === blocked
+    ) return
+    this.setData({
+      dropRegion: target.region,
+      dropIndex: target.index,
+      dropBlocked: blocked,
+    })
+  },
+
+  applyDrop(active: DragPending, region: ConfigRegion, targetIndex: number) {
+    const current = cloneConfig(this.data.config)
+    const slots = regionSlots(current, region)
+    let nextSlots: FeatureId[]
+
+    if (
+      active.source === 'slot'
+      && active.sourceRegion === region
+      && active.sourceIndex >= 0
+    ) {
+      nextSlots = moveFeatureWithinSlots(slots, active.sourceIndex, targetIndex)
+    } else {
+      nextSlots = placeFeatureInSlots(slots, active.id, targetIndex)
+    }
+
+    const next = withRegionSlots(current, region, nextSlots)
+    if (!configChanged(current, next)) return
+    this.updateConfig(next)
+  },
+
+  suppressNextTap() {
+    suppressTap = true
+    if (suppressTapTimer) clearTimeout(suppressTapTimer)
+    suppressTapTimer = setTimeout(() => {
+      suppressTap = false
+    }, 360)
+  },
+
+  clearPressTimer() {
+    if (pressTimer) {
+      clearTimeout(pressTimer)
+      pressTimer = undefined
     }
   },
 })

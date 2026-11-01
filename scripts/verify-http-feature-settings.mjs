@@ -214,33 +214,36 @@ async function pageDataWhere(page, predicate, label) {
   }, label)
 }
 
-async function slotElements(page) {
-  return page.$$('.feature-slot')
+async function viewportCenter(page, element) {
+  const offset = await element.offset()
+  const size = await element.size()
+  const scrollTop = Number(await page.scrollTop()) || 0
+  return {
+    x: Number(offset.left) + Number(size.width) / 2,
+    y: Number(offset.top) - scrollTop + Number(size.height) / 2,
+  }
 }
 
-async function dragSlot(page, fromIndex, toIndex) {
-  const slots = await slotElements(page)
-  assert.ok(slots.length >= Math.max(fromIndex, toIndex) + 1, '拖拽槽位数量不足')
-  const fromOffset = await slots[fromIndex].offset()
-  const toOffset = await slots[toIndex].offset()
-  const fromSize = await slots[fromIndex].size()
-  const toSize = await slots[toIndex].size()
-  const fromX = Number(fromOffset.left) + Number(fromSize.width) / 2
-  const fromY = Number(fromOffset.top) + Number(fromSize.height) / 2
-  const toX = Number(toOffset.left) + Number(toSize.width) / 2
-  const toY = Number(toOffset.top) + Number(toSize.height) / 2
-  await slots[fromIndex].touchstart({
-    touches: [{ identifier: 1, clientX: fromX, clientY: fromY, pageX: fromX, pageY: fromY }],
+async function dragElement(page, fromElement, toElement) {
+  const from = await viewportCenter(page, fromElement)
+  const to = await viewportCenter(page, toElement)
+  await fromElement.touchstart({
+    touches: [{ identifier: 1, clientX: from.x, clientY: from.y, pageX: from.x, pageY: from.y }],
   })
-  await wait(450)
-  await slots[fromIndex].touchmove({
-    touches: [{ identifier: 1, clientX: toX, clientY: toY, pageX: toX, pageY: toY }],
+  await wait(380)
+  let pageData = await page.data()
+  assert.equal(pageData.dragActive, true, '长按后没有进入拖拽态')
+  await fromElement.touchmove({
+    touches: [{ identifier: 1, clientX: to.x, clientY: to.y, pageX: to.x, pageY: to.y }],
   })
   await wait(100)
-  await slots[fromIndex].touchend({
+  pageData = await page.data()
+  assert.ok(pageData.dropIndex >= 0, '拖拽没有命中目标位置')
+  await fromElement.touchend({
     touches: [],
-    changedTouches: [{ identifier: 1, clientX: toX, clientY: toY, pageX: toX, pageY: toY }],
+    changedTouches: [{ identifier: 1, clientX: to.x, clientY: to.y, pageX: to.x, pageY: to.y }],
   })
+  await wait(180)
 }
 
 let owner
@@ -367,148 +370,143 @@ try {
     '功能配置页首次加载',
   )
   assert.ok(Date.now() - openedAt >= 420, '首次加载未体现最短 loading 时长')
-  assert.equal(pageData.activeRegion, 'home')
-  assert.deepEqual(pageData.slots.map((item) => item.id), afterLegacy.homeSlots)
-  assert.deepEqual(pageData.config, {
-    homeSlots: afterLegacy.homeSlots,
-    tabSlots: afterLegacy.tabSlots,
-  })
+  assert.equal(pageData.dirty, false)
   assert.equal(pageData.syncText, '已同步到空间')
+  assert.equal(pageData.features.length, 13)
+  assert.deepEqual(pageData.homeSlots.map((item) => item.id), afterLegacy.homeSlots)
+  assert.deepEqual(pageData.tabSlots.map((item) => item.id), afterLegacy.tabSlots)
+  assert.equal((await page.$$('.feature-tile')).length, 13)
+  assert.equal((await page.$$('.drop-slot--home')).length, 4)
+  assert.equal((await page.$$('.drop-slot--tab')).length, 3)
   await assertNoHorizontalOverflow(page, '功能配置页')
-  await screenshot('home-loaded')
-  console.log('PASS 开发者工具读取真实配置并渲染首页 4 个快捷入口')
+  await screenshot('all-features-loaded')
+  console.log('PASS 配置页同屏渲染全部功能、首页 4 位和底栏 3 位')
 
-  const beforeHomeDrag = pageData.config.homeSlots
-  await dragSlot(page, 0, 3)
+  const beforeHomeDrag = [...pageData.config.homeSlots]
+  let homeSlots = await page.$$('.drop-slot--home')
+  await dragElement(page, homeSlots[0], homeSlots[3])
   pageData = await pageDataWhere(
     page,
-    (data) => !data.saving && data.version === 4,
-    '首页 2×2 拖拽保存',
+    (data) => data.dirty && data.version === 3,
+    '首页槽位进入草稿',
   )
-  const expectedHomeAfterDrag = [...beforeHomeDrag.slice(1), beforeHomeDrag[0]]
-  assert.deepEqual(pageData.config.homeSlots, expectedHomeAfterDrag)
-  assert.equal(pageData.syncText, '已同步到空间')
-  const homeAfterDrag = (await apiOk(featurePath(ownerSpaceId), { token: owner.token })).data
-  assert.deepEqual(homeAfterDrag.homeSlots, expectedHomeAfterDrag)
-  await screenshot('home-dragged')
-  console.log('PASS 首页 2×2 槽位长按拖动并按最近落点保存')
+  assert.deepEqual(pageData.config.homeSlots, [...beforeHomeDrag.slice(1), beforeHomeDrag[0]])
+  const unchangedAfterHomeDrag = (await apiOk(featurePath(ownerSpaceId), { token: owner.token })).data
+  assert.equal(unchangedAfterHomeDrag.version, 3)
+  console.log('PASS 首页槽位拖拽只修改草稿，不自动写服务端')
 
-  await page.callMethod('onEditSlot', {
-    currentTarget: { dataset: { index: 1 } },
-  })
-  pageData = await page.data()
-  assert.equal(pageData.pickerOpen, true)
-  assert.equal(pageData.editingIndex, 1)
-  const reminderOption = await page.$('.candidate-card[data-id="reminders"]')
-  assert.ok(reminderOption, '没有找到「提醒设置」候选卡')
-  await reminderOption.tap()
+  await miniProgram.pageScrollTo(10000)
+  await wait(300)
+  const beforeTabDrag = [...pageData.config.tabSlots]
+  const tabSlots = await page.$$('.drop-slot--tab')
+  await dragElement(page, tabSlots[0], tabSlots[2])
   pageData = await pageDataWhere(
     page,
-    (data) => !data.saving && data.version === 5,
-    '轻触更换首页快捷',
-  )
-  assert.equal(pageData.slots[1].id, 'reminders')
-  assert.equal(pageData.pickerOpen, false)
-  await screenshot('home-replaced')
-  console.log('PASS 点击槽位后按分类选择候选功能并统一保存')
-
-  await page.callMethod('onSwitchRegion', {
-    currentTarget: { dataset: { region: 'tab' } },
-  })
-  pageData = await pageDataWhere(
-    page,
-    (data) => data.activeRegion === 'tab',
-    '切换到底部导航配置',
-  )
-  assert.deepEqual(pageData.slots.map((item) => item.id), ['fitness', 'journal', 'todo'])
-  assert.deepEqual(
-    pageData.tabPreview.map((item) => item.shortLabel),
-    ['家', '健身', '记录', '待办', '我的'],
-  )
-  await screenshot('tab-loaded')
-
-  const beforeTabDrag = pageData.config.tabSlots
-  await dragSlot(page, 0, 2)
-  pageData = await pageDataWhere(
-    page,
-    (data) => !data.saving && data.version === 6,
-    '底栏三列拖拽保存',
+    (data) => data.dirty && data.config.tabSlots[2] === beforeTabDrag[0],
+    '底栏槽位进入草稿',
   )
   assert.deepEqual(pageData.config.tabSlots, [...beforeTabDrag.slice(1), beforeTabDrag[0]])
-  await screenshot('tab-dragged')
-  console.log('PASS 底栏 3 个槽位拖动排序并保存')
+  assert.equal(pageData.version, 3)
+  await screenshot('tab-drag-draft')
+  console.log('PASS 底部导航 3 个槽位可拖动排序且保持草稿态')
+
+  await miniProgram.pageScrollTo(0)
+  await wait(300)
+  const beforeBlocked = JSON.stringify((await page.data()).config)
+  const reminderTile = await page.$('.feature-tile[data-id="reminders"]')
+  const blockedTargets = await page.$$('.drop-slot--tab')
+  await dragElement(page, reminderTile, blockedTargets[0])
+  pageData = await page.data()
+  assert.equal(JSON.stringify(pageData.config), beforeBlocked)
+  assert.equal(pageData.dragActive, false)
+  console.log('PASS 仅首页功能拖入底栏时被阻断，不修改草稿')
+
+  await miniProgram.pageScrollTo(650)
+  await wait(300)
+  const menuTile = await page.$('.feature-tile[data-id="menu"]')
+  homeSlots = await page.$$('.drop-slot--home')
+  await dragElement(page, menuTile, homeSlots[1])
+  pageData = await pageDataWhere(page, (data) => data.config.homeSlots[1] === 'menu', '功能池拖入首页')
+  assert.equal(pageData.version, 3)
+  console.log('PASS 功能池可以直接拖入首页快捷位置')
 
   await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
   await page.callMethod('onResetDefault')
   pageData = await pageDataWhere(
     page,
-    (data) => !data.saving && data.version === 7,
-    '恢复默认配置',
+    (data) => data.dirty && JSON.stringify(data.config) === JSON.stringify(defaultSettings),
+    '恢复默认草稿',
   )
-  assert.deepEqual(pageData.config, defaultSettings)
-  await miniProgram.restoreWxMethod('showModal')
-  await screenshot('default-restored')
-  console.log('PASS 恢复默认同时重置首页与底栏')
+  assert.equal(pageData.version, 3)
+  const notSavedDefault = (await apiOk(featurePath(ownerSpaceId), { token: owner.token })).data
+  assert.equal(notSavedDefault.version, 3)
+  await screenshot('default-draft')
+  console.log('PASS 恢复默认只更新草稿，点击保存前不落库')
 
-  await page.callMethod('onPullDownRefresh')
+  const saveButton = await page.$('.save-dock__button')
+  assert.ok(saveButton, '配置页没有保存按钮')
+  await saveButton.tap()
   pageData = await pageDataWhere(
     page,
-    (data) => !data.saving && data.version === 7 && data.errorText === '',
-    '下拉刷新',
+    (data) => !data.saving && !data.dirty && data.version === 4,
+    '统一保存默认配置',
   )
-  assert.deepEqual(pageData.config, defaultSettings)
-  console.log('PASS 配置页下拉刷新保持最新服务端状态')
+  assert.equal(pageData.syncText, '已同步到空间')
+  const savedDefault = (await apiOk(featurePath(ownerSpaceId), { token: owner.token })).data
+  assert.deepEqual(savedDefault, expectedFeatureSettings(defaultSettings, 4, savedDefault.updatedAt))
+  await screenshot('default-saved')
+  console.log('PASS 统一保存只提交一次并推进服务端版本')
 
   const externalConfig = {
     homeSlots: ['menu', 'inventory', 'todo', 'pets'],
     tabSlots: ['pets', 'expense', 'fitness'],
   }
-  const external = await updateFeatures(
+  const externalFirst = await updateFeatures(
     ownerSpaceId,
     owner.token,
-    7,
+    4,
     externalConfig,
-    `feature_settings_external_${suffix}`,
+    `feature_settings_external_first_${suffix}`,
   )
-  assert.equal(external.data.version, 8)
-  await updateFeatures(
-    ownerSpaceId,
-    owner.token,
-    8,
-    {
-      homeSlots: ['menu', 'todo', 'fitness', 'pets'],
-      tabSlots: ['pets', 'expense', 'travel'],
-    },
-    `feature_settings_conflict_${suffix}`,
-  )
-
-  await page.callMethod('onEditSlot', {
-    currentTarget: { dataset: { index: 0 } },
-  })
-  const menuOption = await page.$('.candidate-card[data-id="menu"]')
-  assert.ok(menuOption, '没有找到今天吃什么候选卡')
-  await menuOption.tap()
-  pageData = await pageDataWhere(
-    page,
-    (data) => !data.saving && Boolean(data.errorText),
-    '版本冲突回滚',
-  )
-  assert.equal(pageData.version, 7)
-  assert.deepEqual(pageData.config, defaultSettings)
-  assert.match(pageData.errorText, /另一台设备/)
-  await screenshot('conflict-rollback')
-  await page.callMethod('onRetry')
-  pageData = await pageDataWhere(
-    page,
-    (data) => !data.saving && data.version === 9 && data.errorText === '',
-    '冲突后刷新恢复',
-  )
-  assert.deepEqual(pageData.config, {
+  assert.equal(externalFirst.data.version, 5)
+  const finalExternalConfig = {
     homeSlots: ['menu', 'todo', 'fitness', 'pets'],
     tabSlots: ['pets', 'expense', 'travel'],
+  }
+  const externalFinal = await updateFeatures(
+    ownerSpaceId,
+    owner.token,
+    5,
+    finalExternalConfig,
+    `feature_settings_external_final_${suffix}`,
+  )
+  assert.equal(externalFinal.data.version, 6)
+
+  await page.callMethod('updateConfig', {
+    homeSlots: ['inventory', 'todo', 'fitness', 'pets'],
+    tabSlots: ['pets', 'expense', 'travel'],
   })
-  await screenshot('conflict-recovered')
-  console.log('PASS 版本冲突回滚到上次保存版本，下拉重试后载入最新配置')
+  await page.callMethod('onSave')
+  pageData = await pageDataWhere(
+    page,
+    (data) => !data.saving && data.versionConflict,
+    '版本冲突保留草稿',
+  )
+  assert.equal(pageData.version, 4)
+  assert.equal(pageData.dirty, true)
+  assert.deepEqual(pageData.config.homeSlots, ['inventory', 'todo', 'fitness', 'pets'])
+  assert.match(pageData.saveError, /另一台设备/)
+  await screenshot('conflict-draft-kept')
+
+  await page.callMethod('onReloadSettings')
+  pageData = await pageDataWhere(
+    page,
+    (data) => !data.saving && !data.dirty && data.version === 6 && data.saveError === '',
+    '载入最新配置',
+  )
+  assert.deepEqual(pageData.config, finalExternalConfig)
+  await screenshot('conflict-latest-loaded')
+  console.log('PASS 版本冲突保留草稿，确认后可以载入最新版本')
 
   page = await open('/pages/feature-list/index')
   const featureListData = await pageDataWhere(
@@ -530,14 +528,30 @@ try {
   console.log('PASS 功能清单按工具 / 备忘 / 成员分类并标注快捷位置')
 
   page = await open('/pages/profile/index')
-  await pageDataWhere(page, (data) => data.isLoggedIn, '个人中心加载')
-  const settingRows = await page.$$('.settings-row')
-  const settingTexts = await Promise.all(settingRows.map((row) => row.text()))
-  assert.ok(settingTexts.some((text) => text.includes('功能清单') && text.includes('查看全部功能')))
-  assert.ok(settingTexts.some((text) => text.includes('功能配置') && text.includes('首页与底栏')))
-  assert.ok(settingTexts.some((text) => text.includes('提醒设置') && text.includes('通知与订阅')))
-  await screenshot('profile-entry')
-  console.log('PASS 个人页提供功能清单、功能配置、提醒设置三个清晰入口')
+  const profileData = await pageDataWhere(page, (data) => data.isLoggedIn, '个人中心加载')
+  assert.equal(profileData.featureGroups.length, 3)
+  assert.equal((await page.$$('.profile-toolbar__settings')).length, 1)
+  assert.equal((await page.$$('.settings-row')).length, 0)
+  assert.equal((await page.$$('.profile-feature-group__head')).length, 3)
+  for (const groupHead of await page.$$('.profile-feature-group__head')) {
+    assert.ok((await groupHead.text()).trim().length > 0, '个人页分类标题或描述为空')
+  }
+  await screenshot('profile-directory')
+  const settingsButton = await page.$('.profile-toolbar__settings')
+  await settingsButton.tap()
+  const settingsPage = await waitFor(async () => {
+    const current = await miniProgram.currentPage()
+    return current?.path === 'pages/settings/index' ? current : false
+  }, '打开设置页')
+  const settingsText = (await Promise.all(
+    (await settingsPage.$$('.settings-row')).map((row) => row.text()),
+  )).join('\n')
+  assert.match(settingsText, /个人资料/)
+  assert.match(settingsText, /共同空间/)
+  assert.match(settingsText, /功能配置/)
+  assert.match(settingsText, /提醒设置/)
+  await screenshot('settings-from-profile')
+  console.log('PASS 个人页右上角进入设置，功能目录只展示标题、描述与功能行')
 
   page = await open('/pages/home/index')
   const homeData = await pageDataWhere(
@@ -547,7 +561,7 @@ try {
   )
   assert.deepEqual(
     homeData.homeShortcuts.map((item) => item.id),
-    ['menu', 'todo', 'fitness', 'pets'],
+    finalExternalConfig.homeSlots,
   )
   const bar = await page.$('app-tab-bar')
   assert.ok(bar, '首页没有渲染 app-tab-bar')

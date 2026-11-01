@@ -1,144 +1,161 @@
+<page-meta page-style="{{dragActive ? 'overflow: hidden;' : ''}}" />
+
 <view class="feature-settings-page">
-  <page-loading show="{{initialLoading}}" title="正在整理快捷入口" copy="把常用的功能放到顺手的位置。" />
+  <page-loading show="{{initialLoading}}" title="正在整理功能" copy="把常用功能放到顺手的位置。" />
 
-  <view class="settings-hero">
-    <view class="settings-hero__topline">
-      <text class="settings-hero__eyebrow">QUICK PLACES</text>
-      <view class="settings-hero__list" hover-class="settings-hero__list--pressed" bindtap="onOpenFeatureList">
-        <line-icon name="book-open" size="22" tone="muted" />
-        <text>功能清单</text>
-      </view>
+  <view class="config-head">
+    <view class="config-head__copy">
+      <text class="config-head__title">把常用功能，放到手边</text>
+      <text class="config-head__description">长按上方功能，拖进首页快捷或底部导航。</text>
     </view>
-    <text class="settings-hero__title">把常用功能，\n放到手边。</text>
-    <text class="settings-hero__copy">轻触一个位置可以更换，长按后左右拖动可以调整顺序。</text>
-  </view>
-
-  <view class="region-switch">
-    <view
-      class="region-switch__item {{activeRegion === 'home' ? 'region-switch__item--active' : ''}}"
-      data-region="home"
-      bindtap="onSwitchRegion"
-    >
-      <text class="region-switch__number">4</text>
-      <text>首页快捷</text>
-    </view>
-    <view
-      class="region-switch__item {{activeRegion === 'tab' ? 'region-switch__item--active' : ''}}"
-      data-region="tab"
-      bindtap="onSwitchRegion"
-    >
-      <text class="region-switch__number">3</text>
-      <text>底部导航</text>
+    <view class="config-head__reset" hover-class="config-head__reset--pressed" bindtap="onResetDefault">
+      <line-icon name="rotate-ccw" size="22" tone="muted" />
+      <text>恢复默认</text>
     </view>
   </view>
 
-  <view wx:if="{{errorText}}" class="settings-error">
+  <view wx:if="{{saveError}}" class="config-error">
     <line-icon name="circle-alert" size="28" tone="danger" />
-    <text class="settings-error__copy">{{errorText}}</text>
-    <text class="settings-error__action" bindtap="onRetry">重试</text>
+    <text class="config-error__copy">{{saveError}}</text>
+    <text wx:if="{{versionConflict}}" class="config-error__action" bindtap="onReloadSettings">载入最新</text>
   </view>
 
-  <view class="slot-board">
-    <view class="slot-board__head">
-      <view class="slot-board__copy">
-        <text class="slot-board__title">{{regionTitle}}</text>
-        <text class="slot-board__meta">{{regionCopy}}</text>
+  <view class="feature-pool">
+    <view class="section-heading">
+      <view class="section-heading__copy">
+        <text class="section-heading__title">全部功能</text>
+        <text class="section-heading__description">按住任意功能拖到下方</text>
       </view>
-      <view class="slot-board__reset" hover-class="slot-board__reset--pressed" bindtap="onResetDefault">
-        <line-icon name="rotate-ccw" size="20" tone="muted" />
-        <text>恢复默认</text>
-      </view>
+      <text class="section-heading__meta">{{features.length}} 个</text>
     </view>
 
-    <view class="slot-list slot-list--{{activeRegion}}">
+    <view class="feature-grid">
       <view
-        wx:for="{{slots}}"
+        wx:for="{{features}}"
         wx:key="id"
-        class="feature-slot {{draggingIndex === index ? 'feature-slot--dragging' : ''}}"
+        class="feature-tile"
+        hover-class="feature-tile--pressed"
+        data-source="pool"
+        data-id="{{item.id}}"
+        aria-role="button"
+        aria-label="拖动{{item.shortLabel}}"
+        bindtap="onFeatureTap"
+        bindtouchstart="onDragTouchStart"
+        bindtouchmove="onDragTouchMove"
+        bindtouchend="onDragTouchEnd"
+        bindtouchcancel="onDragTouchCancel"
+      >
+        <view class="feature-tile__icon feature-tile__icon--{{item.tone}}">
+          <line-icon name="{{item.icon}}" size="34" tone="{{item.tone}}" />
+        </view>
+        <text class="feature-tile__label">{{item.shortLabel}}</text>
+        <text wx:if="{{!item.tabEligible}}" class="feature-tile__limit">仅首页</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="placement placement--home">
+    <view class="section-heading">
+      <view class="section-heading__copy">
+        <text class="section-heading__title">首页快捷</text>
+        <text class="section-heading__description">打开首页，第一眼就能用到</text>
+      </view>
+      <text class="section-heading__meta">4 个位置</text>
+    </view>
+
+    <view class="home-drop-grid">
+      <view
+        wx:for="{{homeSlots}}"
+        wx:key="id"
+        class="drop-slot drop-slot--home {{dropRegion === 'home' && dropIndex === index ? (dropBlocked ? 'drop-slot--blocked' : 'drop-slot--active') : ''}}"
+        data-source="slot"
+        data-id="{{item.id}}"
+        data-region="home"
         data-index="{{index}}"
-        bindtouchmove="onSlotTouchMove"
-        bindtouchstart="onSlotTouchStart"
-        bindtouchend="onSlotTouchEnd"
-        bindtouchcancel="onSlotTouchEnd"
-        bindtap="onEditSlot"
+        aria-role="button"
+        aria-label="首页第{{item.order}}个位置，{{item.shortLabel}}"
+        bindtap="onSlotTap"
+        bindtouchstart="onDragTouchStart"
+        bindtouchmove="onDragTouchMove"
+        bindtouchend="onDragTouchEnd"
+        bindtouchcancel="onDragTouchCancel"
       >
-        <text class="feature-slot__order">{{index + 1}}</text>
-        <view class="feature-slot__icon feature-slot__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="31" tone="{{item.tone}}" />
+        <text class="drop-slot__order">{{item.order}}</text>
+        <view class="drop-slot__icon feature-tile__icon--{{item.tone}}">
+          <line-icon name="{{item.icon}}" size="37" tone="{{item.tone}}" />
         </view>
-        <view class="feature-slot__body">
-          <text class="feature-slot__title">{{item.label}}</text>
-          <text class="feature-slot__copy">{{item.description}}</text>
-        </view>
-        <view class="feature-slot__handle" aria-label="长按拖动排序">
-          <text></text><text></text><text></text>
+        <view class="drop-slot__body">
+          <text class="drop-slot__title">{{item.shortLabel}}</text>
+          <text class="drop-slot__copy">{{item.label}}</text>
         </view>
       </view>
     </view>
-
-    <view wx:if="{{activeRegion === 'home'}}" class="home-preview">
-      <view wx:for="{{slots}}" wx:key="id" class="home-preview__item">
-        <view class="home-preview__icon home-preview__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="25" tone="{{item.tone}}" />
-        </view>
-        <text>{{item.shortLabel}}</text>
-      </view>
-    </view>
-    <view wx:else class="tab-preview">
-      <view
-        wx:for="{{tabPreview}}"
-        wx:key="id"
-        class="tab-preview__item {{item.fixed ? 'tab-preview__item--fixed' : ''}}"
-      >
-        <line-icon name="{{item.icon}}" size="24" tone="{{item.fixed ? 'muted' : item.tone}}" />
-        <text>{{item.shortLabel}}</text>
-      </view>
-    </view>
-
-    <text class="slot-board__hint">{{saving ? syncText : '松手自动保存 · ' + syncText}}</text>
   </view>
 
-  <view wx:if="{{pickerOpen}}" class="picker-layer" catchtap="onClosePicker">
-    <view class="picker-sheet" catchtap="onKeepPicker">
-      <view class="picker-sheet__grip"></view>
-      <view class="picker-sheet__head">
-        <view class="picker-sheet__copy">
-          <text class="picker-sheet__title">{{pickerTitle}}</text>
-          <text class="picker-sheet__meta">按用途挑一个功能</text>
-        </view>
-        <text class="picker-sheet__close" bindtap="onClosePicker">关闭</text>
+  <view class="placement placement--tab">
+    <view class="section-heading">
+      <view class="section-heading__copy">
+        <text class="section-heading__title">底部导航</text>
+        <text class="section-heading__description">中间三个位置，放最常去的地方</text>
+      </view>
+      <text class="section-heading__meta">3 个位置</text>
+    </view>
+
+    <view class="tab-drop-preview">
+      <view class="tab-fixed-item">
+        <line-icon name="house" size="30" tone="muted" />
+        <text>家</text>
+        <text class="tab-fixed-item__note">固定</text>
       </view>
 
-      <scroll-view class="picker-sheet__scroll" scroll-y enhanced show-scrollbar="{{false}}">
-        <view wx:for="{{candidateGroups}}" wx:key="key" class="candidate-group">
-          <view class="candidate-group__head">
-            <view class="candidate-group__mark candidate-group__mark--{{item.category.tone}}">
-              <line-icon name="{{item.category.icon}}" size="23" tone="{{item.category.tone}}" />
-            </view>
-            <text class="candidate-group__title">{{item.category.title}}</text>
-            <text class="candidate-group__count">{{item.items.length}}</text>
-          </view>
-          <view class="candidate-grid">
-            <view
-              wx:for="{{item.items}}"
-              wx:for-item="candidate"
-              wx:key="id"
-              class="candidate-card {{candidate.selected ? 'candidate-card--selected' : ''}} {{candidate.disabled ? 'candidate-card--disabled' : ''}}"
-              data-id="{{candidate.id}}"
-              bindtap="onSelectCandidate"
-            >
-              <view class="candidate-card__icon candidate-card__icon--{{candidate.tone}}">
-                <line-icon name="{{candidate.icon}}" size="27" tone="{{candidate.tone}}" />
-              </view>
-              <view class="candidate-card__body">
-                <text class="candidate-card__title">{{candidate.shortLabel}}</text>
-                <text class="candidate-card__copy">{{candidate.label}}</text>
-              </view>
-              <text wx:if="{{candidate.stateLabel}}" class="candidate-card__state">{{candidate.stateLabel}}</text>
-            </view>
-          </view>
-        </view>
-      </scroll-view>
+      <view
+        wx:for="{{tabSlots}}"
+        wx:key="id"
+        class="drop-slot drop-slot--tab {{dropRegion === 'tab' && dropIndex === index ? (dropBlocked ? 'drop-slot--blocked' : 'drop-slot--active') : ''}}"
+        data-source="slot"
+        data-id="{{item.id}}"
+        data-region="tab"
+        data-index="{{index}}"
+        aria-role="button"
+        aria-label="导航第{{item.order}}个位置，{{item.shortLabel}}"
+        bindtap="onSlotTap"
+        bindtouchstart="onDragTouchStart"
+        bindtouchmove="onDragTouchMove"
+        bindtouchend="onDragTouchEnd"
+        bindtouchcancel="onDragTouchCancel"
+      >
+        <line-icon name="{{item.icon}}" size="31" tone="{{item.tone}}" />
+        <text class="drop-slot__tab-label">{{item.shortLabel}}</text>
+      </view>
+
+      <view class="tab-fixed-item">
+        <line-icon name="user-round" size="30" tone="muted" />
+        <text>我的</text>
+        <text class="tab-fixed-item__note">固定</text>
+      </view>
     </view>
+  </view>
+
+  <view class="save-dock">
+    <view class="save-dock__meta">
+      <text class="save-dock__status">{{dirty ? '有未保存修改' : syncText}}</text>
+      <text class="save-dock__hint">{{dirty ? '确认位置后统一保存' : '当前配置已是最新'}}</text>
+    </view>
+    <button
+      class="save-dock__button {{dirty ? 'save-dock__button--ready' : ''}}"
+      hover-class="save-dock__button--pressed"
+      disabled="{{saving || !dirty}}"
+      loading="{{saving}}"
+      bindtap="onSave"
+    >保存配置</button>
+  </view>
+
+  <view
+    wx:if="{{dragActive}}"
+    class="drag-ghost drag-ghost--{{dragTone}}"
+    style="left: {{dragX}}px; top: {{dragY}}px;"
+  >
+    <line-icon name="{{dragIcon}}" size="32" tone="{{dragTone}}" />
+    <text>{{dragLabel}}</text>
   </view>
 </view>

@@ -1,23 +1,54 @@
 /*
- * 我的 · 身份、共同空间与少量长期设置。
- * 不展示内部角色、同步状态和调试能力，避免个人页变成系统设置面板。
+ * 我的：身份、共同空间与完整功能目录。
+ * 设置集中在右上角，正文只保留用户真正需要浏览和进入的内容。
  */
 .profile-page {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  padding: 38rpx 34rpx calc(176rpx + env(safe-area-inset-bottom));
+  padding: 24rpx 34rpx calc(176rpx + env(safe-area-inset-bottom));
   background:
-    radial-gradient(circle at 104% 0%, rgba(248, 218, 205, 0.38), transparent 24%),
-    linear-gradient(180deg, #fffaf5 0%, #f8f7f4 50%, #f4f1eb 100%);
+    radial-gradient(circle at 103% 0%, rgba(242, 217, 204, 0.42), transparent 24%),
+    linear-gradient(180deg, #fffaf5 0%, #f7f5f1 54%, #f3f0ea 100%);
   box-sizing: border-box;
+}
+
+.profile-toolbar {
+  display: flex;
+  min-height: 64rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-toolbar__brand {
+  color: var(--c-faint);
+  font-family: var(--font-serif);
+  font-size: 25rpx;
+  font-weight: 650;
+  letter-spacing: 1rpx;
+}
+
+.profile-toolbar__settings {
+  display: flex;
+  width: 62rpx;
+  height: 62rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(219, 211, 201, 0.9);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.92);
+}
+
+.profile-toolbar__settings--pressed {
+  opacity: 0.56;
 }
 
 .profile-card {
   display: flex;
   align-items: center;
-  padding: 12rpx 4rpx 46rpx;
-  border-bottom: 1rpx solid rgba(215, 207, 197, 0.58);
+  padding: 25rpx 4rpx 35rpx;
+  border-bottom: 1rpx solid rgba(215, 207, 197, 0.54);
   transition: opacity 120ms ease;
 }
 
@@ -28,8 +59,8 @@
 .profile-avatar {
   display: flex;
   overflow: hidden;
-  width: 124rpx;
-  height: 124rpx;
+  width: 120rpx;
+  height: 120rpx;
   align-items: center;
   justify-content: center;
   border: 4rpx solid rgba(255, 255, 255, 0.94);
@@ -39,7 +70,7 @@
   color: #8b5f52;
   flex: 0 0 auto;
   font-family: var(--font-serif);
-  font-size: 43rpx;
+  font-size: 42rpx;
   font-weight: 700;
 }
 
@@ -66,7 +97,7 @@
   color: var(--c-text);
   font-family: var(--font-serif);
   font-size: 44rpx;
-  font-weight: 700;
+  font-weight: 720;
   letter-spacing: -0.6rpx;
   line-height: 1.32;
   text-overflow: ellipsis;
@@ -75,7 +106,7 @@
 
 .profile-card__meta {
   overflow: hidden;
-  margin-top: 8rpx;
+  margin-top: 7rpx;
   color: var(--c-muted);
   font-size: 24rpx;
   line-height: 1.45;
@@ -85,8 +116,8 @@
 
 .profile-card__edit {
   display: flex;
-  width: 64rpx;
-  height: 64rpx;
+  width: 62rpx;
+  height: 62rpx;
   align-items: center;
   justify-content: center;
   margin-left: 16rpx;
@@ -122,8 +153,8 @@
   display: flex;
   overflow: hidden;
   align-items: center;
-  margin-top: 30rpx;
-  padding: 28rpx 24rpx;
+  margin-top: 24rpx;
+  padding: 27rpx 24rpx;
   border-radius: 34rpx;
   background: #252b27;
   box-shadow: 0 26rpx 48rpx -40rpx rgba(37, 43, 39, 0.88);
@@ -151,8 +182,8 @@
   position: relative;
   z-index: 1;
   display: flex;
-  width: 84rpx;
-  height: 84rpx;
+  width: 82rpx;
+  height: 82rpx;
   align-items: center;
   justify-content: center;
   border: 1rpx solid rgba(255, 255, 255, 0.1);
@@ -174,16 +205,16 @@
   color: #999c96;
   font-size: 20rpx;
   font-weight: 600;
-  letter-spacing: 1.7rpx;
+  letter-spacing: 1.5rpx;
   line-height: 1.4;
 }
 
 .space-card__title {
   overflow: hidden;
-  margin-top: 4rpx;
+  margin-top: 3rpx;
   color: #fff;
   font-family: var(--font-serif);
-  font-size: 36rpx;
+  font-size: 35rpx;
   font-weight: 700;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -192,7 +223,7 @@
 
 .space-card__meta {
   overflow: hidden;
-  margin-top: 5rpx;
+  margin-top: 4rpx;
   color: #bbbdb7;
   font-size: 22rpx;
   line-height: 1.45;
@@ -209,69 +240,110 @@
   font-weight: 300;
 }
 
-.settings-block {
-  margin-top: 46rpx;
-}
-
-.settings-block__label {
-  padding: 0 7rpx;
-  color: var(--c-faint);
-  font-size: 21rpx;
-  font-weight: 600;
-  letter-spacing: 2.4rpx;
-  line-height: 1.45;
-}
-
-.settings-list {
-  overflow: hidden;
-  margin-top: 14rpx;
-  border: 1rpx solid rgba(225, 218, 208, 0.9);
-  border-radius: 30rpx;
-  background: rgba(255, 255, 255, 0.82);
-}
-
-.settings-row {
+.feature-directory-head {
   display: flex;
-  min-height: 108rpx;
-  align-items: center;
-  margin: 0 23rpx;
-  border-bottom: 1rpx solid var(--c-line);
-  box-sizing: border-box;
-  transition: opacity 120ms ease;
+  align-items: baseline;
+  margin-top: 48rpx;
+  padding: 0 6rpx;
+  gap: 15rpx;
 }
 
-.settings-row:last-child {
-  border-bottom: 0;
-}
-
-.settings-row--pressed {
-  opacity: 0.56;
-}
-
-.settings-row__body {
-  display: flex;
-  min-width: 0;
-  margin-left: 18rpx;
-  flex: 1;
-  flex-direction: column;
-  gap: 2rpx;
-}
-
-.settings-row__title {
+.feature-directory-head__title {
   color: var(--c-text);
-  font-size: 29rpx;
-  font-weight: 600;
-  line-height: 1.45;
+  font-family: var(--font-serif);
+  font-size: 42rpx;
+  font-weight: 750;
+  line-height: 1.3;
 }
 
-.settings-row__meta {
+.feature-directory-head__copy {
   color: var(--c-muted);
   font-size: 22rpx;
+  line-height: 1.45;
+}
+
+.profile-feature-group {
+  margin-top: 30rpx;
+}
+
+.profile-feature-group__head {
+  display: flex;
+  align-items: baseline;
+  padding: 0 7rpx 11rpx;
+  gap: 13rpx;
+}
+
+.profile-feature-group__title {
+  color: var(--c-text);
+  font-size: 31rpx;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.profile-feature-group__description {
+  color: var(--c-faint);
+  font-size: 21rpx;
   line-height: 1.4;
 }
 
-.settings-row__arrow {
-  color: var(--c-faint);
+.profile-feature-group__list {
+  overflow: hidden;
+  padding: 0 23rpx;
+  border: 1rpx solid rgba(225, 218, 208, 0.84);
+  border-radius: 31rpx;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 18rpx 44rpx -40rpx rgba(92, 74, 61, 0.34),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.88);
+}
+
+.profile-feature-row {
+  display: flex;
+  min-height: 112rpx;
+  align-items: center;
+  border-bottom: 1rpx solid var(--c-line);
+  gap: 16rpx;
+  transition: opacity 120ms ease;
+}
+
+.profile-feature-row:last-child {
+  border-bottom: 0;
+}
+
+.profile-feature-row--pressed {
+  opacity: 0.56;
+}
+
+.profile-feature-row__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3rpx;
+}
+
+.profile-feature-row__title {
+  overflow: hidden;
+  color: var(--c-text);
+  font-size: 29rpx;
+  font-weight: 680;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-feature-row__description {
+  overflow: hidden;
+  color: var(--c-muted);
+  font-size: 22rpx;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-feature-row__arrow {
+  color: #beb7ae;
+  flex: 0 0 auto;
   font-size: 38rpx;
   font-weight: 300;
 }

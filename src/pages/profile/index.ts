@@ -1,12 +1,33 @@
+import {
+  getFeatureCategoryGroups,
+  getFeatureDefinition,
+  type FeatureCategoryDefinition,
+  type FeatureDefinition,
+} from '../../domain/feature-catalog'
 import { hydrateAuthState, type AuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { readPageCache, writePageCache } from '../../services/page-cache'
+import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
+interface ProfileFeatureGroupView {
+  key: string
+  category: FeatureCategoryDefinition
+  items: FeatureDefinition[]
+}
+
 const profileRequestGate = createRequestGate()
 const PROFILE_PAGE_CACHE_KEY = 'profile:overview'
+
+function buildFeatureGroups(): ProfileFeatureGroupView[] {
+  return getFeatureCategoryGroups('list').map((group) => ({
+    key: group.category.id,
+    category: group.category,
+    items: group.items,
+  }))
+}
 
 Page({
   data: {
@@ -23,6 +44,7 @@ Page({
     avatarUrl: '',
     profileMeta: '登录后保存你的生活与共同空间',
     spaceMeta: '登录后查看共同空间',
+    featureGroups: buildFeatureGroups() as ProfileFeatureGroupView[],
   },
 
   onLoad() {
@@ -79,8 +101,8 @@ Page({
     const spaceMeta = !isLoggedIn
       ? '登录后查看共同空间'
       : auth.spaceRole === 'owner'
-        ? '由你发起 · 一起记录日常、清单和毛孩子'
-        : '一起记录日常、清单和毛孩子'
+        ? '你创建的空间'
+        : '和朋友一起生活'
 
     this.setData({
       initialLoading: false,
@@ -95,6 +117,7 @@ Page({
       avatarUrl: this.data.avatarMediaId === avatarMediaId ? this.data.avatarUrl : '',
       profileMeta,
       spaceMeta,
+      featureGroups: buildFeatureGroups(),
     }, () => this.cacheCurrentPage())
 
     if (avatarMediaId) void this.loadAvatar(avatarMediaId)
@@ -125,6 +148,10 @@ Page({
     wx.navigateTo({ url: '/pages/auth/index' })
   },
 
+  onOpenSettings() {
+    wx.navigateTo({ url: '/pages/settings/index' })
+  },
+
   ensureLoggedIn(): boolean {
     if (this.data.isLoggedIn) return true
     wx.navigateTo({ url: '/pages/auth/index?mode=login' })
@@ -136,18 +163,16 @@ Page({
     wx.navigateTo({ url: '/pages/space/index' })
   },
 
-  onOpenFeatureList() {
-    wx.navigateTo({ url: '/pages/feature-list/index' })
-  },
-
-  onOpenReminders() {
-    if (!this.ensureLoggedIn()) return
-    wx.navigateTo({ url: '/pages/reminder-settings/index' })
-  },
-
-  onOpenFeatureSettings() {
-    if (!this.ensureLoggedIn()) return
-    wx.navigateTo({ url: '/pages/feature-settings/index' })
+  onOpenFeature(event: {
+    currentTarget: { dataset: { id?: string } }
+  }) {
+    const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
+    if (!feature) return
+    if (feature.launchMode === 'root') {
+      openAppRoot(feature.path)
+      return
+    }
+    wx.navigateTo({ url: feature.path })
   },
 
   onUnload() {

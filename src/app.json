@@ -19,6 +19,7 @@
     "pages/profile/index",
     "pages/feature-list/index",
     "pages/feature-settings/index",
+    "pages/settings/index",
     "pages/auth/index",
     "pages/todo/index",
     "pages/todo-form/index",
