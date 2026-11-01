@@ -7,7 +7,6 @@ import {
   type DemoMenuStep,
 } from '../../domain/demo-menu'
 import { mediaGateway } from '../../services/media'
-import { getMediaErrorMessage } from '../../services/media-gateway'
 import { menuGateway } from '../../services/menu'
 import {
   getMenuErrorMessage,
@@ -18,6 +17,7 @@ import {
 } from '../../services/menu-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { createRequestGate } from '../../utils/request-control'
+import { showMediaUploadError } from '../../utils/media-error'
 
 interface MenuFormImage {
   mediaId: string
@@ -176,10 +176,7 @@ Page({
       })
       wx.showToast({ title: '菜品图片已准备好', icon: 'success' })
     } catch (error) {
-      wx.showToast({
-        title: getMediaErrorMessage(error, '图片上传没有完成'),
-        icon: 'none',
-      })
+      showMediaUploadError(error, '图片上传没有完成')
     } finally {
       this.setData({ imageUploading: false })
     }

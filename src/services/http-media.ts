@@ -71,6 +71,11 @@ export class HttpMediaGateway implements MediaGateway {
           reject(error)
         },
         fail(error) {
+          console.error('媒体上传失败', {
+            requestId,
+            url,
+            errMsg: error.errMsg,
+          })
           reject(new MediaGatewayError(
             'NETWORK_ERROR',
             error.errMsg || '图片上传没有完成，请稍后再试',

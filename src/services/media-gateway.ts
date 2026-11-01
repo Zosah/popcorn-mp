@@ -44,7 +44,7 @@ export function getMediaErrorMessage(error: unknown, fallback: string): string {
     case 'INVALID_IMAGE':
       return '这张图片无法读取，请换一张试试'
     case 'NETWORK_ERROR':
-      return '图片上传没有完成，请检查网络后重试'
+      return mediaNetworkErrorMessage(error.message)
     case 'MEDIA_STORAGE_UNAVAILABLE':
     case 'SERVICE_UNAVAILABLE':
       return '图片服务暂时不可用'
@@ -53,4 +53,30 @@ export function getMediaErrorMessage(error: unknown, fallback: string): string {
     default:
       return error.message || fallback
   }
+}
+
+function mediaNetworkErrorMessage(message: string): string {
+  const detail = compactDiagnostic(message)
+  if (/url not in domain list|合法域名|domain list/i.test(message)) {
+    return withDiagnostic('图片上传域名未放行，请重新打开小程序或检查后台配置', detail)
+  }
+  if (/file not found|no such file|文件不存在|temp.*file/i.test(message)) {
+    return withDiagnostic('图片临时文件已失效，请重新选择', detail)
+  }
+  if (/timeout|timed out|超时/i.test(message)) {
+    return withDiagnostic('图片上传超时，请检查网络后重试', detail)
+  }
+  if (/ssl|tls|certificate|证书|handshake/i.test(message)) {
+    return withDiagnostic('图片上传安全连接失败，请稍后重试', detail)
+  }
+  return withDiagnostic('图片上传没有完成，请检查网络后重试', detail)
+}
+
+function compactDiagnostic(message: string): string {
+  const value = message.replace(/^uploadFile:fail\s*/i, '').trim()
+  return value.length > 80 ? `${value.slice(0, 80)}…` : value
+}
+
+function withDiagnostic(message: string, detail: string): string {
+  return detail ? `${message}（${detail}）` : message
 }

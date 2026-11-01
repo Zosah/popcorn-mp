@@ -36,6 +36,7 @@ import {
   type PetCollection,
 } from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { showMediaUploadError } from '../../utils/media-error'
 
 type PetSection = 'profile' | 'care' | 'calendar' | 'daily' | 'supplies'
 type SupplyFilter = PetSupplyCategory | 'all'
@@ -552,11 +553,16 @@ Page({
           this.applyPetState(updated)
           wx.showToast({ title: '照片已更新', icon: 'success' })
         } catch (error) {
-          const message = error instanceof PetGatewayError
-            ? getPetErrorMessage(error, '照片没有保存成功')
-            : getMediaErrorMessage(error, '照片没有上传成功')
-          this.setData({ errorText: message })
-          wx.showToast({ title: message, icon: 'none' })
+          if (error instanceof PetGatewayError) {
+            const message = getPetErrorMessage(error, '照片没有保存成功')
+            this.setData({ errorText: message })
+            wx.showToast({ title: message, icon: 'none' })
+          } else {
+            this.setData({
+              errorText: getMediaErrorMessage(error, '照片没有上传成功'),
+            })
+            showMediaUploadError(error, '照片没有上传成功')
+          }
         } finally {
           this.setData({ uploadingAvatar: false })
         }

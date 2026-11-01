@@ -22,6 +22,7 @@ import { mediaGateway } from '../../services/media'
 import { getMediaErrorMessage } from '../../services/media-gateway'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { showMediaUploadError } from '../../utils/media-error'
 
 type AuthMode = 'login' | 'register' | 'account'
 
@@ -302,7 +303,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     } catch (error) {
       const message = getMediaErrorMessage(error, '头像上传没有完成')
       this.setData({ avatarUploadError: message })
-      wx.showToast({ title: message, icon: 'none' })
+      showMediaUploadError(error, '头像上传没有完成')
     } finally {
       this.setData({ avatarUploading: false })
     }

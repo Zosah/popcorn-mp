@@ -131,10 +131,10 @@ try {
   assert.ok(tempImage.size > 1000)
 
   await miniProgram.evaluate(() => {
-    getApp().__journalGoalToast = null
+    getApp().__journalGoalModal = null
   })
-  await miniProgram.mockWxMethod('showToast', function (options) {
-    getApp().__journalGoalToast = options
+  await miniProgram.mockWxMethod('showModal', function (options) {
+    getApp().__journalGoalModal = options
   })
   await miniProgram.mockWxMethod('uploadFile', {
     statusCode: 503,
@@ -147,13 +147,14 @@ try {
       const data = await form.data()
       return !data.imageUploading && !data.image ? data : false
     }, '生产生活记录图片上传失败回退')
-    const failedToast = await miniProgram.evaluate(() => getApp().__journalGoalToast)
-    assert.match(failedToast?.title ?? '', /检查网络/)
+    const failedModal = await miniProgram.evaluate(() => getApp().__journalGoalModal)
+    assert.equal(failedModal?.title, '图片上传失败')
+    assert.match(failedModal?.content ?? '', /检查网络/)
     await screenshot('form-upload-failed')
     console.log('PASS 图片上传失败后保留可编辑状态并提示检查网络')
   } finally {
     await miniProgram.restoreWxMethod('uploadFile').catch(() => undefined)
-    await miniProgram.restoreWxMethod('showToast').catch(() => undefined)
+    await miniProgram.restoreWxMethod('showModal').catch(() => undefined)
   }
 
   await form.callMethod('uploadImage', tempImage.filePath, tempImage.size)
