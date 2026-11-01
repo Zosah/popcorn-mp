@@ -9,7 +9,7 @@ import type {
   PetEventType,
   PetSpecies,
   PetSupplyCategory,
-  PetSupplyStatus,
+  PetSupplyPreference,
 } from '../domain/demo-pet'
 import { addCalendarDays, getShanghaiDateOnly } from '../domain/expiry'
 import {
@@ -36,12 +36,31 @@ function cloneState(state: DemoPetState): DemoPetState {
       version: profile.version ?? 1,
       avatarMediaId: profile.avatarMediaId ?? '',
       avatarUrl: profile.avatarUrl ?? '',
+      backgroundKey: profile.backgroundKey ?? 'sage',
+      backgroundMediaId: profile.backgroundMediaId ?? '',
+      backgroundUrl: profile.backgroundUrl ?? '',
     },
     events: Array.isArray(state.events)
       ? state.events.map((item) => ({ ...item, version: item.version ?? 1 }))
       : [],
     supplies: Array.isArray(state.supplies)
-      ? state.supplies.map((item) => ({ ...item, version: item.version ?? 1 }))
+      ? state.supplies.map((item) => {
+          const legacy = item as DemoPetSupply & { status?: string }
+          const suppliedPreference = legacy.preference as PetSupplyPreference | undefined
+          const preference = suppliedPreference
+            ?? (legacy.status === 'loved' || legacy.status === 'wishlist' ? 'loved' : legacy.status === 'dropped' ? 'dropped' : 'neutral')
+          return {
+            ...item,
+            category: item.category === 'custom' ? 'custom' : item.category,
+            categoryLabel: item.categoryLabel || supplyCategoryLabel(item.category),
+            brand: item.brand ?? '',
+            preference,
+            note: item.note ?? '',
+            mediaId: item.mediaId ?? '',
+            mediaUrl: item.mediaUrl ?? '',
+            version: item.version ?? 1,
+          }
+        })
       : [],
     weights: Array.isArray(state.weights) ? state.weights.map((item) => ({ ...item })) : [],
     dailyLogs: Array.isArray(state.dailyLogs)
@@ -139,6 +158,9 @@ export function addDemoPet(input: {
       avatarMediaId: '',
       avatarUrl: '',
       ...input.profile,
+      backgroundKey: input.profile?.backgroundKey ?? 'sage',
+      backgroundMediaId: input.profile?.backgroundMediaId ?? '',
+      backgroundUrl: input.profile?.backgroundUrl ?? '',
     },
     events: [],
     supplies: [],
@@ -273,18 +295,26 @@ export function removeDemoPetEvent(id: string): DemoPetState {
 
 export function addDemoPetSupply(input: {
   category: PetSupplyCategory
+  categoryLabel?: string
   name: string
-  status: PetSupplyStatus
+  brand?: string
+  preference: PetSupplyPreference
   note?: string
+  mediaId?: string
 }): DemoPetState {
   const state = getDemoPetState()
   const nowMs = Date.now()
   const supply: DemoPetSupply = {
     id: `pet-supply-${nowMs}`,
     category: input.category,
+    categoryLabel: input.category === 'custom'
+      ? (input.categoryLabel?.trim() || '自定义')
+      : supplyCategoryLabel(input.category),
     name: input.name.trim(),
-    status: input.status,
+    brand: input.brand?.trim() ?? '',
+    preference: input.preference,
     note: input.note?.trim() ?? '',
+    mediaId: input.mediaId?.trim() ?? '',
     recordedOn: getShanghaiDateOnly(nowMs),
     version: 1,
   }
@@ -294,15 +324,27 @@ export function addDemoPetSupply(input: {
 
 export function updateDemoPetSupplyStatus(
   id: string,
-  status: PetSupplyStatus,
+  preference: PetSupplyPreference,
 ): DemoPetState {
   const state = getDemoPetState()
   state.supplies = state.supplies.map((item) =>
     item.id === id
-      ? { ...item, status, version: (item.version ?? 1) + 1 }
+      ? { ...item, preference, version: (item.version ?? 1) + 1 }
       : item,
   )
   return saveDemoPetState(state)
+}
+
+function supplyCategoryLabel(category: PetSupplyCategory): string {
+  const labels: Record<PetSupplyCategory, string> = {
+    kibble: '主粮',
+    can: '罐头',
+    'freeze-dried': '冻干',
+    soup: '汤包',
+    litter: '猫砂',
+    custom: '自定义',
+  }
+  return labels[category] ?? '用品'
 }
 
 export function addDemoPetWeight(value: string): DemoPetState {

@@ -286,7 +286,7 @@ export interface ApiJournalWriteRequest {
   imageCaption: string
 }
 
-export type ApiMediaPurpose = 'journal' | 'avatar' | 'inventory' | 'menu' | 'other'
+export type ApiMediaPurpose = 'journal' | 'avatar' | 'inventory' | 'menu' | 'pet' | 'other'
 
 export interface ApiSignedObject {
   url: string
@@ -419,9 +419,13 @@ export interface ApiPetSupply {
   id: string
   petId: string
   category: string
+  categoryLabel: string
   name: string
+  brand: string
   status: string
+  preference: string
   note: string
+  mediaId: string
   recordedOn: string
   version: number
   createdBy: string
@@ -442,6 +446,8 @@ export interface ApiPet {
   neuteredOn: string
   status: string
   avatarMediaId: string
+  backgroundKey: string
+  backgroundMediaId: string
   version: number
   createdBy: string
   deletedAt: string | null
@@ -467,6 +473,8 @@ export interface ApiPetProfileWriteRequest {
   neuteredOn: string
   status: string
   avatarMediaId: string
+  backgroundKey: string
+  backgroundMediaId: string
 }
 
 export interface ApiPetEventWriteRequest {
@@ -494,10 +502,17 @@ export interface ApiPetDailyLogWriteRequest {
 
 export interface ApiPetSupplyWriteRequest {
   category: string
+  categoryLabel: string
   name: string
-  status: string
+  brand: string
+  preference: string
   note: string
+  mediaId: string
   recordedOn: string
+}
+
+export interface ApiPetSupplyPreferenceWriteRequest {
+  preference: string
 }
 
 export interface ApiAppTabSettings {

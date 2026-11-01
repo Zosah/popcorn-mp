@@ -14,17 +14,19 @@ import {
   formatPetWeight,
   getDefaultPetCareInterval,
   getCurrentPetSupplies,
-  getPetSupplyStatusLabel,
+  getPetSupplyPreferenceLabel,
+  PET_BACKGROUND_LABELS,
   PET_DAILY_LOG_LABELS,
   PET_EVENT_LABELS,
   PET_SUPPLY_CATEGORY_LABELS,
   type DemoPetProfile,
   type DemoPetState,
   type PetCareType,
+  type PetBackgroundKey,
   type PetDailyLogType,
   type PetSpecies,
   type PetSupplyCategory,
-  type PetSupplyStatus,
+  type PetSupplyPreference,
 } from '../../domain/demo-pet'
 import { mediaGateway } from '../../services/media'
 import { getMediaErrorMessage } from '../../services/media-gateway'
@@ -43,7 +45,14 @@ import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { showMediaUploadError } from '../../utils/media-error'
 
-type PetSection = 'profile' | 'care' | 'calendar' | 'daily' | 'supplies'
+type PetSection = 'profile' | 'care' | 'daily' | 'supplies'
+
+type CropImageApi = (options: {
+  src: string
+  cropScale: '1:1'
+  success: (result: { tempFilePath: string }) => void
+  fail: () => void
+}) => void
 type SupplyFilter = PetSupplyCategory | 'all'
 
 const EMPTY_PROFILE: DemoPetProfile = {
@@ -59,6 +68,9 @@ const EMPTY_PROFILE: DemoPetProfile = {
   version: 1,
   avatarMediaId: '',
   avatarUrl: '',
+  backgroundKey: 'sage',
+  backgroundMediaId: '',
+  backgroundUrl: '',
 }
 
 const EMPTY_PET_STATE: DemoPetState = {
@@ -79,17 +91,28 @@ const SUPPLY_CATEGORIES: Array<{
   { value: 'freeze-dried', label: '冻干' },
   { value: 'soup', label: '汤包' },
   { value: 'litter', label: '猫砂' },
+  { value: 'custom', label: '自定义' },
 ]
 
-const SUPPLY_STATUS_OPTIONS: Array<{
-  value: PetSupplyStatus
+const SUPPLY_PREFERENCE_OPTIONS: Array<{
+  value: PetSupplyPreference
   label: string
 }> = [
-  { value: 'current', label: '正在用' },
-  { value: 'loved', label: '爱吃 / 好用' },
-  { value: 'tried', label: '吃过 / 用过' },
-  { value: 'wishlist', label: '种草' },
+  { value: 'loved', label: '种草' },
+  { value: 'neutral', label: '一般' },
   { value: 'dropped', label: '拔草' },
+]
+
+const SUPPLY_EDITOR_CATEGORIES: Array<{
+  value: PetSupplyCategory
+  label: string
+}> = [
+  { value: 'kibble', label: '主粮' },
+  { value: 'can', label: '罐头' },
+  { value: 'freeze-dried', label: '冻干' },
+  { value: 'soup', label: '汤包' },
+  { value: 'litter', label: '猫砂' },
+  { value: 'custom', label: '自定义' },
 ]
 
 const DAILY_LOG_DEFAULTS: Record<PetDailyLogType, string> = {
@@ -97,6 +120,8 @@ const DAILY_LOG_DEFAULTS: Record<PetDailyLogType, string> = {
   water: '主动喝水一次',
   stool: '便便形态正常',
   urine: '尿团大小正常',
+  'litter-change': '换掉结块，并补了新猫砂',
+  'water-change': '清洗水碗，换上干净饮水',
 }
 
 const PET_PAGE_CACHE_KEY = 'pets:overview'
@@ -126,6 +151,28 @@ Page({
     errorText: '',
     syncState: 'pending',
     uploadingAvatar: false,
+    avatarPreviewOpen: false,
+    backgroundPickerOpen: false,
+    uploadingBackground: false,
+    backgroundOptions: (Object.keys(PET_BACKGROUND_LABELS) as PetBackgroundKey[]).map((key) => ({
+      key,
+      label: PET_BACKGROUND_LABELS[key],
+      selected: key === EMPTY_PROFILE.backgroundKey,
+    })),
+    supplyEditorOpen: false,
+    supplySaving: false,
+    supplyPreferenceOptions: SUPPLY_PREFERENCE_OPTIONS,
+    supplyEditorCategories: SUPPLY_EDITOR_CATEGORIES,
+    supplyDraft: {
+      category: 'kibble' as PetSupplyCategory,
+      categoryLabel: '',
+      name: '',
+      brand: '',
+      preference: 'neutral' as PetSupplyPreference,
+      note: '',
+      mediaId: '',
+      mediaUrl: '',
+    },
     petState: EMPTY_PET_STATE,
     petStates: [] as DemoPetState[],
     profile: EMPTY_PROFILE,
@@ -144,6 +191,8 @@ Page({
     birthdayLabel: '',
     homeOnLabel: '',
     neuteredOnLabel: '',
+    latestVaccineLabel: '还没有记录',
+    vaccineNextLabel: '',
     latestWeight: '—',
     companionDays: 0,
     dailyDoneCount: 0,
@@ -184,6 +233,7 @@ Page({
     dailySummary: [] as Array<
       ReturnType<typeof buildPetDailySummary>[number] & {
         iconName: string
+        interval: boolean
       }
     >,
     recentDailyLogs: [] as Array<{
@@ -207,8 +257,10 @@ Page({
       categoryLabel: string
       iconName: string
       name: string
-      status: PetSupplyStatus
-      statusLabel: string
+      brand: string
+      mediaUrl: string
+      preference: PetSupplyPreference
+      preferenceLabel: string
       note: string
       recordedOn: string
     }>,
@@ -234,7 +286,6 @@ Page({
     if (
       section === 'profile' ||
       section === 'care' ||
-      section === 'calendar' ||
       section === 'daily' ||
       section === 'supplies'
     ) {
@@ -358,6 +409,11 @@ Page({
       cacheFresh: _cacheFresh,
       hasShown: _hasShown,
       uploadingAvatar: _uploadingAvatar,
+      avatarPreviewOpen: _avatarPreviewOpen,
+      backgroundPickerOpen: _backgroundPickerOpen,
+      uploadingBackground: _uploadingBackground,
+      supplyEditorOpen: _supplyEditorOpen,
+      supplySaving: _supplySaving,
       ...snapshot
     } = data
     writePageCache(PET_PAGE_CACHE_KEY, {
@@ -365,6 +421,11 @@ Page({
       loading: false,
       syncing: false,
       uploadingAvatar: false,
+      avatarPreviewOpen: false,
+      backgroundPickerOpen: false,
+      uploadingBackground: false,
+      supplyEditorOpen: false,
+      supplySaving: false,
       editingProfile: false,
       profileDraft: this.data.profile,
     })
@@ -373,17 +434,19 @@ Page({
   async runPetMutation(
     operation: () => Promise<DemoPetState>,
     successText: string,
-  ): Promise<void> {
-    if (!requireAuthForWrite()) return
+  ): Promise<boolean> {
+    if (!requireAuthForWrite()) return false
     this.setData({ syncing: true, syncState: 'pending', errorText: '' })
     try {
       const state = await operation()
       this.applyPetState(state)
       wx.showToast({ title: successText, icon: 'success' })
+      return true
     } catch (error) {
       const message = getPetErrorMessage(error, '这次没有保存成功')
       this.setData({ errorText: message, syncState: 'local' })
       wx.showToast({ title: message, icon: 'none' })
+      return false
     } finally {
       this.setData({ syncing: false })
     }
@@ -445,6 +508,13 @@ Page({
       ...item,
       iconName: PET_DAILY_ICON_NAMES[item.type],
     }))
+    const vaccineEvents = state.events
+      .filter((item) => item.type === 'vaccine')
+      .sort((left, right) => right.occurredOn.localeCompare(left.occurredOn))
+    const latestVaccine = vaccineEvents[0]
+    const vaccineNextLabel = latestVaccine?.nextOn
+      ? `下次 ${formatShortDate(latestVaccine.nextOn)}`
+      : ''
     const careCards = buildPetCareCards(state.events, today)
     const carePriority: Record<string, number> = {
       overdue: 0,
@@ -481,6 +551,8 @@ Page({
       birthdayLabel: formatShortDate(state.profile.birthday),
       homeOnLabel: formatShortDate(state.profile.homeOn),
       neuteredOnLabel: formatShortDate(state.profile.neuteredOn),
+      latestVaccineLabel: latestVaccine ? formatShortDate(latestVaccine.occurredOn) : '还没有记录',
+      vaccineNextLabel,
       latestWeight: latestValue ? formatPetWeight(latestValue.value) : '—',
       companionDays,
       dailyDoneCount: dailySummary.filter((item) => item.done).length,
@@ -501,7 +573,10 @@ Page({
       careTimeline: timeline
         .filter((item) => item.type !== 'birthday' && item.type !== 'home')
         .slice(0, 6),
-      dailySummary,
+      dailySummary: dailySummary.map((item) => ({
+        ...item,
+        interval: item.type === 'litter-change' || item.type === 'water-change',
+      })),
       recentDailyLogs: todayDailyLogs.slice(0, 6).map((item) => ({
         id: item.id,
         iconName: PET_DAILY_ICON_NAMES[item.type],
@@ -515,9 +590,10 @@ Page({
         this.data.selectedSupplyCategory,
       ).map((item) => ({
         ...item,
-        categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
+        categoryLabel: item.categoryLabel || PET_SUPPLY_CATEGORY_LABELS[item.category],
         iconName: PET_SUPPLY_ICON_NAMES[item.category],
-        statusLabel: getPetSupplyStatusLabel(item.category, item.status),
+        mediaUrl: item.mediaUrl ?? '',
+        preferenceLabel: getPetSupplyPreferenceLabel(item.preference),
       })),
     }, () => this.cacheCurrentPage())
   },
@@ -588,6 +664,18 @@ Page({
     })
   },
 
+  noop() {},
+
+  onOpenAvatarPreview() {
+    if (!this.data.profile.id) return
+    this.setData({ avatarPreviewOpen: true })
+  },
+
+  onCloseAvatarPreview() {
+    if (this.data.uploadingAvatar) return
+    this.setData({ avatarPreviewOpen: false })
+  },
+
   onChooseAvatar() {
     if (this.data.uploadingAvatar || this.data.syncing) return
     if (!requireAuthForWrite()) return
@@ -595,43 +683,57 @@ Page({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
-      success: async (result) => {
+      sizeType: ['compressed'],
+      success: (result) => {
         const file = result.tempFiles[0]
-        if (!file) return
-        this.setData({ uploadingAvatar: true, errorText: '' })
-        try {
-          const asset = await mediaGateway.upload(
-            file.tempFilePath,
-            'avatar',
-            file.size,
-          )
-          const profile = this.data.profile
-          const updated = await petGateway.updateProfile(
-            profile.id,
-            {
-              ...toPetProfileInput(profile),
-              avatarMediaId: asset.id,
-            },
-            profile.version ?? 1,
-          )
-          this.applyPetState(updated)
-          wx.showToast({ title: '照片已更新', icon: 'success' })
-        } catch (error) {
-          if (error instanceof PetGatewayError) {
-            const message = getPetErrorMessage(error, '照片没有保存成功')
-            this.setData({ errorText: message })
-            wx.showToast({ title: message, icon: 'none' })
-          } else {
-            this.setData({
-              errorText: getMediaErrorMessage(error, '照片没有上传成功'),
-            })
-            showMediaUploadError(error, '照片没有上传成功')
-          }
-        } finally {
-          this.setData({ uploadingAvatar: false })
+        if (!file?.tempFilePath) return
+        const cropImage = (wx as unknown as { cropImage?: CropImageApi }).cropImage
+        if (!cropImage) {
+          wx.showToast({ title: '当前微信版本不支持 1:1 裁切，请升级微信', icon: 'none' })
+          return
         }
+        cropImage({
+          src: file.tempFilePath,
+          cropScale: '1:1',
+          success: (cropped) => {
+            if (cropped.tempFilePath) {
+              void this.uploadPetAvatar(cropped.tempFilePath, file.size)
+            }
+          },
+          fail: () => {
+            // 取消裁切不产生上传副作用。
+          },
+        })
       },
     })
+  },
+
+  async uploadPetAvatar(filePath: string, fileSize: number) {
+    this.setData({ uploadingAvatar: true, errorText: '' })
+    try {
+      const asset = await mediaGateway.upload(filePath, 'avatar', fileSize)
+      const profile = this.data.profile
+      const updated = await petGateway.updateProfile(
+        profile.id,
+        { ...toPetProfileInput(profile), avatarMediaId: asset.id },
+        profile.version ?? 1,
+      )
+      this.applyPetState(updated)
+      this.setData({ avatarPreviewOpen: false })
+      wx.showToast({ title: '照片已更新', icon: 'success' })
+    } catch (error) {
+      if (error instanceof PetGatewayError) {
+        const message = getPetErrorMessage(error, '照片没有保存成功')
+        this.setData({ errorText: message })
+        wx.showToast({ title: message, icon: 'none' })
+      } else {
+        const message = getMediaErrorMessage(error, '照片没有上传成功')
+        this.setData({ errorText: message })
+        showMediaUploadError(error, '照片没有上传成功')
+      }
+    } finally {
+      this.setData({ uploadingAvatar: false })
+    }
   },
 
   onRemoveAvatar() {
@@ -649,13 +751,11 @@ Page({
         try {
           const updated = await petGateway.updateProfile(
             profile.id,
-            {
-              ...toPetProfileInput(profile),
-              avatarMediaId: '',
-            },
+            { ...toPetProfileInput(profile), avatarMediaId: '' },
             profile.version ?? 1,
           )
           this.applyPetState(updated)
+          this.setData({ avatarPreviewOpen: false })
           wx.showToast({ title: '照片已移除', icon: 'success' })
         } catch (error) {
           const message = getPetErrorMessage(error, '照片没有移除成功')
@@ -670,6 +770,196 @@ Page({
 
   onAvatarError() {
     this.setData({ 'profile.avatarUrl': '' })
+  },
+
+  onOpenBackgroundPicker() {
+    if (!requireAuthForWrite()) return
+    this.setData({
+      backgroundPickerOpen: true,
+      backgroundOptions: this.data.backgroundOptions.map((item) => ({
+        ...item,
+        selected: item.key === this.data.profile.backgroundKey,
+      })),
+    })
+  },
+
+  onCloseBackgroundPicker() {
+    if (this.data.uploadingBackground) return
+    this.setData({ backgroundPickerOpen: false })
+  },
+
+  async onSelectBackgroundTheme(event: {
+    currentTarget: { dataset: { key: PetBackgroundKey } }
+  }) {
+    const key = event.currentTarget.dataset.key
+    const profile = this.data.profile
+    if (!key || (profile.backgroundKey === key && !profile.backgroundMediaId)) {
+      this.setData({ backgroundPickerOpen: false })
+      return
+    }
+    this.setData({ uploadingBackground: true })
+    try {
+      const updated = await petGateway.updateProfile(
+        profile.id,
+        {
+          ...toPetProfileInput(profile),
+          backgroundKey: key,
+          backgroundMediaId: '',
+        },
+        profile.version ?? 1,
+      )
+      this.applyPetState(updated)
+      this.setData({ backgroundPickerOpen: false })
+    } catch (error) {
+      wx.showToast({ title: getPetErrorMessage(error, '背景没有保存成功'), icon: 'none' })
+    } finally {
+      this.setData({ uploadingBackground: false })
+    }
+  },
+
+  onChooseBackground() {
+    if (this.data.uploadingBackground || this.data.syncing) return
+    if (!requireAuthForWrite()) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: (result) => {
+        const file = result.tempFiles[0]
+        if (file?.tempFilePath) void this.uploadPetBackground(file.tempFilePath, file.size)
+      },
+    })
+  },
+
+  async uploadPetBackground(filePath: string, fileSize: number) {
+    this.setData({ uploadingBackground: true, errorText: '' })
+    try {
+      const asset = await mediaGateway.upload(filePath, 'pet', fileSize)
+      const profile = this.data.profile
+      const updated = await petGateway.updateProfile(
+        profile.id,
+        {
+          ...toPetProfileInput(profile),
+          backgroundMediaId: asset.id,
+        },
+        profile.version ?? 1,
+      )
+      this.applyPetState(updated)
+      this.setData({ backgroundPickerOpen: false })
+      wx.showToast({ title: '背景已更新', icon: 'success' })
+    } catch (error) {
+      if (error instanceof PetGatewayError) {
+        wx.showToast({ title: getPetErrorMessage(error, '背景没有保存成功'), icon: 'none' })
+      } else {
+        showMediaUploadError(error, '背景没有上传成功')
+      }
+    } finally {
+      this.setData({ uploadingBackground: false })
+    }
+  },
+
+  onOpenSupplyEditor() {
+    if (!requireAuthForWrite()) return
+    this.setData({
+      supplyEditorOpen: true,
+      supplyDraft: {
+        category: 'kibble',
+        categoryLabel: '',
+        name: '',
+        brand: '',
+        preference: 'neutral',
+        note: '',
+        mediaId: '',
+        mediaUrl: '',
+      },
+    })
+  },
+
+  onCloseSupplyEditor() {
+    if (this.data.supplySaving) return
+    this.setData({ supplyEditorOpen: false })
+  },
+
+  onSupplyCategorySelect(event: {
+    currentTarget: { dataset: { value: PetSupplyCategory } }
+  }) {
+    this.setData({ 'supplyDraft.category': event.currentTarget.dataset.value })
+  },
+
+  onSupplyPreferenceSelect(event: {
+    currentTarget: { dataset: { value: PetSupplyPreference } }
+  }) {
+    this.setData({ 'supplyDraft.preference': event.currentTarget.dataset.value })
+  },
+
+  onSupplyFieldInput(event: WechatMiniprogram.Input) {
+    const field = event.currentTarget.dataset.field as
+      | 'name'
+      | 'brand'
+      | 'categoryLabel'
+      | 'note'
+    if (!field) return
+    this.setData({ [`supplyDraft.${field}`]: event.detail.value })
+  },
+
+  onChooseSupplyImage() {
+    if (this.data.supplySaving) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: async (result) => {
+        const file = result.tempFiles[0]
+        if (!file?.tempFilePath) return
+        this.setData({ supplySaving: true })
+        try {
+          const asset = await mediaGateway.upload(file.tempFilePath, 'pet', file.size)
+          this.setData({
+            'supplyDraft.mediaId': asset.id,
+            'supplyDraft.mediaUrl': asset.thumb.url || asset.display.url,
+          })
+        } catch (error) {
+          showMediaUploadError(error, '用品图片没有上传成功')
+        } finally {
+          this.setData({ supplySaving: false })
+        }
+      },
+    })
+  },
+
+  onRemoveSupplyImage() {
+    this.setData({
+      'supplyDraft.mediaId': '',
+      'supplyDraft.mediaUrl': '',
+    })
+  },
+
+  async onSaveSupply() {
+    const draft = this.data.supplyDraft
+    if (!draft.name.trim()) {
+      wx.showToast({ title: '先写下用品名称', icon: 'none' })
+      return
+    }
+    if (draft.category === 'custom' && !draft.categoryLabel.trim()) {
+      wx.showToast({ title: '给自定义类型起个名字', icon: 'none' })
+      return
+    }
+    this.setData({ supplySaving: true })
+    const saved = await this.runPetMutation(
+      () => petGateway.createSupply(this.data.petState.profile.id, {
+        category: draft.category,
+        categoryLabel: draft.categoryLabel.trim(),
+        name: draft.name.trim(),
+        brand: draft.brand.trim(),
+        preference: draft.preference,
+        note: draft.note.trim(),
+        mediaId: draft.mediaId,
+      }),
+      '用品已收进清单',
+    )
+    this.setData({ supplySaving: false, supplyEditorOpen: !saved })
   },
 
   onBirthdayChange(event: { detail: { value: string } }) {
@@ -867,47 +1157,7 @@ Page({
   },
 
   onAddSupply() {
-    if (!requireAuthForWrite()) return
-    const categories = SUPPLY_CATEGORIES.filter((item) => item.value !== 'all')
-    wx.showActionSheet({
-      itemList: categories.map((item) => item.label),
-      success: (categorySelection) => {
-        const category = categories[categorySelection.tapIndex]
-        if (!category || category.value === 'all') return
-        const categoryValue: PetSupplyCategory = category.value
-        wx.showModal({
-          title: `添加${category.label}`,
-          editable: true,
-          placeholderText:
-            categoryValue === 'litter'
-              ? '例如：豆腐混合猫砂'
-              : `写下${category.label}名称`,
-          confirmText: '下一步',
-          success: (nameResult) => {
-            const name = nameResult.content?.trim()
-            if (!nameResult.confirm || !name) return
-            wx.showActionSheet({
-              itemList: SUPPLY_STATUS_OPTIONS.map((item) => item.label),
-              success: async (statusSelection) => {
-                const status = SUPPLY_STATUS_OPTIONS[statusSelection.tapIndex]
-                if (!status) return
-                await this.runPetMutation(
-                  () => petGateway.createSupply(
-                    this.data.petState.profile.id,
-                    {
-                      category: categoryValue,
-                      name,
-                      status: status.value,
-                    },
-                  ),
-                  '已加入集合',
-                )
-              },
-            })
-          },
-        })
-      },
-    })
+    this.onOpenSupplyEditor()
   },
 
   onChangeSupplyStatus(event: {
@@ -916,21 +1166,22 @@ Page({
     if (!requireAuthForWrite()) return
     const id = event.currentTarget.dataset.id
     wx.showActionSheet({
-      itemList: SUPPLY_STATUS_OPTIONS.map((item) => item.label),
+      itemList: SUPPLY_PREFERENCE_OPTIONS.map((item) => item.label),
       success: async (selection) => {
-        const status = SUPPLY_STATUS_OPTIONS[selection.tapIndex]
+        const preference = SUPPLY_PREFERENCE_OPTIONS[selection.tapIndex]
         const supply = this.data.petState.supplies.find((item) => item.id === id)
-        if (!status || !supply) return
+        if (!preference || !supply) return
         await this.runPetMutation(
           () => petGateway.setSupplyStatus(
             this.data.petState.profile.id,
             id,
-            status.value,
+            preference.value,
             supply.version ?? 1,
           ),
-          `已标记为${status.label}`,
+          `已标记为${preference.label}`,
         )
       },
     })
   },
+
 })

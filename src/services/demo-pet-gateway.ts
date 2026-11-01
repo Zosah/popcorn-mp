@@ -2,7 +2,7 @@ import type {
   DemoPetEvent,
   DemoPetState,
   PetSpecies,
-  PetSupplyStatus,
+  PetSupplyPreference,
 } from '../domain/demo-pet'
 import {
   addDemoPet,
@@ -172,7 +172,7 @@ export class DemoPetGateway implements PetGateway {
   async setSupplyStatus(
     petId: string,
     supplyId: string,
-    status: PetSupplyStatus,
+    preference: PetSupplyPreference,
     currentVersion: number,
   ): Promise<DemoPetState> {
     const pet = activePet()
@@ -182,7 +182,7 @@ export class DemoPetGateway implements PetGateway {
     const supply = pet.supplies.find((item) => item.id === supplyId)
     if (!supply) throw new PetGatewayError('SUPPLY_NOT_FOUND', '宠物用品不存在')
     assertVersion(supply.version, currentVersion)
-    return updateDemoPetSupplyStatus(supplyId, status)
+    return updateDemoPetSupplyStatus(supplyId, preference)
   }
 
   async findEvent(eventId: string): Promise<PetEventMatch | null> {

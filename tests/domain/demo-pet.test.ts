@@ -11,7 +11,7 @@ import {
   formatPetWeight,
   getDefaultPetCareInterval,
   getCurrentPetSupplies,
-  getPetSupplyStatusLabel,
+  getPetSupplyPreferenceLabel,
   shiftPetCalendarMonth,
 } from '../../src/domain/demo-pet'
 import { createDemoPetState } from '../../src/mocks/pet-fixtures'
@@ -68,12 +68,11 @@ describe('首页宠物动态', () => {
 })
 
 describe('周期照护', () => {
-  it('覆盖疫苗、洗护和内外驱，并按最近一次记录计算下次日期', () => {
+  it('照护页覆盖洗护和内外驱，并按最近一次记录计算下次日期', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const cards = buildPetCareCards(state.events, '2026-08-27')
 
     expect(cards.map((item) => item.type)).toEqual([
-      'vaccine',
       'grooming',
       'internal-deworm',
       'external-deworm',
@@ -105,7 +104,7 @@ describe('周期照护', () => {
     ).toBe('overdue')
   })
 
-  it('为四类周期照护提供默认天数', () => {
+  it('为护理项目提供默认天数', () => {
     expect(getDefaultPetCareInterval('vaccine')).toBe(365)
     expect(getDefaultPetCareInterval('grooming')).toBe(30)
     expect(getDefaultPetCareInterval('internal-deworm')).toBe(90)
@@ -125,11 +124,11 @@ describe('吃喝拉撒用品集合', () => {
     ).toBe(true)
   })
 
-  it('正在使用的用品优先，并可生成当前配置', () => {
-    expect(filterPetSupplies(state.supplies, 'all')[0]?.status).toBe('current')
+  it('种草用品优先，并可生成当前配置', () => {
+    expect(filterPetSupplies(state.supplies, 'all')[0]?.preference).toBe('loved')
     expect(getCurrentPetSupplies(state.supplies).map((item) => item.category)).toEqual([
-      'kibble',
-      'litter',
+      'can',
+      'freeze-dried',
     ])
   })
 
@@ -137,10 +136,10 @@ describe('吃喝拉撒用品集合', () => {
     expect(filterPetSupplies(state.supplies, 'all')[0]).not.toBe(state.supplies[0])
   })
 
-  it('猫砂使用适合用品的状态文案', () => {
-    expect(getPetSupplyStatusLabel('litter', 'loved')).toBe('好用')
-    expect(getPetSupplyStatusLabel('litter', 'tried')).toBe('用过')
-    expect(getPetSupplyStatusLabel('can', 'loved')).toBe('爱吃')
+  it('用品偏好统一使用种草、一般和拔草', () => {
+    expect(getPetSupplyPreferenceLabel('loved')).toBe('种草')
+    expect(getPetSupplyPreferenceLabel('neutral')).toBe('一般')
+    expect(getPetSupplyPreferenceLabel('dropped')).toBe('拔草')
   })
 })
 

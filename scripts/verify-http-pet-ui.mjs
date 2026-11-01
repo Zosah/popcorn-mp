@@ -16,6 +16,30 @@ const image = await readFile(new URL('../src/images/demo-menu-still-life.jpg', i
 const miniProgram = await automator.connect({ wsEndpoint })
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+async function mockWxSuccess(method, result) {
+  await miniProgram.evaluate((methodName, methodResult) => {
+    wx[methodName] = (options = {}) => {
+      if (typeof options.success === 'function') options.success(methodResult)
+    }
+  }, method, result)
+}
+
+async function callPageMethod(method, ...args) {
+  await miniProgram.evaluate((methodName, methodArgs) => {
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    if (!page || typeof page[methodName] !== 'function') {
+      throw new Error(`当前页面没有方法 ${methodName}`)
+    }
+    return page[methodName](...methodArgs)
+  }, method, args)
+}
+
+// 裁切面板是系统 UI，自动化验收用同路径回写模拟“用户完成了 1:1 裁切”。
+await miniProgram.evaluate(() => {
+  wx.cropImage = (options) => options.success({ tempFilePath: options.src })
+})
+
 function addDays(dateOnly, days) {
   const date = new Date(`${dateOnly}T00:00:00.000Z`)
   date.setUTCDate(date.getUTCDate() + days)
@@ -175,14 +199,18 @@ try {
   }, '宠物档案加载')
   await assertNoHorizontalOverflow(page, '宠物档案')
   await screenshot('profile-empty-avatar')
-  console.log('PASS 宠物档案读取真实接口并回退插画头像')
+  await callPageMethod('onOpenAvatarPreview')
+  assert.equal((await page.data()).avatarPreviewOpen, true)
+  await screenshot('avatar-preview')
+  await callPageMethod('onCloseAvatarPreview')
+  console.log('PASS 宠物档案读取真实接口并回退插画头像，头像可放大预览')
 
   const tempImage = await writeTempImage(image)
   assert.ok(tempImage.size > 1000)
-  await miniProgram.mockWxMethod('chooseMedia', {
+  await mockWxSuccess('chooseMedia', {
     tempFiles: [{ tempFilePath: tempImage.filePath, size: tempImage.size }],
   })
-  await page.callMethod('onChooseAvatar')
+  await callPageMethod('onChooseAvatar')
   const avatarData = await waitFor(async () => {
     const data = await page.data()
     return !data.uploadingAvatar && data.profile?.avatarUrl ? data : false
@@ -194,10 +222,10 @@ try {
   const firstAvatarUrl = avatarData.profile.avatarUrl
   console.log('PASS 前端上传头像到私有 COS、更新档案并回读签名地址')
 
-  await miniProgram.mockWxMethod('chooseMedia', {
+  await mockWxSuccess('chooseMedia', {
     tempFiles: [{ tempFilePath: tempImage.filePath, size: tempImage.size }],
   })
-  await page.callMethod('onChooseAvatar')
+  await callPageMethod('onChooseAvatar')
   const replacedAvatarData = await waitFor(async () => {
     const data = await page.data()
     return !data.uploadingAvatar
@@ -215,10 +243,10 @@ try {
   await screenshot('profile-avatar-replaced')
   console.log('PASS 宠物头像替换生成新媒体，旧文件按既定策略保留')
 
-  await miniProgram.mockWxMethod('chooseMedia', {
+  await mockWxSuccess('chooseMedia', {
     tempFiles: [{ tempFilePath: tempImage.filePath, size: 11 * 1024 * 1024 }],
   })
-  await page.callMethod('onChooseAvatar')
+  await callPageMethod('onChooseAvatar')
   const failedUploadData = await waitFor(async () => {
     const data = await page.data()
     return !data.uploadingAvatar && data.errorText ? data : false
@@ -229,8 +257,8 @@ try {
   await screenshot('profile-avatar-upload-error')
   console.log('PASS 宠物头像上传失败时保留原头像并展示错误')
 
-  await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
-  await page.callMethod('onRemoveAvatar')
+  await mockWxSuccess('showModal', { confirm: true, cancel: false })
+  await callPageMethod('onRemoveAvatar')
   await waitFor(async () => {
     const data = await page.data()
     return !data.uploadingAvatar
@@ -239,44 +267,90 @@ try {
       ? data
       : false
   }, '宠物头像移除')
-  await miniProgram.restoreWxMethod('showModal')
   const latestAfterRemoval = (await listPets(owner.token, owner.activeSpaceId)).items
     .find((item) => item.id === pet.id)
   assert.equal(latestAfterRemoval?.avatarMediaId, '')
   await screenshot('profile-avatar-removed')
   console.log('PASS 宠物头像移除后清空媒体引用并回退插画头像')
 
-  await miniProgram.mockWxMethod('showModal', {
+  await callPageMethod('onOpenBackgroundPicker')
+  assert.equal((await page.data()).backgroundPickerOpen, true)
+  await screenshot('background-picker')
+  await callPageMethod('onSelectBackgroundTheme', {
+    currentTarget: { dataset: { key: 'mist' } },
+  })
+  const themed = await waitFor(async () => {
+    const data = await page.data()
+    return !data.uploadingBackground && data.profile.backgroundKey === 'mist' ? data : false
+  }, '切换系统背景')
+  assert.equal(themed.profile.backgroundMediaId, '')
+  await mockWxSuccess('chooseMedia', {
+    tempFiles: [{ tempFilePath: tempImage.filePath, size: tempImage.size }],
+  })
+  await callPageMethod('onOpenBackgroundPicker')
+  await callPageMethod('onChooseBackground')
+  const customBackground = await waitFor(async () => {
+    const data = await page.data()
+    return !data.uploadingBackground && data.profile.backgroundMediaId ? data : false
+  }, '上传自定义背景')
+  assert.match(customBackground.profile.backgroundUrl, /^https:\/\//)
+  await screenshot('background-custom')
+  console.log('PASS 三套系统背景可切换，自定义背景上传到私有 COS 并回读')
+
+  await mockWxSuccess('showModal', {
     confirm: true,
     cancel: false,
     content: '4.1',
   })
-  await page.callMethod('onRecordWeight')
+  await callPageMethod('onRecordWeight')
   const weightData = await waitFor(async () => {
     const data = await page.data()
     return !data.syncing && data.latestWeight === '4.1' ? data : false
   }, '记录体重')
   assert.equal(weightData.petState.weights.length, 1)
-  await miniProgram.restoreWxMethod('showModal')
 
-  await miniProgram.mockWxMethod('showModal', {
+  await mockWxSuccess('showModal', {
     confirm: true,
     cancel: false,
     content: '早餐吃了半罐，食欲正常',
   })
-  await page.callMethod('onAddDailyLog', {
+  await callPageMethod('onAddDailyLog', {
     currentTarget: { dataset: { type: 'meal' } },
   })
   await waitFor(async () => {
     const data = await page.data()
     return !data.syncing && data.petState.dailyLogs.length === 1 ? data : false
   }, '记录今日饮食')
-  await miniProgram.restoreWxMethod('showModal')
-  await page.callMethod('onSwitchSection', {
+  await callPageMethod('onSwitchSection', {
     currentTarget: { dataset: { value: 'daily' } },
   })
+  for (const [type, summary] of [
+    ['litter-change', '换掉结块并补了新猫砂'],
+    ['water-change', '清洗水碗换上新水'],
+  ]) {
+    await mockWxSuccess('showModal', {
+      confirm: true,
+      cancel: false,
+      content: summary,
+    })
+    await callPageMethod('onAddDailyLog', {
+      currentTarget: { dataset: { type } },
+    })
+    await waitFor(async () => {
+      const data = await page.data()
+      return !data.syncing && data.petState.dailyLogs.some((item) => item.type === type) ? data : false
+    }, `记录${type}`)
+  }
+  const dailyData = await waitFor(async () => {
+    const data = await page.data()
+    const litter = data.dailySummary?.find((item) => item.type === 'litter-change')
+    const water = data.dailySummary?.find((item) => item.type === 'water-change')
+    return litter?.elapsedLabel && water?.elapsedLabel ? data : false
+  }, '日常间隔摘要')
+  assert.equal(dailyData.dailySummary.length, 6)
+  assert.match(dailyData.dailySummary.find((item) => item.type === 'litter-change').elapsedLabel, /刚刚|小时|天/)
   await screenshot('daily')
-  console.log('PASS 体重与今日吃喝写入服务端并刷新页面')
+  console.log('PASS 体重、吃喝拉撒与换猫砂/换水写入服务端，并生成小时级间隔摘要')
 
   const careOccurredOn = todayShanghai()
   const form = await open('/pages/pet-event-form/index?type=external-deworm')
@@ -303,7 +377,7 @@ try {
     hasNextDate: false,
   })
   await screenshot('event-form-recurrence')
-  await form.callMethod('onSave')
+  await callPageMethod('onSave')
   const event = await waitFor(async () => {
     const collection = await listPets(owner.token, owner.activeSpaceId)
     const latest = collection.items.find((item) => item.id === pet.id)
@@ -336,7 +410,7 @@ try {
     careIntervalDays: '60',
     nextCarePreview: addDays(careOccurredOn, 60),
   })
-  await edit.callMethod('onSave')
+  await callPageMethod('onSave')
   const editedEvent = await waitFor(async () => {
     const collection = await listPets(owner.token, owner.activeSpaceId)
     const latest = collection.items.find((item) => item.id === pet.id)
@@ -349,12 +423,12 @@ try {
   page = await open('/pages/pets/index?section=care')
   const carePageData = await waitFor(async () => {
     const data = await page.data()
-    return !data.loading && data.careCards?.length === 4 ? data : false
+    return !data.loading && data.careCards?.length === 3 ? data : false
   }, '宠物周期照护卡片')
   const externalDewormCard = carePageData.careCards.find((item) => item.type === 'external-deworm')
   assert.equal(externalDewormCard?.intervalDays, 60)
-  await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
-  await page.callMethod('onCompleteCare', {
+  await mockWxSuccess('showModal', { confirm: true, cancel: false })
+  await callPageMethod('onCompleteCare', {
     currentTarget: {
       dataset: {
         type: 'external-deworm',
@@ -371,7 +445,6 @@ try {
   }, '完成一次周期照护')
   assert.equal(completedEvent.recurrenceDays, 60)
   assert.equal(completedEvent.nextOn, addDays(careOccurredOn, 60))
-  await miniProgram.restoreWxMethod('showModal')
   await screenshot('care-completed')
   console.log('PASS 照护卡片完成一次后新建今日事件，并按当前周期推进下次日期')
 
@@ -389,8 +462,10 @@ try {
     headers: { 'Idempotency-Key': `pet_ui_supply_${suffix}` },
     body: {
       category: 'kibble',
+      categoryLabel: '主粮',
       name: '鸡肉冻干粮',
-      status: 'current',
+      brand: '鲜朗',
+      preference: 'neutral',
       note: '过渡粮',
       recordedOn: '2026-10-31',
     },
@@ -402,19 +477,54 @@ try {
     const data = await page.data()
     return !data.loading && data.supplies.some((item) => item.id === supplyId) ? data : false
   }, '用品列表')
-  await miniProgram.mockWxMethod('showActionSheet', { tapIndex: 1, cancel: false })
-  await page.callMethod('onChangeSupplyStatus', {
+  await mockWxSuccess('showActionSheet', { tapIndex: 0, cancel: false })
+  await callPageMethod('onChangeSupplyStatus', {
     currentTarget: { dataset: { id: supplyId } },
   })
   const changedSupply = await waitFor(async () => {
     const collection = await listPets(owner.token, owner.activeSpaceId)
     const latest = collection.items.find((item) => item.id === pet.id)
-    return latest?.supplies.find((item) => item.id === supplyId && item.status === 'loved')
+    return latest?.supplies.find((item) => item.id === supplyId && item.preference === 'loved')
   }, '用品状态更新')
   assert.equal(changedSupply.version, 2)
-  await miniProgram.restoreWxMethod('showActionSheet')
+  await callPageMethod('onOpenSupplyEditor')
+  await page.setData({
+    supplyDraft: {
+      category: 'custom',
+      categoryLabel: '玩具',
+      name: '薄荷鱼逗猫棒',
+      brand: 'PIDAN',
+      preference: 'loved',
+      note: '耐咬，薄荷味很淡',
+      mediaId: '',
+      mediaUrl: '',
+    },
+  })
+  await mockWxSuccess('chooseMedia', {
+    tempFiles: [{ tempFilePath: tempImage.filePath, size: tempImage.size }],
+  })
+  await callPageMethod('onChooseSupplyImage')
+  await waitFor(async () => {
+    const data = await page.data()
+    return !data.supplySaving && data.supplyDraft.mediaUrl ? data : false
+  }, '上传用品图片')
+  await screenshot('supply-editor')
+  await callPageMethod('onSaveSupply')
+  const customSupply = await waitFor(async () => {
+    const data = await page.data()
+    return !data.supplySaving
+      && data.supplies.find((item) => item.name === '薄荷鱼逗猫棒')
+      ? data
+      : false
+  }, '保存自定义用品')
+  const savedCustom = customSupply.supplies.find((item) => item.name === '薄荷鱼逗猫棒')
+  assert.equal(savedCustom.category, 'custom')
+  assert.equal(savedCustom.categoryLabel, '玩具')
+  assert.equal(savedCustom.brand, 'PIDAN')
+  assert.equal(savedCustom.preference, 'loved')
+  assert.match(savedCustom.mediaUrl, /^https:\/\//)
   await screenshot('supplies')
-  console.log('PASS 用品状态携带自身版本写回服务端')
+  console.log('PASS 用品偏好可切换，自定义类型/品牌/偏好/图片完整写回服务端')
 
   const home = await open('/pages/home/index')
   const homeData = await waitFor(async () => {
@@ -425,8 +535,7 @@ try {
   await screenshot('home-summary')
   console.log('PASS 首页读取真实宠物摘要与动态')
 } finally {
-  await miniProgram.restoreWxMethod('chooseMedia').catch(() => undefined)
-  await miniProgram.restoreWxMethod('showModal').catch(() => undefined)
-  await miniProgram.restoreWxMethod('showActionSheet').catch(() => undefined)
+
+
   await miniProgram.disconnect().catch(() => undefined)
 }

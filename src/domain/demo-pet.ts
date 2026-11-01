@@ -16,23 +16,37 @@ export type PetCareType =
   | 'internal-deworm'
   | 'external-deworm'
 
-export type PetDailyLogType = 'meal' | 'water' | 'stool' | 'urine'
+export type PetDailyLogType =
+  | 'meal'
+  | 'water'
+  | 'stool'
+  | 'urine'
+  | 'litter-change'
+  | 'water-change'
 
 export type PetSpecies = 'cat' | 'dog' | 'other'
 
-export type PetSupplyCategory =
+export type BuiltInPetSupplyCategory =
   | 'kibble'
   | 'can'
   | 'freeze-dried'
   | 'soup'
   | 'litter'
 
+export type PetSupplyCategory = BuiltInPetSupplyCategory | 'custom'
+
+export type PetSupplyPreference = 'loved' | 'neutral' | 'dropped'
+
+/** @deprecated 旧数据兼容，页面统一使用 preference。 */
 export type PetSupplyStatus =
   | 'current'
   | 'loved'
   | 'tried'
   | 'wishlist'
   | 'dropped'
+  | 'neutral'
+
+export type PetBackgroundKey = 'sage' | 'apricot' | 'mist'
 
 export interface DemoPetProfile {
   id: string
@@ -47,6 +61,9 @@ export interface DemoPetProfile {
   version?: number
   avatarMediaId?: string
   avatarUrl?: string
+  backgroundKey: PetBackgroundKey
+  backgroundMediaId?: string
+  backgroundUrl?: string
 }
 
 export interface DemoPetEvent {
@@ -66,9 +83,13 @@ export interface DemoPetEvent {
 export interface DemoPetSupply {
   id: string
   category: PetSupplyCategory
+  categoryLabel: string
   name: string
-  status: PetSupplyStatus
+  brand: string
+  preference: PetSupplyPreference
   note: string
+  mediaId?: string
+  mediaUrl?: string
   recordedOn: string
   version?: number
 }
@@ -110,6 +131,7 @@ export interface PetCareCard {
   intervalLabel: string
   intervalDays: number
   lastOn: string | null
+  elapsedLabel: string
   nextOn: string | null
   status: 'unrecorded' | 'overdue' | 'due-soon' | 'normal'
   statusLabel: string
@@ -122,6 +144,7 @@ export interface PetDailySummaryItem {
   done: boolean
   latestSummary: string
   latestTime: string
+  elapsedLabel: string
 }
 
 export interface PetCalendarCell {
@@ -146,7 +169,7 @@ export interface PetHomeActivity {
 export const PET_EVENT_LABELS: Record<PetEventType, string> = {
   vaccine: '疫苗',
   neuter: '绝育',
-  grooming: '洗护',
+  grooming: '洗澡',
   illness: '生病',
   visit: '就诊',
   outing: '外出',
@@ -160,13 +183,12 @@ export const PET_SUPPLY_CATEGORY_LABELS: Record<PetSupplyCategory, string> = {
   'freeze-dried': '冻干',
   soup: '汤包',
   litter: '猫砂',
+  custom: '自定义',
 }
 
-export const PET_SUPPLY_STATUS_LABELS: Record<PetSupplyStatus, string> = {
-  current: '正在用',
-  loved: '爱吃',
-  tried: '吃过',
-  wishlist: '种草',
+export const PET_SUPPLY_PREFERENCE_LABELS: Record<PetSupplyPreference, string> = {
+  loved: '种草',
+  neutral: '一般',
   dropped: '拔草',
 }
 
@@ -175,16 +197,29 @@ export const PET_DAILY_LOG_LABELS: Record<PetDailyLogType, string> = {
   water: '喝水',
   stool: '便便',
   urine: '尿尿',
+  'litter-change': '换猫砂',
+  'water-change': '换水',
 }
 
-export function getPetSupplyStatusLabel(
-  category: PetSupplyCategory,
-  status: PetSupplyStatus,
+export const PET_BACKGROUND_LABELS: Record<PetBackgroundKey, string> = {
+  sage: '鼠尾草',
+  apricot: '暖杏',
+  mist: '雾蓝',
+}
+
+export const PET_DAILY_LOG_TYPES: readonly PetDailyLogType[] = [
+  'meal',
+  'water',
+  'stool',
+  'urine',
+  'litter-change',
+  'water-change',
+]
+
+export function getPetSupplyPreferenceLabel(
+  preference: PetSupplyPreference,
 ): string {
-  if (category !== 'litter') return PET_SUPPLY_STATUS_LABELS[status]
-  if (status === 'loved') return '好用'
-  if (status === 'tried') return '用过'
-  return PET_SUPPLY_STATUS_LABELS[status]
+  return PET_SUPPLY_PREFERENCE_LABELS[preference]
 }
 
 export const PET_CARE_INTERVALS: Record<PetCareType, number> = {
@@ -195,7 +230,6 @@ export const PET_CARE_INTERVALS: Record<PetCareType, number> = {
 }
 
 export const PET_CARE_TYPES: readonly PetCareType[] = [
-  'vaccine',
   'grooming',
   'internal-deworm',
   'external-deworm',
@@ -234,6 +268,40 @@ export function formatPetAge(birthday: string, today: string): string {
 export function formatPetWeight(value: string): string {
   const weight = Number(value)
   return Number.isFinite(weight) ? String(weight) : value
+}
+
+function wholeMonthsBetween(from: string, to: string): number {
+  const [fromYear, fromMonth, fromDay] = from.split('-').map(Number)
+  const [toYear, toMonth, toDay] = to.split('-').map(Number)
+  if (!fromYear || !fromMonth || !fromDay || !toYear || !toMonth || !toDay) return 0
+  let months = (toYear - fromYear) * 12 + toMonth - fromMonth
+  if (toDay < fromDay) months -= 1
+  return Math.max(0, months)
+}
+
+export function formatPetElapsed(from: string, to: string): string {
+  const fromMs = parseDateOnly(from)
+  const toMs = parseDateOnly(to)
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs) || toMs < fromMs) return '还没有记录'
+  const days = Math.floor((toMs - fromMs) / 86400000)
+  if (days === 0) return '今天'
+  const months = wholeMonthsBetween(from, to)
+  if (months <= 0) return `${days} 天`
+  const anchor = new Date(`${from}T00:00:00.000Z`)
+  anchor.setUTCMonth(anchor.getUTCMonth() + months)
+  const remainder = Math.max(0, Math.floor((toMs - anchor.getTime()) / 86400000))
+  return remainder > 0 ? `${months} 个月 ${remainder} 天` : `${months} 个月`
+}
+
+export function formatPetElapsedHours(from: string, nowMs = Date.now()): string {
+  const fromMs = Date.parse(from)
+  if (!Number.isFinite(fromMs) || nowMs < fromMs) return '还没有记录'
+  const totalHours = Math.floor((nowMs - fromMs) / 3600000)
+  if (totalHours < 1) return '刚刚'
+  const days = Math.floor(totalHours / 24)
+  const hours = totalHours % 24
+  if (days === 0) return `${hours} 小时`
+  return hours > 0 ? `${days} 天 ${hours} 小时` : `${days} 天`
 }
 
 export function buildPetTimeline(state: DemoPetState): PetTimelineItem[] {
@@ -371,6 +439,7 @@ export function buildPetCareCards(
         intervalLabel: `每 ${interval} 天`,
         intervalDays: interval,
         lastOn: null,
+        elapsedLabel: '还没有记录',
         nextOn: null,
         status: 'unrecorded',
         statusLabel: '还没有记录',
@@ -394,6 +463,7 @@ export function buildPetCareCards(
       intervalLabel: `每 ${interval} 天`,
       intervalDays: interval,
       lastOn: latest.occurredOn,
+      elapsedLabel: formatPetElapsed(latest.occurredOn, today),
       nextOn,
       status,
       statusLabel,
@@ -407,18 +477,25 @@ export function filterPetSupplies(
 ): DemoPetSupply[] {
   return supplies
     .filter((item) => category === 'all' || item.category === category)
-    .sort(
-      (left, right) =>
-        Number(right.status === 'current') - Number(left.status === 'current') ||
-        right.recordedOn.localeCompare(left.recordedOn),
-    )
+    .sort((left, right) => {
+      const weight: Record<PetSupplyPreference, number> = {
+        loved: 0,
+        neutral: 1,
+        dropped: 2,
+      }
+      return weight[left.preference] - weight[right.preference]
+        || right.recordedOn.localeCompare(left.recordedOn)
+    })
     .map((item) => ({ ...item }))
 }
 
 export function getCurrentPetSupplies(
   supplies: readonly DemoPetSupply[],
 ): DemoPetSupply[] {
-  return supplies.filter((item) => item.status === 'current').map((item) => ({ ...item }))
+  return supplies
+    .filter((item) => item.preference === 'loved')
+    .slice(0, 4)
+    .map((item) => ({ ...item }))
 }
 
 function formatShanghaiTime(timestamp: number): string {
@@ -432,22 +509,33 @@ export function buildPetDailySummary(
   logs: readonly DemoPetDailyLog[],
   today: string,
 ): PetDailySummaryItem[] {
-  return (['meal', 'water', 'stool', 'urine'] as const).map((type) => {
-    const todayLogs = logs
+  const nowMs = getShanghaiDateOnly(Date.now()) === today
+    ? Date.now()
+    : Date.parse(`${today}T23:59:59+08:00`)
+  return PET_DAILY_LOG_TYPES.map((type) => {
+    const isIntervalAction = type === 'litter-change' || type === 'water-change'
+    const matchingLogs = logs
+      .filter((log) => log.type === type)
       .filter(
         (log) =>
-          log.type === type &&
+          isIntervalAction ||
           getShanghaiDateOnly(Date.parse(log.recordedAt)) === today,
       )
       .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
-    const latest = todayLogs[0]
+    const latest = matchingLogs[0]
+    const todayLogs = matchingLogs.filter(
+      (log) => getShanghaiDateOnly(Date.parse(log.recordedAt)) === today,
+    )
     return {
       type,
       label: PET_DAILY_LOG_LABELS[type],
-      count: todayLogs.length,
-      done: todayLogs.length > 0,
-      latestSummary: latest?.summary ?? '今天还没记录',
+      count: isIntervalAction ? matchingLogs.length : todayLogs.length,
+      done: isIntervalAction ? Boolean(latest) : todayLogs.length > 0,
+      latestSummary: latest?.summary ?? (isIntervalAction ? '还没有记录' : '今天还没记录'),
       latestTime: latest ? formatShanghaiTime(Date.parse(latest.recordedAt)) : '待记录',
+      elapsedLabel: latest
+        ? formatPetElapsedHours(latest.recordedAt, nowMs)
+        : '还没有记录',
     }
   })
 }

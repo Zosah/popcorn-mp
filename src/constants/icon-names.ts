@@ -61,6 +61,8 @@ export const PET_DAILY_ICON_NAMES: Record<PetDailyLogType, string> = {
   water: 'droplets',
   stool: 'toilet',
   urine: 'droplet',
+  'litter-change': 'package',
+  'water-change': 'droplets',
 }
 
 export const PET_SUPPLY_ICON_NAMES: Record<PetSupplyCategory, string> = {
@@ -69,4 +71,5 @@ export const PET_SUPPLY_ICON_NAMES: Record<PetSupplyCategory, string> = {
   'freeze-dried': 'soup',
   soup: 'soup',
   litter: 'package',
+  custom: 'folder',
 }

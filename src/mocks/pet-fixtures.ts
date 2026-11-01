@@ -17,6 +17,7 @@ export function createDemoPetState(nowMs = Date.now()): DemoPetState {
       homeOn: '2023-07-02',
       neuteredOn: '2024-01-12',
       status: '精神不错',
+      backgroundKey: 'sage',
     },
     events: [
       { id: 'event-outing', type: 'outing', occurredOn: addCalendarDays(today, -7), title: '去了露台晒太阳', note: '全程使用牵引绳', createdAt },
@@ -29,12 +30,12 @@ export function createDemoPetState(nowMs = Date.now()): DemoPetState {
       { id: 'event-neuter', type: 'neuter', occurredOn: '2024-01-12', title: '完成绝育', note: '恢复顺利', createdAt },
     ],
     supplies: [
-      { id: 'supply-kibble-current', category: 'kibble', name: '鲜肉烘焙猫粮', status: 'current', note: '鸡肉味，日常主粮', recordedOn: addCalendarDays(today, -20) },
-      { id: 'supply-can-loved', category: 'can', name: '鸡胸肉主食罐', status: 'loved', note: '每次都光盘', recordedOn: addCalendarDays(today, -12) },
-      { id: 'supply-freeze-wishlist', category: 'freeze-dried', name: '鹌鹑冻干', status: 'wishlist', note: '朋友推荐，准备试试', recordedOn: addCalendarDays(today, -4) },
-      { id: 'supply-soup-tried', category: 'soup', name: '金枪鱼汤包', status: 'tried', note: '喝汤，肉块剩了一点', recordedOn: addCalendarDays(today, -8) },
-      { id: 'supply-litter-current', category: 'litter', name: '豆腐混合猫砂', status: 'current', note: '豆腐砂 70% + 膨润土 30%', recordedOn: addCalendarDays(today, -16) },
-      { id: 'supply-litter-dropped', category: 'litter', name: '纯膨润土猫砂', status: 'dropped', note: '扬尘太大，已经拔草', recordedOn: addCalendarDays(today, -45) },
+      { id: 'supply-kibble-current', category: 'kibble', categoryLabel: '主粮', name: '鲜肉烘焙猫粮', brand: '鲜朗', preference: 'neutral', note: '鸡肉味，日常主粮', recordedOn: addCalendarDays(today, -20) },
+      { id: 'supply-can-loved', category: 'can', categoryLabel: '罐头', name: '鸡胸肉主食罐', brand: '小李子', preference: 'loved', note: '每次都光盘', recordedOn: addCalendarDays(today, -12) },
+      { id: 'supply-freeze-wishlist', category: 'freeze-dried', categoryLabel: '冻干', name: '鹌鹑冻干', brand: '朗诺', preference: 'loved', note: '朋友推荐，准备试试', recordedOn: addCalendarDays(today, -4) },
+      { id: 'supply-soup-tried', category: 'soup', categoryLabel: '汤包', name: '金枪鱼汤包', brand: '尾巴生活', preference: 'neutral', note: '喝汤，肉块剩了一点', recordedOn: addCalendarDays(today, -8) },
+      { id: 'supply-litter-current', category: 'litter', categoryLabel: '猫砂', name: '豆腐混合猫砂', brand: '许翠花', preference: 'neutral', note: '豆腐砂 70% + 膨润土 30%', recordedOn: addCalendarDays(today, -16) },
+      { id: 'supply-litter-dropped', category: 'litter', categoryLabel: '猫砂', name: '纯膨润土猫砂', brand: '铂钻', preference: 'dropped', note: '扬尘太大，已经拔草', recordedOn: addCalendarDays(today, -45) },
     ],
     weights: [
       { id: 'weight-1', value: '3.6', recordedOn: addCalendarDays(today, -150) },
@@ -45,6 +46,8 @@ export function createDemoPetState(nowMs = Date.now()): DemoPetState {
       { id: 'daily-meal', type: 'meal', summary: '早餐吃了 42g 主粮', note: '食欲很好', recordedAt: new Date(todayStartMs + 8 * 60 * 60 * 1000).toISOString() },
       { id: 'daily-water', type: 'water', summary: '主动喝水一次', note: '', recordedAt: new Date(todayStartMs + 9.5 * 60 * 60 * 1000).toISOString() },
       { id: 'daily-urine', type: 'urine', summary: '尿团大小正常', note: '', recordedAt: new Date(todayStartMs + 7 * 60 * 60 * 1000).toISOString() },
+      { id: 'daily-litter', type: 'litter-change', summary: '换掉结块并补了新砂', note: '', recordedAt: new Date(nowMs - 27 * 60 * 60 * 1000).toISOString() },
+      { id: 'daily-water-change', type: 'water-change', summary: '清洗水碗并换了饮水', note: '', recordedAt: new Date(nowMs - 3 * 60 * 60 * 1000).toISOString() },
     ],
   }
 }
@@ -63,6 +66,7 @@ export function createSecondDemoPetState(nowMs = Date.now()): DemoPetState {
       homeOn: '2024-05-18',
       neuteredOn: null,
       status: '今天很活泼',
+      backgroundKey: 'apricot',
     },
     events: [
       { id: 'zhima-outing', type: 'outing', occurredOn: addCalendarDays(today, -2), title: '公园散步', note: '走了四十分钟', createdAt: new Date(nowMs).toISOString() },

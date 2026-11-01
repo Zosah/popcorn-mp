@@ -9,9 +9,11 @@ import type {
   PetDailyLogType,
   PetEventType,
   PetSpecies,
+  PetBackgroundKey,
   PetSupplyCategory,
-  PetSupplyStatus,
+  PetSupplyPreference,
 } from '../domain/demo-pet'
+import { PET_SUPPLY_CATEGORY_LABELS } from '../domain/demo-pet'
 import { readStoredApiSession } from '../stores/session'
 import type {
   ApiPet,
@@ -90,6 +92,8 @@ export class HttpPetGateway implements PetGateway {
       neuteredOn: profile.neuteredOn ?? '',
       status: profile.status ?? '刚刚加入这个家',
       avatarMediaId: profile.avatarMediaId ?? '',
+      backgroundKey: profile.backgroundKey ?? 'sage',
+      backgroundMediaId: profile.backgroundMediaId ?? '',
     })
   }
 
@@ -204,9 +208,12 @@ export class HttpPetGateway implements PetGateway {
     const context = petContext()
     const body: ApiPetSupplyWriteRequest = {
       category: input.category,
+      categoryLabel: input.categoryLabel?.trim() ?? '',
       name: input.name.trim(),
-      status: input.status,
+      brand: input.brand?.trim() ?? '',
+      preference: input.preference,
       note: input.note?.trim() ?? '',
+      mediaId: input.mediaId?.trim() ?? '',
       recordedOn: getShanghaiDateOnly(Date.now()),
     }
     return this.writePet('supply-create', `${petPath(context.spaceId, petId)}/supplies`, 'POST', body)
@@ -215,7 +222,7 @@ export class HttpPetGateway implements PetGateway {
   async setSupplyStatus(
     petId: string,
     supplyId: string,
-    status: PetSupplyStatus,
+    preference: PetSupplyPreference,
     currentVersion: number,
   ): Promise<DemoPetState> {
     const context = petContext()
@@ -223,7 +230,7 @@ export class HttpPetGateway implements PetGateway {
       'supply-status',
       `${petPath(context.spaceId, petId)}/supplies/${encodeURIComponent(supplyId)}/status`,
       'PUT',
-      { status },
+      { preference },
       currentVersion,
     )
   }
@@ -354,7 +361,11 @@ function clearActivePetIdIfMatches(spaceId: string, petId: string): void {
 }
 
 async function toPetState(item: ApiPet): Promise<DemoPetState> {
-  const avatarUrl = await resolveAvatar(item.avatarMediaId)
+  const [avatarUrl, backgroundUrl, supplyMediaUrls] = await Promise.all([
+    resolveMedia(item.avatarMediaId, 'thumb'),
+    resolveMedia(item.backgroundMediaId, 'display'),
+    Promise.all(item.supplies.map((supply) => resolveMedia(supply.mediaId, 'thumb'))),
+  ])
   const profile: DemoPetProfile = {
     id: item.id,
     name: item.name,
@@ -368,6 +379,9 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
     version: item.version,
     avatarMediaId: item.avatarMediaId || '',
     avatarUrl: avatarUrl ?? '',
+    backgroundKey: toBackgroundKey(item.backgroundKey),
+    backgroundMediaId: item.backgroundMediaId || '',
+    backgroundUrl: backgroundUrl ?? '',
   }
   return {
     profile,
@@ -384,12 +398,16 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       createdAt: event.createdAt,
       version: event.version,
     })),
-    supplies: item.supplies.map((supply): DemoPetSupply => ({
+    supplies: item.supplies.map((supply, index): DemoPetSupply => ({
       id: supply.id,
       category: toSupplyCategory(supply.category),
+      categoryLabel: supply.categoryLabel || PET_SUPPLY_CATEGORY_LABELS[toSupplyCategory(supply.category)],
       name: supply.name,
-      status: toSupplyStatus(supply.status),
+      brand: supply.brand || '',
+      preference: toSupplyPreference(supply.preference || supply.status),
       note: supply.note,
+      mediaId: supply.mediaId || '',
+      mediaUrl: supplyMediaUrls[index] ?? '',
       recordedOn: supply.recordedOn,
       version: supply.version,
     })),
@@ -408,13 +426,17 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
   }
 }
 
-async function resolveAvatar(mediaId: string): Promise<string | undefined> {
+async function resolveMedia(
+  mediaId: string,
+  variant: 'display' | 'thumb',
+): Promise<string | undefined> {
   if (!mediaId) return undefined
   try {
     const asset = await mediaGateway.get(mediaId)
-    return asset.thumb.url || asset.display.url
+    return variant === 'thumb'
+      ? asset.thumb.url || asset.display.url
+      : asset.display.url || asset.thumb.url
   } catch {
-    // 图片签名失败不阻塞宠物档案与照护操作，页面会回退到插画头像。
     return undefined
   }
 }
@@ -430,6 +452,8 @@ function toProfileRequest(input: PetProfileInput): ApiPetProfileWriteRequest {
     neuteredOn: input.neuteredOn ?? '',
     status: input.status.trim(),
     avatarMediaId: input.avatarMediaId.trim(),
+    backgroundKey: input.backgroundKey,
+    backgroundMediaId: input.backgroundMediaId.trim(),
   }
 }
 
@@ -459,27 +483,34 @@ function toEventType(value: string): PetEventType {
 }
 
 function toDailyLogType(value: string): PetDailyLogType {
-  return value === 'water' || value === 'stool' || value === 'urine'
+  return value === 'water'
+    || value === 'stool'
+    || value === 'urine'
+    || value === 'litter-change'
+    || value === 'water-change'
     ? value
     : 'meal'
 }
 
 function toSupplyCategory(value: string): PetSupplyCategory {
   const categories: PetSupplyCategory[] = [
-    'kibble', 'can', 'freeze-dried', 'soup', 'litter',
+    'kibble', 'can', 'freeze-dried', 'soup', 'litter', 'custom',
   ]
   return categories.includes(value as PetSupplyCategory)
     ? value as PetSupplyCategory
     : 'kibble'
 }
 
-function toSupplyStatus(value: string): PetSupplyStatus {
-  const statuses: PetSupplyStatus[] = [
-    'current', 'loved', 'tried', 'wishlist', 'dropped',
-  ]
-  return statuses.includes(value as PetSupplyStatus)
-    ? value as PetSupplyStatus
-    : 'tried'
+function toSupplyPreference(value: string): PetSupplyPreference {
+  return value === 'loved' || value === 'wishlist'
+    ? 'loved'
+    : value === 'dropped'
+      ? 'dropped'
+      : 'neutral'
+}
+
+function toBackgroundKey(value: string): PetBackgroundKey {
+  return value === 'apricot' || value === 'mist' ? value : 'sage'
 }
 
 function ifMatch(version: number): string {

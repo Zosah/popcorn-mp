@@ -5,8 +5,9 @@ import type {
   PetDailyLogType,
   PetEventType,
   PetSpecies,
+  PetBackgroundKey,
   PetSupplyCategory,
-  PetSupplyStatus,
+  PetSupplyPreference,
 } from '../domain/demo-pet'
 
 export interface PetProfileInput {
@@ -19,6 +20,8 @@ export interface PetProfileInput {
   neuteredOn: string | null
   status: string
   avatarMediaId: string
+  backgroundKey: PetBackgroundKey
+  backgroundMediaId: string
 }
 
 export interface PetEventInput {
@@ -40,9 +43,12 @@ export interface PetDailyLogInput {
 
 export interface PetSupplyInput {
   category: PetSupplyCategory
+  categoryLabel?: string
   name: string
-  status: PetSupplyStatus
+  brand?: string
+  preference: PetSupplyPreference
   note?: string
+  mediaId?: string
 }
 
 export interface PetCollection {
@@ -87,7 +93,7 @@ export interface PetGateway {
   setSupplyStatus(
     petId: string,
     supplyId: string,
-    status: PetSupplyStatus,
+    preference: PetSupplyPreference,
     currentVersion: number,
   ): Promise<DemoPetState>
   findEvent(eventId: string): Promise<PetEventMatch | null>
@@ -155,5 +161,7 @@ export function toPetProfileInput(profile: DemoPetProfile): PetProfileInput {
     neuteredOn: profile.neuteredOn,
     status: profile.status,
     avatarMediaId: profile.avatarMediaId ?? '',
+    backgroundKey: profile.backgroundKey ?? 'sage',
+    backgroundMediaId: profile.backgroundMediaId ?? '',
   }
 }

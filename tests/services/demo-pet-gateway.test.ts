@@ -99,7 +99,7 @@ describe('Demo 宠物网关', () => {
       supply.version ?? 1,
     )
     expect(updated.supplies.find((item) => item.id === supply.id)).toMatchObject({
-      status: 'loved',
+      preference: 'loved',
       version: (supply.version ?? 1) + 1,
     })
   })

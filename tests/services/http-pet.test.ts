@@ -46,6 +46,8 @@ const apiPet: ApiPet = {
   neuteredOn: '2025-03-01',
   status: '精神不错',
   avatarMediaId: 'm_petavatar01',
+  backgroundKey: 'sage',
+  backgroundMediaId: '',
   version: 3,
   createdBy: 'u_1234567890',
   deletedAt: null,
@@ -90,9 +92,13 @@ const apiPet: ApiPet = {
     id: 'q_1234567890',
     petId: 'e_1234567890',
     category: 'kibble',
+    categoryLabel: '主粮',
     name: '鸡肉冻干粮',
+    brand: '鲜朗',
     status: 'current',
+    preference: 'neutral',
     note: '',
+    mediaId: '',
     recordedOn: '2026-10-30',
     version: 4,
     createdBy: 'u_1234567890',
@@ -300,6 +306,8 @@ describe('HTTP 宠物网关', () => {
       neuteredOn: '2025-03-01',
       status: '精神不错',
       avatarMediaId: 'm_petavatar01',
+      backgroundKey: 'sage',
+      backgroundMediaId: '',
     }, 3)
 
     expect(updated.profile.version).toBe(4)
@@ -321,6 +329,8 @@ describe('HTTP 宠物网关', () => {
       neuteredOn: apiPet.neuteredOn,
       status: apiPet.status,
       avatarMediaId: '',
+      backgroundKey: 'sage',
+      backgroundMediaId: '',
     }, 3)
 
     expect(updated.profile.avatarMediaId).toBe('')
@@ -464,6 +474,8 @@ describe('HTTP 宠物网关', () => {
       neuteredOn: apiPet.neuteredOn,
       status: apiPet.status,
       avatarMediaId: apiPet.avatarMediaId,
+      backgroundKey: 'sage',
+      backgroundMediaId: '',
     }, 2)
 
     await expect(promise).rejects.toMatchObject({
