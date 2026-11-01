@@ -35,7 +35,6 @@ Page({
     hasLoaded: false,
     cacheFresh: false,
     hasShown: false,
-    spaceName: '我们的家',
     isLoggedIn: false,
     displayName: '还没有登录',
     avatarText: '访',
@@ -43,7 +42,6 @@ Page({
     avatarMediaId: '',
     avatarUrl: '',
     profileMeta: '登录后保存你的生活与共同空间',
-    spaceMeta: '登录后查看共同空间',
     featureGroups: buildFeatureGroups() as ProfileFeatureGroupView[],
   },
 
@@ -98,17 +96,10 @@ Page({
     const profileMeta = isLoggedIn
       ? `在「${auth.spaceName}」里`
       : '登录后保存你的生活与共同空间'
-    const spaceMeta = !isLoggedIn
-      ? '登录后查看共同空间'
-      : auth.spaceRole === 'owner'
-        ? '你创建的空间'
-        : '和朋友一起生活'
-
     this.setData({
       initialLoading: false,
       hasLoaded: true,
       cacheFresh: true,
-      spaceName: auth.spaceName,
       isLoggedIn,
       displayName: loggedInUser?.nickname || (isLoggedIn ? '待完善资料' : '还没有登录'),
       avatarText: isLoggedIn ? auth.avatarText : '访',
@@ -116,7 +107,6 @@ Page({
       avatarMediaId,
       avatarUrl: this.data.avatarMediaId === avatarMediaId ? this.data.avatarUrl : '',
       profileMeta,
-      spaceMeta,
       featureGroups: buildFeatureGroups(),
     }, () => this.cacheCurrentPage())
 
@@ -156,11 +146,6 @@ Page({
     if (this.data.isLoggedIn) return true
     wx.navigateTo({ url: '/pages/auth/index?mode=login' })
     return false
-  },
-
-  onOpenSpace() {
-    if (!this.ensureLoggedIn()) return
-    wx.navigateTo({ url: '/pages/space/index' })
   },
 
   onOpenFeature(event: {

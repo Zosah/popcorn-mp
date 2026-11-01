@@ -6,10 +6,10 @@
     class="home-header"
     style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
   >
-    <view class="home-header__space" hover-class="tap-dim" bindtap="onOpenProfile">
+    <view class="home-header__space" hover-class="tap-dim" bindtap="onOpenSpaceSwitcher" aria-label="切换空间">
       <view class="home-header__name-row">
         <text class="home-header__name">{{spaceName}}</text>
-        <text class="home-header__chevron">⌄</text>
+        <view class="home-header__switch"><line-icon name="users" size="22" tone="muted" /></view>
       </view>
       <text class="home-header__date">{{snapshot.dateLabel}} · {{snapshot.weekdayLabel}}</text>
     </view>
@@ -20,10 +20,6 @@
           <image wx:if="{{item.avatarUrl}}" class="member-stack__image" src="{{item.avatarUrl}}" mode="aspectFill" data-index="{{index}}" binderror="onMemberAvatarError" />
           <image wx:else class="member-stack__image" src="/images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
         </view>
-      </view>
-      <view class="header-bell" hover-class="tap-dim" bindtap="onOpenReminders" aria-label="提醒设置">
-        <line-icon name="bell" size="40" tone="ink" />
-        <view wx:if="{{hasUrgentItems}}" class="header-bell__dot"></view>
       </view>
     </view>
   </view>
@@ -55,6 +51,22 @@
       </view>
       <text class="function-item__label">{{item.shortLabel}}</text>
     </view>
+  </view>
+
+  <view class="moment-strip" hover-class="moment-strip--pressed" bindtap="onOpenMoment">
+    <view class="moment-thumb {{latestEntry && latestEntry.image ? 'moment-thumb--photo' : ''}}">
+      <image wx:if="{{latestEntry && latestEntry.image && (latestEntry.image.thumbSrc || latestEntry.image.src)}}" class="moment-thumb__photo" src="{{latestEntry.image.thumbSrc || latestEntry.image.src}}" mode="aspectFill" lazy-load />
+      <block wx:else>
+        <view class="moment-thumb__sun"></view>
+        <view class="moment-thumb__hill"></view>
+      </block>
+    </view>
+    <view class="moment-strip__body">
+      <text class="moment-strip__eyebrow">{{latestEntry ? (latestEntryIsToday ? '刚刚发生' : latestEntry.dateLabel) : '从今天开始'}}</text>
+      <text class="moment-strip__title">{{latestEntry ? latestEntry.title : '写下第一件小事'}}</text>
+      <text class="moment-strip__meta">{{latestEntry ? (latestEntry.authorName || '共同空间') + ' · ' + latestEntry.timeLabel : '生活记录会在这里出现'}}</text>
+    </view>
+    <text class="moment-strip__arrow">›</text>
   </view>
 
   <view class="scene-switch">
@@ -150,28 +162,32 @@
     </view>
   </view>
 
-  <view class="moment-strip" hover-class="moment-strip--pressed" bindtap="onOpenMoment">
-    <view class="moment-thumb {{latestEntry && latestEntry.image ? 'moment-thumb--photo' : ''}}">
-      <image wx:if="{{latestEntry && latestEntry.image && (latestEntry.image.thumbSrc || latestEntry.image.src)}}" class="moment-thumb__photo" src="{{latestEntry.image.thumbSrc || latestEntry.image.src}}" mode="aspectFill" lazy-load />
-      <block wx:else>
-        <view class="moment-thumb__sun"></view>
-        <view class="moment-thumb__hill"></view>
-      </block>
+  <view wx:if="{{spaceSwitcherOpen}}" class="space-sheet-mask" catchtap="onCloseSpaceSwitcher">
+    <view class="space-sheet" catchtap="noop">
+      <view class="space-sheet__handle"></view>
+      <view class="space-sheet__head">
+        <text class="space-sheet__title">切换空间</text>
+        <view class="space-sheet__close" bindtap="onCloseSpaceSwitcher">关闭</view>
+      </view>
+      <view class="space-sheet__list">
+        <view
+          wx:for="{{homeSpaces}}"
+          wx:key="id"
+          class="space-sheet__row {{item.isActive ? 'space-sheet__row--active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSwitchHomeSpace"
+        >
+          <view class="space-sheet__mark"><line-icon name="house" size="27" tone="{{item.isActive ? 'ink' : 'green'}}" /></view>
+          <view class="space-sheet__body">
+            <text class="space-sheet__name">{{item.name}}</text>
+            <text class="space-sheet__meta">{{item.roleLabel}}</text>
+          </view>
+          <text wx:if="{{item.isActive}}" class="space-sheet__current">当前</text>
+          <view wx:elif="{{switchingSpaceId === item.id}}" class="space-sheet__spinner"></view>
+          <text wx:else class="space-sheet__action">切到这里</text>
+        </view>
+      </view>
     </view>
-    <view class="moment-strip__body">
-      <text class="moment-strip__eyebrow">{{latestEntry ? (latestEntryIsToday ? '刚刚发生' : latestEntry.dateLabel) : '从今天开始'}}</text>
-      <text class="moment-strip__title">{{latestEntry ? latestEntry.title : '写下第一件小事'}}</text>
-      <text class="moment-strip__meta">{{latestEntry ? (latestEntry.authorName || '共同空间') + ' · ' + latestEntry.timeLabel : '生活记录会在这里出现'}}</text>
-    </view>
-    <text class="moment-strip__arrow">›</text>
-  </view>
-
-  <view wx:if="{{hasUrgentItems}}" class="folded-summary" hover-class="folded-summary--pressed" bindtap="onOpenReminders">
-    <view class="folded-summary__copy">
-      <text class="folded-summary__title">{{reminderCount}} 条家庭提醒</text>
-      <text class="folded-summary__meta">{{reminderCopy}}</text>
-    </view>
-    <view class="folded-summary__action">查看 <text class="folded-summary__chevron">⌄</text></view>
   </view>
 
   <app-tab-bar active="home" />

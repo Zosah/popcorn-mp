@@ -18,7 +18,11 @@ import {
 } from '../../domain/demo-pet'
 import { journalGateway } from '../../services/journal'
 import type { JournalItem } from '../../services/journal-gateway'
-import { getAuthState, hydrateAuthState } from '../../services/auth'
+import {
+  getAuthState,
+  hydrateAuthState,
+  type AuthState,
+} from '../../services/auth'
 import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { inventoryGateway } from '../../services/inventory'
 import { menuGateway } from '../../services/menu'
@@ -28,7 +32,10 @@ import {
   activePetFrom,
   getPetErrorMessage,
 } from '../../services/pet-gateway'
-import { listApiSpaceMembers } from '../../services/space-gateway'
+import {
+  listApiSpaceMembers,
+  setDefaultApiSpace,
+} from '../../services/space-gateway'
 import { readPageCache, writePageCache } from '../../services/page-cache'
 import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage } from '../../services/todo-gateway'
@@ -54,6 +61,13 @@ interface HomeMemberView {
 interface HomePetActivity extends PetHomeActivity {
   dateLabel: string
   tone: 'blue' | 'green' | 'pink'
+}
+
+interface HomeSpaceOption {
+  id: string
+  name: string
+  roleLabel: string
+  isActive: boolean
 }
 
 type HomeFeatureShortcut = Pick<
@@ -96,6 +110,25 @@ function buildHomeFeatureShortcuts(): HomeFeatureShortcut[] {
   })
 }
 
+function buildHomeSpaceOptions(auth: AuthState): HomeSpaceOption[] {
+  if (auth.spaces.length) {
+    return auth.spaces.map((space) => ({
+      id: space.id,
+      name: space.name,
+      roleLabel: space.role === 'owner' ? '创建人' : '共创人',
+      isActive: space.id === auth.activeSpaceId,
+    }))
+  }
+  return [{
+    id: auth.activeSpaceId || 'current-space',
+    name: auth.spaceName,
+    roleLabel: auth.spaceRole === 'owner'
+      ? '创建人'
+      : auth.isLoggedIn ? '共创人' : '当前空间',
+    isActive: true,
+  }]
+}
+
 function isCreatedToday(entry: JournalItem | null, today: string): boolean {
   if (!entry) return false
   const timestamp = Date.parse(entry.createdAt)
@@ -136,7 +169,6 @@ Page({
     menuSummary: '还没有收藏菜单，先收一道常做的菜。',
     todoPendingCount: 0,
     todoSummary: '旅行、计划、健身、吃什么和账单',
-    petPendingCount: 0,
     petActivities: [] as HomePetActivity[],
     petActivityCount: 0,
     hasLoadedInventory: false,
@@ -147,6 +179,9 @@ Page({
     spaceName: '我们的家',
     spaceMemberCopy: '登录后加入空间',
     spaceMembers: [] as HomeMemberView[],
+    homeSpaces: buildHomeSpaceOptions(getAuthState()),
+    spaceSwitcherOpen: false,
+    switchingSpaceId: '',
     petSnapshot: {
       name: '糯米',
       status: '精神不错',
@@ -155,10 +190,6 @@ Page({
     },
     todayDay: '—',
     todayMonthLabel: '',
-    // 有需要处理的事项时才渲染提醒行；没有就不占位，避免首页被"一切正常"撑长
-    hasUrgentItems: false,
-    reminderCount: 0,
-    reminderCopy: '',
     // 自定义导航下，状态栏高度与胶囊按钮占位都要自己让，
     // 否则页眉的日期会压到刘海、黑猫会被右上角的「•••⊙」盖住。
     statusBarHeight: 20,
@@ -326,9 +357,6 @@ Page({
         : '还没有宠物档案，先添加一位家庭成员'
     const pendingTodoCount = todoSummary?.pending ?? 0
     const pendingTravelCount = todoSummary?.pendingByKind.travel ?? 0
-    const petPendingCount = petState
-      ? (overdueCare || dueSoonCare ? 1 : 0) + (pendingDaily ? 1 : 0)
-      : 0
     const menuRecipes = menuResult.status === 'fulfilled' ? menuResult.value : null
     const latestMenu = menuRecipes?.[0]
     const menuError = menuResult.status === 'rejected'
@@ -376,18 +404,6 @@ Page({
     const month = monthValue || 1
     const day = dayValue || 1
 
-    const reminderCount =
-      (snapshot.inventoryNoticeCount > 0 ? 1 : 0)
-      + (pendingTodoCount > 0 ? 1 : 0)
-      + (petPendingCount > 0 ? 1 : 0)
-    const reminderCopy = [
-      snapshot.inventoryNoticeCount > 0
-        ? `${snapshot.inventoryNoticeCount} 件库存临期`
-        : '',
-      pendingTodoCount > 0 ? `${pendingTodoCount} 件待办没完成` : '',
-      petPendingCount > 0 && petState ? `${petState.profile.name}还有照护没记录` : '',
-    ].filter(Boolean).join(' · ')
-
     if (firstLoad) await waitForMinimumLoading(startedAt)
     if (!homeRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
@@ -418,7 +434,6 @@ Page({
           ? `${pendingTodoCount} 件还没做${pendingTravelCount ? ` · ${pendingTravelCount} 个旅行准备` : ''}`
           : '目前都做完了，可以再记一件')
         : this.data.hasLoadedTodos ? this.data.todoSummary : todoError,
-      petPendingCount,
       petActivities,
       petActivityCount: petState
         ? petState.events.length + petState.weights.length + petState.dailyLogs.length
@@ -436,6 +451,7 @@ Page({
       spaceName: auth.spaceName,
       spaceMemberCopy: auth.isLoggedIn ? `${spaceMembers.length} 位成员` : '登录后加入空间',
       spaceMembers,
+      homeSpaces: buildHomeSpaceOptions(auth),
       petSnapshot: {
         name: petState?.profile.name ?? (this.data.hasLoadedPets ? this.data.petSnapshot.name : '宠物'),
         status: petState?.profile.status ?? (petError || '等待同步'),
@@ -444,13 +460,6 @@ Page({
       },
       todayDay: String(day),
       todayMonthLabel: `${month}月`,
-      // 库存预警 / 待办未完成 / 宠物待照护，任一存在才显示提醒行
-      hasUrgentItems:
-        snapshot.inventoryNoticeCount > 0
-        || pendingTodoCount > 0
-        || (overdueCare !== undefined || dueSoonCare !== undefined || pendingDaily !== undefined),
-      reminderCount,
-      reminderCopy,
     }, () => this.writePageCache())
     void this.hydrateMemberAvatars(sequence)
     if (fromPullDown) wx.stopPullDownRefresh()
@@ -560,6 +569,51 @@ Page({
     openAppRoot('/pages/profile/index')
   },
 
+  async onOpenSpaceSwitcher() {
+    const auth = await hydrateAuthState()
+    if (!auth.isLoggedIn) {
+      wx.navigateTo({ url: '/pages/auth/index?mode=login' })
+      return
+    }
+    this.setData({
+      homeSpaces: buildHomeSpaceOptions(auth),
+      spaceName: auth.spaceName,
+      spaceSwitcherOpen: true,
+      switchingSpaceId: '',
+    })
+  },
+
+  onCloseSpaceSwitcher() {
+    if (this.data.switchingSpaceId) return
+    this.setData({ spaceSwitcherOpen: false })
+  },
+
+  async onSwitchHomeSpace(event: {
+    currentTarget: { dataset: { id?: string } }
+  }) {
+    const spaceId = event.currentTarget.dataset.id
+    const target = this.data.homeSpaces.find((space) => space.id === spaceId)
+    if (!spaceId || !target || target.isActive || this.data.switchingSpaceId) return
+
+    this.setData({ switchingSpaceId: spaceId })
+    const result = await setDefaultApiSpace(spaceId)
+    if (!result.ok) {
+      this.setData({ switchingSpaceId: '' })
+      wx.showToast({ title: result.message || '切换空间失败', icon: 'none' })
+      return
+    }
+
+    const nextSpace = result.data?.spaces.find((space) => space.id === spaceId)
+    this.setData({
+      spaceSwitcherOpen: false,
+      switchingSpaceId: '',
+      spaceName: nextSpace?.name || target.name,
+    })
+    this.refreshHomeShortcuts()
+    wx.showToast({ title: `已切换到${nextSpace?.name || target.name}`, icon: 'success' })
+    void this.loadSnapshot()
+  },
+
   onOpenPetActivity(event: {
     currentTarget: { dataset: { eventId?: string; section?: string } }
   }) {
@@ -572,10 +626,6 @@ Page({
     }
     const targetSection = section === 'daily' ? 'daily' : 'profile'
     openAppRoot(`/pages/pets/index?section=${targetSection}`)
-  },
-
-  onOpenReminders() {
-    wx.navigateTo({ url: '/pages/reminder-settings/index' })
   },
 
   onOpenHomeShortcut(event: {
@@ -597,4 +647,6 @@ Page({
   onOpenMenu() {
     openAppRoot('/pages/menu/index')
   },
+
+  noop() {},
 })

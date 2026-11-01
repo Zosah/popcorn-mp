@@ -35,18 +35,6 @@
     </view>
   </view>
 
-  <view class="space-card" hover-class="space-card--pressed" bindtap="onOpenSpace">
-    <view class="space-card__mark">
-      <line-icon name="house" size="34" tone="white" />
-    </view>
-    <view class="space-card__body">
-      <text class="space-card__label">共同空间</text>
-      <view class="space-card__title">{{spaceName}}</view>
-      <view class="space-card__meta">{{spaceMeta}}</view>
-    </view>
-    <text class="space-card__arrow">›</text>
-  </view>
-
   <view class="feature-directory-head">
     <text class="feature-directory-head__title">功能</text>
     <text class="feature-directory-head__copy">按用途整理，点开就能用。</text>
