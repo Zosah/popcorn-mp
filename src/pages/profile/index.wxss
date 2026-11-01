@@ -248,13 +248,26 @@
   opacity: 0.56;
 }
 
-.settings-row__title {
+.settings-row__body {
+  display: flex;
+  min-width: 0;
   margin-left: 18rpx;
-  color: var(--c-text);
   flex: 1;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.settings-row__title {
+  color: var(--c-text);
   font-size: 29rpx;
   font-weight: 600;
   line-height: 1.45;
+}
+
+.settings-row__meta {
+  color: var(--c-muted);
+  font-size: 22rpx;
+  line-height: 1.4;
 }
 
 .settings-row__arrow {

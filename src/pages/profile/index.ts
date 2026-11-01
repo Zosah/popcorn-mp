@@ -136,6 +136,10 @@ Page({
     wx.navigateTo({ url: '/pages/space/index' })
   },
 
+  onOpenFeatureList() {
+    wx.navigateTo({ url: '/pages/feature-list/index' })
+  },
+
   onOpenReminders() {
     if (!this.ensureLoggedIn()) return
     wx.navigateTo({ url: '/pages/reminder-settings/index' })

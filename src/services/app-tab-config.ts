@@ -1,3 +1,4 @@
+import { getFeatureDefinition } from '../domain/feature-catalog'
 import { getAuthState } from './auth'
 
 export type AppTabRootId =
@@ -59,135 +60,40 @@ export interface AppTabItem {
   fixed: boolean
 }
 
-export const APP_TAB_OPTIONS: readonly AppTabOption[] = [
-  {
-    id: 'pets',
-    label: '宠物',
-    shortLabel: '宠物',
-    description: '档案、照护、体重和日常',
-    level: 'primary',
-    parentId: 'pets',
-    icon: 'paw-print',
-    tone: 'pink',
-    path: '/pages/pets/index',
-  },
-  {
-    id: 'journal',
-    label: '生活记录',
-    shortLabel: '记录',
-    description: '生活记录和重要资料',
-    level: 'primary',
-    parentId: 'journal',
-    icon: 'notebook-tabs',
-    tone: 'blue',
-    path: '/pages/journal/index',
-  },
-  {
-    id: 'todo',
-    label: '待办与小计划',
-    shortLabel: '待办',
-    description: '旅行准备、小计划、健身和账单',
-    level: 'primary',
-    parentId: 'todo',
-    icon: 'list-todo',
-    tone: 'green',
-    path: '/pages/todo/index',
-  },
-  {
-    id: 'menu',
-    label: '今天吃什么',
-    shortLabel: '吃什么',
-    description: '菜单、推荐和今天吃什么',
-    level: 'primary',
-    parentId: 'menu',
-    icon: 'utensils',
-    tone: 'gold',
-    path: '/pages/menu/index',
-  },
-  {
-    id: 'inventory',
-    label: '家庭库存',
-    shortLabel: '库存',
-    description: '家里的物品和临期提醒',
-    level: 'primary',
-    parentId: 'inventory',
-    icon: 'package',
-    tone: 'orange',
-    path: '/pages/inventory/index',
-  },
-  {
-    id: 'pet-care',
-    label: '宠物照护',
-    shortLabel: '照护',
-    description: '疫苗、驱虫、洗护与健康记录',
-    level: 'secondary',
-    parentId: 'pets',
-    icon: 'heart-pulse',
-    tone: 'pink',
-    path: '/pages/pets/index?section=care',
-    query: { section: 'care' },
-  },
-  {
-    id: 'pet-daily',
-    label: '宠物日常',
-    shortLabel: '日常',
-    description: '吃饭、喝水、便便和尿尿记录',
-    level: 'secondary',
-    parentId: 'pets',
-    icon: 'droplets',
-    tone: 'green',
-    path: '/pages/pets/index?section=daily',
-    query: { section: 'daily' },
-  },
-  {
-    id: 'travel',
-    label: '旅行准备',
-    shortLabel: '旅行',
-    description: '目的地、出发时间和准备清单',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'plane',
-    tone: 'blue',
-    path: '/pages/todo/index?kind=travel',
-    query: { kind: 'travel' },
-  },
-  {
-    id: 'plan',
-    label: '小计划',
-    shortLabel: '计划',
-    description: '近期想做的事和完成进度',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'list-todo',
-    tone: 'green',
-    path: '/pages/todo/index?kind=plan',
-    query: { kind: 'plan' },
-  },
-  {
-    id: 'fitness',
-    label: '健身计划',
-    shortLabel: '健身',
-    description: '运动、时长和热量记录',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'dumbbell',
-    tone: 'orange',
-    path: '/pages/todo/index?kind=fitness',
-    query: { kind: 'fitness' },
-  },
-  {
-    id: 'expense',
-    label: '我们的账单',
-    shortLabel: '账单',
-    description: '一起记下花了什么、买了什么',
-    level: 'secondary',
-    parentId: 'todo',
-    icon: 'wallet',
-    tone: 'gold',
-    path: '/pages/todo/index?kind=expense',
-    query: { kind: 'expense' },
-  },
-] as const
+// 只保留顺序；标题、图标、路由等元数据统一来自功能注册表。
+const TAB_FEATURE_ORDER = [
+  'pets',
+  'journal',
+  'todo',
+  'menu',
+  'inventory',
+  'pet-care',
+  'pet-daily',
+  'travel',
+  'plan',
+  'fitness',
+  'expense',
+] as const satisfies readonly AppTabCustomId[]
+
+function toAppTabOption(id: AppTabCustomId): AppTabOption {
+  const feature = getFeatureDefinition(id)
+  if (!feature) throw new Error(`底部导航引用了未知功能：${id}`)
+  return {
+    id,
+    label: feature.label,
+    shortLabel: feature.shortLabel,
+    description: feature.description,
+    level: feature.level,
+    parentId: feature.parentId as AppTabRootId,
+    icon: feature.icon,
+    tone: feature.tone,
+    path: feature.path,
+    query: feature.query,
+  }
+}
+
+export const APP_TAB_OPTIONS: readonly AppTabOption[] =
+  TAB_FEATURE_ORDER.map(toAppTabOption)
 
 export const DEFAULT_APP_TAB_CONFIG: AppTabConfig = {
   slot2: 'pets',
