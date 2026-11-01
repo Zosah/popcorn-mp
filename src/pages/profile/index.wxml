@@ -68,6 +68,9 @@
         data-id="{{feature.id}}"
         bindtap="onOpenFeature"
       >
+        <view class="profile-feature-row__icon profile-feature-row__icon--{{feature.tone}}">
+          <line-icon name="{{feature.icon}}" size="29" tone="{{feature.tone}}" />
+        </view>
         <view class="profile-feature-row__body">
           <text class="profile-feature-row__title">{{feature.label}}</text>
           <text class="profile-feature-row__description">{{feature.description}}</text>

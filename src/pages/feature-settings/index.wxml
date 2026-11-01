@@ -1,21 +1,24 @@
-<page-meta page-style="{{dragActive ? 'overflow: hidden;' : ''}}" />
+<page-meta page-style="overflow: hidden; height: 100%;" />
 
-<view class="feature-settings-page">
+<view class="feature-settings-page {{dragActive ? 'feature-settings-page--dragging' : ''}}">
   <page-loading show="{{initialLoading}}" title="正在整理功能" copy="把常用功能放到顺手的位置。" />
 
   <view class="config-head">
+    <view class="config-head__mark">
+      <line-icon name="list-todo" size="27" tone="green" />
+    </view>
     <view class="config-head__copy">
-      <text class="config-head__title">把常用功能，放到手边</text>
-      <text class="config-head__description">长按上方功能，拖进首页快捷或底部导航。</text>
+      <text class="config-head__title">功能布置</text>
+      <text class="config-head__description">长按拖动，松手落位</text>
     </view>
     <view class="config-head__reset" hover-class="config-head__reset--pressed" bindtap="onResetDefault">
-      <line-icon name="rotate-ccw" size="22" tone="muted" />
-      <text>恢复默认</text>
+      <line-icon name="rotate-ccw" size="20" tone="muted" />
+      <text>恢复</text>
     </view>
   </view>
 
   <view wx:if="{{saveError}}" class="config-error">
-    <line-icon name="circle-alert" size="28" tone="danger" />
+    <line-icon name="circle-alert" size="24" tone="danger" />
     <text class="config-error__copy">{{saveError}}</text>
     <text wx:if="{{versionConflict}}" class="config-error__action" bindtap="onReloadSettings">载入最新</text>
   </view>
@@ -24,7 +27,7 @@
     <view class="section-heading">
       <view class="section-heading__copy">
         <text class="section-heading__title">全部功能</text>
-        <text class="section-heading__description">按住任意功能拖到下方</text>
+        <text class="section-heading__description">按住拖到下方</text>
       </view>
       <text class="section-heading__meta">{{features.length}} 个</text>
     </view>
@@ -40,16 +43,16 @@
         aria-role="button"
         aria-label="拖动{{item.shortLabel}}"
         bindtap="onFeatureTap"
-        bindtouchstart="onDragTouchStart"
-        bindtouchmove="onDragTouchMove"
-        bindtouchend="onDragTouchEnd"
-        bindtouchcancel="onDragTouchCancel"
+        catchtouchstart="onDragTouchStart"
+        catchtouchmove="onDragTouchMove"
+        catchtouchend="onDragTouchEnd"
+        catchtouchcancel="onDragTouchCancel"
       >
         <view class="feature-tile__icon feature-tile__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="34" tone="{{item.tone}}" />
+          <line-icon name="{{item.icon}}" size="30" tone="{{item.tone}}" />
         </view>
         <text class="feature-tile__label">{{item.shortLabel}}</text>
-        <text wx:if="{{!item.tabEligible}}" class="feature-tile__limit">仅首页</text>
+        <text wx:if="{{!item.tabEligible}}" class="feature-tile__limit">首页</text>
       </view>
     </view>
   </view>
@@ -58,7 +61,7 @@
     <view class="section-heading">
       <view class="section-heading__copy">
         <text class="section-heading__title">首页快捷</text>
-        <text class="section-heading__description">打开首页，第一眼就能用到</text>
+        <text class="section-heading__description">第一眼就能用到</text>
       </view>
       <text class="section-heading__meta">4 个位置</text>
     </view>
@@ -75,19 +78,16 @@
         aria-role="button"
         aria-label="首页第{{item.order}}个位置，{{item.shortLabel}}"
         bindtap="onSlotTap"
-        bindtouchstart="onDragTouchStart"
-        bindtouchmove="onDragTouchMove"
-        bindtouchend="onDragTouchEnd"
-        bindtouchcancel="onDragTouchCancel"
+        catchtouchstart="onDragTouchStart"
+        catchtouchmove="onDragTouchMove"
+        catchtouchend="onDragTouchEnd"
+        catchtouchcancel="onDragTouchCancel"
       >
         <text class="drop-slot__order">{{item.order}}</text>
         <view class="drop-slot__icon feature-tile__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="37" tone="{{item.tone}}" />
+          <line-icon name="{{item.icon}}" size="32" tone="{{item.tone}}" />
         </view>
-        <view class="drop-slot__body">
-          <text class="drop-slot__title">{{item.shortLabel}}</text>
-          <text class="drop-slot__copy">{{item.label}}</text>
-        </view>
+        <text class="drop-slot__title">{{item.shortLabel}}</text>
       </view>
     </view>
   </view>
@@ -96,16 +96,15 @@
     <view class="section-heading">
       <view class="section-heading__copy">
         <text class="section-heading__title">底部导航</text>
-        <text class="section-heading__description">中间三个位置，放最常去的地方</text>
+        <text class="section-heading__description">家与「我的」固定</text>
       </view>
       <text class="section-heading__meta">3 个位置</text>
     </view>
 
     <view class="tab-drop-preview">
       <view class="tab-fixed-item">
-        <line-icon name="house" size="30" tone="muted" />
+        <line-icon name="house" size="27" tone="muted" />
         <text>家</text>
-        <text class="tab-fixed-item__note">固定</text>
       </view>
 
       <view
@@ -119,19 +118,18 @@
         aria-role="button"
         aria-label="导航第{{item.order}}个位置，{{item.shortLabel}}"
         bindtap="onSlotTap"
-        bindtouchstart="onDragTouchStart"
-        bindtouchmove="onDragTouchMove"
-        bindtouchend="onDragTouchEnd"
-        bindtouchcancel="onDragTouchCancel"
+        catchtouchstart="onDragTouchStart"
+        catchtouchmove="onDragTouchMove"
+        catchtouchend="onDragTouchEnd"
+        catchtouchcancel="onDragTouchCancel"
       >
-        <line-icon name="{{item.icon}}" size="31" tone="{{item.tone}}" />
+        <line-icon name="{{item.icon}}" size="28" tone="{{item.tone}}" />
         <text class="drop-slot__tab-label">{{item.shortLabel}}</text>
       </view>
 
       <view class="tab-fixed-item">
-        <line-icon name="user-round" size="30" tone="muted" />
+        <line-icon name="user-round" size="27" tone="muted" />
         <text>我的</text>
-        <text class="tab-fixed-item__note">固定</text>
       </view>
     </view>
   </view>
@@ -155,7 +153,7 @@
     class="drag-ghost drag-ghost--{{dragTone}}"
     style="left: {{dragX}}px; top: {{dragY}}px;"
   >
-    <line-icon name="{{dragIcon}}" size="32" tone="{{dragTone}}" />
+    <line-icon name="{{dragIcon}}" size="28" tone="{{dragTone}}" />
     <text>{{dragLabel}}</text>
   </view>
 </view>

@@ -372,6 +372,8 @@ Page({
   },
 
   onDragTouchMove(event: WechatMiniprogram.TouchEvent) {
+    const preventDefault = (event as unknown as { preventDefault?: () => void }).preventDefault
+    preventDefault?.()
     const active = pendingDrag
     const touch = event.touches[0]
     if (!active || !touch) return
