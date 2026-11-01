@@ -20,8 +20,15 @@ import {
   getAppTabErrorMessage,
   isAppTabVersionConflict,
 } from '../../services/app-tab-gateway'
+import { waitForMinimumLoading } from '../../utils/loading'
 
-type EditableSlot = 'slot2' | 'slot3'
+type EditableSlot = 'slot2' | 'slot3' | 'slot4'
+
+const SLOT_LABELS: Record<EditableSlot, string> = {
+  slot2: '第二个位置',
+  slot3: '第三个位置',
+  slot4: '第四个位置',
+}
 
 interface SlotCardView extends AppTabItem {
   slot: EditableSlot
@@ -53,6 +60,11 @@ function buildSlots(config: AppTabConfig): SlotCardView[] {
       slot: 'slot3',
       positionLabel: '第三个位置',
     },
+    {
+      ...getAppTabOption(config.slot4),
+      slot: 'slot4',
+      positionLabel: '第四个位置',
+    },
   ]
 }
 
@@ -60,10 +72,11 @@ function buildCandidateGroups(
   config: AppTabConfig,
   editingSlot: EditableSlot,
 ): CandidateGroupView[] {
-  const otherSlot: EditableSlot = editingSlot === 'slot2' ? 'slot3' : 'slot2'
+  const otherSlots = (['slot2', 'slot3', 'slot4'] as EditableSlot[])
+    .filter((slot) => slot !== editingSlot)
   const candidates = APP_TAB_OPTIONS.map((option) => {
     const selected = option.id === config[editingSlot]
-    const disabled = option.id === config[otherSlot]
+    const disabled = otherSlots.some((slot) => option.id === config[slot])
     return {
       ...option,
       selected,
@@ -97,6 +110,7 @@ Page({
     config: {
       slot2: 'pets',
       slot3: 'journal',
+      slot4: 'todo',
     } as AppTabConfig,
     version: 1,
     editingSlot: 'slot2' as EditableSlot,
@@ -115,6 +129,8 @@ Page({
   },
 
   async loadSettings() {
+    const startedAt = Date.now()
+    const firstLoad = this.data.loading
     const localAuth = await hydrateAuthState()
     const ownerId = buildAppTabOwnerId(
       localAuth.user?.id ?? '',
@@ -132,21 +148,24 @@ Page({
     this.render(local)
 
     if (appConfig.demoMode) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({ loading: false, syncText: '本机保存' })
       return
     }
 
     try {
-      await syncAppTabSettings()
-      const synced = getAppTabSnapshot(ownerId)
+      // 直接使用本次服务端响应，避免并发初始化时从本机缓存读到另一份快照。
+      const synced = await syncAppTabSettings()
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         version: synced.version,
-        loading: false,
         errorText: '',
         syncText: '已同步到空间',
       })
       this.render(synced)
+      this.setData({ loading: false })
     } catch (error) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         loading: false,
         errorText: getAppTabErrorMessage(error, '底栏设置暂时没有同步过来'),
@@ -190,8 +209,9 @@ Page({
     if (!option) return
 
     const { editingSlot, config, version } = this.data
-    const otherSlot: EditableSlot = editingSlot === 'slot2' ? 'slot3' : 'slot2'
-    if (config[otherSlot] === id) {
+    const otherSlots = (['slot2', 'slot3', 'slot4'] as EditableSlot[])
+      .filter((slot) => slot !== editingSlot)
+    if (otherSlots.some((slot) => config[slot] === id)) {
       wx.showToast({ title: '这个功能已经放在另一个位置了', icon: 'none' })
       return
     }
@@ -219,7 +239,7 @@ Page({
         syncText: appConfig.demoMode ? '本机保存' : '已同步到空间',
       })
       this.render(saved)
-      wx.showToast({ title: `已放到${editingSlot === 'slot2' ? '第二' : '第三'}个位置`, icon: 'none' })
+      wx.showToast({ title: `已放到${SLOT_LABELS[editingSlot]}`, icon: 'none' })
     } catch (error) {
       if (isAppTabVersionConflict(error)) {
         this.setData({ saving: false })

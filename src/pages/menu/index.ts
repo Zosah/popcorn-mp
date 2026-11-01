@@ -15,6 +15,7 @@ import {
   type MenuRecipe,
 } from '../../services/menu-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
 type MenuTab = 'today' | 'all'
@@ -74,12 +75,15 @@ Page({
 
   async refresh(fromPullDown = false) {
     const sequence = menuRequestGate.begin()
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     const auth = await hydrateAuthState()
     if (!menuRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
       return
     }
     if (!appConfig.demoMode && !auth.isLoggedIn) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         allRecipes: [],
         recipes: [],
@@ -110,9 +114,13 @@ Page({
         ? await menuGateway.list(filters)
         : allRecipes
       if (!menuRequestGate.isCurrent(sequence)) return
+      if (firstLoad) await waitForMinimumLoading(startedAt)
+      if (!menuRequestGate.isCurrent(sequence)) return
 
       this.applyLoadedRecipes(allRecipes, recipes)
     } catch (error) {
+      if (!menuRequestGate.isCurrent(sequence)) return
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       if (!menuRequestGate.isCurrent(sequence)) return
       const message = getMenuErrorMessage(error, '菜单暂时没有加载出来')
       if (this.data.allRecipes.length) {

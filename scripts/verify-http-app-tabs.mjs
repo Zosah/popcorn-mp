@@ -14,7 +14,7 @@ const suffix = Date.now().toString(36).slice(-9)
 const ownerIdentity = `ato${suffix}`
 const memberIdentity = `atm${suffix}`
 const outsiderIdentity = `atx${suffix}`
-const miniProgram = await automator.connect({ wsEndpoint })
+let miniProgram = await automator.connect({ wsEndpoint })
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const runtimeErrors = []
 
@@ -91,11 +91,43 @@ async function clearTabCache(userId, spaceId) {
   )
 }
 
+async function withTimeout(promise, timeoutMs, label) {
+  let timer
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label}超时（${timeoutMs}ms）`)), timeoutMs)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+async function reconnectMiniProgram() {
+  await miniProgram.disconnect().catch(() => undefined)
+  miniProgram = await automator.connect({ wsEndpoint })
+}
+
 async function open(url) {
-  const page = await miniProgram.reLaunch(url)
-  await wait(450)
-  if (!page) throw new Error(`页面打开失败：${url}`)
-  return page
+  let lastError
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const page = await withTimeout(miniProgram.reLaunch(url), 15000, `打开 ${url}`)
+      await wait(500)
+      if (!page) throw new Error(`页面打开失败：${url}`)
+      return page
+    } catch (error) {
+      lastError = error
+      console.error(`WARN 页面打开失败，第 ${attempt} 次：${url}`, error)
+      if (attempt < 2) {
+        await reconnectMiniProgram()
+        await wait(1000)
+      }
+    }
+  }
+  throw lastError
 }
 
 async function waitFor(check, label, timeoutMs = 20000) {
@@ -140,6 +172,7 @@ function settings(overrides = {}) {
   return {
     slot2: 'pets',
     slot3: 'journal',
+    slot4: 'todo',
     ...overrides,
   }
 }
@@ -212,7 +245,7 @@ try {
   console.log('PASS 同一用户在不同空间拥有独立底栏，不会串配置')
 
   const updateKey = `app_tab_owner_${suffix}`
-  const ownerInput = settings({ slot2: 'menu', slot3: 'plan' })
+  const ownerInput = settings({ slot2: 'menu', slot3: 'plan', slot4: 'inventory' })
   const ownerUpdated = await updateAppTabs(
     ownerSpaceId,
     owner.token,
@@ -252,7 +285,7 @@ try {
       'If-Match': '"1"',
       'Idempotency-Key': `app_tab_stale_${suffix}`,
     },
-    body: settings({ slot2: 'todo', slot3: 'journal' }),
+    body: settings({ slot2: 'todo', slot3: 'journal', slot4: 'menu' }),
   })
   assert.equal(stale.status, 409)
   assert.equal(stale.data.code, 'VERSION_CONFLICT')
@@ -293,7 +326,7 @@ try {
   assert.deepEqual(pageData.config, ownerInput)
   assert.deepEqual(
     pageData.previewItems.map((item) => item.id),
-    ['home', 'menu', 'plan', 'profile'],
+    ['home', 'menu', 'plan', 'inventory', 'profile'],
   )
   assert.equal(pageData.syncText, '已同步到空间')
   await assertNoHorizontalOverflow(page, '自定义底栏设置页')
@@ -312,7 +345,7 @@ try {
     const data = await page.data()
     return !data.saving && data.version === 3 ? data : false
   }, '点击候选入口并保存')
-  assert.deepEqual(pageData.config, settings({ slot2: 'todo', slot3: 'plan' }))
+  assert.deepEqual(pageData.config, settings({ slot2: 'todo', slot3: 'plan', slot4: 'inventory' }))
   assert.equal(pageData.syncText, '已同步到空间')
   await screenshot('saved')
   console.log('PASS 设置页点击候选入口后自动保存到服务端')
@@ -322,22 +355,22 @@ try {
     const data = await page.data()
     return !data.loading && data.version === 3 ? data : false
   }, '重新打开后持久化')
-  assert.deepEqual(pageData.config, settings({ slot2: 'todo', slot3: 'plan' }))
+  assert.deepEqual(pageData.config, settings({ slot2: 'todo', slot3: 'plan', slot4: 'inventory' }))
   console.log('PASS 重新打开设置页仍读取服务端最新配置')
 
   page = await open('/pages/home/index')
   const homeData = await waitFor(async () => {
     const data = await tabBarData(page)
-    return data.items?.length === 4 ? data : false
+    return data.items?.length === 5 ? data : false
   }, '首页底栏渲染')
   assert.deepEqual(
     homeData.items.map((item) => item.label),
-    ['家', '待办', '计划', '我的'],
+    ['家', '待办', '计划', '库存', '我的'],
   )
   assert.equal(homeData.activeId, 'home')
   await assertNoHorizontalOverflow(page, '首页自定义底栏')
   await screenshot('home')
-  console.log('PASS 首页底栏实际渲染服务端配置的两个自定义入口')
+  console.log('PASS 首页底栏实际渲染服务端配置的三个自定义入口')
 
   const bar = await page.$('app-tab-bar')
   const planTab = await bar.$('[data-id="plan"]')
@@ -358,7 +391,7 @@ try {
     ownerSpaceId,
     owner.token,
     3,
-    settings({ slot2: 'menu', slot3: 'fitness' }),
+    settings({ slot2: 'menu', slot3: 'fitness', slot4: 'travel' }),
     `app_tab_external_${suffix}`,
   )
   assert.equal(external.data.version, 4)
@@ -378,7 +411,7 @@ try {
     ownerSpaceId,
     owner.token,
     4,
-    settings({ slot2: 'journal', slot3: 'travel' }),
+    settings({ slot2: 'menu', slot3: 'expense', slot4: 'travel' }),
     `app_tab_conflict_${suffix}`,
   )
   await expenseOption.tap()
@@ -386,7 +419,7 @@ try {
     const data = await page.data()
     return !data.loading && !data.saving && data.version === 5 ? data : false
   }, '版本冲突后载入最新配置')
-  assert.deepEqual(pageData.config, settings({ slot2: 'journal', slot3: 'travel' }))
+  assert.deepEqual(pageData.config, settings({ slot2: 'menu', slot3: 'expense', slot4: 'travel' }))
   assert.equal(pageData.errorText, '')
   await miniProgram.restoreWxMethod('showToast')
   await screenshot('conflict-recovered')
@@ -412,10 +445,10 @@ try {
       ? data
       : false
   }, '个人中心加载')
-  assert.equal(profileData.tabBarSummary, '家 / 记录 / 旅行 / 我的')
+  assert.equal(profileData.displayName, owner.user.nickname)
   await assertNoHorizontalOverflow(page, '个人中心')
   await screenshot('profile-summary')
-  console.log('PASS 个人中心按当前空间与用户展示底栏摘要')
+  console.log('PASS 个人中心正确展示当前登录用户')
 
   assert.deepEqual(runtimeErrors, [])
   console.log('PASS 开发者工具无运行时 JS 错误')

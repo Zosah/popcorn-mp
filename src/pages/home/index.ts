@@ -31,6 +31,7 @@ import { getTodoErrorMessage } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
 interface HomeMemberView {
@@ -178,9 +179,11 @@ Page({
 
   async loadSnapshot(fromPullDown = false) {
     const sequence = homeRequestGate.begin()
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     const nowMs = Date.now()
     const today = getShanghaiDateOnly(nowMs)
-    this.setData({ initialLoading: !this.data.hasLoaded })
+    this.setData({ initialLoading: firstLoad })
 
     const auth = await hydrateAuthState()
     if (!homeRequestGate.isCurrent(sequence)) {
@@ -188,6 +191,7 @@ Page({
       return
     }
     if (!appConfig.demoMode && !auth.isLoggedIn) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         initialLoading: false,
         hasLoaded: true,
@@ -332,6 +336,11 @@ Page({
       petPendingCount > 0 && petState ? `${petState.profile.name}还有照护没记录` : '',
     ].filter(Boolean).join(' · ')
 
+    if (firstLoad) await waitForMinimumLoading(startedAt)
+    if (!homeRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
     this.setData({
       initialLoading: false,
       hasLoaded: true,

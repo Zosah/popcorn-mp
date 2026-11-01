@@ -2,6 +2,7 @@ import { hydrateAuthState, type AuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { readPageCache, writePageCache } from '../../services/page-cache'
 import { resolveAvatarUrl } from '../../utils/avatar'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
 const profileRequestGate = createRequestGate()
@@ -51,12 +52,19 @@ Page({
 
   async refreshProfile(fromPullDown = false) {
     const sequence = profileRequestGate.begin()
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     const auth = await hydrateAuthState()
     if (!profileRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
       return
     }
 
+    if (firstLoad) await waitForMinimumLoading(startedAt)
+    if (!profileRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
     this.renderAuth(auth)
     if (fromPullDown) wx.stopPullDownRefresh()
   },

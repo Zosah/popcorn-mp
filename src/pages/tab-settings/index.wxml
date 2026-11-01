@@ -3,7 +3,7 @@
     <view class="tab-settings-hero__copy">
       <text class="tab-settings-hero__eyebrow">MY HOME BAR</text>
       <text class="tab-settings-hero__title">把常用的，放到手边</text>
-      <text class="tab-settings-hero__intro">首页和「我的」固定不动。中间两个位置，可以换成你每天最常用的功能。</text>
+      <text class="tab-settings-hero__intro">首页和「我的」固定不动。中间三个位置，可以换成你每天最常用的功能。</text>
     </view>
     <view class="tab-settings-hero__art">
       <view class="tab-settings-hero__sun"></view>
@@ -37,7 +37,7 @@
 
   <view class="tab-settings-section-head">
     <text>选择位置</text>
-    <text>第 2、3 个位置可修改</text>
+    <text>第 2–4 个位置可修改</text>
   </view>
   <view class="tab-settings-slots">
     <view
@@ -63,7 +63,7 @@
 
   <view class="tab-settings-section-head">
     <text>可选功能</text>
-    <text>{{editingSlot === 'slot2' ? '正在设置第二个位置' : '正在设置第三个位置'}}</text>
+    <text>{{editingSlot === 'slot2' ? '正在设置第二个位置' : editingSlot === 'slot3' ? '正在设置第三个位置' : '正在设置第四个位置'}}</text>
   </view>
   <view
     wx:for="{{candidateGroups}}"

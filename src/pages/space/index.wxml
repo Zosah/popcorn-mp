@@ -1,98 +1,138 @@
 <view class="space-page">
-  <view class="subpage-back" bindtap="onBack">← 返回我的</view>
+  <page-loading
+    show="{{initialLoading}}"
+    title="正在整理共同空间"
+    copy="成员和邀请信息马上就好。"
+  />
 
   <view class="space-hero">
-    <view class="space-hero__icon">
-      <line-icon name="house" size="46" tone="ink" />
+    <view class="space-hero__glow space-hero__glow--one"></view>
+    <view class="space-hero__glow space-hero__glow--two"></view>
+
+    <view
+      class="space-avatar {{avatarUploading ? 'space-avatar--uploading' : ''}}"
+      hover-class="{{isOwner ? 'space-avatar--pressed' : 'none'}}"
+      aria-role="button"
+      aria-label="{{isOwner ? '更换空间头像' : '空间头像'}}"
+      bindtap="onSpaceAvatarTap"
+    >
+      <image
+        wx:if="{{spaceAvatarUrl}}"
+        class="space-avatar__image"
+        src="{{spaceAvatarUrl}}"
+        mode="aspectFill"
+        binderror="onSpaceAvatarError"
+      />
+      <view wx:else class="space-avatar__fallback">
+        <line-icon name="house" size="56" tone="ink" />
+      </view>
+      <view wx:if="{{isOwner}}" class="space-avatar__action">
+        <view wx:if="{{avatarUploading}}" class="space-avatar__spinner"></view>
+        <line-icon wx:else name="image" size="25" tone="white" />
+      </view>
     </view>
 
     <view class="space-hero__title-row">
       <text class="space-hero__title">{{spaceName}}</text>
-      <view wx:if="{{isOwner}}" class="space-hero__edit" bindtap="onRename">改名</view>
+      <view wx:if="{{isOwner}}" class="space-hero__edit" hover-class="space-hero__edit--pressed" bindtap="onRename">改名</view>
     </view>
-    <view class="space-hero__copy">{{spaceCreatedLabel}}</view>
 
-    <view class="space-stats">
-      <view class="space-stat">
-        <text class="space-stat__value space-stat__value--deep">{{memberCount}}</text>
-        <text class="space-stat__label">成员</text>
+    <view wx:if="{{isLoggedIn}}" class="space-role-pill space-role-pill--{{spaceRole}}">{{spaceRoleLabel}}</view>
+    <text class="space-hero__copy">{{spaceCreatedLabel}}</text>
+
+    <view wx:if="{{isLoggedIn}}" class="space-facts">
+      <view class="space-fact">
+        <text class="space-fact__value">{{memberCount}}</text>
+        <text class="space-fact__label">一起生活</text>
       </view>
-      <view class="space-stat">
-        <text class="space-stat__value space-stat__value--green">{{spaceRole === 'owner' ? 'Owner' : 'Member'}}</text>
-        <text class="space-stat__label">我的身份</text>
-      </view>
-      <view class="space-stat">
-        <text class="space-stat__value space-stat__value--orange">7 天</text>
-        <text class="space-stat__label">邀请有效</text>
+      <view class="space-facts__divider"></view>
+      <view class="space-fact">
+        <text class="space-fact__value">{{isOwner ? '7 天' : '受邀'}}</text>
+        <text class="space-fact__label">{{isOwner ? '邀请有效' : '加入方式'}}</text>
       </view>
     </view>
   </view>
 
-  <view class="space-section-head">
-    <view class="space-section-head__label">
-      <line-icon name="users" size="27" tone="blue" />
-      <text>一起生活的人</text>
+  <view wx:if="{{!isLoggedIn}}" class="login-hint">
+    <view class="login-hint__mark">
+      <line-icon name="users" size="31" tone="blue" />
     </view>
-    <text>{{memberCount}} 位</text>
+    <view class="login-hint__body">
+      <text>登录后查看共同空间</text>
+      <text>成员、邀请和一起生活的记录会在这里出现。</text>
+    </view>
+    <text class="login-hint__arrow">›</text>
   </view>
 
-  <view class="member-list">
-    <view wx:for="{{members}}" wx:key="userId" class="member-row">
-      <image wx:if="{{item.avatarUrl}}" class="member-row__avatar" src="{{item.avatarUrl}}" mode="aspectFill" data-index="{{index}}" binderror="onMemberAvatarError" />
-      <image wx:else class="member-row__avatar" src="../../images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
-      <view class="member-row__body">
-        <view class="member-row__name-line">
-          <text>{{item.nickname}}</text>
-          <text class="member-row__role member-row__role--{{item.role}}">{{item.roleLabel}}</text>
+  <block wx:if="{{isLoggedIn}}">
+    <view class="space-section-head">
+      <view class="space-section-head__label">
+        <line-icon name="users" size="28" tone="blue" />
+        <text>一起生活的人</text>
+      </view>
+      <text>{{memberCount}} 位</text>
+    </view>
+
+    <view class="member-list">
+      <view wx:for="{{members}}" wx:key="userId" class="member-row">
+        <image wx:if="{{item.avatarUrl}}" class="member-row__avatar" src="{{item.avatarUrl}}" mode="aspectFill" data-index="{{index}}" binderror="onMemberAvatarError" />
+        <image wx:else class="member-row__avatar" src="../../images/avatars/avatar-{{item.avatarTone}}.png" mode="aspectFill" />
+        <view class="member-row__body">
+          <view class="member-row__name-line">
+            <text class="member-row__name">{{item.nickname}}</text>
+            <text class="member-row__role member-row__role--{{item.role}}">{{item.roleLabel}}</text>
+          </view>
+          <text class="member-row__meta">{{item.meta}}</text>
         </view>
-        <text class="member-row__meta">{{item.meta}}</text>
+        <view
+          wx:if="{{item.canRemove}}"
+          class="member-row__remove"
+          hover-class="member-row__remove--pressed"
+          data-index="{{index}}"
+          catchtap="onRemoveMember"
+        >移除</view>
       </view>
-      <text class="member-row__arrow" data-nickname="{{item.nickname}}" data-role="{{item.roleLabel}}" bindtap="onMemberInfo">›</text>
-    </view>
-  </view>
-
-  <view class="space-section-head space-section-head--spaced">
-    <view class="space-section-head__label">
-      <line-icon name="ticket" size="27" tone="pink" />
-      <text>邀请一个人回家</text>
-    </view>
-    <text>一次性 · 7 天有效</text>
-  </view>
-
-  <view class="invite-sheet">
-    <view class="invite-sheet__label">{{isDemoMode ? 'Demo 邀请码' : '空间邀请码'}}</view>
-    <view class="invite-sheet__code">{{hasInvite ? inviteCode : (isOwner ? '点击生成' : '仅创建者可邀请')}}</view>
-    <view class="invite-sheet__copy">{{inviteExpiryLabel}}。对方输入邀请码后，就能看到同一份生活。</view>
-
-    <view wx:if="{{isOwner && !hasInvite}}" class="invite-sheet__actions invite-sheet__actions--single">
-      <button class="primary-button" bindtap="onRefreshInvite">生成邀请码</button>
-    </view>
-    <view wx:if="{{isOwner && hasInvite}}" class="invite-sheet__actions">
-      <button class="invite-sheet__copy-button" bindtap="onCopyInvite">复制邀请码</button>
-      <button class="invite-sheet__share-button" open-type="share">微信分享</button>
     </view>
 
-    <view wx:if="{{isOwner && hasInvite}}" class="invite-sheet__links">
-      <text bindtap="onPreviewInvite">预览对方看到的页面</text>
-      <text bindtap="onRefreshInvite">换一个邀请码</text>
+    <view wx:if="{{isOwner}}" class="space-section-head space-section-head--spaced">
+      <view class="space-section-head__label">
+        <line-icon name="ticket" size="28" tone="pink" />
+        <text>邀请一个人回家</text>
+      </view>
+      <text>一次性 · 7 天有效</text>
     </view>
-  </view>
 
-  <view class="privacy-note">
-    <view class="privacy-note__mark">
-      <line-icon name="lock" size="25" tone="muted" />
-    </view>
-    <view class="privacy-note__body">
-      <text>空间默认不公开</text>
-      <text>{{isDemoMode ? 'Demo 数据只保存在当前设备。健康资料和宠物病历后续可单独设置可见范围。' : '服务端会校验会话、空间成员关系与 owner 权限；敏感资料可单独设置可见范围。'}}</text>
-    </view>
-  </view>
+    <view wx:if="{{isOwner}}" class="invite-card">
+      <view class="invite-card__head">
+        <text class="invite-card__label">空间邀请码</text>
+        <text class="invite-card__expiry">{{inviteExpiryLabel}}</text>
+      </view>
+      <view class="invite-card__code">{{hasInvite ? inviteCode : '生成后发给想一起生活的人'}}</view>
+      <text class="invite-card__copy">对方输入邀请码后，就能看到同一份生活。</text>
 
-  <view wx:if="{{canLeaveSpace}}" class="leave-panel">
-    <view class="leave-panel__copy">
-      <text>不再一起生活了？</text>
-      <text>退出后，这个空间的共享内容将不再对你可见；你创建的内容会留在空间里。</text>
+      <view wx:if="{{!hasInvite}}" class="invite-card__actions invite-card__actions--single">
+        <button class="invite-card__primary" bindtap="onRefreshInvite">生成邀请码</button>
+      </view>
+      <view wx:if="{{hasInvite}}" class="invite-card__actions">
+        <button class="invite-card__secondary" bindtap="onCopyInvite">复制邀请码</button>
+        <button class="invite-card__primary" open-type="share">微信分享</button>
+      </view>
+
+      <view wx:if="{{hasInvite}}" class="invite-card__links">
+        <text bindtap="onPreviewInvite">预览邀请页</text>
+        <text bindtap="onRefreshInvite">换一个邀请码</text>
+      </view>
     </view>
-    <button class="leave-panel__button" loading="{{isLeaving}}" disabled="{{isLeaving}}" bindtap="onLeaveSpace">退出这个空间</button>
-  </view>
+
+    <view wx:if="{{spaceRole === 'member'}}" class="leave-panel">
+      <view class="leave-panel__mark">
+        <line-icon name="heart-pulse" size="29" tone="pink" />
+      </view>
+      <view class="leave-panel__body">
+        <text class="leave-panel__title">关于离开</text>
+        <text class="leave-panel__copy">共同生活可以好好开始，也可以好好告别。</text>
+      </view>
+      <button class="leave-panel__button" loading="{{isLeaving}}" disabled="{{isLeaving}}" bindtap="onLeaveSpace">退出空间</button>
+    </view>
+  </block>
 </view>

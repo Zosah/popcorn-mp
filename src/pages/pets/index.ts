@@ -40,6 +40,7 @@ import {
   type PetCollection,
 } from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { showMediaUploadError } from '../../utils/media-error'
 
 type PetSection = 'profile' | 'care' | 'calendar' | 'daily' | 'supplies'
@@ -258,8 +259,10 @@ Page({
   },
 
   async refreshPetData(preferredPetId = '', fromPullDown = false) {
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     this.setData({
-      loading: !this.data.hasLoaded,
+      loading: firstLoad,
       syncing: true,
       syncState: 'pending',
       errorText: '',
@@ -267,6 +270,7 @@ Page({
     try {
       const auth = await hydrateAuthState()
       if (!appConfig.demoMode && !auth.isLoggedIn) {
+        if (firstLoad) await waitForMinimumLoading(startedAt)
         this.setData({
           hasActivePet: false,
           petStates: [],
@@ -294,6 +298,7 @@ Page({
         collection = await petGateway.setActivePet(preferredPetId)
       }
       this.applyCollection(collection)
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         syncState: 'synced',
         hasLoaded: true,
@@ -301,6 +306,7 @@ Page({
         errorText: '',
       })
     } catch (error) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         hasLoaded: true,
         errorText: getPetErrorMessage(error, '宠物照护暂时没有同步过来'),

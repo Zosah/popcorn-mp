@@ -30,6 +30,7 @@ const space: ApiSpaceDetail = {
   type: 'family',
   role: 'owner',
   ownerId: 'user-1',
+  avatarMediaId: '',
   timezone: 'Asia/Shanghai',
   createdAt: now,
   updatedAt: now,

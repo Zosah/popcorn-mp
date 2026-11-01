@@ -11,6 +11,7 @@ import {
   getJournalErrorMessage,
   type JournalItem,
 } from '../../services/journal-gateway'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
 const NOTE_CATEGORY_ORDER: DemoNoteCategory[] = ['home', 'health', 'pet', 'other']
@@ -97,12 +98,15 @@ Page({
 
   async refresh(fromPullDown = false) {
     const sequence = journalRequestGate.begin()
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     const auth = await hydrateAuthState()
     if (!journalRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
       return
     }
     if (!appConfig.demoMode && !auth.isLoggedIn) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         entries: [],
         noteGroups: [],
@@ -134,6 +138,8 @@ Page({
       ])
       if (!journalRequestGate.isCurrent(sequence)) return
       const noteGroups = buildNoteGroups(notes)
+      if (firstLoad) await waitForMinimumLoading(startedAt)
+      if (!journalRequestGate.isCurrent(sequence)) return
       const filterOptions: JournalFilterView[] = [
         { key: 'moments', label: '生活点滴', count: moments.length },
         ...NOTE_CATEGORY_ORDER.map((category) => ({
@@ -157,6 +163,8 @@ Page({
     } catch (error) {
       if (!journalRequestGate.isCurrent(sequence)) return
       const message = getJournalErrorMessage(error, '生活记录暂时没有加载出来')
+      if (firstLoad) await waitForMinimumLoading(startedAt)
+      if (!journalRequestGate.isCurrent(sequence)) return
       this.setData({
         loading: false,
         hasLoaded: true,

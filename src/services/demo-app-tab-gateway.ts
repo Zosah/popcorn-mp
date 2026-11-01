@@ -25,6 +25,7 @@ export class DemoAppTabGateway implements AppTabGateway {
     return saveAppTabSnapshot({
       slot2: config.slot2,
       slot3: config.slot3,
+      slot4: config.slot4,
       version: current.version + 1,
       updatedAt: new Date().toISOString(),
     })

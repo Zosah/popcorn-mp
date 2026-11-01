@@ -21,6 +21,7 @@ import { getAuthState, hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
 import { readPageCache, writePageCache as persistPageCache } from '../../services/page-cache'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { createDebouncer, createRequestGate } from '../../utils/request-control'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
@@ -203,8 +204,11 @@ Page({
   },
 
   async loadInventory(fromPullDown = false, force = false) {
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     const auth = getAuthState()
     if (!appConfig.demoMode && !auth.isLoggedIn) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         spaceName: auth.spaceName,
         loading: false,
@@ -260,6 +264,8 @@ Page({
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0
+      if (firstLoad) await waitForMinimumLoading(startedAt)
+      if (!inventoryRequestGate.isCurrent(sequence)) return
       this.setData({
         loading: false,
         hasLoaded,
@@ -279,6 +285,8 @@ Page({
           : appConfig.demoMode ? '只在本机' : '已同步',
       }, () => this.cacheCurrentPage())
     } catch (error) {
+      if (!inventoryRequestGate.isCurrent(sequence)) return
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       if (!inventoryRequestGate.isCurrent(sequence)) return
       this.setData({
         errorMessage: getInventoryErrorMessage(

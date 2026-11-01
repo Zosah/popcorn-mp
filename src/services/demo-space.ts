@@ -1,7 +1,8 @@
 const STORAGE_KEY = 'popcorn_demo_space_name_v1'
+const AVATAR_STORAGE_KEY = 'popcorn_demo_space_avatar_v1'
 const DEFAULT_SPACE_NAME = '我们的家'
 
-export const DEMO_SPACE_STORAGE_KEYS = [STORAGE_KEY] as const
+export const DEMO_SPACE_STORAGE_KEYS = [STORAGE_KEY, AVATAR_STORAGE_KEY] as const
 
 export function getDemoSpaceName(): string {
   const value = wx.getStorageSync<string | ''>(STORAGE_KEY)
@@ -11,6 +12,18 @@ export function getDemoSpaceName(): string {
 export function setDemoSpaceName(name: string): string {
   const value = name.trim() || DEFAULT_SPACE_NAME
   wx.setStorageSync(STORAGE_KEY, value)
+  return value
+}
+
+export function getDemoSpaceAvatarMediaId(): string {
+  const value = wx.getStorageSync<string | ''>(AVATAR_STORAGE_KEY)
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+export function setDemoSpaceAvatarMediaId(mediaId: string): string {
+  const value = mediaId.trim()
+  if (value) wx.setStorageSync(AVATAR_STORAGE_KEY, value)
+  else wx.removeStorageSync(AVATAR_STORAGE_KEY)
   return value
 }
 

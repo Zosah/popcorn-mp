@@ -73,6 +73,42 @@ export async function renameApiSpace(
   }
 }
 
+export async function updateApiSpaceAvatar(
+  spaceId: string,
+  avatarMediaId: string,
+): Promise<SpaceGatewayResult<ApiSpaceDetail>> {
+  const token = readApiToken()
+  if (!token) return unauthenticated()
+  try {
+    return {
+      ok: true,
+      data: await requestApi<ApiSpaceDetail>(
+        `/spaces/${encodeURIComponent(spaceId)}/avatar`,
+        { method: 'PUT', token, body: { avatarMediaId } },
+      ),
+    }
+  } catch (error) {
+    return gatewayError(error)
+  }
+}
+
+export async function removeApiSpaceMember(
+  spaceId: string,
+  userId: string,
+): Promise<SpaceGatewayResult<void>> {
+  const token = readApiToken()
+  if (!token) return unauthenticated()
+  try {
+    await requestApi<void>(
+      `/spaces/${encodeURIComponent(spaceId)}/members/${encodeURIComponent(userId)}`,
+      { method: 'DELETE', token },
+    )
+    return { ok: true }
+  } catch (error) {
+    return gatewayError(error)
+  }
+}
+
 export async function createApiSpaceInvite(
   spaceId: string,
 ): Promise<SpaceGatewayResult<ApiCreatedInvite>> {

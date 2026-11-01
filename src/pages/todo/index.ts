@@ -20,6 +20,7 @@ import {
   isTodoOverdue,
 } from '../../domain/todo-date'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
 type TodoFilterValue = DemoTodoKind | 'all'
@@ -268,12 +269,15 @@ Page({
 
   async refresh(fromPullDown = false) {
     const sequence = todoRequestGate.begin()
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
     const auth = await hydrateAuthState()
     if (!todoRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
       return
     }
     if (!appConfig.demoMode && !auth.isLoggedIn) {
+      if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         filters: [],
         items: [],
@@ -310,6 +314,8 @@ Page({
         todoGateway.summary(),
       ])
       if (!todoRequestGate.isCurrent(sequence)) return
+      if (firstLoad) await waitForMinimumLoading(startedAt)
+      if (!todoRequestGate.isCurrent(sequence)) return
       this.render(items, summary)
       this.setData({
         loading: false,
@@ -322,6 +328,8 @@ Page({
     } catch (error) {
       if (!todoRequestGate.isCurrent(sequence)) return
       const message = getTodoErrorMessage(error, '待办暂时没有加载出来')
+      if (firstLoad) await waitForMinimumLoading(startedAt)
+      if (!todoRequestGate.isCurrent(sequence)) return
       this.setData({
         loading: false,
         hasLoaded: true,

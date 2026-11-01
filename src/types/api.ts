@@ -47,6 +47,7 @@ export interface ApiSpaceList {
 
 export interface ApiSpaceDetail extends ApiSpace {
   ownerId: string
+  avatarMediaId: string
   timezone: string
   updatedAt: string
 }
@@ -502,6 +503,7 @@ export interface ApiPetSupplyWriteRequest {
 export interface ApiAppTabSettings {
   slot2: string
   slot3: string
+  slot4: string
   version: number
   updatedAt: string
 }
@@ -509,6 +511,7 @@ export interface ApiAppTabSettings {
 export interface ApiAppTabSettingsUpdateRequest {
   slot2: string
   slot3: string
+  slot4: string
 }
 
 export interface ApiReminderSettings {

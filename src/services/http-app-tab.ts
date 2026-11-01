@@ -47,6 +47,7 @@ export class HttpAppTabGateway implements AppTabGateway {
     const body: ApiAppTabSettingsUpdateRequest = {
       slot2: normalized.slot2,
       slot3: normalized.slot3,
+      slot4: normalized.slot4,
     }
     const idempotencyKey = createIdempotencyKey()
     try {

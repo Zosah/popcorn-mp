@@ -33,6 +33,7 @@ const session: ApiSession = {
 const settings: ApiAppTabSettings = {
   slot2: 'menu',
   slot3: 'fitness',
+  slot4: 'todo',
   version: 4,
   updatedAt: '2026-11-01T03:00:00Z',
 }
@@ -95,7 +96,7 @@ describe('HTTP 自定义底栏网关', () => {
     expect(getAppTabSnapshot('s_1234567890:u_1234567890')).toMatchObject(settings)
   })
 
-  it('保存时携带 If-Match、幂等键和两个入口', async () => {
+  it('保存时携带 If-Match、幂等键和三个入口', async () => {
     vi.stubGlobal('wx', {
       getStorageSync: (key: string) => storage.get(key) ?? '',
       setStorageSync: (key: string, value: unknown) => storage.set(key, value),
@@ -109,6 +110,7 @@ describe('HTTP 自定义底栏网关', () => {
     const result = await new HttpAppTabGateway().update({
       slot2: 'menu',
       slot3: 'fitness',
+      slot4: 'todo',
     }, 4)
     expect(result.version).toBe(5)
     expect(requests[0]?.method).toBe('PUT')
@@ -117,6 +119,7 @@ describe('HTTP 自定义底栏网关', () => {
     expect(requests[0]?.data).toEqual({
       slot2: 'menu',
       slot3: 'fitness',
+      slot4: 'todo',
     })
   })
 
@@ -138,6 +141,7 @@ describe('HTTP 自定义底栏网关', () => {
     const promise = new HttpAppTabGateway().update({
       slot2: 'menu',
       slot3: 'fitness',
+      slot4: 'todo',
     }, 2)
     await expect(promise).rejects.toMatchObject({
       name: AppTabGatewayError.name,

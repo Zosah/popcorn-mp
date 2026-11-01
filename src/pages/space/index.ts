@@ -1,23 +1,40 @@
 import { appConfig } from '../../config/env'
 import { buildDemoAvatarText, type DemoAvatarTone } from '../../domain/demo-auth'
 import { buildDemoInvitePath } from '../../domain/demo-invite'
-import { getAuthState, hydrateAuthState, type AuthState } from '../../services/auth'
+import { hydrateAuthState, type AuthState } from '../../services/auth'
 import {
   getDemoInviteCode,
   refreshDemoInviteCode,
 } from '../../services/demo-invite'
-import { getDemoSpaceName, setDemoSpaceName } from '../../services/demo-space'
+import {
+  getDemoSpaceAvatarMediaId,
+  getDemoSpaceName,
+  setDemoSpaceAvatarMediaId,
+  setDemoSpaceName,
+} from '../../services/demo-space'
+import { mediaGateway } from '../../services/media'
+import { getMediaErrorMessage } from '../../services/media-gateway'
 import {
   createApiSpaceInvite,
   getApiSpace,
   leaveApiSpace,
   listApiSpaceMembers,
+  removeApiSpaceMember,
   renameApiSpace,
+  updateApiSpaceAvatar,
 } from '../../services/space-gateway'
+import { invalidatePageCache, readPageCache, writePageCache } from '../../services/page-cache'
 import type { ApiSpaceDetail, ApiSpaceMember } from '../../types/api'
 import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import { waitForMinimumLoading } from '../../utils/loading'
+import { createRequestGate } from '../../utils/request-control'
+
+const SPACE_PAGE_CACHE_KEY = 'space:overview'
+const MAX_AVATAR_BYTES = 10 * 1024 * 1024
+const spaceRequestGate = createRequestGate()
+let avatarUploadSequence = 0
 
 interface MemberView {
   userId: string
@@ -29,7 +46,19 @@ interface MemberView {
   role: 'owner' | 'member'
   roleLabel: string
   meta: string
+  canRemove: boolean
 }
+
+interface CroppedImageResult {
+  tempFilePath: string
+}
+
+type CropImageApi = (options: {
+  src: string
+  cropScale: '1:1'
+  success: (result: CroppedImageResult) => void
+  fail: () => void
+}) => void
 
 Page({
   data: {
@@ -37,49 +66,102 @@ Page({
     spaceId: '',
     spaceName: '我们的家',
     spaceRole: 'owner' as 'owner' | 'member',
+    spaceRoleLabel: '创建人',
     spaceCreatedLabel: '正在读取空间信息',
+    spaceAvatarMediaId: '',
+    spaceAvatarUrl: '',
+    avatarUploading: false,
     memberCount: 0,
     members: [] as MemberView[],
     isLoggedIn: false,
     isOwner: false,
-    currentUserName: '还没有登录',
-    currentAvatarText: '访',
-    currentAvatarTone: 'lavender' as DemoAvatarTone,
     inviteCode: '',
     hasInvite: false,
     inviteExpiryLabel: '创建后 7 天内有效',
-    isLoading: false,
-    canLeaveSpace: false,
+    initialLoading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     isLeaving: false,
   },
 
+  onLoad() {
+    const cached = readPageCache<Record<string, unknown>>(SPACE_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        initialLoading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+        isLeaving: false,
+        avatarUploading: false,
+      })
+    }
+  },
+
   onShow() {
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.refreshAuth()
   },
 
-  async refreshAuth() {
+  onPullDownRefresh() {
+    void this.refreshAuth(true)
+  },
+
+  async refreshAuth(fromPullDown = false) {
+    const sequence = spaceRequestGate.begin()
+    const startedAt = Date.now()
+    const firstLoad = !this.data.hasLoaded
+    if (firstLoad) this.setData({ initialLoading: true })
+
     const auth = await hydrateAuthState()
-    if (appConfig.demoMode) {
-      this.renderDemo(auth)
+    if (!spaceRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
       return
     }
-    await this.loadApiSpace(auth)
+
+    if (appConfig.demoMode) {
+      this.renderDemo(auth)
+    } else {
+      await this.loadApiSpace(auth, sequence, firstLoad)
+    }
+
+    if (!spaceRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
+    if (firstLoad) await waitForMinimumLoading(startedAt)
+    if (!spaceRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
+    this.setData({
+      initialLoading: false,
+      hasLoaded: true,
+      cacheFresh: true,
+    }, () => this.cacheCurrentPage())
+    if (fromPullDown) wx.stopPullDownRefresh()
   },
 
   renderDemo(auth: AuthState) {
     const currentUser = auth.user
+    const avatarMediaId = getDemoSpaceAvatarMediaId()
     const members: MemberView[] = [{
       userId: currentUser?.id ?? 'demo-owner',
       nickname: auth.isLoggedIn && currentUser
         ? currentUser.nickname || '待完善资料'
-        : '登录后认领这个空间身份',
+        : '登录后查看共同空间',
       avatarText: auth.isLoggedIn ? auth.avatarText : '访',
       avatarTone: currentUser?.avatarTone ?? 'lavender',
       avatarMediaId: currentUser?.avatarMediaId ?? '',
       avatarUrl: '',
       role: 'owner',
-      roleLabel: auth.isLoggedIn ? '创建者' : '待登录',
-      meta: auth.isLoggedIn ? '空间创建者 · 可以管理成员' : '登录后进入共同空间',
+      roleLabel: auth.isLoggedIn ? '创建人' : '待登录',
+      meta: auth.isLoggedIn ? '空间由你发起' : '登录后进入共同空间',
+      canRemove: false,
     }]
     if (auth.isLoggedIn) {
       members.push({
@@ -90,33 +172,36 @@ Page({
         avatarMediaId: '',
         avatarUrl: '',
         role: 'member',
-        roleLabel: '成员',
-        meta: '可以维护共同内容',
+        roleLabel: '共创人',
+        meta: '共同维护这份生活',
+        canRemove: true,
       })
     }
     this.setData({
       isDemoMode: true,
+      spaceId: '',
       spaceName: getDemoSpaceName(),
       spaceRole: 'owner',
-      spaceCreatedLabel: '这是一份只在当前设备保存的 Demo 空间',
+      spaceRoleLabel: '创建人',
+      spaceCreatedLabel: auth.isLoggedIn
+        ? '空间由你发起，邀请朋友一起记录生活。'
+        : '登录后进入共同空间。',
+      spaceAvatarMediaId: avatarMediaId,
+      spaceAvatarUrl: '',
       memberCount: members.length,
       members,
       isLoggedIn: auth.isLoggedIn,
-      isOwner: true,
-      currentUserName: members[0]?.nickname ?? '还没有登录',
-      currentAvatarText: members[0]?.avatarText ?? '访',
-      currentAvatarTone: members[0]?.avatarTone ?? 'lavender',
+      isOwner: auth.isLoggedIn,
       inviteCode: getDemoInviteCode(),
-      hasInvite: true,
+      hasInvite: auth.isLoggedIn,
       inviteExpiryLabel: 'Demo 邀请码 · 真实版本 7 天内有效',
-      isLoading: false,
-      canLeaveSpace: false,
       isLeaving: false,
     })
+    void this.hydrateSpaceAvatar(avatarMediaId)
     void this.hydrateMemberAvatars(members)
   },
 
-  async loadApiSpace(auth: AuthState) {
+  async loadApiSpace(auth: AuthState, sequence: number, firstLoad: boolean) {
     if (!auth.isLoggedIn || !auth.activeSpaceId) {
       this.setData({
         isDemoMode: false,
@@ -125,30 +210,34 @@ Page({
         members: [],
         memberCount: 0,
         spaceName: auth.spaceName || '我们的家',
-        spaceCreatedLabel: '登录后可查看共同空间',
-      canLeaveSpace: false,
-      isLeaving: false,
+        spaceRoleLabel: '共创人',
+        spaceCreatedLabel: '登录后可查看共同空间。',
+        spaceAvatarMediaId: '',
+        spaceAvatarUrl: '',
+        isLeaving: false,
       })
       return
     }
 
-    this.setData({ isLoading: true, spaceId: auth.activeSpaceId })
+    if (!firstLoad) this.setData({ spaceId: auth.activeSpaceId, cacheFresh: false })
+    else this.setData({ spaceId: auth.activeSpaceId })
+
     const [spaceResult, membersResult] = await Promise.all([
       getApiSpace(auth.activeSpaceId),
       listApiSpaceMembers(auth.activeSpaceId),
     ])
+    if (!spaceRequestGate.isCurrent(sequence)) return
     if (!spaceResult.ok || !spaceResult.data) {
-      this.setData({ isLoading: false })
       wx.showToast({ title: spaceResult.message || '空间读取失败', icon: 'none' })
       return
     }
     if (!membersResult.ok) {
       wx.showToast({ title: membersResult.message || '成员读取失败', icon: 'none' })
     }
-    this.renderApiSpace(spaceResult.data, membersResult.data)
+    this.renderApiSpace(spaceResult.data, membersResult.data, auth.user?.id ?? '')
   },
 
-  renderApiSpace(space: ApiSpaceDetail, members: ApiSpaceMember[]) {
+  renderApiSpace(space: ApiSpaceDetail, members: ApiSpaceMember[], currentUserId: string) {
     const memberViews = members.map((member): MemberView => ({
       userId: member.userId,
       nickname: member.nickname || '待完善资料',
@@ -157,31 +246,39 @@ Page({
       avatarMediaId: member.avatarMediaId ?? '',
       avatarUrl: '',
       role: member.role,
-      roleLabel: member.role === 'owner' ? '创建者' : '成员',
-      meta: member.role === 'owner'
-        ? '空间创建者 · 可以管理成员和邀请'
-        : '可以维护共同内容',
+      roleLabel: member.role === 'owner' ? '创建人' : '共创人',
+      meta: member.role === 'owner' ? '空间由你发起' : '共同维护这份生活',
+      canRemove: space.role === 'owner' && member.role === 'member' && member.userId !== currentUserId,
     }))
-    const current = memberViews.find((member) => member.role === 'owner') ?? memberViews[0]
     this.setData({
       isDemoMode: false,
       spaceId: space.id,
       spaceName: space.name,
       spaceRole: space.role,
-      spaceCreatedLabel: `${formatSpaceDate(space.createdAt)}创建。这里的内容只属于被邀请进来的人。`,
+      spaceRoleLabel: space.role === 'owner' ? '创建人' : '共创人',
+      spaceCreatedLabel: space.role === 'owner'
+        ? '空间由你发起，邀请朋友一起记录生活。'
+        : '与你一起维护这份生活。',
+      spaceAvatarMediaId: space.avatarMediaId ?? '',
+      spaceAvatarUrl: this.data.spaceAvatarMediaId === (space.avatarMediaId ?? '')
+        ? this.data.spaceAvatarUrl
+        : '',
       memberCount: memberViews.length,
       members: memberViews,
       isLoggedIn: true,
       isOwner: space.role === 'owner',
-      currentUserName: current?.nickname ?? '共同生活成员',
-      currentAvatarText: current?.avatarText ?? '家',
-      currentAvatarTone: current?.avatarTone ?? 'lavender',
       inviteExpiryLabel: '一次性邀请码 · 创建后 7 天内有效',
-      isLoading: false,
-      canLeaveSpace: space.role === 'member',
       isLeaving: false,
     })
+    void this.hydrateSpaceAvatar(space.avatarMediaId)
     void this.hydrateMemberAvatars(memberViews)
+  },
+
+  async hydrateSpaceAvatar(mediaId: string) {
+    if (!mediaId) return
+    const avatarUrl = await resolveAvatarUrl(mediaId, 'display')
+    if (this.data.spaceAvatarMediaId !== mediaId) return
+    this.setData({ spaceAvatarUrl: avatarUrl }, () => this.cacheCurrentPage())
   },
 
   async hydrateMemberAvatars(members: MemberView[]) {
@@ -193,7 +290,11 @@ Page({
     if (this.data.members.map((member) => member.userId).join('|') !== requestedIds) {
       return
     }
-    this.setData({ members: resolved })
+    this.setData({ members: resolved }, () => this.cacheCurrentPage())
+  },
+
+  onSpaceAvatarError() {
+    this.setData({ spaceAvatarUrl: '' })
   },
 
   onMemberAvatarError(event: WechatMiniprogram.TouchEvent) {
@@ -205,29 +306,146 @@ Page({
   onBack() {
     navigateBackOrTab('/pages/profile/index')
   },
-  onMemberInfo(event: {
-    currentTarget: { dataset: { nickname?: string; role?: string } }
-  }) {
-    const nickname = event.currentTarget.dataset.nickname || '空间成员'
-    const role = event.currentTarget.dataset.role || '成员'
-    wx.showModal({
-      title: nickname,
-      content: `当前身份：${role}。成员可以共同维护空间内容，创建者负责邀请和管理空间。`,
-      showCancel: false,
-      confirmText: '知道了',
+
+  onSpaceAvatarTap() {
+    if (!this.data.isOwner) {
+      wx.showToast({ title: '只有创建人可以更换空间头像', icon: 'none' })
+      return
+    }
+    if (this.data.avatarUploading) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: (result) => {
+        const file = result.tempFiles[0]
+        if (!file?.tempFilePath) return
+        if (file.size > MAX_AVATAR_BYTES) {
+          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+          return
+        }
+        const cropImage = (wx as unknown as { cropImage?: CropImageApi }).cropImage
+        if (!cropImage) {
+          wx.showToast({ title: '当前微信版本不支持裁剪，请升级后重试', icon: 'none' })
+          return
+        }
+        cropImage({
+          src: file.tempFilePath,
+          cropScale: '1:1',
+          success: (cropped) => {
+            if (!cropped.tempFilePath) return
+            void this.uploadSpaceAvatar(cropped.tempFilePath, file.size)
+          },
+          fail: () => {
+            // 用户取消裁剪时不产生上传副作用。
+          },
+        })
+      },
     })
   },
 
-  onLeaveSpace() {
-    if (!this.data.canLeaveSpace || this.data.isLeaving) return
+  async uploadSpaceAvatar(filePath: string, fileSize: number) {
+    const sequence = ++avatarUploadSequence
+    const previousMediaId = this.data.spaceAvatarMediaId
+    const previousUrl = this.data.spaceAvatarUrl
+    this.setData({ avatarUploading: true, spaceAvatarUrl: filePath })
+    try {
+      const asset = await mediaGateway.upload(filePath, 'avatar', fileSize)
+      if (sequence !== avatarUploadSequence) return
+      let savedMediaId = asset.id
+      if (appConfig.demoMode) {
+        setDemoSpaceAvatarMediaId(asset.id)
+      } else {
+        const result = await updateApiSpaceAvatar(this.data.spaceId, asset.id)
+        if (!result.ok || !result.data) {
+          throw new Error(result.message || '空间头像没有保存成功')
+        }
+        savedMediaId = result.data.avatarMediaId
+      }
+      this.setData({
+        spaceAvatarMediaId: savedMediaId,
+        spaceAvatarUrl: asset.display.url || asset.thumb.url || filePath,
+        avatarUploading: false,
+      }, () => {
+        invalidatePageCache(SPACE_PAGE_CACHE_KEY)
+        this.cacheCurrentPage()
+      })
+      wx.showToast({ title: '空间头像已更新', icon: 'success' })
+    } catch (error) {
+      if (sequence !== avatarUploadSequence) return
+      this.setData({
+        spaceAvatarMediaId: previousMediaId,
+        spaceAvatarUrl: previousUrl,
+        avatarUploading: false,
+      })
+      const message = error instanceof Error && error.message
+        ? error.message
+        : getMediaErrorMessage(error, '空间头像没有上传成功')
+      wx.showToast({ title: message, icon: 'none' })
+    }
+  },
+
+  onRemoveMember(event: WechatMiniprogram.TouchEvent) {
+    if (!this.data.isOwner) return
+    const index = Number(event.currentTarget.dataset.index)
+    const member = this.data.members[index]
+    if (!Number.isInteger(index) || !member || !member.canRemove) return
     wx.showModal({
-      title: '退出这个空间？',
-      content: `退出后将无法继续查看「${this.data.spaceName}」里的共享内容，之后需要重新接受邀请才能加入。`,
-      confirmText: '确认退出',
+      title: '移除这位共创人？',
+      content: `移除后，「${member.nickname}」将无法继续看到这里的共同内容，之后需要重新收到邀请。`,
+      cancelText: '先不处理',
+      confirmText: '确认移除',
       confirmColor: '#b86757',
       success: (result) => {
         if (!result.confirm) return
-        void this.leaveCurrentSpace()
+        void this.removeMember(index, member)
+      },
+    })
+  },
+
+  async removeMember(index: number, member: MemberView) {
+    if (appConfig.demoMode) {
+      const members = this.data.members.filter((item) => item.userId !== member.userId)
+      this.setData({ members, memberCount: members.length }, () => this.cacheCurrentPage())
+      wx.showToast({ title: '已移除共创人', icon: 'success' })
+      return
+    }
+    const result = await removeApiSpaceMember(this.data.spaceId, member.userId)
+    if (!result.ok) {
+      wx.showToast({ title: result.message || '移除成员失败', icon: 'none' })
+      return
+    }
+    const members = this.data.members.filter((_, itemIndex) => itemIndex !== index)
+    this.setData({ members, memberCount: members.length }, () => {
+      invalidatePageCache(SPACE_PAGE_CACHE_KEY)
+      this.cacheCurrentPage()
+    })
+    wx.showToast({ title: '已移除共创人', icon: 'success' })
+  },
+
+  onLeaveSpace() {
+    if (this.data.spaceRole !== 'member' || this.data.isLeaving) return
+    wx.showModal({
+      title: '有些日子，只能陪你到这里',
+      content: '离开后，这份共同生活将不再对你可见。你留下的记录仍会安静地留在这里。',
+      cancelText: '再想一想',
+      confirmText: '继续退出',
+      confirmColor: '#b86757',
+      success: (first) => {
+        if (!first.confirm) return
+        setTimeout(() => {
+          wx.showModal({
+            title: '真的要离开吗？',
+            content: '此后再想回来，需要重新收到一份邀请。',
+            cancelText: '留在这里',
+            confirmText: '遗憾退出',
+            confirmColor: '#b86757',
+            success: (second) => {
+              if (second.confirm) void this.leaveCurrentSpace()
+            },
+          })
+        }, 180)
       },
     })
   },
@@ -241,14 +459,14 @@ Page({
       wx.showToast({ title: result.message || '退出空间失败', icon: 'none' })
       return
     }
-    wx.showToast({ title: '已退出共享空间', icon: 'success' })
-    openAppRoot('/pages/profile/index')
+    invalidatePageCache(SPACE_PAGE_CACHE_KEY)
+    wx.showToast({ title: '已离开这个空间', icon: 'success' })
+    setTimeout(() => openAppRoot('/pages/profile/index'), 420)
   },
-
 
   onRename() {
     if (!this.data.isOwner) {
-      wx.showToast({ title: '只有创建者可以修改空间名', icon: 'none' })
+      wx.showToast({ title: '只有创建人可以修改空间名', icon: 'none' })
       return
     }
     wx.showModal({
@@ -259,33 +477,36 @@ Page({
         const name = result.content?.trim()
         if (!result.confirm || !name) return
         if (appConfig.demoMode) {
-          this.setData({ spaceName: setDemoSpaceName(name) })
+          this.setData({ spaceName: setDemoSpaceName(name) }, () => this.cacheCurrentPage())
           wx.showToast({ title: '空间名称已更新', icon: 'success' })
           return
         }
-        void this.renameApiSpace(name)
+        void this.renameSpace(name)
       },
     })
   },
 
-  async renameApiSpace(name: string) {
+  async renameSpace(name: string) {
     const result = await renameApiSpace(this.data.spaceId, name)
     if (!result.ok || !result.data) {
       wx.showToast({ title: result.message || '空间名称更新失败', icon: 'none' })
       return
     }
-    this.setData({ spaceName: result.data.name })
+    this.setData({ spaceName: result.data.name }, () => {
+      invalidatePageCache(SPACE_PAGE_CACHE_KEY)
+      this.cacheCurrentPage()
+    })
     wx.showToast({ title: '空间名称已更新', icon: 'success' })
   },
 
   async onRefreshInvite() {
     if (!this.data.isOwner) {
-      wx.showToast({ title: '只有创建者可以生成邀请码', icon: 'none' })
+      wx.showToast({ title: '只有创建人可以生成邀请码', icon: 'none' })
       return
     }
     if (appConfig.demoMode) {
       const code = refreshDemoInviteCode()
-      this.setData({ inviteCode: code, hasInvite: true })
+      this.setData({ inviteCode: code, hasInvite: true }, () => this.cacheCurrentPage())
       wx.showToast({ title: '已生成新邀请码', icon: 'success' })
       return
     }
@@ -302,7 +523,7 @@ Page({
       inviteCode: result.data.code,
       hasInvite: true,
       inviteExpiryLabel: `有效期至 ${formatDateTime(result.data.expiresAt)}`,
-    })
+    }, () => this.cacheCurrentPage())
     wx.showToast({ title: '已生成一次性邀请码', icon: 'success' })
     return result.data.code
   },
@@ -324,16 +545,29 @@ Page({
 
   async ensureInvite(): Promise<string> {
     if (!this.data.isOwner) {
-      wx.showToast({ title: '只有创建者可以邀请成员', icon: 'none' })
+      wx.showToast({ title: '只有创建人可以邀请成员', icon: 'none' })
       return ''
     }
     if (this.data.inviteCode) return this.data.inviteCode
     if (appConfig.demoMode) {
       const code = getDemoInviteCode()
-      this.setData({ inviteCode: code, hasInvite: true })
+      this.setData({ inviteCode: code, hasInvite: true }, () => this.cacheCurrentPage())
       return code
     }
     return this.createInvite()
+  },
+
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      initialLoading: _initialLoading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      isLeaving: _isLeaving,
+      avatarUploading: _avatarUploading,
+      ...snapshot
+    } = data
+    writePageCache(SPACE_PAGE_CACHE_KEY, snapshot)
   },
 
   onShareAppMessage() {
@@ -347,12 +581,6 @@ Page({
     }
   },
 })
-
-function formatSpaceDate(value: string): string {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`
-}
 
 function formatDateTime(value: string): string {
   const date = new Date(value)

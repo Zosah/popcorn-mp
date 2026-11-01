@@ -93,7 +93,7 @@ Component({
         visualActiveId: id || data.activeId,
       })
 
-      // 先让选中态完成一帧绘制，再触发 reLaunch，避免点击态和新页面叠在一起。
+      // 先让选中态完成一帧绘制，再触发 reLaunch；根页有缓存时切换会直接回显。
       setTimeout(() => {
         wx.reLaunch({
           url: item.path,
@@ -109,7 +109,7 @@ Component({
             })
           },
         })
-      }, 70)
+      }, 24)
     },
 
     clearPending() {

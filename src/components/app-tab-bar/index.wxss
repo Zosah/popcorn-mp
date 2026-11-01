@@ -1,41 +1,44 @@
-/*
- * 底部导航 · v10
- * 紧凑贴底栏：降低整体高度，去掉双层高亮和重毛玻璃，减少切页时的叠影感。
- */
+/* 底部导航：五项悬浮胶囊，轻毛玻璃与单层选中态。 */
 .app-tab-shell {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: 22rpx;
+  bottom: calc(14rpx + env(safe-area-inset-bottom));
+  left: 22rpx;
   z-index: 900;
-  padding-bottom: env(safe-area-inset-bottom);
-  border-top: 1rpx solid rgba(216, 209, 199, 0.64);
-  background: #f9f8f5;
-  box-shadow: 0 -8rpx 26rpx rgba(92, 74, 61, 0.035);
+  padding: 7rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.82);
+  border-radius: 40rpx;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 18rpx 48rpx rgba(74, 62, 52, 0.13),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+  box-sizing: border-box;
+  backdrop-filter: blur(24rpx) saturate(150%);
+  -webkit-backdrop-filter: blur(24rpx) saturate(150%);
   transform: translateZ(0);
 }
 
 .app-tab-bar {
   display: flex;
-  height: 112rpx;
+  height: 94rpx;
   align-items: stretch;
-  padding: 8rpx 28rpx 10rpx;
+  padding: 3rpx;
   box-sizing: border-box;
-  gap: 4rpx;
+  gap: 2rpx;
 }
 
 .app-tab-item {
   position: relative;
   display: flex;
   min-width: 0;
-  height: 94rpx;
+  height: 88rpx;
   align-items: center;
   justify-content: center;
-  border-radius: 26rpx;
+  border-radius: 33rpx;
   color: var(--c-faint, #a29b91);
   flex: 1;
   flex-direction: column;
-  gap: 2rpx;
+  gap: 1rpx;
   transition:
     color 120ms ease,
     opacity 120ms ease,
@@ -44,12 +47,13 @@
 
 .app-tab-item--active {
   color: var(--c-primary, #252b27);
+  background: rgba(102, 132, 120, 0.1);
 }
 
 .app-tab-item__icon {
   display: flex;
-  width: 60rpx;
-  height: 44rpx;
+  width: 54rpx;
+  height: 42rpx;
   align-items: center;
   justify-content: center;
   border-radius: 999rpx;
@@ -58,14 +62,10 @@
   transition: background 120ms ease, transform 120ms ease;
 }
 
-.app-tab-item--active .app-tab-item__icon {
-  background: rgba(198, 125, 109, 0.13);
-}
-
 .app-tab-item__label {
   overflow: hidden;
   color: inherit;
-  font-size: 20rpx;
+  font-size: 21rpx;
   font-weight: 500;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -77,7 +77,7 @@
 }
 
 .app-tab-item--pending .app-tab-item__icon {
-  transform: translateY(-1rpx) scale(0.96);
+  transform: scale(0.94);
 }
 
 .app-tab-item--pressed {

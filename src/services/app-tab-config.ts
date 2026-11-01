@@ -26,6 +26,7 @@ export type AppTabId = AppTabRootId | AppTabSecondaryId
 export interface AppTabConfig {
   slot2: AppTabCustomId
   slot3: AppTabCustomId
+  slot4: AppTabCustomId
 }
 
 export interface AppTabSnapshot extends AppTabConfig {
@@ -191,6 +192,7 @@ export const APP_TAB_OPTIONS: readonly AppTabOption[] = [
 export const DEFAULT_APP_TAB_CONFIG: AppTabConfig = {
   slot2: 'pets',
   slot3: 'journal',
+  slot4: 'todo',
 }
 
 const STORAGE_PREFIX = 'popcorn_app_tab_config_v1'
@@ -244,7 +246,8 @@ export function normalizeAppTabConfig(value: unknown): AppTabConfig {
 
   const slot2 = take(record.slot2, DEFAULT_APP_TAB_CONFIG.slot2)
   const slot3 = take(record.slot3, DEFAULT_APP_TAB_CONFIG.slot3)
-  return { slot2, slot3 }
+  const slot4 = take(record.slot4, DEFAULT_APP_TAB_CONFIG.slot4)
+  return { slot2, slot3, slot4 }
 }
 
 export function getAppTabSnapshot(
@@ -275,8 +278,8 @@ export function getAppTabSnapshot(
 }
 
 export function getAppTabConfig(ownerId = getAppTabOwnerId()): AppTabConfig {
-  const { slot2, slot3 } = getAppTabSnapshot(ownerId)
-  return { slot2, slot3 }
+  const { slot2, slot3, slot4 } = getAppTabSnapshot(ownerId)
+  return { slot2, slot3, slot4 }
 }
 
 export function saveAppTabSnapshot(
@@ -303,7 +306,7 @@ export function saveAppTabConfig(
     version: current.version + 1,
     updatedAt: new Date().toISOString(),
   }, ownerId)
-  return { slot2: saved.slot2, slot3: saved.slot3 }
+  return { slot2: saved.slot2, slot3: saved.slot3, slot4: saved.slot4 }
 }
 
 export function getAppTabOption(id: AppTabId): AppTabItem {
@@ -353,6 +356,7 @@ export function resolveAppTabItems(
     getAppTabOption('home'),
     getAppTabOption(normalized.slot2),
     getAppTabOption(normalized.slot3),
+    getAppTabOption(normalized.slot4),
     getAppTabOption('profile'),
   ]
 }
@@ -379,10 +383,11 @@ export function resolveActiveAppTabItemId(
     )
     if (root) return root.id
 
-    const parent = items.find(
+    const parentMatches = items.filter(
       (item) => item.path.split('?')[0] === normalizedRoute && item.parentId === fallbackActive,
     )
-    if (parent) return parent.id
+    // 同一父级放了多个二级入口时，根页面无法判断该高亮哪一个，宁可不选中。
+    if (parentMatches.length === 1) return parentMatches[0]!.id
   }
 
   return ''
