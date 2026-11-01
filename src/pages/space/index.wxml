@@ -67,6 +67,47 @@
   <block wx:if="{{isLoggedIn}}">
     <view class="space-section-head">
       <view class="space-section-head__label">
+        <line-icon name="house" size="28" tone="green" />
+        <text>我的空间</text>
+      </view>
+      <view class="space-section-head__action" hover-class="space-section-head__action--pressed" bindtap="onOpenInvite">
+        <line-icon name="plus" size="20" tone="pink" />
+        <text>输入邀请码</text>
+      </view>
+    </view>
+
+    <view class="space-switch-list">
+      <view
+        wx:for="{{spaces}}"
+        wx:key="id"
+        class="space-switch-row {{item.isActive ? 'space-switch-row--active' : ''}}"
+      >
+        <view class="space-switch-row__mark">
+          <line-icon name="house" size="28" tone="{{item.isActive ? 'ink' : 'green'}}" />
+        </view>
+        <view class="space-switch-row__body">
+          <view class="space-switch-row__name-line">
+            <text class="space-switch-row__name">{{item.name}}</text>
+            <text class="space-switch-row__role">{{item.roleLabel}}</text>
+          </view>
+          <text class="space-switch-row__meta">{{item.isActive ? '下次登录也会回到这里' : '切换后会成为默认空间'}}</text>
+        </view>
+        <view wx:if="{{item.isActive}}" class="space-switch-row__current">当前默认</view>
+        <view
+          wx:else
+          class="space-switch-row__switch"
+          hover-class="space-switch-row__switch--pressed"
+          data-id="{{item.id}}"
+          catchtap="onSwitchSpace"
+        >
+          <view wx:if="{{switchingSpaceId === item.id}}" class="space-switch-row__spinner"></view>
+          <text wx:else>切到这里</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="space-section-head">
+      <view class="space-section-head__label">
         <line-icon name="users" size="28" tone="blue" />
         <text>一起生活的人</text>
       </view>

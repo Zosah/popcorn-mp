@@ -42,7 +42,7 @@
   </view>
 
   <button wx:if="{{canAccept}}" class="primary-button invite-action" loading="{{isSubmitting}}" bindtap="onAccept"><line-icon name="plus" size="23" tone="white" /><text>加入 {{spaceName}}</text></button>
-  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" bindtap="onGoHome"><line-icon name="house" size="23" tone="ink" /><text>回到我们的家</text></button>
+  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" loading="{{isEntering}}" disabled="{{isEntering}}" bindtap="onGoHome"><line-icon name="house" size="23" tone="ink" /><text>进入这个空间</text></button>
 
   <view class="invite-note">
     <view class="invite-note__mark"><line-icon name="lock" size="21" tone="muted" /></view>

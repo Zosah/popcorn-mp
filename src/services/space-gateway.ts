@@ -1,4 +1,5 @@
 import { requestApi } from './http'
+import { clearPageCache } from './page-cache'
 import {
   readApiToken,
   saveApiSession,
@@ -22,6 +23,25 @@ export interface SpaceGatewayResult<T> {
 
 export interface SpaceMembersResult extends SpaceGatewayResult<ApiSpaceMember[]> {
   data: ApiSpaceMember[]
+}
+
+export async function setDefaultApiSpace(
+  spaceId: string,
+): Promise<SpaceGatewayResult<ApiSession>> {
+  const token = readApiToken()
+  if (!token) return unauthenticated()
+  try {
+    const session = await requestApi<ApiSession>('/session/default-space', {
+      method: 'PUT',
+      token,
+      body: { spaceId },
+    })
+    saveApiSession(session)
+    clearPageCache()
+    return { ok: true, data: session }
+  } catch (error) {
+    return gatewayError(error)
+  }
 }
 
 export async function getApiSpace(

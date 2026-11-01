@@ -9,6 +9,7 @@ import {
   listApiSpaceMembers,
   renameApiSpace,
   resolveApiInvite,
+  setDefaultApiSpace,
 } from '../../src/services/space-gateway'
 import {
   clearApiSession,
@@ -143,6 +144,23 @@ describe('HTTP 空间网关', () => {
           succeed(options, space)
           return
         }
+        if (url.endsWith('/session/default-space') && method === 'PUT') {
+          succeed(options, {
+            ...session,
+            spaces: [
+              session.spaces[0],
+              {
+                id: 'space-2',
+                name: '朋友的家',
+                type: 'family',
+                role: 'member',
+                createdAt: now,
+              },
+            ],
+            activeSpaceId: 'space-2',
+          })
+          return
+        }
         if (url.endsWith('/session')) {
           succeed(options, {
             ...session,
@@ -203,6 +221,22 @@ describe('HTTP 空间网关', () => {
       url: 'https://api.test/session',
       method: 'GET',
     })
+  })
+
+  it('切换默认空间后持久化会话并清空页面缓存', async () => {
+    const result = await setDefaultApiSpace('space-2')
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: { activeSpaceId: 'space-2' },
+    })
+    expect(readStoredApiSession()?.session.activeSpaceId).toBe('space-2')
+    expect(requests[0]).toMatchObject({
+      url: 'https://api.test/session/default-space',
+      method: 'PUT',
+      header: { Authorization: 'Bearer token-1' },
+    })
+    expect(requests[0]?.data).toEqual({ spaceId: 'space-2' })
   })
 
   it('接受邀请后刷新会话缓存', async () => {

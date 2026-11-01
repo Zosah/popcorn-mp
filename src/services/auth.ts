@@ -25,7 +25,7 @@ import {
   readCachedApiSession,
   readStoredApiSession,
 } from '../stores/session'
-import type { ApiSession } from '../types/api'
+import type { ApiSession, ApiSpace } from '../types/api'
 
 export type AuthSource = 'demo' | 'api' | 'none'
 
@@ -34,6 +34,7 @@ export interface AuthState {
   user: DemoUserProfile | null
   avatarText: string
   spaceName: string
+  spaces: ApiSpace[]
   activeSpaceId: string
   spaceRole: 'owner' | 'member' | ''
   onboardingRequired: boolean
@@ -53,6 +54,7 @@ const EMPTY_AUTH_STATE: AuthState = {
   user: null,
   avatarText: '访',
   spaceName: '我们的家',
+  spaces: [],
   activeSpaceId: '',
   spaceRole: '',
   onboardingRequired: false,
@@ -67,6 +69,7 @@ export function getAuthState(): AuthState {
       user: auth.user,
       avatarText: auth.isLoggedIn ? auth.avatarText : '访',
       spaceName: getDemoSpaceName(),
+      spaces: [],
       activeSpaceId: '',
       spaceRole: auth.isLoggedIn ? 'owner' : '',
       onboardingRequired: false,
@@ -185,6 +188,7 @@ function buildApiAuthState(session: ApiSession): AuthState {
     user: toDemoUserProfile(sessionUser),
     avatarText: buildDemoAvatarText(sessionUser.nickname),
     spaceName: activeSpace?.name ?? '我们的家',
+    spaces: session.spaces,
     activeSpaceId: session.activeSpaceId,
     spaceRole: activeSpace?.role ?? '',
     onboardingRequired: session.onboardingRequired,

@@ -12,6 +12,7 @@ import { hydrateAuthState } from '../../services/auth'
 import {
   acceptApiInvite,
   resolveApiInvite,
+  setDefaultApiSpace,
   type SpaceGatewayResult,
 } from '../../services/space-gateway'
 import type { ApiInvitePreview } from '../../types/api'
@@ -39,7 +40,7 @@ const STATUS_COPY: Record<
   },
   accepted: {
     title: '已经回到家啦',
-    copy: '这个邀请已经接受，空间会出现在你的个人中心。',
+    copy: '邀请已经接受，这个空间也已设为你的当前默认空间。',
   },
   expired: {
     title: '这封邀请已经过期',
@@ -60,6 +61,8 @@ Page({
     isDemoMode: appConfig.demoMode,
     isLoggedIn: false,
     isSubmitting: false,
+    isEntering: false,
+    acceptedSpaceId: '',
     codeInput: '',
     code: '',
     status: 'empty' as InviteStatus,
@@ -119,6 +122,7 @@ Page({
     if (appConfig.demoMode) {
       const invite = acceptDemoInviteCode(this.data.code)
       this.applyStatus(invite.code, invite.status)
+      this.setData({ acceptedSpaceId: 'demo-space' })
       wx.showToast({ title: '欢迎回家', icon: 'success' })
       return
     }
@@ -130,18 +134,43 @@ Page({
       this.applyGatewayFailure(result)
       return
     }
+    const switchResult = await setDefaultApiSpace(result.data.id)
     await hydrateAuthState()
+    if (!switchResult.ok) {
+      this.setData({
+        spaceName: result.data.name,
+        status: 'accepted',
+        statusTitle: '已经加入这个空间',
+        statusCopy: '默认空间暂时没有切换成功，点下方按钮再进入一次。',
+        canAccept: false,
+        acceptedSpaceId: result.data.id,
+      })
+      wx.showToast({ title: switchResult.message || '默认空间切换失败', icon: 'none' })
+      return
+    }
     this.setData({
       spaceName: result.data.name,
       status: 'accepted',
       statusTitle: STATUS_COPY.accepted.title,
       statusCopy: STATUS_COPY.accepted.copy,
       canAccept: false,
+      acceptedSpaceId: result.data.id,
     })
     wx.showToast({ title: '欢迎回家', icon: 'success' })
   },
 
-  onGoHome() {
+  async onGoHome() {
+    if (this.data.isEntering) return
+    if (!appConfig.demoMode && this.data.acceptedSpaceId) {
+      this.setData({ isEntering: true })
+      const result = await setDefaultApiSpace(this.data.acceptedSpaceId)
+      if (!result.ok) {
+        this.setData({ isEntering: false })
+        wx.showToast({ title: result.message || '进入空间失败', icon: 'none' })
+        return
+      }
+      await hydrateAuthState()
+    }
     openAppRoot('/pages/home/index')
   },
 

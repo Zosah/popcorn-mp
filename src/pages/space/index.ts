@@ -21,10 +21,11 @@ import {
   listApiSpaceMembers,
   removeApiSpaceMember,
   renameApiSpace,
+  setDefaultApiSpace,
   updateApiSpaceAvatar,
 } from '../../services/space-gateway'
 import { invalidatePageCache, readPageCache, writePageCache } from '../../services/page-cache'
-import type { ApiSpaceDetail, ApiSpaceMember } from '../../types/api'
+import type { ApiSpace, ApiSpaceDetail, ApiSpaceMember } from '../../types/api'
 import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -47,6 +48,13 @@ interface MemberView {
   roleLabel: string
   meta: string
   canRemove: boolean
+}
+
+interface SpaceSwitchView {
+  id: string
+  name: string
+  roleLabel: '创建人' | '共创人'
+  isActive: boolean
 }
 
 interface CroppedImageResult {
@@ -73,6 +81,9 @@ Page({
     avatarUploading: false,
     memberCount: 0,
     members: [] as MemberView[],
+    spaces: [] as SpaceSwitchView[],
+    activeSpaceId: '',
+    switchingSpaceId: '',
     isLoggedIn: false,
     isOwner: false,
     inviteCode: '',
@@ -190,6 +201,11 @@ Page({
       spaceAvatarUrl: '',
       memberCount: members.length,
       members,
+      spaces: auth.isLoggedIn
+        ? [{ id: 'demo-space', name: getDemoSpaceName(), roleLabel: '创建人', isActive: true }]
+        : [],
+      activeSpaceId: auth.isLoggedIn ? 'demo-space' : '',
+      switchingSpaceId: '',
       isLoggedIn: auth.isLoggedIn,
       isOwner: auth.isLoggedIn,
       inviteCode: getDemoInviteCode(),
@@ -209,6 +225,9 @@ Page({
         isOwner: false,
         members: [],
         memberCount: 0,
+        spaces: [],
+        activeSpaceId: '',
+        switchingSpaceId: '',
         spaceName: auth.spaceName || '我们的家',
         spaceRoleLabel: '共创人',
         spaceCreatedLabel: '登录后可查看共同空间。',
@@ -219,8 +238,14 @@ Page({
       return
     }
 
-    if (!firstLoad) this.setData({ spaceId: auth.activeSpaceId, cacheFresh: false })
-    else this.setData({ spaceId: auth.activeSpaceId })
+    const spaces = buildSpaceSwitchViews(auth.spaces, auth.activeSpaceId)
+    if (!firstLoad) this.setData({
+      spaceId: auth.activeSpaceId,
+      activeSpaceId: auth.activeSpaceId,
+      spaces,
+      cacheFresh: false,
+    })
+    else this.setData({ spaceId: auth.activeSpaceId, activeSpaceId: auth.activeSpaceId, spaces })
 
     const [spaceResult, membersResult] = await Promise.all([
       getApiSpace(auth.activeSpaceId),
@@ -265,6 +290,16 @@ Page({
         : '',
       memberCount: memberViews.length,
       members: memberViews,
+      spaces: this.data.spaces.map((item) => item.id === space.id
+        ? {
+            ...item,
+            name: space.name,
+            roleLabel: space.role === 'owner' ? '创建人' : '共创人',
+            isActive: true,
+          }
+        : { ...item, isActive: false }),
+      activeSpaceId: space.id,
+      switchingSpaceId: '',
       isLoggedIn: true,
       isOwner: space.role === 'owner',
       inviteExpiryLabel: '一次性邀请码 · 创建后 7 天内有效',
@@ -464,6 +499,34 @@ Page({
     setTimeout(() => openAppRoot('/pages/profile/index'), 420)
   },
 
+  onOpenInvite() {
+    if (!this.data.isLoggedIn) {
+      wx.showToast({ title: '登录后可以输入邀请码', icon: 'none' })
+      return
+    }
+    wx.navigateTo({ url: '/pages/invite/index' })
+  },
+
+  async onSwitchSpace(event: WechatMiniprogram.TouchEvent) {
+    const spaceId = String(event.currentTarget.dataset.id ?? '')
+    if (!spaceId || spaceId === this.data.activeSpaceId || this.data.switchingSpaceId) return
+    if (appConfig.demoMode) {
+      const target = this.data.spaces.find((item) => item.id === spaceId)
+      wx.showToast({ title: target ? `已回到${target.name}` : '已切换空间', icon: 'success' })
+      return
+    }
+    this.setData({ switchingSpaceId: spaceId })
+    const result = await setDefaultApiSpace(spaceId)
+    if (!result.ok || !result.data) {
+      this.setData({ switchingSpaceId: '' })
+      wx.showToast({ title: result.message || '切换空间失败', icon: 'none' })
+      return
+    }
+    const target = result.data.spaces.find((item) => item.id === result.data?.activeSpaceId)
+    wx.showToast({ title: target ? `已回到${target.name}` : '已切换空间', icon: 'success' })
+    setTimeout(() => openAppRoot('/pages/home/index'), 520)
+  },
+
   onRename() {
     if (!this.data.isOwner) {
       wx.showToast({ title: '只有创建人可以修改空间名', icon: 'none' })
@@ -492,7 +555,12 @@ Page({
       wx.showToast({ title: result.message || '空间名称更新失败', icon: 'none' })
       return
     }
-    this.setData({ spaceName: result.data.name }, () => {
+    this.setData({
+      spaceName: result.data.name,
+      spaces: this.data.spaces.map((item) => item.id === result.data?.id
+        ? { ...item, name: result.data.name }
+        : item),
+    }, () => {
       invalidatePageCache(SPACE_PAGE_CACHE_KEY)
       this.cacheCurrentPage()
     })
@@ -581,6 +649,18 @@ Page({
     }
   },
 })
+
+function buildSpaceSwitchViews(
+  spaces: ApiSpace[],
+  activeSpaceId: string,
+): SpaceSwitchView[] {
+  return spaces.map((space) => ({
+    id: space.id,
+    name: space.name,
+    roleLabel: space.role === 'owner' ? '创建人' : '共创人',
+    isActive: space.id === activeSpaceId,
+  }))
+}
 
 function formatDateTime(value: string): string {
   const date = new Date(value)
