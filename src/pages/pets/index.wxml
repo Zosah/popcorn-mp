@@ -1,4 +1,7 @@
 <view class="pets-page">
+  <page-loading show="{{loading && !hasLoaded}}" title="正在看看毛孩子" copy="把体重、照护和日常慢慢收好。" />
+  <auth-preview-gate />
+
   <block wx:if="{{hasActivePet}}">
   <view class="pet-hero pet-hero--{{profile.species}}">
     <view class="pet-hero__top">

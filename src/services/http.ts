@@ -1,5 +1,6 @@
 import { appConfig } from '../config/env'
 import { handleApiUnauthorized } from './auth-expiry'
+import { invalidatePageCache } from './page-cache'
 import {
   sendRequest,
   TransportError,
@@ -48,12 +49,18 @@ export function requestApiResponse<T>(
   if (options.token) headers.Authorization = `Bearer ${options.token}`
   Object.assign(headers, options.headers)
 
+  const method = options.method ?? 'GET'
   return sendRequest<T>({
     url: `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`,
-    method: options.method ?? 'GET',
+    method,
     headers,
     data: options.body,
     timeoutMs: appConfig.requestTimeoutMs,
+  }).then((response) => {
+    // 写请求成功后，当前用户/空间下的根页面缓存都可能过期。
+    // 这里统一失效，避免换头像、记账、写记录后切页仍看到旧快照。
+    if (method !== 'GET') invalidatePageCache()
+    return response
   }).catch((error: unknown) => {
     if (
       options.token &&

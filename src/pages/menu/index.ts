@@ -1,3 +1,4 @@
+import { appConfig } from '../../config/env'
 import {
   menuFilterMaxMinutes,
   nextRecommendationIndex,
@@ -5,6 +6,9 @@ import {
   type MenuRecipeFilter,
 } from '../../domain/menu-discovery'
 import { menuGateway } from '../../services/menu'
+import { hydrateAuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
+import { readPageCache, writePageCache as persistPageCache } from '../../services/page-cache'
 import {
   getMenuErrorMessage,
   type MenuListFilters,
@@ -16,6 +20,7 @@ import { createRequestGate } from '../../utils/request-control'
 type MenuTab = 'today' | 'all'
 
 const menuRequestGate = createRequestGate()
+const MENU_PAGE_CACHE_KEY = 'menu:overview'
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 Page({
@@ -29,20 +34,67 @@ Page({
     recommendedIndex: 0,
     fastCount: 0,
     loading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     listLoading: false,
     loadError: '',
   },
 
+  onLoad() {
+    const cached = readPageCache<Record<string, unknown>>(MENU_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        loading: false,
+        listLoading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+      })
+    }
+  },
+
   onShow() {
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.refresh()
+  },
+
+  onPullDownRefresh() {
+    void this.refresh(true)
   },
 
   onUnload() {
     clearSearchTimer()
+    menuRequestGate.invalidate()
   },
 
-  async refresh() {
+  async refresh(fromPullDown = false) {
     const sequence = menuRequestGate.begin()
+    const auth = await hydrateAuthState()
+    if (!menuRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
+    if (!appConfig.demoMode && !auth.isLoggedIn) {
+      this.setData({
+        allRecipes: [],
+        recipes: [],
+        recommended: null,
+        fastCount: 0,
+        loading: false,
+        listLoading: false,
+        hasLoaded: true,
+        cacheFresh: false,
+        loadError: '',
+      })
+      if (fromPullDown) wx.stopPullDownRefresh()
+      promptAuthGateIfNeeded()
+      return
+    }
     const hasExistingData = this.data.allRecipes.length > 0
     this.setData({
       loading: !hasExistingData,
@@ -71,8 +123,11 @@ Page({
       this.setData({
         loading: false,
         listLoading: false,
+        hasLoaded: true,
         loadError: message,
       })
+    } finally {
+      if (fromPullDown) wx.stopPullDownRefresh()
     }
   },
 
@@ -92,8 +147,22 @@ Page({
       fastCount: allRecipes.filter((recipe) => recipe.cookingMinutes <= 30).length,
       loading: false,
       listLoading: false,
+      hasLoaded: true,
+      cacheFresh: true,
       loadError: '',
-    })
+    }, () => this.cacheCurrentPage())
+  },
+
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      loading: _loading,
+      listLoading: _listLoading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      ...snapshot
+    } = data
+    persistPageCache(MENU_PAGE_CACHE_KEY, snapshot)
   },
 
   async loadVisibleRecipes() {
@@ -105,7 +174,7 @@ Page({
         ? await menuGateway.list(filters)
         : this.data.allRecipes
       if (!menuRequestGate.isCurrent(sequence)) return
-      this.setData({ recipes, listLoading: false })
+      this.setData({ recipes, listLoading: false }, () => this.cacheCurrentPage())
     } catch (error) {
       if (!menuRequestGate.isCurrent(sequence)) return
       this.setData({ listLoading: false })
@@ -180,7 +249,7 @@ Page({
     this.setData({
       recommended: allRecipes[nextIndex],
       recommendedIndex: nextIndex,
-    })
+    }, () => this.cacheCurrentPage())
     if (allRecipes.length === 1) {
       wx.showToast({ title: '现在只有这一道菜', icon: 'none' })
     }
@@ -200,6 +269,7 @@ Page({
   },
 
   onCreate() {
+    if (!requireAuthForWrite()) return
     wx.navigateTo({ url: '/pages/menu-form/index' })
   },
 

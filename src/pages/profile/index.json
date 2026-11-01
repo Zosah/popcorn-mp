@@ -1,8 +1,11 @@
 {
   "navigationBarTitleText": "我的",
+  "enablePullDownRefresh": true,
   "usingComponents": {
     "sync-badge": "/components/sync-badge/index",
     "line-icon": "/components/line-icon/index",
-    "app-tab-bar": "/components/app-tab-bar/index"
+    "app-tab-bar": "/components/app-tab-bar/index",
+    "page-loading": "/components/page-loading/index",
+    "auth-preview-gate": "/components/auth-preview-gate/index"
   }
 }

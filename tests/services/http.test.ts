@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { appConfig } from '../../src/config/env'
 import { requestApi } from '../../src/services/http'
+import { clearPageCache, readPageCache, writePageCache } from '../../src/services/page-cache'
 import {
   clearApiSession,
   readStoredApiSession,
@@ -107,6 +108,33 @@ describe('HTTP 鉴权失效处理', () => {
       title: '登录已失效，请重新登录',
       icon: 'none',
     })
+  })
+
+  it('写请求成功后使当前用户页面缓存失效，GET 请求保留缓存', async () => {
+    saveApiSession(session, 'new-token')
+    clearPageCache()
+    writePageCache('profile:overview', { nickname: '小满' })
+    vi.stubGlobal('wx', {
+      getStorageSync: (key: string) => storage.get(key) ?? '',
+      setStorageSync: (key: string, value: unknown) => storage.set(key, value),
+      removeStorageSync: (key: string) => storage.delete(key),
+      request: (options: WechatMiniprogram.RequestOption) => {
+        reply(options, 200, { ok: true })
+      },
+    })
+
+    await requestApi('/me', {
+      method: 'PUT',
+      token: 'new-token',
+      body: { nickname: '小满' },
+    })
+
+    expect(readPageCache('profile:overview')).toBeNull()
+
+    writePageCache('profile:overview', { nickname: '小满' })
+    await requestApi('/session', { token: 'new-token' })
+
+    expect(readPageCache('profile:overview')).not.toBeNull()
   })
 
   it('已经在登录页时只清理会话，不重复跳转', async () => {

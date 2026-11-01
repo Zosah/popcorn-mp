@@ -17,7 +17,9 @@ import {
   type InventorySummary,
 } from '../../domain/inventory-query'
 import { inventoryGateway } from '../../services/inventory'
-import { hydrateAuthState } from '../../services/auth'
+import { getAuthState, hydrateAuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
+import { readPageCache, writePageCache as persistPageCache } from '../../services/page-cache'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 import { createDebouncer, createRequestGate } from '../../utils/request-control'
 
@@ -53,6 +55,7 @@ const inventoryRequestGate = createRequestGate()
 const inventoryPageGate = createRequestGate()
 const inventorySearchDebouncer = createDebouncer(300)
 const PAGE_REFRESH_INTERVAL_MS = 500
+const INVENTORY_PAGE_CACHE_KEY = 'inventory:overview'
 
 function toExpiryStatuses(filter: DemoExpiryFilter): ExpiryStatus[] | undefined {
   const mapping: Record<Exclude<DemoExpiryFilter, 'all'>, ExpiryStatus[]> = {
@@ -138,6 +141,8 @@ Page({
   data: {
     loading: true,
     hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     errorMessage: '',
     spaceName: '我们的家',
     today: '',
@@ -153,14 +158,31 @@ Page({
     lastRefreshAt: 0,
   },
 
+  onLoad() {
+    const cached = readPageCache<Record<string, unknown>>(INVENTORY_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        loading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+      })
+    }
+  },
+
   onShow() {
-    void this.refreshPage()
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
+    void this.refreshPage(!firstShow)
   },
 
   onPullDownRefresh() {
     inventoryPageGate.invalidate()
     inventorySearchDebouncer.cancel()
-    void this.loadInventory(true)
+    void this.loadInventory(true, true)
   },
 
   onRetry() {
@@ -168,19 +190,34 @@ Page({
     void this.loadInventory()
   },
 
-  async refreshPage() {
+  async refreshPage(force = false) {
     const now = Date.now()
-    if (now - this.data.lastRefreshAt < PAGE_REFRESH_INTERVAL_MS) return
+    if (!force && now - this.data.lastRefreshAt < PAGE_REFRESH_INTERVAL_MS) return
     this.setData({ lastRefreshAt: now })
     const sequence = inventoryPageGate.begin()
     const auth = await hydrateAuthState()
     if (!inventoryPageGate.isCurrent(sequence)) return
     this.setData({ spaceName: auth.spaceName })
     inventorySearchDebouncer.cancel()
-    void this.loadInventory()
+    void this.loadInventory(false, force)
   },
 
-  async loadInventory(fromPullDown = false) {
+  async loadInventory(fromPullDown = false, force = false) {
+    const auth = getAuthState()
+    if (!appConfig.demoMode && !auth.isLoggedIn) {
+      this.setData({
+        spaceName: auth.spaceName,
+        loading: false,
+        hasLoaded: true,
+        cacheFresh: false,
+        errorMessage: '',
+        syncState: 'local',
+        syncText: '登录后同步',
+      })
+      if (fromPullDown) wx.stopPullDownRefresh()
+      promptAuthGateIfNeeded()
+      return
+    }
     const sequence = inventoryRequestGate.begin()
     this.setData({
       loading: !fromPullDown && !this.data.hasLoaded,
@@ -224,6 +261,9 @@ Page({
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0
       this.setData({
+        loading: false,
+        hasLoaded,
+        cacheFresh: true,
         today,
         summary: summaryResult.status === 'fulfilled'
           ? summaryResult.value
@@ -232,13 +272,12 @@ Page({
           ? buildSections(views, this.data.viewMode)
           : this.data.sections,
         hasResults: hasListLoaded ? views.length > 0 : this.data.hasResults,
-        hasLoaded,
         errorMessage: errors[0] ?? '',
         syncState: hasError ? 'pending' : appConfig.demoMode ? 'local' : 'synced',
         syncText: hasError
           ? '部分未同步'
           : appConfig.demoMode ? '只在本机' : '已同步',
-      })
+      }, () => this.cacheCurrentPage())
     } catch (error) {
       if (!inventoryRequestGate.isCurrent(sequence)) return
       this.setData({
@@ -248,6 +287,7 @@ Page({
         ),
         syncState: 'pending',
         syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
+        hasLoaded: true,
       })
     } finally {
       if (inventoryRequestGate.isCurrent(sequence)) {
@@ -255,6 +295,17 @@ Page({
       }
       if (fromPullDown) wx.stopPullDownRefresh()
     }
+  },
+
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      loading: _loading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      ...snapshot
+    } = data
+    persistPageCache(INVENTORY_PAGE_CACHE_KEY, snapshot)
   },
 
   onSearchInput(event: { detail: { value: string } }) {
@@ -303,6 +354,7 @@ Page({
   },
 
   onAddItem() {
+    if (!requireAuthForWrite()) return
     wx.navigateTo({ url: '/pages/item-form/index' })
   },
 

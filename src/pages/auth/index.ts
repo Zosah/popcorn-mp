@@ -1,8 +1,6 @@
 import { appConfig } from '../../config/env'
 import {
-  DEMO_AVATAR_OPTIONS,
   buildDemoAvatarText,
-  isDemoAvatarTone,
   normalizeDemoNickname,
   validateDemoNickname,
   type DemoAvatarTone,
@@ -34,7 +32,6 @@ interface AuthPageData {
   nicknamePreview: string
   nicknameError: string
   selectedTone: DemoAvatarTone
-  avatarOptions: typeof DEMO_AVATAR_OPTIONS
   avatarMediaId: string
   avatarPreviewUrl: string
   avatarUploading: boolean
@@ -48,7 +45,6 @@ interface AuthPageData {
   accountId: string
   spaceName: string
   backLabel: string
-  isDemoMode: boolean
   loginVignetteNote: string
   loginFootnote: string
   registerCopy: string
@@ -68,6 +64,8 @@ function formatAccountDate(isoDate: string): string {
   return `${date.getFullYear()}.${month}.${day}`
 }
 
+let avatarUploadSequence = 0
+
 Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   data: {
     mode: 'login',
@@ -77,7 +75,6 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     nicknamePreview: '时',
     nicknameError: '',
     selectedTone: 'lavender',
-    avatarOptions: DEMO_AVATAR_OPTIONS,
     avatarMediaId: '',
     avatarPreviewUrl: '',
     avatarUploading: false,
@@ -91,16 +88,15 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     accountId: '',
     spaceName: '我们的家',
     backLabel: '← 返回我的',
-    isDemoMode: appConfig.demoMode,
     loginVignetteNote: appConfig.demoMode
-      ? '当前为本地 Demo，不会读取或上传真实微信资料。'
-      : '登录会建立可撤销的服务端会话，退出后立即失效。',
+      ? '当前为本地 Demo，头像和昵称只保存在本机。'
+      : '登录只获取微信身份；头像和昵称需要你在微信官方控件中确认。',
     loginFootnote: appConfig.demoMode
-      ? 'Demo 阶段只在本机创建体验账号。接入后端后会换成真实微信登录和会话。'
-      : '使用微信登录；登录状态会在下次打开小程序时自动恢复。',
+      ? 'Demo 阶段使用本机体验身份，不会读取手机号。'
+      : '不读取手机号；微信登录状态会在下次打开小程序时自动恢复。',
     registerCopy: appConfig.demoMode
-      ? '昵称和头像色只保存在当前设备。'
-      : '昵称和头像色会保存到你的账号，并同步到默认空间。',
+      ? '昵称和头像只保存在当前设备。'
+      : '昵称和头像会保存到你的账号，并同步到当前空间。',
     profilePreviewLabel: appConfig.demoMode ? '你的本机身份' : '你的空间身份',
     profilePreviewMeta: appConfig.demoMode
       ? 'Demo 账号'
@@ -128,7 +124,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
 
   async bootstrap(requestedMode?: string) {
     const state = await hydrateAuthState()
-    if (state.onboardingRequired && !state.user?.nickname) {
+    if (state.onboardingRequired) {
       this.showRegister(false)
       return
     }
@@ -180,7 +176,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       avatarUploading: false,
       avatarUploadError: '',
       spaceName: state.spaceName,
-      backLabel: isEditing ? '← 返回账号' : '← 返回登录',
+      backLabel: isEditing ? '← 返回账号' : '← 返回预览',
     })
     if (avatarMediaId) void this.loadProfileAvatar(avatarMediaId)
   },
@@ -225,7 +221,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
           return
         }
       }
-      this.showLogin()
+      navigateBackOrTab('/pages/profile/index')
       return
     }
     navigateBackOrTab('/pages/profile/index')
@@ -267,45 +263,53 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     })
   },
 
-  onSelectTone(event: WechatMiniprogram.TouchEvent) {
-    const tone = event.currentTarget.dataset.tone
-    if (!isDemoAvatarTone(tone)) return
-    this.setData({ selectedTone: tone })
-  },
-
-  onChooseAvatar() {
+  onChooseAvatar(event: { detail: { avatarUrl?: string } }) {
     if (this.data.avatarUploading) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
+    const filePath = event.detail.avatarUrl?.trim()
+    if (!filePath) return
+    const sequence = ++avatarUploadSequence
+    this.setData({ avatarPreviewUrl: filePath, avatarUploadError: '' })
+    wx.getFileSystemManager().getFileInfo({
+      filePath,
       success: (result) => {
-        const file = result.tempFiles[0]
-        if (!file) return
-        if (file.size > 10 * 1024 * 1024) {
-          this.setData({ avatarUploadError: '图片不能超过 10 MiB' })
+        if (sequence !== avatarUploadSequence) return
+        if (result.size > 10 * 1024 * 1024) {
+          this.setData({
+            avatarPreviewUrl: '',
+            avatarUploadError: '头像图片不能超过 10 MiB',
+          })
           return
         }
-        void this.uploadAvatar(file.tempFilePath, file.size)
+        void this.uploadAvatar(filePath, result.size, sequence)
+      },
+      fail: () => {
+        if (sequence !== avatarUploadSequence) return
+        void this.uploadAvatar(filePath, 0, sequence)
       },
     })
   },
 
-  async uploadAvatar(filePath: string, fileSize: number) {
+  async uploadAvatar(filePath: string, fileSize: number, sequence: number) {
+    const previousMediaId = this.data.avatarMediaId
     this.setData({ avatarUploading: true, avatarUploadError: '' })
     try {
       const asset = await mediaGateway.upload(filePath, 'avatar', fileSize)
+      if (sequence !== avatarUploadSequence) return
       this.setData({
         avatarMediaId: asset.id,
         avatarPreviewUrl: asset.thumb.url || asset.display.url,
       })
       wx.showToast({ title: '头像已准备好', icon: 'success' })
     } catch (error) {
+      if (sequence !== avatarUploadSequence) return
       const message = getMediaErrorMessage(error, '头像上传没有完成')
-      this.setData({ avatarUploadError: message })
+      this.setData({ avatarMediaId: previousMediaId, avatarPreviewUrl: '', avatarUploadError: message })
+      if (previousMediaId) void this.loadProfileAvatar(previousMediaId)
       showMediaUploadError(error, '头像上传没有完成')
     } finally {
-      this.setData({ avatarUploading: false })
+      if (sequence === avatarUploadSequence) {
+        this.setData({ avatarUploading: false })
+      }
     }
   },
 
@@ -317,6 +321,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
 
   onRemoveAvatar() {
     if (this.data.avatarUploading) return
+    avatarUploadSequence += 1
     this.setData({
       avatarMediaId: '',
       avatarPreviewUrl: '',
@@ -366,10 +371,6 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     void syncAppTabSettings().catch(() => undefined)
     wx.showToast({ title: '欢迎回家', icon: 'success' })
     setTimeout(() => navigateBackOrTab('/pages/profile/index'), 420)
-  },
-
-  onBackToLogin() {
-    this.showLogin()
   },
 
   onEditAccount() {

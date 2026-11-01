@@ -1,4 +1,7 @@
 <view class="tab-page profile-page">
+  <page-loading show="{{initialLoading}}" title="正在准备你的空间" copy="登录状态和共同生活数据马上就好。" />
+  <auth-preview-gate />
+
   <view class="profile-head">
     <view>
       <text class="profile-eyebrow">共同生活</text>
@@ -91,6 +94,10 @@
     <view wx:if="{{showResetDemo}}" class="profile-row" bindtap="onResetDemo">
       <view class="profile-row__body"><text>Demo 数据重置</text><text>恢复初始示例，不影响登录信息</text></view>
       <line-icon name="rotate-ccw" size="21" tone="muted" />
+    </view>
+    <view class="profile-row" bindtap="onClearLocalData">
+      <view class="profile-row__body"><text>清除本机数据</text><text>退出登录并清理缓存，不删除共同空间云端内容</text></view>
+      <line-icon name="rotate-ccw" size="21" tone="danger" />
     </view>
   </view>
 

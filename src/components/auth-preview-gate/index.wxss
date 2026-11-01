@@ -1,0 +1,143 @@
+.auth-gate {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 32rpx 28rpx calc(32rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: rgba(37, 43, 39, 0.24);
+  backdrop-filter: blur(8rpx);
+  -webkit-backdrop-filter: blur(8rpx);
+}
+
+.auth-gate__card {
+  position: relative;
+  width: 100%;
+  max-width: 660rpx;
+  padding: 30rpx 30rpx 26rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 255, 255, 0.94);
+  border-radius: 42rpx;
+  background:
+    radial-gradient(circle at 100% 0, rgba(247, 231, 226, 0.92), transparent 38%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(249, 245, 239, 0.96));
+  box-shadow: 0 34rpx 90rpx -34rpx rgba(37, 43, 39, 0.5);
+  box-sizing: border-box;
+  animation: auth-gate-in 220ms ease-out both;
+}
+
+.auth-gate__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auth-gate__mark {
+  display: flex;
+  width: 66rpx;
+  height: 66rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22rpx;
+  background: #dfe7e7;
+}
+
+.auth-gate__close {
+  display: flex;
+  width: 58rpx;
+  height: 58rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(241, 237, 231, 0.9);
+  color: #6d675f;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  font-size: 34rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.auth-gate__close--pressed {
+  opacity: 0.62;
+  transform: scale(0.94);
+}
+
+.auth-gate__eyebrow,
+.auth-gate__title,
+.auth-gate__copy,
+.auth-gate__note {
+  display: block;
+}
+
+.auth-gate__eyebrow {
+  margin-top: 24rpx;
+  color: #b86757;
+  font-size: 21rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.auth-gate__title {
+  margin-top: 7rpx;
+  color: #252b27;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 40rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.auth-gate__copy {
+  margin-top: 13rpx;
+  color: #6a655e;
+  font-size: 25rpx;
+  line-height: 1.65;
+}
+
+.auth-gate__login {
+  display: flex;
+  height: 92rpx;
+  align-items: center;
+  justify-content: center;
+  margin-top: 26rpx;
+  border-radius: 28rpx;
+  background: #252b27;
+  color: #fff;
+  font-size: 27rpx;
+  font-weight: 700;
+  gap: 12rpx;
+}
+
+.auth-gate__login::after {
+  border: 0;
+}
+
+.auth-gate__preview {
+  padding: 22rpx 0 8rpx;
+  color: #837f76;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+.auth-gate__note {
+  padding: 4rpx 10rpx 0;
+  color: #a29b91;
+  font-size: 19rpx;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@keyframes auth-gate-in {
+  from { opacity: 0; transform: translateY(28rpx) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-gate__card {
+    animation: none;
+  }
+}

@@ -1,4 +1,7 @@
 <view class="tab-page journal-page">
+  <page-loading show="{{loading && !hasLoaded}}" title="正在翻开生活记录" copy="把最近的片段和资料找出来。" />
+  <auth-preview-gate />
+
   <view class="journal-top">
     <view class="journal-top__main">
       <text class="journal-top__title">生活记录</text>

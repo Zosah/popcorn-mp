@@ -1,3 +1,4 @@
+import { appConfig } from '../../config/env'
 import {
   buildHomeSnapshotFromSummary,
   type HomeSnapshot,
@@ -14,6 +15,7 @@ import {
 import { journalGateway } from '../../services/journal'
 import type { JournalItem } from '../../services/journal-gateway'
 import { hydrateAuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { inventoryGateway } from '../../services/inventory'
 import { menuGateway } from '../../services/menu'
 import { getMenuErrorMessage } from '../../services/menu-gateway'
@@ -23,6 +25,7 @@ import {
   getPetErrorMessage,
 } from '../../services/pet-gateway'
 import { listApiSpaceMembers } from '../../services/space-gateway'
+import { readPageCache, writePageCache } from '../../services/page-cache'
 import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
@@ -55,6 +58,7 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
 }
 
 const homeRequestGate = createRequestGate()
+const HOME_PAGE_CACHE_KEY = 'home:overview'
 
 function isCreatedToday(entry: JournalItem | null, today: string): boolean {
   if (!entry) return false
@@ -77,6 +81,10 @@ function formatPetActivityDate(value: string, today: string): string {
 
 Page({
   data: {
+    initialLoading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     snapshot: EMPTY_SNAPSHOT,
     inventoryError: '',
     latestEntry: null as JournalItem | null,
@@ -123,6 +131,16 @@ Page({
   },
 
   onLoad() {
+    const cached = readPageCache<Record<string, unknown>>(HOME_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        initialLoading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+      })
+    }
     this.measureNavBar()
   },
 
@@ -147,15 +165,41 @@ Page({
   },
 
   onShow() {
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.loadSnapshot()
   },
 
-  async loadSnapshot() {
+  onPullDownRefresh() {
+    void this.loadSnapshot(true)
+  },
+
+  async loadSnapshot(fromPullDown = false) {
     const sequence = homeRequestGate.begin()
     const nowMs = Date.now()
     const today = getShanghaiDateOnly(nowMs)
+    this.setData({ initialLoading: !this.data.hasLoaded })
 
     const auth = await hydrateAuthState()
+    if (!homeRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
+    if (!appConfig.demoMode && !auth.isLoggedIn) {
+      this.setData({
+        initialLoading: false,
+        hasLoaded: true,
+        cacheFresh: false,
+        spaceName: auth.spaceName,
+        spaceMemberCopy: '登录后加入空间',
+        greetingName: '你',
+      })
+      if (fromPullDown) wx.stopPullDownRefresh()
+      promptAuthGateIfNeeded()
+      return
+    }
     const [
       inventoryResult,
       momentsResult,
@@ -173,7 +217,10 @@ Page({
         : Promise.resolve(null),
       petGateway.list(),
     ])
-    if (!homeRequestGate.isCurrent(sequence)) return
+    if (!homeRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
 
     const inventoryError = inventoryResult.status === 'rejected'
       ? getInventoryErrorMessage(
@@ -286,6 +333,9 @@ Page({
     ].filter(Boolean).join(' · ')
 
     this.setData({
+      initialLoading: false,
+      hasLoaded: true,
+      cacheFresh: true,
       snapshot,
       inventoryError,
       latestEntry,
@@ -340,8 +390,20 @@ Page({
         || (overdueCare !== undefined || dueSoonCare !== undefined || pendingDaily !== undefined),
       reminderCount,
       reminderCopy,
-    })
+    }, () => this.writePageCache())
     void this.hydrateMemberAvatars(sequence)
+    if (fromPullDown) wx.stopPullDownRefresh()
+  },
+
+  writePageCache() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      initialLoading: _initialLoading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      ...snapshot
+    } = data
+    writePageCache(HOME_PAGE_CACHE_KEY, snapshot)
   },
 
   async hydrateMemberAvatars(sequence: number) {
@@ -351,7 +413,7 @@ Page({
       avatarUrl: await resolveAvatarUrl(member.avatarMediaId),
     })))
     if (!homeRequestGate.isCurrent(sequence)) return
-    this.setData({ spaceMembers: resolved })
+    this.setData({ spaceMembers: resolved }, () => this.writePageCache())
   },
 
   onMemberAvatarError(event: WechatMiniprogram.TouchEvent) {

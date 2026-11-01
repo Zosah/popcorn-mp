@@ -35,12 +35,12 @@
     </view>
 
     <view wx:else class="login-promises">
-      <view class="login-promise"><view class="login-promise__mark"><line-icon name="user-round" size="24" tone="blue" /></view><text>取一个称呼</text></view>
-      <view class="login-promise"><view class="login-promise__mark"><line-icon name="pen-line" size="24" tone="pink" /></view><text>选一个头像色</text></view>
-      <view class="login-promise"><view class="login-promise__mark"><line-icon name="house" size="24" tone="green" /></view><text>回到共同空间</text></view>
+      <view class="login-promise"><view class="login-promise__mark"><line-icon name="user-round" size="24" tone="blue" /></view><text>微信身份</text></view>
+      <view class="login-promise"><view class="login-promise__mark"><line-icon name="image" size="24" tone="pink" /></view><text>微信头像</text></view>
+      <view class="login-promise"><view class="login-promise__mark"><line-icon name="house" size="24" tone="green" /></view><text>进入空间</text></view>
     </view>
 
-    <button class="primary-button auth-primary" bindtap="onWechatLogin"><line-icon name="{{hasAccount ? 'user-round' : 'plus'}}" size="24" tone="white" /><text>{{hasAccount ? '微信一键登录' : '微信快捷注册'}}</text></button>
+    <button class="primary-button auth-primary" bindtap="onWechatLogin"><line-icon name="user-round" size="24" tone="white" /><text>微信一键登录</text></button>
     <view class="auth-secondary" bindtap="onBack">先随便看看</view>
     <view class="auth-note"><line-icon name="lock" size="19" tone="muted" /><text>{{loginFootnote}}</text></view>
   </block>
@@ -50,8 +50,8 @@
       <view class="auth-hero__mark"><line-icon name="pen-line" size="30" tone="pink" /></view>
       <view class="auth-hero__body">
         <view class="eyebrow">{{isEditing ? 'ABOUT YOU' : 'NICE TO MEET YOU'}}</view>
-        <view class="auth-hero__title">{{isEditing ? '换个喜欢的称呼' : '先给自己取个名字'}}</view>
-        <view class="auth-hero__copy">{{isEditing ? registerCopy : (isDemoMode ? '不用填写手机号，先把这个 Demo 身份创建起来。' : '登录已完成，取一个昵称就可以开始。')}}</view>
+        <view class="auth-hero__title">{{isEditing ? '编辑微信资料' : '确认你的微信资料'}}</view>
+        <view class="auth-hero__copy">{{isEditing ? registerCopy : '微信登录已完成。选择官方微信头像并确认昵称，就可以进入共同空间。'}}</view>
       </view>
     </view>
 
@@ -71,8 +71,8 @@
     <view class="paper-card profile-form">
       <view class="profile-form__group profile-form__group--avatar">
         <view class="profile-form__avatar-copy">
-          <text class="profile-form__label">头像照片</text>
-          <text>不选也可以，会先用昵称首字和头像色。</text>
+          <text class="profile-form__label">微信头像</text>
+          <text>由微信官方头像选择器提供，选择后会保存到当前空间。</text>
         </view>
         <view class="avatar-editor">
           <view class="avatar-editor__preview user-avatar--{{selectedTone}}" bindtap="onPreviewAvatar">
@@ -81,10 +81,10 @@
             <view wx:if="{{avatarUploading}}" class="avatar-editor__loading">上传中</view>
           </view>
           <view class="avatar-editor__actions">
-            <view class="avatar-editor__action" bindtap="onChooseAvatar">
+            <button class="avatar-editor__action avatar-editor__action--wechat" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
               <line-icon name="image" size="20" tone="blue" />
-              <text>{{avatarMediaId ? '替换照片' : '选择照片'}}</text>
-            </view>
+              <text>{{avatarMediaId ? '更换微信头像' : '使用微信头像'}}</text>
+            </button>
             <view wx:if="{{avatarMediaId && !avatarUploading}}" class="avatar-editor__remove" bindtap="onRemoveAvatar">移除</view>
           </view>
         </view>
@@ -92,25 +92,14 @@
       </view>
 
       <view class="profile-form__group">
-        <text class="profile-form__label">怎么称呼你</text>
+        <text class="profile-form__label">微信昵称</text>
         <input class="profile-form__input" type="nickname" maxlength="16" value="{{nicknameInput}}" placeholder="例如：小满" placeholder-class="profile-form__placeholder" bindinput="onNicknameInput" />
         <view wx:if="{{nicknameError}}" class="profile-form__error">{{nicknameError}}</view>
       </view>
-
-      <view class="profile-form__group profile-form__group--tones">
-        <text class="profile-form__label">头像颜色</text>
-        <view class="tone-options">
-          <view wx:for="{{avatarOptions}}" wx:key="value" class="tone-option {{selectedTone === item.value ? 'tone-option--active' : ''}}" data-tone="{{item.value}}" bindtap="onSelectTone">
-            <view class="tone-option__dot user-avatar--{{item.value}}"><line-icon wx:if="{{selectedTone === item.value}}" name="check" size="18" tone="ink" /></view>
-            <text>{{item.label}}</text>
-          </view>
-        </view>
-        <view class="profile-form__hint">没有上传照片时，用头像色和昵称首字生成默认头像。</view>
-      </view>
     </view>
 
-    <button class="primary-button auth-primary" bindtap="onSubmitProfile"><line-icon name="check" size="24" tone="white" /><text>{{isEditing ? '保存资料' : '创建账号并回家'}}</text></button>
-    <view wx:if="{{!isEditing}}" class="auth-secondary" bindtap="onBackToLogin">已经注册过？去登录</view>
+    <button class="primary-button auth-primary" bindtap="onSubmitProfile"><line-icon name="check" size="24" tone="white" /><text>{{isEditing ? '保存资料' : '完成并进入空间'}}</text></button>
+    <view wx:if="{{!isEditing}}" class="auth-secondary" bindtap="onBack">先预览，稍后再完善</view>
   </block>
 
   <block wx:else>

@@ -6,6 +6,9 @@ import {
   type DemoTodoKind,
 } from '../../domain/demo-todo'
 import { todoGateway } from '../../services/todo'
+import { hydrateAuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
+import { readPageCache, writePageCache } from '../../services/page-cache'
 import {
   getTodoErrorMessage,
   isTodoVersionConflict,
@@ -70,6 +73,7 @@ const ALL_FILTER: TodoFilterView = {
 }
 
 const todoRequestGate = createRequestGate()
+const TODO_PAGE_CACHE_KEY = 'todo:overview'
 
 function formatAmount(amount: number): string {
   return amount > 0 ? `¥${amount.toFixed(2)}` : '未记金额'
@@ -193,6 +197,9 @@ Page({
     allItems: [] as TodoItem[],
     summary: null as TodoSummary | null,
     loading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     loadError: '',
     mutating: false,
     syncState: appConfig.demoMode ? 'local' : 'pending',
@@ -222,6 +229,17 @@ Page({
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    const cached = readPageCache<Record<string, unknown>>(TODO_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        loading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+        mutating: false,
+      })
+    }
     const kind = options.kind
     const allowed = DEMO_TODO_KIND_OPTIONS.some((option) => option.value === kind)
     if (allowed && kind) {
@@ -233,15 +251,52 @@ Page({
   },
 
   onShow() {
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.refresh()
+  },
+
+  onPullDownRefresh() {
+    void this.refresh(true)
   },
 
   onBack() {
     navigateBackOrTab('/pages/profile/index')
   },
 
-  async refresh() {
+  async refresh(fromPullDown = false) {
     const sequence = todoRequestGate.begin()
+    const auth = await hydrateAuthState()
+    if (!todoRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
+    if (!appConfig.demoMode && !auth.isLoggedIn) {
+      this.setData({
+        filters: [],
+        items: [],
+        allItems: [],
+        summary: null,
+        pendingCount: 0,
+        visiblePendingCount: 0,
+        completedCount: 0,
+        totalCount: 0,
+        progressPercent: 0,
+        travelHighlight: null,
+        expenseHighlight: null,
+        loading: false,
+        hasLoaded: true,
+        cacheFresh: false,
+        loadError: '',
+        syncState: 'local',
+        syncText: '登录后同步',
+      })
+      if (fromPullDown) wx.stopPullDownRefresh()
+      promptAuthGateIfNeeded()
+      return
+    }
     const hasExistingData = this.data.allItems.length > 0
     this.setData({
       loading: !hasExistingData,
@@ -258,14 +313,18 @@ Page({
       this.render(items, summary)
       this.setData({
         loading: false,
+        hasLoaded: true,
+        cacheFresh: true,
+        loadError: '',
         syncState: appConfig.demoMode ? 'local' : 'synced',
         syncText: appConfig.demoMode ? '只在本机' : '已同步',
-      })
+      }, () => this.cacheCurrentPage())
     } catch (error) {
       if (!todoRequestGate.isCurrent(sequence)) return
       const message = getTodoErrorMessage(error, '待办暂时没有加载出来')
       this.setData({
         loading: false,
+        hasLoaded: true,
         loadError: message,
         syncState: 'pending',
         syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
@@ -273,6 +332,8 @@ Page({
       if (this.data.allItems.length) {
         wx.showToast({ title: message, icon: 'none' })
       }
+    } finally {
+      if (fromPullDown) wx.stopPullDownRefresh()
     }
   },
 
@@ -339,6 +400,21 @@ Page({
         selected && selected.value !== 'all'
           ? '把想到的一件小事写下来，之后就不会忘记。'
           : '先记下一件想做的事，完成一件就少一件。',
+    }, () => this.cacheCurrentPage())
+  },
+
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      loading: _loading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      mutating: _mutating,
+      ...snapshot
+    } = data
+    writePageCache(TODO_PAGE_CACHE_KEY, {
+      ...snapshot,
+      mutating: false,
     })
   },
 
@@ -360,12 +436,14 @@ Page({
   },
 
   onUseMealIdea() {
+    if (!requireAuthForWrite()) return
     wx.navigateTo({
       url: `/pages/todo-form/index?kind=meal&title=${encodeURIComponent(this.data.mealIdea)}`,
     })
   },
 
   onCreate() {
+    if (!requireAuthForWrite()) return
     const kind = this.data.activeKind === 'all' ? 'plan' : this.data.activeKind
     wx.navigateTo({ url: `/pages/todo-form/index?kind=${kind}` })
   },
@@ -373,12 +451,14 @@ Page({
   onEditItem(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
     if (!id) return
+    if (!requireAuthForWrite()) return
     wx.navigateTo({ url: `/pages/todo-form/index?id=${encodeURIComponent(id)}` })
   },
 
   async onToggleItem(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
     if (!id || this.data.mutating) return
+    if (!requireAuthForWrite()) return
     const item = this.findItem(id)
     if (!item) return
     if (item.kind === 'expense') {
@@ -403,6 +483,7 @@ Page({
   }) {
     const { parentId, checklistId } = event.currentTarget.dataset
     if (!parentId || !checklistId || this.data.mutating) return
+    if (!requireAuthForWrite()) return
     const parent = this.findItem(parentId)
     const checklist = parent?.checklist.find((item) => item.id === checklistId)
     if (!parent || !checklist) return
@@ -427,6 +508,7 @@ Page({
   onLongPressItem(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
     if (!id) return
+    if (!requireAuthForWrite()) return
     wx.showActionSheet({
       itemList: ['编辑', '删除'],
       success: (result) => {
@@ -451,6 +533,7 @@ Page({
 
   async deleteItem(id: string, version: number) {
     if (this.data.mutating) return
+    if (!requireAuthForWrite()) return
     todoRequestGate.invalidate()
     this.setData({ mutating: true })
     try {

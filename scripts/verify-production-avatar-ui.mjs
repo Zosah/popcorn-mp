@@ -162,15 +162,14 @@ async function writeTempImage(bytes, suffix = '') {
 }
 
 async function chooseAvatar(page, tempImage, label) {
-  await miniProgram.mockWxMethod('chooseMedia', {
-    tempFiles: [{ tempFilePath: tempImage.filePath, size: tempImage.size }],
+  // 微信官方 chooseAvatar 直接把临时文件路径放在事件里，不再经过 chooseMedia。
+  await page.callMethod('onChooseAvatar', {
+    detail: { avatarUrl: tempImage.filePath },
   })
-  await page.callMethod('onChooseAvatar')
   const result = await waitForPage(
     (data) => !data.avatarUploading && data.avatarMediaId && data.avatarPreviewUrl ? data : null,
     label,
   )
-  await miniProgram.restoreWxMethod('chooseMedia')
   return result.data
 }
 
@@ -352,7 +351,6 @@ try {
 
   assert.deepEqual(runtimeErrors, [], `页面运行出现错误：${runtimeErrors.join('\n')}`)
 } finally {
-  await miniProgram.restoreWxMethod('chooseMedia').catch(() => undefined)
   try {
     await restoreAvatar(originalProfile)
     const restoredSession = await readSession()

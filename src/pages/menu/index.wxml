@@ -1,4 +1,7 @@
 <view class="page-shell menu-page">
+  <page-loading show="{{loading && !hasLoaded}}" title="正在翻菜谱本" copy="今天吃什么，很快就有点子了。" />
+  <auth-preview-gate />
+
   <view class="menu-top">
     <view class="menu-top__main">
       <view class="menu-top__title">今天吃什么</view>

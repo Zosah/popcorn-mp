@@ -1,5 +1,6 @@
 import { appConfig, formatVersionLabel } from '../../config/env'
-import { hydrateAuthState, type AuthState } from '../../services/auth'
+import { hydrateAuthState, logoutAuth, type AuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { syncAppTabSettings } from '../../services/app-tab-settings'
 import {
   getAppTabConfig,
@@ -7,6 +8,8 @@ import {
 } from '../../services/app-tab-config'
 import { resetAllDemoData } from '../../services/demo-reset'
 import { getDemoSpaceName } from '../../services/demo-space'
+import { clearAllLocalData } from '../../services/local-reset'
+import { readPageCache, writePageCache } from '../../services/page-cache'
 import { todoGateway } from '../../services/todo'
 import {
   getTodoErrorMessage,
@@ -17,9 +20,14 @@ import { resolveAvatarUrl } from '../../utils/avatar'
 import { createRequestGate } from '../../utils/request-control'
 
 const profileRequestGate = createRequestGate()
+const PROFILE_PAGE_CACHE_KEY = 'profile:overview'
 
 Page({
   data: {
+    initialLoading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     version: formatVersionLabel(),
     spaceName: '我们的家',
     isLoggedIn: false,
@@ -46,18 +54,44 @@ Page({
     showResetDemo: appConfig.demoMode,
   },
 
+  onLoad() {
+    const cached = readPageCache<Record<string, unknown>>(PROFILE_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        initialLoading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+        todoLoading: false,
+      })
+    }
+  },
+
   onShow() {
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.refreshProfile()
   },
 
-  async refreshProfile() {
+  onPullDownRefresh() {
+    void this.refreshProfile(true)
+  },
+
+  async refreshProfile(fromPullDown = false) {
     const sequence = profileRequestGate.begin()
     const auth = await hydrateAuthState()
-    if (!profileRequestGate.isCurrent(sequence)) return
+    if (!profileRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
 
     if (!auth.isLoggedIn) {
       this.setData({ lastTodoSummary: null })
       this.renderAuth(auth, null, '')
+      if (fromPullDown) wx.stopPullDownRefresh()
       return
     }
 
@@ -70,11 +104,15 @@ Page({
     } catch (error) {
       todoError = getTodoErrorMessage(error, '待办暂时没有同步过来')
     }
-    if (!profileRequestGate.isCurrent(sequence)) return
+    if (!profileRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
 
     const effectiveSummary = summary ?? this.data.lastTodoSummary
     if (summary) this.setData({ lastTodoSummary: summary })
     this.renderAuth(auth, effectiveSummary, todoError)
+    if (fromPullDown) wx.stopPullDownRefresh()
   },
 
   renderAuth(auth: AuthState, summary: TodoSummary | null, todoError: string) {
@@ -100,13 +138,16 @@ Page({
       .join(' / ')
     const avatarMediaId = loggedInUser?.avatarMediaId ?? ''
     this.setData({
+      initialLoading: false,
+      hasLoaded: true,
+      cacheFresh: true,
       spaceName: auth.spaceName,
       isLoggedIn,
       displayName: loggedInUser?.nickname || (isLoggedIn ? '待完善资料' : '还没有登录'),
       avatarText: isLoggedIn ? auth.avatarText : '访',
       avatarTone: loggedInUser?.avatarTone ?? 'lavender',
       avatarMediaId,
-      avatarUrl: '',
+      avatarUrl: this.data.avatarMediaId === avatarMediaId ? this.data.avatarUrl : '',
       identityMeta: isLoggedIn
         ? (isApiAccount
           ? '已登录 · 账号资料与共享空间已同步'
@@ -133,14 +174,26 @@ Page({
       todoProgress: totalCount ? Math.round((completedCount / totalCount) * 100) : 0,
       todoLoading: false,
       tabBarSummary,
-    })
+    }, () => this.cacheCurrentPage())
     if (avatarMediaId) void this.loadAvatar(avatarMediaId)
+  },
+
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      initialLoading: _initialLoading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      todoLoading: _todoLoading,
+      ...snapshot
+    } = data
+    writePageCache(PROFILE_PAGE_CACHE_KEY, snapshot)
   },
 
   async loadAvatar(mediaId: string) {
     const avatarUrl = await resolveAvatarUrl(mediaId)
     if (this.data.avatarMediaId !== mediaId) return
-    this.setData({ avatarUrl })
+    this.setData({ avatarUrl }, () => this.cacheCurrentPage())
   },
 
   onAvatarError() {
@@ -185,6 +238,34 @@ Page({
         wx.showToast({ title: 'Demo 已恢复', icon: 'success' })
       },
     })
+  },
+
+  onClearLocalData() {
+    wx.showModal({
+      title: '清除本机全部数据？',
+      content: '会退出当前登录，并清除页面缓存、本机体验数据和本机图片记录。共同空间里的云端内容不会删除。',
+      confirmText: '清除',
+      confirmColor: '#b86757',
+      success: (result) => {
+        if (!result.confirm) return
+        void this.finishClearLocalData()
+      },
+    })
+  },
+
+  async finishClearLocalData() {
+    wx.showLoading({ title: '正在清除', mask: true })
+    try {
+      await logoutAuth()
+    } catch {
+      // 即使服务端会话已经失效，也要继续清掉本机内容。
+    }
+    clearAllLocalData()
+    wx.hideLoading()
+    wx.showToast({ title: '本机数据已清除', icon: 'success' })
+    setTimeout(() => {
+      wx.reLaunch({ url: '/pages/home/index' })
+    }, 420)
   },
 
   onUnload() {

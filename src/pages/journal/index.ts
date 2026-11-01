@@ -4,6 +4,9 @@ import {
   type DemoNoteCategory,
 } from '../../domain/demo-journal'
 import { journalGateway } from '../../services/journal'
+import { hydrateAuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
+import { readPageCache, writePageCache as persistPageCache } from '../../services/page-cache'
 import {
   getJournalErrorMessage,
   type JournalItem,
@@ -19,6 +22,7 @@ const NOTE_CATEGORY_ICONS: Record<DemoNoteCategory, string> = {
 }
 
 const journalRequestGate = createRequestGate()
+const JOURNAL_PAGE_CACHE_KEY = 'journal:overview'
 
 interface DemoNoteGroup {
   key: DemoNoteCategory
@@ -58,17 +62,64 @@ Page({
     activeFilter: 'moments' as 'moments' | DemoNoteCategory,
     filterOptions: [] as JournalFilterView[],
     loading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     loadError: '',
     syncState: appConfig.demoMode ? 'local' : 'pending',
     syncText: appConfig.demoMode ? '只在本机' : '正在同步',
   },
 
+  onLoad() {
+    const cached = readPageCache<Record<string, unknown>>(JOURNAL_PAGE_CACHE_KEY)
+    if (cached) {
+      this.setData({
+        ...cached.value,
+        loading: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+      })
+    }
+  },
+
   onShow() {
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.refresh()
   },
 
-  async refresh() {
+  onPullDownRefresh() {
+    void this.refresh(true)
+  },
+
+  async refresh(fromPullDown = false) {
     const sequence = journalRequestGate.begin()
+    const auth = await hydrateAuthState()
+    if (!journalRequestGate.isCurrent(sequence)) {
+      if (fromPullDown) wx.stopPullDownRefresh()
+      return
+    }
+    if (!appConfig.demoMode && !auth.isLoggedIn) {
+      this.setData({
+        entries: [],
+        noteGroups: [],
+        visibleNoteGroups: [],
+        notesCount: 0,
+        filterOptions: [],
+        loading: false,
+        hasLoaded: true,
+        cacheFresh: false,
+        loadError: '',
+        syncState: 'local',
+        syncText: '登录后同步',
+      })
+      if (fromPullDown) wx.stopPullDownRefresh()
+      promptAuthGateIfNeeded()
+      return
+    }
     const hasExistingData = this.data.entries.length > 0 || this.data.notesCount > 0
     this.setData({
       loading: !hasExistingData,
@@ -98,14 +149,17 @@ Page({
         notesCount: notes.length,
         filterOptions,
         loading: false,
+        hasLoaded: true,
+        cacheFresh: true,
         syncState: appConfig.demoMode ? 'local' : 'synced',
         syncText: appConfig.demoMode ? '只在本机' : '已同步',
-      })
+      }, () => this.cacheCurrentPage())
     } catch (error) {
       if (!journalRequestGate.isCurrent(sequence)) return
       const message = getJournalErrorMessage(error, '生活记录暂时没有加载出来')
       this.setData({
         loading: false,
+        hasLoaded: true,
         loadError: message,
         syncState: 'pending',
         syncText: appConfig.demoMode ? '本机读取失败' : '同步失败',
@@ -113,7 +167,20 @@ Page({
       if (this.data.entries.length || this.data.notesCount) {
         wx.showToast({ title: message, icon: 'none' })
       }
+    } finally {
+      if (fromPullDown) wx.stopPullDownRefresh()
     }
+  },
+
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      loading: _loading,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      ...snapshot
+    } = data
+    persistPageCache(JOURNAL_PAGE_CACHE_KEY, snapshot)
   },
 
   onRetryLoad() {
@@ -168,6 +235,7 @@ Page({
   },
 
   onCreate() {
+    if (!requireAuthForWrite()) return
     const kind = this.data.activeView === 'notes' ? 'note' : 'moment'
     wx.navigateTo({ url: `/pages/journal-form/index?kind=${kind}` })
   },

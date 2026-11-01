@@ -3,9 +3,12 @@
   "navigationBarBackgroundColor": "#fbfaf6",
   "navigationBarTextStyle": "black",
   "backgroundColor": "#fbfaf6",
+  "enablePullDownRefresh": true,
   "usingComponents": {
     "line-icon": "/components/line-icon/index",
-    "app-tab-bar": "/components/app-tab-bar/index"
+    "app-tab-bar": "/components/app-tab-bar/index",
+    "page-loading": "/components/page-loading/index",
+    "auth-preview-gate": "/components/auth-preview-gate/index"
   },
   "navigationStyle": "custom"
 }

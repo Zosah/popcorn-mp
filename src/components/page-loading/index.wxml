@@ -1,0 +1,17 @@
+<view wx:if="{{show}}" class="page-loading" role="status" aria-label="{{title}}">
+  <view class="page-loading__paper">
+    <view class="page-loading__mark">
+      <view class="page-loading__sun"></view>
+      <view class="page-loading__line page-loading__line--one"></view>
+      <view class="page-loading__line page-loading__line--two"></view>
+      <view class="page-loading__line page-loading__line--three"></view>
+    </view>
+    <text class="page-loading__title">{{title}}</text>
+    <text class="page-loading__copy">{{copy}}</text>
+    <view class="page-loading__dots" aria-hidden="true">
+      <view></view>
+      <view></view>
+      <view></view>
+    </view>
+  </view>
+</view>

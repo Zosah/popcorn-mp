@@ -1,4 +1,7 @@
 <view class="page-shell todo-page">
+  <page-loading show="{{loading && !hasLoaded}}" title="正在整理待办" copy="把今天要做的小事排好顺序。" />
+  <auth-preview-gate />
+
   <view class="todo-head">
     <view class="todo-head__body">
       <text class="todo-eyebrow">一起生活</text>

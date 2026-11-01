@@ -1,3 +1,4 @@
+import { appConfig } from '../../config/env'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import {
   PET_DAILY_ICON_NAMES,
@@ -27,6 +28,9 @@ import {
 } from '../../domain/demo-pet'
 import { mediaGateway } from '../../services/media'
 import { getMediaErrorMessage } from '../../services/media-gateway'
+import { hydrateAuthState } from '../../services/auth'
+import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
+import { readPageCache, writePageCache } from '../../services/page-cache'
 import { petGateway } from '../../services/pet'
 import {
   activePetFrom,
@@ -94,6 +98,8 @@ const DAILY_LOG_DEFAULTS: Record<PetDailyLogType, string> = {
   urine: '尿团大小正常',
 }
 
+const PET_PAGE_CACHE_KEY = 'pets:overview'
+
 function formatShortDate(value: string | null): string {
   if (!value) return '待补充'
   const [, month, day] = value.split('-')
@@ -112,6 +118,9 @@ Page({
     activeSection: 'profile' as PetSection,
     hasActivePet: false,
     loading: true,
+    hasLoaded: false,
+    cacheFresh: false,
+    hasShown: false,
     syncing: false,
     errorText: '',
     syncState: 'pending',
@@ -205,6 +214,21 @@ Page({
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    const cached = readPageCache<Record<string, unknown>>(PET_PAGE_CACHE_KEY)
+    if (cached) {
+      const cachedProfile = cached.value.profile as DemoPetProfile | undefined
+      this.setData({
+        ...cached.value,
+        loading: false,
+        syncing: false,
+        hasLoaded: true,
+        cacheFresh: cached.fresh,
+        hasShown: false,
+        editingProfile: false,
+        profileDraft: cachedProfile ?? EMPTY_PROFILE,
+        uploadingAvatar: false,
+      })
+    }
     const section = options.section
     if (
       section === 'profile' ||
@@ -218,21 +242,49 @@ Page({
   },
 
   onShow() {
+    promptAuthGateIfNeeded()
+    const firstShow = !this.data.hasShown
+    if (firstShow) this.setData({ hasShown: true })
+    if (firstShow && this.data.cacheFresh) return
     void this.refreshPetData()
+  },
+
+  onPullDownRefresh() {
+    void this.refreshPetData('', true)
   },
 
   onBack() {
     navigateBackOrTab('/pages/home/index')
   },
 
-  async refreshPetData(preferredPetId = '') {
+  async refreshPetData(preferredPetId = '', fromPullDown = false) {
     this.setData({
-      loading: !this.data.petState.profile.id,
+      loading: !this.data.hasLoaded,
       syncing: true,
       syncState: 'pending',
       errorText: '',
     })
     try {
+      const auth = await hydrateAuthState()
+      if (!appConfig.demoMode && !auth.isLoggedIn) {
+        this.setData({
+          hasActivePet: false,
+          petStates: [],
+          petTabs: [],
+          petState: EMPTY_PET_STATE,
+          profile: EMPTY_PROFILE,
+          profileDraft: EMPTY_PROFILE,
+          profileInitial: '',
+          editingProfile: false,
+          loading: false,
+          hasLoaded: true,
+          cacheFresh: false,
+          errorText: '',
+          syncState: 'local',
+        })
+        promptAuthGateIfNeeded()
+        return
+      }
       let collection = await petGateway.list()
       if (
         preferredPetId
@@ -242,14 +294,21 @@ Page({
         collection = await petGateway.setActivePet(preferredPetId)
       }
       this.applyCollection(collection)
-      this.setData({ syncState: 'synced' })
+      this.setData({
+        syncState: 'synced',
+        hasLoaded: true,
+        cacheFresh: true,
+        errorText: '',
+      })
     } catch (error) {
       this.setData({
+        hasLoaded: true,
         errorText: getPetErrorMessage(error, '宠物照护暂时没有同步过来'),
         syncState: 'local',
       })
     } finally {
       this.setData({ loading: false, syncing: false })
+      if (fromPullDown) wx.stopPullDownRefresh()
     }
   },
 
@@ -286,10 +345,31 @@ Page({
     this.loadPetTabs()
   },
 
+  cacheCurrentPage() {
+    const data = this.data as unknown as Record<string, unknown>
+    const {
+      loading: _loading,
+      syncing: _syncing,
+      cacheFresh: _cacheFresh,
+      hasShown: _hasShown,
+      uploadingAvatar: _uploadingAvatar,
+      ...snapshot
+    } = data
+    writePageCache(PET_PAGE_CACHE_KEY, {
+      ...snapshot,
+      loading: false,
+      syncing: false,
+      uploadingAvatar: false,
+      editingProfile: false,
+      profileDraft: this.data.profile,
+    })
+  },
+
   async runPetMutation(
     operation: () => Promise<DemoPetState>,
     successText: string,
   ): Promise<void> {
+    if (!requireAuthForWrite()) return
     this.setData({ syncing: true, syncState: 'pending', errorText: '' })
     try {
       const state = await operation()
@@ -434,7 +514,7 @@ Page({
         iconName: PET_SUPPLY_ICON_NAMES[item.category],
         statusLabel: getPetSupplyStatusLabel(item.category, item.status),
       })),
-    })
+    }, () => this.cacheCurrentPage())
   },
 
   loadPetTabs(collection?: PetCollection) {
@@ -454,12 +534,13 @@ Page({
         avatarUrl: profile.avatarUrl ?? '',
         selected: profile.id === activeId,
       })),
-    })
+    }, () => this.cacheCurrentPage())
   },
 
   async onSwitchPet(event: { currentTarget: { dataset: { id: string } } }) {
     const id = event.currentTarget.dataset.id
     if (!id || id === this.data.petState.profile.id) return
+    if (!requireAuthForWrite()) return
     this.setData({ editingProfile: false, selectedSupplyCategory: 'all', syncing: true })
     try {
       const collection = await petGateway.setActivePet(id)
@@ -490,6 +571,7 @@ Page({
   },
 
   onAddPet() {
+    if (!requireAuthForWrite()) return
     const species: Array<{ value: PetSpecies; label: string }> = [
       { value: 'cat', label: '猫咪' },
       { value: 'dog', label: '狗狗' },
@@ -519,6 +601,7 @@ Page({
   },
 
   onToggleProfileEditor() {
+    if (!requireAuthForWrite()) return
     this.setData({
       editingProfile: !this.data.editingProfile,
       profileDraft: { ...this.data.profile },
@@ -527,6 +610,7 @@ Page({
 
   onChooseAvatar() {
     if (this.data.uploadingAvatar || this.data.syncing) return
+    if (!requireAuthForWrite()) return
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
@@ -573,6 +657,7 @@ Page({
   onRemoveAvatar() {
     const profile = this.data.profile
     if (!profile.avatarMediaId || this.data.uploadingAvatar || this.data.syncing) return
+    if (!requireAuthForWrite()) return
     wx.showModal({
       title: '移除宠物照片',
       content: '照片会从档案中移除，原文件暂不物理删除。',
@@ -628,6 +713,7 @@ Page({
   },
 
   async onSaveProfile() {
+    if (!requireAuthForWrite()) return
     const draft = this.data.profileDraft
     const today = getShanghaiDateOnly(Date.now())
     if (!draft.birthday || draft.birthday > today) {
@@ -657,6 +743,7 @@ Page({
   onDeletePet() {
     const profile = this.data.profile
     if (!profile.id || this.data.syncing) return
+    if (!requireAuthForWrite()) return
     wx.showModal({
       title: '删除宠物档案',
       content: '档案、照护记录和用品记录会一起移除；已上传的照片暂不物理删除。',
@@ -693,6 +780,7 @@ Page({
   },
 
   onRecordWeight() {
+    if (!requireAuthForWrite()) return
     wx.showModal({
       title: `记录${this.data.profile.name}的体重`,
       editable: true,
@@ -717,6 +805,7 @@ Page({
   },
 
   onAddEvent() {
+    if (!requireAuthForWrite()) return
     wx.navigateTo({ url: '/pages/pet-event-form/index' })
   },
 
@@ -733,6 +822,7 @@ Page({
   onCompleteCare(event: {
     currentTarget: { dataset: { type: PetCareType; intervalDays: number } }
   }) {
+    if (!requireAuthForWrite()) return
     const type = event.currentTarget.dataset.type
     const intervalDays = Number(event.currentTarget.dataset.intervalDays)
     const recurrenceDays = Number.isInteger(intervalDays) && intervalDays > 0
@@ -774,6 +864,7 @@ Page({
   onAddDailyLog(event: {
     currentTarget: { dataset: { type: PetDailyLogType } }
   }) {
+    if (!requireAuthForWrite()) return
     const type = event.currentTarget.dataset.type
     wx.showModal({
       title: `记录${PET_DAILY_LOG_LABELS[type]}`,
@@ -796,6 +887,7 @@ Page({
   },
 
   onAddSupply() {
+    if (!requireAuthForWrite()) return
     const categories = SUPPLY_CATEGORIES.filter((item) => item.value !== 'all')
     wx.showActionSheet({
       itemList: categories.map((item) => item.label),
@@ -841,6 +933,7 @@ Page({
   onChangeSupplyStatus(event: {
     currentTarget: { dataset: { id: string } }
   }) {
+    if (!requireAuthForWrite()) return
     const id = event.currentTarget.dataset.id
     wx.showActionSheet({
       itemList: SUPPLY_STATUS_OPTIONS.map((item) => item.label),
