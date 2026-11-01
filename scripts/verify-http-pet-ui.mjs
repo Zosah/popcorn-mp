@@ -17,6 +17,12 @@ const petsWxml = await readFile(new URL('../src/pages/pets/index.wxml', import.m
 assert.match(petsWxml, /\{\{item\.hearts\}\} \{\{item\.label\}\}/)
 assert.ok(petsWxml.includes('catchtap="onChangeSupplyStatus"'))
 assert.ok(!petsWxml.includes('onRemoveAvatar'))
+assert.ok(!petsWxml.includes('今天已记录'))
+assert.ok(!petsWxml.includes('基础档案'))
+assert.ok(!petsWxml.includes('只记发生过的事'))
+assert.ok(petsWxml.indexOf('data-value="daily"') < petsWxml.indexOf('data-value="supplies"'))
+assert.ok(petsWxml.indexOf('data-value="supplies"') < petsWxml.indexOf('data-value="care"'))
+assert.ok(petsWxml.indexOf('data-value="care"') < petsWxml.indexOf('data-value="profile"'))
 const supplyRowTag = petsWxml.match(/<view wx:for="\{\{supplies\}\}"[^>]*>/)?.[0]
 assert.ok(supplyRowTag, '用品行结构不存在')
 assert.ok(!supplyRowTag.includes('onChangeSupplyStatus'), '用品整行不应直接触发偏好修改')
@@ -45,6 +51,7 @@ async function callPageMethod(method, ...args) {
 // 裁切面板是系统 UI，自动化验收用同路径回写模拟“用户完成了 1:1 裁切”。
 await miniProgram.evaluate(() => {
   wx.cropImage = (options) => options.success({ tempFilePath: options.src })
+  wx.showToast = () => {}
 })
 
 function addDays(dateOnly, days) {
@@ -134,8 +141,8 @@ async function waitFor(check, label, timeoutMs = 20000) {
   throw new Error(`等待超时：${label}，最后状态：${JSON.stringify(lastValue)}`)
 }
 
-async function screenshot(name) {
-  await miniProgram.pageScrollTo(0)
+async function screenshot(name, scrollTop = 0) {
+  await miniProgram.pageScrollTo(scrollTop)
   await wait(450)
   const path = `shots/pets-http-${name}.png`
   await miniProgram.screenshot({ path })
@@ -309,48 +316,72 @@ try {
   }, '记录体重')
   assert.equal(weightData.petState.weights.length, 1)
 
-  await mockWxSuccess('showModal', {
-    confirm: true,
-    cancel: false,
-    content: '早餐吃了半罐，食欲正常',
-  })
-  await callPageMethod('onAddDailyLog', {
-    currentTarget: { dataset: { type: 'meal' } },
-  })
-  await waitFor(async () => {
-    const data = await page.data()
-    return !data.syncing && data.petState.dailyLogs.length === 1 ? data : false
-  }, '记录今日饮食')
-  await callPageMethod('onSwitchSection', {
-    currentTarget: { dataset: { value: 'daily' } },
-  })
-  for (const [type, summary] of [
-    ['litter-change', '换掉结块并补了新猫砂'],
-    ['water-change', '清洗水碗换上新水'],
-  ]) {
-    await mockWxSuccess('showModal', {
-      confirm: true,
-      cancel: false,
-      content: summary,
-    })
+  async function saveDailyLog(type, choice, detail, expectedCount) {
     await callPageMethod('onAddDailyLog', {
       currentTarget: { dataset: { type } },
     })
-    await waitFor(async () => {
+    const editor = await page.data()
+    assert.equal(editor.dailyEditorOpen, true)
+    assert.equal(editor.dailyEditor.type, type)
+    if (choice) {
+      await callPageMethod('onDailyChoiceSelect', {
+        currentTarget: { dataset: { value: choice } },
+      })
+    }
+    if (detail) {
+      await callPageMethod('onDailyDetailInput', {
+        detail: { value: detail },
+      })
+    }
+    await callPageMethod('onSaveDailyLog')
+    return waitFor(async () => {
       const data = await page.data()
-      return !data.syncing && data.petState.dailyLogs.some((item) => item.type === type) ? data : false
+      return !data.syncing
+        && !data.dailyEditorOpen
+        && data.petState.dailyLogs.filter((item) => item.type === type).length === expectedCount
+        ? data
+        : false
     }, `记录${type}`)
   }
+
+  await saveDailyLog('meal', '罐头', '半罐', 1)
+  await callPageMethod('onAddDailyLog', {
+    currentTarget: { dataset: { type: 'urine' } },
+  })
+  await callPageMethod('onDailyChoiceSelect', {
+    currentTarget: { dataset: { value: '偏少' } },
+  })
+  await callPageMethod('onDailyDetailInput', {
+    detail: { value: '2 个尿团' },
+  })
+  assert.equal((await page.data()).dailyEditorOpen, true)
+  await screenshot('daily-editor')
+  await callPageMethod('onSaveDailyLog')
+  await waitFor(async () => {
+    const data = await page.data()
+    return !data.syncing && !data.dailyEditorOpen ? data : false
+  }, '记录尿尿')
+  await saveDailyLog('urine', '正常', '1 个尿团', 2)
+  await saveDailyLog('litter-change', '局部清理', '2 个猫砂盆', 1)
+  await saveDailyLog('water-change', '换水', '2 处', 1)
+
+  await callPageMethod('onSwitchSection', {
+    currentTarget: { dataset: { value: 'daily' } },
+  })
   const dailyData = await waitFor(async () => {
     const data = await page.data()
-    const litter = data.dailySummary?.find((item) => item.type === 'litter-change')
+    const urine = data.dailySummary?.find((item) => item.type === 'urine')
     const water = data.dailySummary?.find((item) => item.type === 'water-change')
-    return litter?.elapsedLabel && water?.elapsedLabel ? data : false
-  }, '日常间隔摘要')
+    return urine?.count === 2 && water?.count === 1 ? data : false
+  }, '日常重复记录摘要')
   assert.equal(dailyData.dailySummary.length, 6)
-  assert.match(dailyData.dailySummary.find((item) => item.type === 'litter-change').elapsedLabel, /刚刚|小时|天/)
+  assert.equal(dailyData.dailyTodayCount, 5)
+  assert.match(
+    dailyData.recentDailyLogs.find((item) => item.summary === '换了 2 处的水')?.summary ?? '',
+    /2 处/,
+  )
   await screenshot('daily')
-  console.log('PASS 体重、吃喝拉撒与换猫砂/换水写入服务端，并生成小时级间隔摘要')
+  console.log('PASS 日常记录可细化并可重复追加，尿尿记录两次后展示今天 2 次')
 
   const careOccurredOn = todayShanghai()
   const plannedNextOn = addDays(careOccurredOn, 45)
@@ -436,7 +467,7 @@ try {
     })
   }
 
-  page = await open('/pages/pets/index')
+  page = await open('/pages/pets/index?section=profile')
   const profileTimelineData = await waitFor(async () => {
     const data = await page.data()
     return !data.loading && data.timeline.length > 5 ? data : false
@@ -448,7 +479,7 @@ try {
   const expandedTimeline = await page.data()
   assert.equal(expandedTimeline.timelineExpanded, true)
   assert.equal(expandedTimeline.timelineVisible.length, expandedTimeline.timeline.length)
-  await screenshot('timeline-expanded')
+  await screenshot('timeline-expanded', 720)
 
   page = await open('/pages/pets/index?section=care')
   const carePageData = await waitFor(async () => {
@@ -462,7 +493,7 @@ try {
   assert.equal('intervalDays' in externalDewormCard, false)
   await callPageMethod('onToggleCareTimeline')
   assert.equal((await page.data()).careTimelineVisible.length, carePageData.careTimeline.length)
-  await screenshot('care')
+  await screenshot('care', 660)
   await callPageMethod('onRecordCare', {
     currentTarget: { dataset: { type: 'external-deworm' } },
   })

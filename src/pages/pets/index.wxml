@@ -59,16 +59,15 @@
     </view>
 
     <view class="pet-nav">
-      <view class="pet-nav__item {{activeSection === 'profile' ? 'pet-nav__item--active' : ''}}" data-value="profile" bindtap="onSwitchSection">档案</view>
-      <view class="pet-nav__item {{activeSection === 'care' ? 'pet-nav__item--active' : ''}}" data-value="care" bindtap="onSwitchSection">护理</view>
       <view class="pet-nav__item {{activeSection === 'daily' ? 'pet-nav__item--active' : ''}}" data-value="daily" bindtap="onSwitchSection">日常</view>
       <view class="pet-nav__item {{activeSection === 'supplies' ? 'pet-nav__item--active' : ''}}" data-value="supplies" bindtap="onSwitchSection">用品</view>
+      <view class="pet-nav__item {{activeSection === 'care' ? 'pet-nav__item--active' : ''}}" data-value="care" bindtap="onSwitchSection">护理</view>
+      <view class="pet-nav__item {{activeSection === 'profile' ? 'pet-nav__item--active' : ''}}" data-value="profile" bindtap="onSwitchSection">档案</view>
     </view>
 
     <view class="pet-content">
       <block wx:if="{{activeSection === 'profile'}}">
-        <view class="pet-section-head">
-          <view><text class="pet-eyebrow">基础档案</text><text class="pet-section-head__title">关于{{profile.name}}</text></view>
+        <view class="pet-toolbar">
           <view bindtap="onToggleProfileEditor">{{editingProfile ? '取消' : '编辑'}}</view>
         </view>
         <view class="profile-facts-card">
@@ -85,16 +84,10 @@
           <button class="profile-editor__save" bindtap="onSaveProfile">保存档案</button>
         </view>
 
-        <view class="pet-section-head"><view><text class="pet-eyebrow">今天</text><text class="pet-section-head__title">{{profile.name}}的日常</text></view><view data-value="daily" bindtap="onSwitchSection">全部</view></view>
-        <view class="daily-grid daily-grid--overview">
-          <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card {{item.done ? 'daily-card--done' : ''}}" data-type="{{item.type}}" bindtap="onAddDailyLog">
-            <view class="daily-card__visual"><line-icon name="{{item.iconName}}" size="23" tone="{{item.done ? 'white' : 'green'}}" /><view wx:if="{{item.done}}" class="daily-card__check"><line-icon name="check" size="9" tone="white" /></view></view>
-            <text class="daily-card__title">{{item.label}}</text>
-            <text class="daily-card__status">{{item.interval ? item.elapsedLabel : item.done ? '已记录' : '待记录'}}</text>
-          </view>
+        <view class="pet-section-head pet-section-head--plain">
+          <view><text class="pet-section-head__title">体重</text></view>
+          <view bindtap="onRecordWeight">记体重</view>
         </view>
-
-        <view class="pet-section-head"><view><text class="pet-eyebrow">健康趋势</text><text class="pet-section-head__title">体重记录</text></view><view bindtap="onRecordWeight">新增</view></view>
         <view class="pet-weight">
           <view class="pet-weight__head"><view><text>{{latestWeight}} kg</text><text>{{weightTrendLabel}}</text></view><text>近 {{weightPoints.length}} 次</text></view>
           <view class="pet-weight__chart">
@@ -102,66 +95,76 @@
           </view>
         </view>
 
-        <view class="pet-section-head"><view><text class="pet-eyebrow">成长时间线</text><text class="pet-section-head__title">最近的{{profile.name}}</text></view><view bindtap="onAddEvent">记一下</view></view>
+        <view class="pet-section-head pet-section-head--plain">
+          <view><text class="pet-section-head__title">成长记录</text></view>
+          <view bindtap="onAddEvent">新增</view>
+        </view>
         <view class="pet-timeline">
           <view wx:for="{{timelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-            <view class="timeline-row__date"><text class="timeline-row__year">{{item.yearLabel}}</text><text class="timeline-row__day">{{item.dateLabel}}</text></view>
-            <view class="timeline-row__rail"><view class="timeline-row__dot"></view><view class="timeline-row__line"></view></view>
-            <view class="timeline-row__body"><view class="timeline-row__title">{{item.title}}</view><text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text></view>
+            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="13" tone="pink" /></view><view class="timeline-row__line"></view></view>
+            <view class="timeline-row__body">
+              <view class="timeline-row__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text></view>
+              <view class="timeline-row__title">{{item.title}}</view>
+              <text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text>
+            </view>
           </view>
         </view>
-        <view wx:if="{{timeline.length > 5}}" class="timeline-more" bindtap="onToggleTimeline">{{timelineExpanded ? '收起较早记录' : '展开更早记录'}}<text>{{timelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{timeline.length > 5}}" class="timeline-more" bindtap="onToggleTimeline">{{timelineExpanded ? '收起' : '查看更早记录'}}<text>{{timelineExpanded ? '↑' : '↓'}}</text></view>
 
-        <view class="profile-danger-zone"><view><text>删除宠物档案</text><text>同时移除照护与用品记录</text></view><button bindtap="onDeletePet">删除{{profile.name}}的档案</button></view>
+        <view class="profile-danger-zone"><view><text>删除档案</text><text>档案、照护和用品记录会一起移除</text></view><button bindtap="onDeletePet">删除</button></view>
       </block>
 
       <block wx:elif="{{activeSection === 'care'}}">
-        <view class="pet-intro">
-          <view class="pet-intro__icon"><line-icon name="heart-pulse" size="27" tone="pink" /></view>
-          <view><text>只记发生过的事</text><text>下次什么时候做，由你决定。想安排时可以顺手记下日期。</text></view>
+        <view class="pet-toolbar">
+          <view bindtap="onOpenCalendar">月历</view>
         </view>
-        <view class="pet-section-head"><view><text class="pet-eyebrow">护理记录</text><text class="pet-section-head__title">最近一次</text></view><view bindtap="onOpenCalendar">月历</view></view>
         <view class="care-list">
           <view wx:for="{{careCards}}" wx:key="type" class="care-row care-row--{{item.status}}">
             <view class="care-row__body">
               <view class="care-row__title">{{item.title}}</view>
               <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOn}} · 已过 <text>{{item.elapsedLabel}}</text></view>
               <view wx:else class="care-row__elapsed">还没有记录</view>
-              <view wx:if="{{item.nextOn}}" class="care-row__plan">计划 {{item.nextOn}}</view>
+              <view wx:if="{{item.nextOn}}" class="care-row__plan">下次 {{item.nextOn}}</view>
             </view>
             <button class="care-row__action" data-type="{{item.type}}" bindtap="onRecordCare"><line-icon name="plus" size="16" tone="pink" /><text>记一下</text></button>
           </view>
         </view>
-        <view class="pet-section-head"><view><text class="pet-eyebrow">最近护理</text><text class="pet-section-head__title">护理时间线</text></view><view bindtap="onAddEvent">记一下</view></view>
+        <view class="pet-section-head pet-section-head--plain">
+          <view><text class="pet-section-head__title">记录</text></view>
+          <view bindtap="onAddEvent">新增</view>
+        </view>
         <view class="pet-timeline">
           <view wx:for="{{careTimelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-            <view class="timeline-row__date"><text class="timeline-row__year">{{item.yearLabel}}</text><text class="timeline-row__day">{{item.dateLabel}}</text></view>
-            <view class="timeline-row__rail"><view class="timeline-row__dot timeline-row__dot--pink"></view><view class="timeline-row__line"></view></view>
-            <view class="timeline-row__body"><view class="timeline-row__title">{{item.title}}</view><text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text></view>
+            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="13" tone="pink" /></view><view class="timeline-row__line"></view></view>
+            <view class="timeline-row__body">
+              <view class="timeline-row__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text></view>
+              <view class="timeline-row__title">{{item.title}}</view>
+              <text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text>
+            </view>
           </view>
         </view>
-        <view wx:if="{{careTimeline.length > 5}}" class="timeline-more" bindtap="onToggleCareTimeline">{{careTimelineExpanded ? '收起较早记录' : '展开更早记录'}}<text>{{careTimelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{careTimeline.length > 5}}" class="timeline-more" bindtap="onToggleCareTimeline">{{careTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{careTimelineExpanded ? '↑' : '↓'}}</text></view>
       </block>
 
       <block wx:elif="{{activeSection === 'daily'}}">
-        <view class="pet-section-head"><view><text class="pet-eyebrow">日常照护</text><text class="pet-section-head__title">点一下，记一笔</text></view><text>{{dailyDoneCount}} / 6</text></view>
+        <view class="pet-toolbar">
+          <text>{{dailyTodayCount ? '今天 ' + dailyTodayCount + ' 条' : '今天'}}</text>
+        </view>
         <view class="daily-grid">
-          <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card {{item.done ? 'daily-card--done' : ''}} {{item.interval ? 'daily-card--interval' : ''}}" data-type="{{item.type}}" bindtap="onAddDailyLog">
-            <view class="daily-card__visual"><line-icon name="{{item.iconName}}" size="25" tone="{{item.done ? 'white' : 'green'}}" /><view wx:if="{{item.done}}" class="daily-card__check"><line-icon name="check" size="10" tone="white" /></view></view>
-            <text class="daily-card__title">{{item.label}}</text>
-            <text wx:if="{{item.interval}}" class="daily-card__status">{{item.elapsedLabel}}前</text>
-            <text wx:else class="daily-card__status">{{item.done ? '今天已记录' : '点按记录'}}</text>
+          <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card" data-type="{{item.type}}" bindtap="onAddDailyLog">
+            <view class="daily-card__visual"><line-icon name="{{item.iconName}}" size="24" tone="pink" /></view>
+            <view class="daily-card__body"><text class="daily-card__title">{{item.label}}</text><text class="daily-card__status">{{item.metaLabel}}</text></view>
+            <text class="daily-card__add">＋</text>
           </view>
         </view>
-        <view class="interval-guide"><text>换猫砂、换水按上次时间计算，细到小时。</text></view>
         <view wx:if="{{recentDailyLogs.length}}" class="daily-recent">
-          <view class="pet-section-head"><view><text class="pet-eyebrow">今天的记录</text><text class="pet-section-head__title">照护明细</text></view><text>{{recentDailyLogs.length}} 条</text></view>
-          <view class="daily-list"><view wx:for="{{recentDailyLogs}}" wx:key="id" class="daily-row"><view class="daily-row__icon"><line-icon name="{{item.iconName}}" size="23" tone="green" /></view><view class="daily-row__body"><text>{{item.summary}}</text><text>{{item.typeLabel}}</text></view><text class="daily-row__time">{{item.timeLabel}}</text></view></view>
+          <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">今天的记录</text></view><text>{{recentDailyLogs.length}} 条</text></view>
+          <view class="daily-list"><view wx:for="{{recentDailyLogs}}" wx:key="id" class="daily-row"><view class="daily-row__icon"><line-icon name="{{item.iconName}}" size="22" tone="pink" /></view><view class="daily-row__body"><text>{{item.summary}}</text><text>{{item.typeLabel}}</text></view><text class="daily-row__time">{{item.timeLabel}}</text></view></view>
         </view>
       </block>
 
       <block wx:else>
-        <view class="pet-section-head"><view><text class="pet-eyebrow">家里的好物</text><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
+        <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
         <view wx:if="{{currentSupplies.length}}" class="current-supplies-wrap">
           <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply"><text class="current-supply__label">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__name">{{item.name}}</view><view class="current-supply__note">{{item.categoryLabel}} · {{item.note || '用着不错'}}</view></view></view></scroll-view>
         </view>
@@ -175,8 +178,31 @@
           </view>
         </view>
         <view wx:if="{{!supplies.length}}" class="pet-empty-line" bindtap="onAddSupply">还没有用品，先记一件家里正在用的东西</view>
-        <view class="supply-tip">点爱心调整喜欢程度，不会改动其它资料。</view>
       </block>
+    </view>
+
+    <view wx:if="{{dailyEditorOpen}}" class="pet-sheet-mask" catchtap="onCloseDailyEditor">
+      <view class="pet-sheet pet-sheet--daily" catchtap="noop">
+        <view class="pet-sheet__handle"></view>
+        <view class="pet-sheet__head daily-editor__head">
+          <view class="daily-editor__heading">
+            <view class="daily-editor__icon"><line-icon name="{{dailyEditor.iconName}}" size="24" tone="pink" /></view>
+            <text class="pet-sheet__title">{{dailyEditor.title}}</text>
+          </view>
+          <view bindtap="onCloseDailyEditor" aria-label="关闭">关闭</view>
+        </view>
+        <view class="daily-editor__section">
+          <text class="daily-editor__label">{{dailyEditor.choiceLabel}}</text>
+          <view class="choice-row">
+            <view wx:for="{{dailyEditor.choices}}" wx:key="value" class="choice-chip {{dailyEditor.choice === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onDailyChoiceSelect">{{item.label}}</view>
+          </view>
+        </view>
+        <view class="daily-editor__field">
+          <text>{{dailyEditor.detailLabel}}</text>
+          <input value="{{dailyEditor.detail}}" maxlength="60" placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" />
+        </view>
+        <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">记下这次{{dailyEditor.title}}</button>
+      </view>
     </view>
 
     <view wx:if="{{avatarPreviewOpen}}" class="pet-modal" catchtap="onCloseAvatarPreview">

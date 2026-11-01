@@ -180,6 +180,49 @@ describe('每日吃喝拉撒记录', () => {
     })
   })
 
+  it('同一天同类可以记录多次，次数不会合并成一次完成态', () => {
+    const summary = buildPetDailySummary(
+      [
+        {
+          id: 'urine-1',
+          type: 'urine',
+          summary: '2 个尿团 · 正常',
+          note: '',
+          recordedAt: '2026-08-27T01:00:00.000Z',
+        },
+        {
+          id: 'urine-2',
+          type: 'urine',
+          summary: '1 个尿团 · 偏少',
+          note: '',
+          recordedAt: '2026-08-27T08:30:00.000Z',
+        },
+        {
+          id: 'water-change-1',
+          type: 'water-change',
+          summary: '换了 2 处的水',
+          note: '',
+          recordedAt: '2026-08-27T09:00:00.000Z',
+        },
+        {
+          id: 'water-change-yesterday',
+          type: 'water-change',
+          summary: '换了 1 处的水',
+          note: '',
+          recordedAt: '2026-08-26T09:00:00.000Z',
+        },
+      ],
+      '2026-08-27',
+    )
+
+    expect(summary.find((item) => item.type === 'urine')).toMatchObject({
+      count: 2,
+      latestSummary: '1 个尿团 · 偏少',
+      latestTime: '16:30',
+    })
+    expect(summary.find((item) => item.type === 'water-change')?.count).toBe(1)
+  })
+
   it('不把前一天的记录计入今天', () => {
     const summary = buildPetDailySummary(
       [

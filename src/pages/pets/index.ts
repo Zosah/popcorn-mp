@@ -116,16 +116,101 @@ const SUPPLY_EDITOR_CATEGORIES: Array<{
   { value: 'custom', label: '自定义' },
 ]
 
-const DAILY_LOG_DEFAULTS: Record<PetDailyLogType, string> = {
-  meal: '吃了一餐，食欲正常',
-  water: '主动喝水一次',
-  stool: '便便形态正常',
-  urine: '尿团大小正常',
-  'litter-change': '换掉结块，并补了新猫砂',
-  'water-change': '清洗水碗，换上干净饮水',
+interface DailyEditorOption {
+  value: string
+  label: string
 }
 
-const PET_PAGE_CACHE_KEY = 'pets:overview:v2'
+interface DailyEditorConfig {
+  choiceLabel: string
+  detailLabel: string
+  detailPlaceholder: string
+  choices: DailyEditorOption[]
+}
+
+const DAILY_EDITOR_CONFIGS: Record<PetDailyLogType, DailyEditorConfig> = {
+  meal: {
+    choiceLabel: '吃了什么',
+    detailLabel: '份量',
+    detailPlaceholder: '例如 42g、半罐',
+    choices: [
+      { value: '猫粮', label: '猫粮' },
+      { value: '罐头', label: '罐头' },
+      { value: '冻干', label: '冻干' },
+      { value: '其他', label: '其他' },
+    ],
+  },
+  water: {
+    choiceLabel: '这次',
+    detailLabel: '在哪喝',
+    detailPlaceholder: '例如 客厅水碗',
+    choices: [
+      { value: '主动喝', label: '主动喝' },
+      { value: '少量', label: '少量' },
+      { value: '多次', label: '多次' },
+    ],
+  },
+  stool: {
+    choiceLabel: '情况',
+    detailLabel: '补充',
+    detailPlaceholder: '例如 量少、带毛',
+    choices: [
+      { value: '正常', label: '正常' },
+      { value: '偏软', label: '偏软' },
+      { value: '偏硬', label: '偏硬' },
+      { value: '异常', label: '异常' },
+    ],
+  },
+  urine: {
+    choiceLabel: '情况',
+    detailLabel: '次数或尿团',
+    detailPlaceholder: '例如 2 个尿团',
+    choices: [
+      { value: '正常', label: '正常' },
+      { value: '偏少', label: '偏少' },
+      { value: '偏多', label: '偏多' },
+      { value: '未观察', label: '未观察' },
+    ],
+  },
+  'litter-change': {
+    choiceLabel: '怎么换的',
+    detailLabel: '猫砂盆',
+    detailPlaceholder: '例如 2 个',
+    choices: [
+      { value: '局部清理', label: '局部清理' },
+      { value: '整盆更换', label: '整盆更换' },
+    ],
+  },
+  'water-change': {
+    choiceLabel: '怎么换的',
+    detailLabel: '处数',
+    detailPlaceholder: '例如 2 处',
+    choices: [
+      { value: '换水', label: '换水' },
+      { value: '洗水碗', label: '洗水碗' },
+      { value: '换水并洗', label: '换水并洗' },
+    ],
+  },
+}
+
+function composeDailyLogSummary(
+  type: PetDailyLogType,
+  choice: string,
+  detail: string,
+): string {
+  const extra = detail.trim()
+  if (type === 'meal') {
+    return extra ? `${choice} · ${extra}` : choice
+  }
+  if (type === 'water-change') {
+    if (choice === '换水') return `换了 ${extra || '1 处'}的水`
+    if (choice === '洗水碗') return extra ? `${extra} · 洗了水碗` : '洗了水碗'
+    return extra ? `换水并洗了 ${extra}` : '换水并洗了水碗'
+  }
+  return extra ? `${extra} · ${choice}` : choice
+}
+
+const PET_PAGE_CACHE_KEY = 'pets:overview:v3'
 
 function formatShortDate(value: string | null): string {
   if (!value) return '待补充'
@@ -142,7 +227,7 @@ function formatDailyTime(value: string): string {
 
 Page({
   data: {
-    activeSection: 'profile' as PetSection,
+    activeSection: 'daily' as PetSection,
     hasActivePet: false,
     loading: true,
     hasLoaded: false,
@@ -162,6 +247,19 @@ Page({
     })),
     supplyEditorOpen: false,
     supplySaving: false,
+    dailyEditorOpen: false,
+    dailySaving: false,
+    dailyEditor: {
+      type: 'urine' as PetDailyLogType,
+      title: '尿尿',
+      iconName: 'droplet',
+      choiceLabel: '情况',
+      detailLabel: '次数或尿团',
+      detailPlaceholder: '例如 2 个尿团',
+      choices: [] as DailyEditorOption[],
+      choice: '',
+      detail: '',
+    },
     supplyPreferenceOptions: SUPPLY_PREFERENCE_OPTIONS,
     supplyEditorCategories: SUPPLY_EDITOR_CATEGORIES,
     supplyDraft: {
@@ -196,7 +294,7 @@ Page({
     vaccineNextLabel: '',
     latestWeight: '—',
     companionDays: 0,
-    dailyDoneCount: 0,
+    dailyTodayCount: 0,
     featuredSupply: null as {
       id: string
       categoryLabel: string
@@ -249,7 +347,7 @@ Page({
     dailySummary: [] as Array<
       ReturnType<typeof buildPetDailySummary>[number] & {
         iconName: string
-        interval: boolean
+        metaLabel: string
       }
     >,
     recentDailyLogs: [] as Array<{
@@ -296,9 +394,12 @@ Page({
         hasLoaded: true,
         cacheFresh: cached.fresh,
         hasShown: false,
+        activeSection: 'daily' as PetSection,
         editingProfile: false,
         profileDraft: cachedProfile ?? EMPTY_PROFILE,
         uploadingAvatar: false,
+        dailyEditorOpen: false,
+        dailySaving: false,
       })
     }
     const section = options.section
@@ -433,6 +534,8 @@ Page({
       uploadingBackground: _uploadingBackground,
       supplyEditorOpen: _supplyEditorOpen,
       supplySaving: _supplySaving,
+      dailyEditorOpen: _dailyEditorOpen,
+      dailySaving: _dailySaving,
       ...snapshot
     } = data
     writePageCache(PET_PAGE_CACHE_KEY, {
@@ -445,6 +548,8 @@ Page({
       uploadingBackground: false,
       supplyEditorOpen: false,
       supplySaving: false,
+      dailyEditorOpen: false,
+      dailySaving: false,
       editingProfile: false,
       profileDraft: this.data.profile,
     })
@@ -592,7 +697,7 @@ Page({
       vaccineNextLabel,
       latestWeight: latestValue ? formatPetWeight(latestValue.value) : '—',
       companionDays,
-      dailyDoneCount: dailySummary.filter((item) => item.done).length,
+      dailyTodayCount: todayDailyLogs.length,
       featuredSupply: currentSupplies[0] ?? null,
       weightPoints,
       weightTrendLabel,
@@ -605,15 +710,17 @@ Page({
         : careTimeline.slice(0, 5),
       dailySummary: dailySummary.map((item) => ({
         ...item,
-        interval: item.type === 'litter-change' || item.type === 'water-change',
+        metaLabel: item.count > 0 ? `今天 ${item.count} 次` : '记一笔',
       })),
-      recentDailyLogs: todayDailyLogs.slice(0, 6).map((item) => ({
+      recentDailyLogs: [...todayDailyLogs]
+        .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
+        .map((item) => ({
         id: item.id,
         iconName: PET_DAILY_ICON_NAMES[item.type],
         typeLabel: PET_DAILY_LOG_LABELS[item.type],
         summary: item.summary,
         timeLabel: formatDailyTime(item.recordedAt),
-      })),
+        })),
       currentSupplies,
       supplies: filterPetSupplies(
         state.supplies,
@@ -1144,24 +1251,51 @@ Page({
   }) {
     if (!requireAuthForWrite()) return
     const type = event.currentTarget.dataset.type
-    wx.showModal({
-      title: `记录${PET_DAILY_LOG_LABELS[type]}`,
-      content: DAILY_LOG_DEFAULTS[type],
-      editable: true,
-      placeholderText: '写下这次的情况',
-      confirmText: '记下来',
-      success: async (result) => {
-        const summary = result.content?.trim()
-        if (!result.confirm || !summary) return
-        await this.runPetMutation(
-          () => petGateway.addDailyLog(
-            this.data.petState.profile.id,
-            { type, summary },
-          ),
-          '今日状态已更新',
-        )
+    const config = DAILY_EDITOR_CONFIGS[type]
+    this.setData({
+      dailyEditorOpen: true,
+      dailyEditor: {
+        type,
+        title: PET_DAILY_LOG_LABELS[type],
+        iconName: PET_DAILY_ICON_NAMES[type],
+        choiceLabel: config.choiceLabel,
+        detailLabel: config.detailLabel,
+        detailPlaceholder: config.detailPlaceholder,
+        choices: config.choices,
+        choice: config.choices[0]?.value ?? '',
+        detail: '',
       },
     })
+  },
+
+  onCloseDailyEditor() {
+    if (this.data.dailySaving) return
+    this.setData({ dailyEditorOpen: false })
+  },
+
+  onDailyChoiceSelect(event: {
+    currentTarget: { dataset: { value: string } }
+  }) {
+    this.setData({ 'dailyEditor.choice': event.currentTarget.dataset.value })
+  },
+
+  onDailyDetailInput(event: WechatMiniprogram.Input) {
+    this.setData({ 'dailyEditor.detail': event.detail.value })
+  },
+
+  async onSaveDailyLog() {
+    const draft = this.data.dailyEditor
+    if (!draft.choice) return
+    const summary = composeDailyLogSummary(draft.type, draft.choice, draft.detail)
+    this.setData({ dailySaving: true })
+    const saved = await this.runPetMutation(
+      () => petGateway.addDailyLog(
+        this.data.petState.profile.id,
+        { type: draft.type, summary },
+      ),
+      `${PET_DAILY_LOG_LABELS[draft.type]}已记下`,
+    )
+    this.setData({ dailySaving: false, dailyEditorOpen: !saved })
   },
 
   onAddSupply() {

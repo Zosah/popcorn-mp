@@ -504,26 +504,23 @@ export function buildPetDailySummary(
     ? Date.now()
     : Date.parse(`${today}T23:59:59+08:00`)
   return PET_DAILY_LOG_TYPES.map((type) => {
-    const isIntervalAction = type === 'litter-change' || type === 'water-change'
     const matchingLogs = logs
       .filter((log) => log.type === type)
-      .filter(
-        (log) =>
-          isIntervalAction ||
-          getShanghaiDateOnly(Date.parse(log.recordedAt)) === today,
-      )
       .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
-    const latest = matchingLogs[0]
     const todayLogs = matchingLogs.filter(
       (log) => getShanghaiDateOnly(Date.parse(log.recordedAt)) === today,
     )
+    const latest = matchingLogs[0]
+    const latestToday = todayLogs[0]
     return {
       type,
       label: PET_DAILY_LOG_LABELS[type],
-      count: isIntervalAction ? matchingLogs.length : todayLogs.length,
-      done: isIntervalAction ? Boolean(latest) : todayLogs.length > 0,
-      latestSummary: latest?.summary ?? (isIntervalAction ? '还没有记录' : '今天还没记录'),
-      latestTime: latest ? formatShanghaiTime(Date.parse(latest.recordedAt)) : '待记录',
+      count: todayLogs.length,
+      done: todayLogs.length > 0,
+      latestSummary: latestToday?.summary ?? '今天还没记录',
+      latestTime: latestToday
+        ? formatShanghaiTime(Date.parse(latestToday.recordedAt))
+        : '待记录',
       elapsedLabel: latest
         ? formatPetElapsedHours(latest.recordedAt, nowMs)
         : '还没有记录',
