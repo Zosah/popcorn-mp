@@ -1,11 +1,16 @@
 <view class="settings-page">
   <view class="settings-head">
-    <view class="settings-head__copy">
-      <text class="settings-head__title">设置</text>
-      <text class="settings-head__description">账号、空间与功能入口</text>
+    <text class="settings-head__title">设置</text>
+    <text class="settings-head__description">账号、空间与常用功能</text>
+  </view>
+
+  <view class="settings-hero">
+    <view class="settings-hero__icon">
+      <line-icon name="settings" size="38" tone="ink" />
     </view>
-    <view class="settings-head__mark" aria-hidden="true">
-      <line-icon name="settings" size="28" tone="ink" />
+    <view class="settings-hero__copy">
+      <text class="settings-hero__title">让时刻见更适合你们</text>
+      <text class="settings-hero__description">账号、空间和常用入口都在这里。</text>
     </view>
   </view>
 
@@ -16,7 +21,7 @@
       </view>
       <view class="settings-row__body">
         <text class="settings-row__title">账号与管理</text>
-        <text class="settings-row__description">{{isLoggedIn ? (displayName || '完善头像和昵称') : '登录后同步你的记录'}}</text>
+        <text class="settings-row__description">{{isLoggedIn ? (displayName || '昵称、头像与登录状态') : '登录后同步你的记录'}}</text>
       </view>
       <text class="settings-row__arrow">›</text>
     </view>
@@ -27,7 +32,7 @@
       </view>
       <view class="settings-row__body">
         <text class="settings-row__title">共同空间</text>
-        <text class="settings-row__description">{{isLoggedIn ? spaceName : '切换、加入或创建空间'}}</text>
+        <text class="settings-row__description">{{isLoggedIn ? spaceName : '创建、加入或切换空间'}}</text>
       </view>
       <text class="settings-row__arrow">›</text>
     </view>
@@ -43,4 +48,6 @@
       <text class="settings-row__arrow">›</text>
     </view>
   </view>
+
+  <text class="settings-footer">时刻见 {{versionLabel}}</text>
 </view>

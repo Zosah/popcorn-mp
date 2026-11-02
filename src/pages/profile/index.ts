@@ -42,6 +42,7 @@ Page({
     avatarMediaId: '',
     avatarUrl: '',
     accountLabel: '微信登录后开始记录',
+    spaceName: '',
     featureGroups: buildFeatureGroups() as ProfileFeatureGroupView[],
   },
 
@@ -104,6 +105,7 @@ Page({
       avatarMediaId,
       avatarUrl: this.data.avatarMediaId === avatarMediaId ? this.data.avatarUrl : '',
       accountLabel: isLoggedIn ? '账号与空间' : '微信登录后开始记录',
+      spaceName: auth.spaceName || '',
       featureGroups: buildFeatureGroups(),
     }, () => this.cacheCurrentPage())
 
@@ -137,6 +139,10 @@ Page({
 
   onOpenSettings() {
     wx.navigateTo({ url: '/pages/settings/index' })
+  },
+
+  onOpenFeatureList() {
+    wx.navigateTo({ url: '/pages/feature-list/index' })
   },
 
   ensureLoggedIn(): boolean {

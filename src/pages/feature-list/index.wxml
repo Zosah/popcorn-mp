@@ -2,19 +2,21 @@
   <view class="feature-list-head">
     <view class="feature-list-head__copy">
       <text class="feature-list-head__title">全部功能</text>
-      <text class="feature-list-head__description">工具、生活、备忘与家里的成员</text>
+      <text class="feature-list-head__description">按分类找到你的日常功能。</text>
     </view>
     <view class="feature-list-head__config" hover-class="feature-list-head__config--pressed" bindtap="onOpenConfig">
-      <line-icon name="list-todo" size="19" tone="muted" />
+      <line-icon name="settings" size="19" tone="muted" />
       <text>配置</text>
     </view>
   </view>
 
   <view wx:for="{{groups}}" wx:key="key" class="feature-group">
     <view class="feature-group__head">
-      <text class="feature-group__title">{{item.category.title}}</text>
-      <view class="feature-group__rule" />
-      <text class="feature-group__description">{{item.category.description}}</text>
+      <view class="feature-group__copy">
+        <text class="feature-group__title">{{item.category.title}}</text>
+        <text class="feature-group__description">{{item.category.description}}</text>
+      </view>
+      <text class="feature-group__count">{{item.items.length}} 项</text>
     </view>
 
     <view class="feature-grid">
@@ -22,13 +24,16 @@
         wx:for="{{item.items}}"
         wx:for-item="feature"
         wx:key="id"
-        class="feature-tile"
+        class="feature-tile feature-tile--{{feature.tone}}"
         hover-class="feature-tile--pressed"
         data-id="{{feature.id}}"
         bindtap="onOpenFeature"
       >
-        <view class="feature-tile__icon feature-tile__icon--{{feature.tone}}">
-          <line-icon name="{{feature.icon}}" size="30" tone="{{feature.tone}}" />
+        <view class="feature-tile__top">
+          <view class="feature-tile__icon">
+            <line-icon name="{{feature.icon}}" size="32" tone="{{feature.tone}}" />
+          </view>
+          <text class="feature-tile__arrow">›</text>
         </view>
         <view class="feature-tile__body">
           <view class="feature-tile__title-line">

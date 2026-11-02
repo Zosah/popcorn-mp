@@ -1,3 +1,4 @@
+import { appConfig, formatVersionLabel } from '../../config/env'
 import { hydrateAuthState } from '../../services/auth'
 
 Page({
@@ -6,6 +7,7 @@ Page({
     isLoggedIn: false,
     displayName: '',
     spaceName: '',
+    versionLabel: formatVersionLabel(appConfig),
   },
 
   onShow() {
