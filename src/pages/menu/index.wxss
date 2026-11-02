@@ -491,41 +491,53 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 5rpx;
+  gap: 7rpx;
 }
 
 .menu-order__dish-action {
-  height: 42rpx;
-  padding: 0 9rpx;
+  display: flex;
+  height: 44rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 0 11rpx;
+  border: 1rpx solid rgba(162, 174, 163, 0.18);
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 4rpx 12rpx rgba(76, 64, 48, 0.05);
+  box-sizing: border-box;
   color: var(--menu-ink-3);
+  gap: 5rpx;
   font-size: 19rpx;
-  line-height: 42rpx;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .menu-order__dish-action:active {
-  opacity: 0.65;
+  opacity: 0.68;
+  transform: scale(0.97);
 }
 
 .menu-order__dish-action--steps {
-  background: var(--menu-sage-soft);
+  padding: 0 12rpx;
+  border-color: rgba(118, 148, 130, 0.26);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(226, 238, 229, 0.94));
+  box-shadow: 0 6rpx 15rpx rgba(86, 116, 98, 0.14);
   color: var(--menu-sage);
   font-weight: 700;
 }
 
 .menu-order__ingredients {
-  padding: 0 12rpx 4rpx;
+  padding: 1rpx 14rpx 7rpx;
 }
 
 .menu-order__ingredient {
   display: grid;
-  min-height: 49rpx;
+  min-height: 66rpx;
   align-items: center;
+  padding: 8rpx 0;
   border-top: 1rpx dashed rgba(222, 213, 199, 0.72);
-  grid-template-columns: 28rpx minmax(0, 1fr) auto auto;
-  gap: 8rpx;
+  grid-template-columns: 32rpx minmax(0, 1fr) auto auto;
+  gap: 12rpx;
   transition: opacity 120ms ease;
 }
 
@@ -539,38 +551,40 @@
 
 .menu-order__check {
   display: flex;
-  width: 28rpx;
-  height: 28rpx;
+  width: 30rpx;
+  height: 30rpx;
   align-items: center;
   justify-content: center;
+  margin-left: 2rpx;
   border: 2rpx solid #c9c1b4;
-  border-radius: 8rpx;
+  border-radius: 9rpx;
   color: #fff;
-  font-size: 18rpx;
+  font-size: 19rpx;
   font-weight: 700;
 }
 
 .menu-order__ingredient-name {
   overflow: hidden;
   color: var(--menu-ink-2);
-  font-size: 23rpx;
+  font-size: 26rpx;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .menu-order__ingredient-amount {
   color: var(--menu-gold);
-  font-size: 20rpx;
+  font-size: 23rpx;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .menu-order__ingredient-source {
-  max-width: 116rpx;
+  max-width: 122rpx;
   overflow: hidden;
   color: var(--menu-ink-3);
-  font-size: 18rpx;
+  font-size: 20rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1550,41 +1564,53 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 5rpx;
+  gap: 7rpx;
 }
 
 .menu-order-detail__dish-action {
-  height: 40rpx;
-  padding: 0 8rpx;
+  display: flex;
+  height: 43rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10rpx;
+  border: 1rpx solid rgba(162, 174, 163, 0.18);
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 4rpx 12rpx rgba(76, 64, 48, 0.05);
+  box-sizing: border-box;
   color: var(--menu-ink-3);
-  font-size: 18rpx;
-  line-height: 40rpx;
+  gap: 5rpx;
+  font-size: 19rpx;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .menu-order-detail__dish-action:active {
-  opacity: 0.65;
+  opacity: 0.68;
+  transform: scale(0.97);
 }
 
 .menu-order-detail__dish-action--steps {
-  background: var(--menu-sage-soft);
+  padding: 0 11rpx;
+  border-color: rgba(118, 148, 130, 0.26);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(226, 238, 229, 0.94));
+  box-shadow: 0 6rpx 15rpx rgba(86, 116, 98, 0.14);
   color: var(--menu-sage);
   font-weight: 700;
 }
 
 .menu-order-detail__ingredients {
-  padding: 0 11rpx 4rpx;
+  padding: 1rpx 13rpx 7rpx;
 }
 
 .menu-order-detail__ingredient {
   display: grid;
-  min-height: 47rpx;
+  min-height: 64rpx;
   align-items: center;
+  padding: 8rpx 0;
   border-top: 1rpx dashed rgba(222, 213, 199, 0.72);
-  grid-template-columns: 27rpx minmax(0, 1fr) auto auto;
-  gap: 8rpx;
+  grid-template-columns: 31rpx minmax(0, 1fr) auto auto;
+  gap: 11rpx;
 }
 
 .menu-order-detail__ingredient:first-child {
@@ -1593,14 +1619,15 @@
 
 .menu-order-detail__check {
   display: flex;
-  width: 27rpx;
-  height: 27rpx;
+  width: 29rpx;
+  height: 29rpx;
   align-items: center;
   justify-content: center;
+  margin-left: 2rpx;
   border: 2rpx solid #c9c1b4;
-  border-radius: 8rpx;
+  border-radius: 9rpx;
   color: #fff;
-  font-size: 17rpx;
+  font-size: 18rpx;
   font-weight: 700;
 }
 
@@ -1612,24 +1639,25 @@
 .menu-order-detail__ingredient-name {
   overflow: hidden;
   color: var(--menu-ink-2);
-  font-size: 22rpx;
+  font-size: 25rpx;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .menu-order-detail__ingredient-amount {
   color: var(--menu-gold);
-  font-size: 19rpx;
+  font-size: 22rpx;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .menu-order-detail__ingredient-source {
-  max-width: 110rpx;
+  max-width: 116rpx;
   overflow: hidden;
   color: var(--menu-ink-3);
-  font-size: 18rpx;
+  font-size: 20rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

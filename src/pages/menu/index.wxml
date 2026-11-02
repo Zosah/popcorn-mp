@@ -85,7 +85,10 @@
               </view>
               <view class="menu-order__dish-actions">
                 <view wx:if="{{dish.readyCount === dish.ingredients.length}}" class="menu-order__dish-action" data-order-id="{{item.id}}" data-dish-id="{{dish.id}}" bindtap="onToggleDishIngredients">{{dish.expanded ? '收起' : '食材'}}</view>
-                <view class="menu-order__dish-action menu-order__dish-action--steps" data-order-id="{{item.id}}" data-dish-id="{{dish.id}}" bindtap="onOpenRecipeSteps">做法</view>
+                <view class="menu-order__dish-action menu-order__dish-action--steps" data-order-id="{{item.id}}" data-dish-id="{{dish.id}}" bindtap="onOpenRecipeSteps">
+                  <line-icon name="book-open" size="17" tone="accent" />
+                  <text>看看怎么做</text>
+                </view>
               </view>
             </view>
             <view wx:if="{{dish.expanded && dish.ingredients.length}}" class="menu-order__ingredients">
@@ -351,7 +354,10 @@
               </view>
               <view class="menu-order-detail__dish-actions">
                 <view wx:if="{{dish.readyCount === dish.ingredients.length}}" class="menu-order-detail__dish-action" data-order-id="{{historyDetailOrder.id}}" data-dish-id="{{dish.id}}" bindtap="onToggleDishIngredients">{{dish.expanded ? '收起' : '食材'}}</view>
-                <view class="menu-order-detail__dish-action menu-order-detail__dish-action--steps" data-order-id="{{historyDetailOrder.id}}" data-dish-id="{{dish.id}}" bindtap="onOpenRecipeSteps">做法</view>
+                <view class="menu-order-detail__dish-action menu-order-detail__dish-action--steps" data-order-id="{{historyDetailOrder.id}}" data-dish-id="{{dish.id}}" bindtap="onOpenRecipeSteps">
+                  <line-icon name="book-open" size="16" tone="accent" />
+                  <text>看看怎么做</text>
+                </view>
               </view>
             </view>
             <view wx:if="{{dish.expanded && dish.ingredients.length}}" class="menu-order-detail__ingredients">
