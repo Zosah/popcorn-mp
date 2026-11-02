@@ -1,5 +1,8 @@
 <view class="row" bindtap="onTap">
-  <view class="row__icon"><line-icon name="{{item.iconName}}" size="30" tone="muted" /></view>
+  <view class="row__icon {{item.imageSrc ? 'row__icon--image' : ''}}">
+    <image wx:if="{{item.imageSrc}}" class="row__image" src="{{item.imageSrc}}" mode="aspectFill" />
+    <line-icon wx:else name="{{item.iconName}}" size="30" tone="muted" />
+  </view>
   <view class="row__main">
     <view class="row__name">{{item.name}}</view>
     <view class="row__meta">{{item.quantity}}{{item.unit}} · {{item.locationLabel}} · {{item.categoryLabel}}</view>

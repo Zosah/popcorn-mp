@@ -152,6 +152,8 @@
 
 .inv-search__placeholder {
   color: var(--inv-ink-3);
+  font-size: 25rpx;
+  font-weight: 400;
 }
 
 .inv-search__clear {

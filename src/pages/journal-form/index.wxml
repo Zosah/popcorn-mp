@@ -36,12 +36,12 @@
 
       <view class="journal-field">
         <text class="journal-label">一句话标题</text>
-        <input class="journal-input journal-input--title" value="{{form.title}}" maxlength="80" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" />
+        <input class="journal-input journal-input--title" value="{{form.title}}" maxlength="80" placeholder="例如：晚饭后一起散了步" bindinput="onTitleInput" placeholder-class="app-input-placeholder" />
       </view>
 
       <view class="journal-field journal-field--last">
         <view class="journal-label-row"><text class="journal-label">再多写一点</text><text class="journal-count">随笔</text></view>
-        <textarea class="journal-textarea" value="{{form.content}}" maxlength="5000" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" />
+        <textarea class="journal-textarea" value="{{form.content}}" maxlength="5000" placeholder="天气、心情，或者当时说过的一句话……" bindinput="onContentInput" placeholder-class="app-input-placeholder" />
       </view>
     </view>
 
@@ -69,7 +69,7 @@
       </view>
 
       <view wx:if="{{images.length}}" class="journal-image-tools">
-        <input value="{{images[0].caption}}" maxlength="120" placeholder="给第一张图写一句说明（可选）" bindinput="onImageCaptionInput" />
+        <input value="{{images[0].caption}}" maxlength="120" placeholder="给第一张图写一句说明（可选）" bindinput="onImageCaptionInput" placeholder-class="app-input-placeholder" />
       </view>
     </view>
 

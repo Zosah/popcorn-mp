@@ -24,7 +24,7 @@
     <view class="paper-card todo-paper">
       <view class="todo-field todo-field--lead">
         <text class="todo-label">{{titleLabel}} <text class="todo-required">*</text></text>
-        <input class="todo-input todo-input--lead" value="{{form.title}}" maxlength="50" placeholder="{{titlePlaceholder}}" data-field="title" bindinput="onFieldInput" />
+        <input class="todo-input todo-input--lead" value="{{form.title}}" maxlength="50" placeholder="{{titlePlaceholder}}" data-field="title" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
       </view>
 
       <view wx:if="{{form.kind === 'plan'}}" class="todo-field todo-field--tag">
@@ -34,7 +34,7 @@
         </view>
         <view class="tag-input-wrap">
           <line-icon name="folder" size="20" tone="muted" />
-          <input class="tag-input" value="{{form.tag}}" maxlength="20" placeholder="例如：突然想到" bindinput="onTagInput" />
+          <input class="tag-input" value="{{form.tag}}" maxlength="20" placeholder="例如：突然想到" bindinput="onTagInput" placeholder-class="app-input-placeholder" />
           <text wx:if="{{form.tag}}" class="tag-input__clear" bindtap="onClearTag">清除</text>
         </view>
         <scroll-view wx:if="{{tagSuggestions.length}}" class="tag-suggestions" scroll-x enhanced show-scrollbar="{{false}}">
@@ -53,27 +53,27 @@
       <block wx:if="{{form.kind === 'travel'}}">
         <view class="todo-field">
           <text class="todo-label">目的地</text>
-          <input class="todo-input" value="{{form.destination}}" maxlength="30" placeholder="例如：大理" data-field="destination" bindinput="onFieldInput" />
+          <input class="todo-input" value="{{form.destination}}" maxlength="30" placeholder="例如：大理" data-field="destination" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
         </view>
         <view class="todo-field">
           <text class="todo-label">{{noteLabel}}</text>
-          <textarea class="todo-textarea" value="{{form.note}}" maxlength="300" auto-height placeholder="{{notePlaceholder}}" data-field="note" bindinput="onFieldInput" />
+          <textarea class="todo-textarea" value="{{form.note}}" maxlength="300" auto-height placeholder="{{notePlaceholder}}" data-field="note" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
         </view>
       </block>
 
       <block wx:if="{{form.kind === 'fitness'}}">
         <view class="todo-field">
           <text class="todo-label">运动名称</text>
-          <input class="todo-input" value="{{form.exercise}}" maxlength="30" placeholder="例如：快走、游泳、力量训练" data-field="exercise" bindinput="onFieldInput" />
+          <input class="todo-input" value="{{form.exercise}}" maxlength="30" placeholder="例如：快走、游泳、力量训练" data-field="exercise" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
         </view>
         <view class="todo-grid">
           <view class="todo-field">
             <text class="todo-label">时长（分钟）</text>
-            <input class="todo-input" type="number" value="{{form.durationMinutes}}" placeholder="30" data-field="durationMinutes" bindinput="onFieldInput" />
+            <input class="todo-input" type="number" value="{{form.durationMinutes}}" placeholder="30" data-field="durationMinutes" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
           </view>
           <view class="todo-field">
             <text class="todo-label">热量（kcal）</text>
-            <input class="todo-input" type="number" value="{{form.calories}}" placeholder="180" data-field="calories" bindinput="onFieldInput" />
+            <input class="todo-input" type="number" value="{{form.calories}}" placeholder="180" data-field="calories" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
           </view>
         </view>
         <view class="todo-hint todo-hint--action">
@@ -95,11 +95,11 @@
         <view class="todo-grid">
           <view class="todo-field">
             <text class="todo-label">金额（元）</text>
-            <input class="todo-input" type="digit" value="{{form.amount}}" placeholder="0.00" data-field="amount" bindinput="onFieldInput" />
+            <input class="todo-input" type="digit" value="{{form.amount}}" placeholder="0.00" data-field="amount" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
           </view>
           <view class="todo-field">
             <text class="todo-label">购买地点</text>
-            <input class="todo-input" value="{{form.merchant}}" maxlength="30" placeholder="例如：盒马" data-field="merchant" bindinput="onFieldInput" />
+            <input class="todo-input" value="{{form.merchant}}" maxlength="30" placeholder="例如：盒马" data-field="merchant" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
           </view>
         </view>
       </block>
@@ -117,13 +117,13 @@
 
       <view wx:if="{{form.kind === 'travel'}}" class="todo-field">
         <text class="todo-label">旅行准备清单</text>
-        <textarea class="todo-textarea todo-textarea--checklist" value="{{form.checklistText}}" maxlength="800" auto-height placeholder="每行一项，例如：身份证、充电器、常用药" data-field="checklistText" bindinput="onFieldInput" />
+        <textarea class="todo-textarea todo-textarea--checklist" value="{{form.checklistText}}" maxlength="800" auto-height placeholder="每行一项，例如：身份证、充电器、常用药" data-field="checklistText" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
         <text class="todo-field__tip">每行一项，出发前可以逐条勾选。</text>
       </view>
 
       <view wx:if="{{form.kind !== 'travel'}}" class="todo-field todo-field--last">
         <text class="todo-label">{{noteLabel}}</text>
-        <textarea class="todo-textarea" value="{{form.note}}" maxlength="300" auto-height placeholder="{{notePlaceholder}}" data-field="note" bindinput="onFieldInput" />
+        <textarea class="todo-textarea" value="{{form.note}}" maxlength="300" auto-height placeholder="{{notePlaceholder}}" data-field="note" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
       </view>
     </view>
 

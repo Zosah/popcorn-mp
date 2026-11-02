@@ -15,6 +15,7 @@ export function createInventoryItem(
     openedOn: null,
     expiresOn: '2026-08-27',
     note: '',
+    imageMediaId: '',
     status: 'active',
     version: 1,
     deletedAt: null,

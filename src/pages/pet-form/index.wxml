@@ -34,7 +34,7 @@
   <view class="pet-form-card">
     <view class="pet-form-field pet-form-field--lead">
       <text class="pet-form-label">名字 *</text>
-      <input value="{{form.name}}" maxlength="20" placeholder="例如：糯米、团子" data-field="name" bindinput="onFieldInput" />
+      <input value="{{form.name}}" maxlength="20" placeholder="例如：糯米、团子" data-field="name" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
     </view>
 
     <view class="pet-form-field">
@@ -56,7 +56,7 @@
 
     <view class="pet-form-field">
       <text class="pet-form-label">品种</text>
-      <input value="{{form.breed}}" maxlength="30" placeholder="例如：英国短毛猫、柯基" data-field="breed" bindinput="onFieldInput" />
+      <input value="{{form.breed}}" maxlength="30" placeholder="例如：英国短毛猫、柯基" data-field="breed" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
     </view>
 
     <view class="pet-form-grid">
@@ -86,7 +86,7 @@
 
     <view class="pet-form-field pet-form-field--last">
       <text class="pet-form-label">最近状态</text>
-      <input value="{{form.status}}" maxlength="30" placeholder="例如：刚刚加入这个家" data-field="status" bindinput="onFieldInput" />
+      <input value="{{form.status}}" maxlength="30" placeholder="例如：刚刚加入这个家" data-field="status" bindinput="onFieldInput" placeholder-class="app-input-placeholder" />
     </view>
   </view>
 

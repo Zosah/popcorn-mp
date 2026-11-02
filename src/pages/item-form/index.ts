@@ -8,8 +8,11 @@ import {
 } from '../../constants/icon-names'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
+import { mediaGateway } from '../../services/media'
+import { MediaGatewayError } from '../../services/media-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { showMediaUploadError } from '../../utils/media-error'
 
 interface PickerEvent {
   detail: { value: string }
@@ -23,6 +26,11 @@ interface SwitchEvent {
   detail: { value: boolean }
 }
 
+interface InventoryImage {
+  mediaId: string
+  src: string
+}
+
 const DEFAULT_FORM: InventoryItemInput = {
   name: '',
   category: 'food',
@@ -33,6 +41,7 @@ const DEFAULT_FORM: InventoryItemInput = {
   openedOn: null,
   expiresOn: null,
   note: '',
+  imageMediaId: '',
 }
 
 Page({
@@ -42,6 +51,7 @@ Page({
     loading: false,
     loadError: '',
     saving: false,
+    imageUploading: false,
     hasExpiry: false,
     categoryIndex: 0,
     locationIndex: 0,
@@ -53,6 +63,7 @@ Page({
     locationIconNames: LOCATION_OPTIONS.map(
       (item) => INVENTORY_LOCATION_ICON_NAMES[item.value],
     ),
+    image: null as InventoryImage | null,
     form: { ...DEFAULT_FORM },
   },
 
@@ -74,6 +85,20 @@ Page({
         navigateBackOrTab('/pages/inventory/index')
         return
       }
+      let image: InventoryImage | null = null
+      let imageMediaId = item.imageMediaId
+      if (item.imageMediaId) {
+        try {
+          const asset = await mediaGateway.get(item.imageMediaId)
+          image = { mediaId: asset.id, src: asset.display.url }
+        } catch (error) {
+          // 只有确认图片不存在时才清空；临时签名失败仍保留原图，避免误删。
+          if (error instanceof MediaGatewayError &&
+            (error.code === 'NOT_FOUND' || error.code === 'MEDIA_NOT_FOUND')) {
+            imageMediaId = ''
+          }
+        }
+      }
       this.setData({
         version: item.version,
         hasExpiry: item.expiresOn !== null,
@@ -85,6 +110,7 @@ Page({
           0,
           LOCATION_OPTIONS.findIndex((option) => option.value === item.location),
         ),
+        image,
         form: {
           name: item.name,
           category: item.category,
@@ -95,6 +121,7 @@ Page({
           openedOn: item.openedOn,
           expiresOn: item.expiresOn,
           note: item.note,
+          imageMediaId,
         },
       })
     } catch (error) {
@@ -133,6 +160,51 @@ Page({
     this.setData({ 'form.note': event.detail.value })
   },
 
+  onChooseImage() {
+    if (this.data.imageUploading || this.data.saving) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (result) => {
+        const file = result.tempFiles[0]
+        if (!file) return
+        if (file.size > 10 * 1024 * 1024) {
+          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+          return
+        }
+        void this.uploadImage(file)
+      },
+    })
+  },
+
+  async uploadImage(file: WechatMiniprogram.MediaFile) {
+    this.setData({ imageUploading: true })
+    try {
+      const asset = await mediaGateway.upload(file.tempFilePath, 'inventory', file.size)
+      this.setData({
+        image: { mediaId: asset.id, src: asset.display.url },
+        'form.imageMediaId': asset.id,
+      })
+      wx.showToast({ title: '图片已添加', icon: 'success' })
+    } catch (error) {
+      showMediaUploadError(error, '图片没有上传成功')
+    } finally {
+      this.setData({ imageUploading: false })
+    }
+  },
+
+  onPreviewImage() {
+    const src = this.data.image?.src
+    if (!src) return
+    wx.previewImage({ current: src, urls: [src] })
+  },
+
+  onRemoveImage() {
+    if (this.data.imageUploading || this.data.saving) return
+    this.setData({ image: null, 'form.imageMediaId': '' })
+  },
+
   onCategoryChange(event: PickerEvent) {
     const index = Number(event.detail.value)
     const option = CATEGORY_OPTIONS[index]
@@ -162,7 +234,7 @@ Page({
   },
 
   async onSave() {
-    if (this.data.loading || this.data.loadError) return
+    if (this.data.loading || this.data.loadError || this.data.imageUploading) return
     const form = this.data.form
     if (!form.name.trim()) {
       wx.showToast({ title: '请填写物品名称', icon: 'none' })

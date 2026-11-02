@@ -22,7 +22,8 @@
 
 .menu-field-placeholder {
   color: #b2a89a;
-  font-size: 28rpx;
+  font-size: 25rpx;
+  font-weight: 400;
 }
 
 .menu-hero {

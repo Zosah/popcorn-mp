@@ -43,6 +43,7 @@ export interface InventoryItem {
   openedOn: string | null
   expiresOn: string | null
   note: string
+  imageMediaId: string
   status: InventoryLifecycleStatus
   version: number
   deletedAt: string | null
@@ -60,6 +61,7 @@ export interface InventoryItemInput {
   openedOn: string | null
   expiresOn: string | null
   note: string
+  imageMediaId: string
 }
 
 export interface ExpiryInfo {

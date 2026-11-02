@@ -198,7 +198,7 @@
         </view>
         <view class="daily-editor__field">
           <text>{{dailyEditor.detailLabel}}</text>
-          <input value="{{dailyEditor.detail}}" maxlength="60" placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" />
+          <input value="{{dailyEditor.detail}}" maxlength="60" placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" placeholder-class="app-input-placeholder" />
         </view>
         <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">记下这次{{dailyEditor.title}}</button>
       </view>
@@ -236,11 +236,11 @@
         <view class="pet-sheet__head"><view><text class="pet-eyebrow">新增用品</text><text class="pet-sheet__title">记下值得记住的体验</text></view><view bindtap="onCloseSupplyEditor">关闭</view></view>
         <scroll-view class="supply-editor-scroll" scroll-y enhanced show-scrollbar="{{false}}">
           <view class="supply-editor-section"><text class="supply-editor-label">类型</text><view class="choice-row"><view wx:for="{{supplyEditorCategories}}" wx:key="value" class="choice-chip {{supplyDraft.category === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyCategorySelect">{{item.label}}</view></view></view>
-          <view wx:if="{{supplyDraft.category === 'custom'}}" class="supply-field"><text>自定义类型</text><input value="{{supplyDraft.categoryLabel}}" maxlength="32" placeholder="例如：玩具、护理" data-field="categoryLabel" bindinput="onSupplyFieldInput" /></view>
-          <view class="supply-field"><text>名称</text><input value="{{supplyDraft.name}}" maxlength="60" placeholder="例如：鸡肉主食罐" data-field="name" bindinput="onSupplyFieldInput" /></view>
-          <view class="supply-field"><text>品牌</text><input value="{{supplyDraft.brand}}" maxlength="40" placeholder="选填" data-field="brand" bindinput="onSupplyFieldInput" /></view>
+          <view wx:if="{{supplyDraft.category === 'custom'}}" class="supply-field"><text>自定义类型</text><input value="{{supplyDraft.categoryLabel}}" maxlength="32" placeholder="例如：玩具、护理" data-field="categoryLabel" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
+          <view class="supply-field"><text>名称</text><input value="{{supplyDraft.name}}" maxlength="60" placeholder="例如：鸡肉主食罐" data-field="name" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
+          <view class="supply-field"><text>品牌</text><input value="{{supplyDraft.brand}}" maxlength="40" placeholder="选填" data-field="brand" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
           <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view></view>
-          <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" /></view>
+          <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
           <view class="supply-editor-section"><text class="supply-editor-label">图片</text><view wx:if="{{supplyDraft.mediaUrl}}" class="supply-editor-image"><image src="{{supplyDraft.mediaUrl}}" mode="aspectFill" /><view bindtap="onRemoveSupplyImage">移除</view></view><view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view></view>
           <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">保存用品</button>
         </scroll-view>

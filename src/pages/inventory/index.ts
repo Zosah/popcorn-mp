@@ -17,6 +17,7 @@ import {
   type InventorySummary,
 } from '../../domain/inventory-query'
 import { inventoryGateway } from '../../services/inventory'
+import { mediaGateway } from '../../services/media'
 import { getAuthState, hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
 import { readPageCache, writePageCache as persistPageCache } from '../../services/page-cache'
@@ -32,6 +33,7 @@ interface InventoryItemView extends InventoryItem {
   locationLabel: string
   expiry: ReturnType<typeof resolveExpiry>
   lifecycleLabel: string
+  imageSrc: string
 }
 
 interface InventorySection {
@@ -83,6 +85,17 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
     locationLabel: getLocationLabel(item.location),
     expiry: resolveExpiry(item.expiresOn, today),
     lifecycleLabel: lifecycleLabels[item.status],
+    imageSrc: '',
+  }
+}
+
+async function resolveItemImage(view: InventoryItemView): Promise<InventoryItemView> {
+  if (!view.imageMediaId) return view
+  try {
+    const asset = await mediaGateway.get(view.imageMediaId)
+    return { ...view, imageSrc: asset.thumb.url }
+  } catch {
+    return view
   }
 }
 
@@ -260,7 +273,10 @@ Page({
       }
 
       const visibleItems = listResult.status === 'fulfilled' ? listResult.value : []
-      const views = visibleItems.map((item) => toView(item, today))
+      const views = await Promise.all(
+        visibleItems.map((item) => resolveItemImage(toView(item, today))),
+      )
+      if (!inventoryRequestGate.isCurrent(sequence)) return
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0

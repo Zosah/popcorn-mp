@@ -9,6 +9,7 @@ export function createDemoInventoryItems(nowMs = Date.now()): InventoryItem[] {
     purchasedOn: addCalendarDays(today, -5),
     openedOn: null,
     status: 'active' as const,
+    imageMediaId: '',
     version: 1,
     deletedAt: null,
     createdAt,

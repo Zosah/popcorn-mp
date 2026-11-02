@@ -43,6 +43,7 @@ const apiItem: ApiInventoryItem = {
   openedOn: null,
   expiresOn: '2026-10-30',
   note: '早餐',
+  imageMediaId: 'm_1234567890',
   status: 'active',
   version: 1,
   deletedAt: null,
@@ -200,6 +201,7 @@ describe('HTTP 库存网关', () => {
       openedOn: null,
       expiresOn: '2026-10-30',
       note: '早餐',
+      imageMediaId: 'm_1234567890',
     }
 
     await gateway.create(input)
@@ -255,6 +257,7 @@ describe('HTTP 库存网关', () => {
       openedOn: null,
       expiresOn: '2026-10-30',
       note: '早餐',
+      imageMediaId: '',
     })
 
     expect(result.id).toBe('item-created')

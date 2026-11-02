@@ -13,14 +13,20 @@
         <view class="detail-top__title">{{item.name}}</view>
         <view class="detail-top__sub">{{item.categoryLabel}} · {{item.locationLabel}}</view>
       </view>
-      <view class="detail-edit" bindtap="onEdit">
-        <line-icon name="pen-line" size="19" tone="ink" />
-        <text>编辑</text>
+      <view class="detail-top__actions">
+        <view class="detail-edit" bindtap="onEdit">
+          <line-icon name="pen-line" size="18" tone="ink" />
+          <text>编辑</text>
+        </view>
+        <view class="detail-top__delete" bindtap="onDelete">删除</view>
       </view>
     </view>
 
     <view class="detail-hero">
-      <view class="detail-hero__icon"><line-icon name="{{item.iconName}}" size="42" tone="orange" /></view>
+      <view wx:if="{{item.imageSrc}}" class="detail-hero__icon detail-hero__icon--image" bindtap="onPreviewImage">
+        <image class="detail-hero__image" src="{{item.imageSrc}}" mode="aspectFill" />
+      </view>
+      <view wx:else class="detail-hero__icon"><line-icon name="{{item.iconName}}" size="42" tone="orange" /></view>
       <view class="detail-hero__body">
         <view class="detail-hero__name">{{item.name}}</view>
         <view class="detail-hero__meta">{{item.quantity}}{{item.unit}} · {{item.locationLabel}}</view>
@@ -67,10 +73,9 @@
     <view class="detail-section-head"><text>处理这件东西</text><text>先做最常用的一步</text></view>
     <view class="detail-actions">
       <button wx:for="{{item.actions}}" wx:key="key" class="detail-action detail-action--{{item.key}}" data-status="{{item.nextStatus}}" bindtap="onChangeStatus">
-        <line-icon name="{{item.key === 'discard' ? 'circle-alert' : item.key === 'archive' ? 'package' : 'check'}}" size="22" tone="{{item.key === 'discard' ? 'danger' : item.key === 'archive' ? 'orange' : 'white'}}" />
+        <line-icon name="{{item.key === 'discard' ? 'circle-alert' : item.key === 'archive' ? 'package' : item.key === 'restore' ? 'rotate-ccw' : 'check'}}" size="22" tone="{{item.key === 'discard' ? 'danger' : 'ink'}}" />
         <text>{{item.label}}</text>
       </button>
     </view>
-    <button class="detail-delete" bindtap="onDelete">删除物品</button>
   </block>
 </view>

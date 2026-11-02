@@ -4,6 +4,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   NETWORK_ERROR: '网络好像走神了，请稍后再试',
   VERSION_CONFLICT: '这件物品刚被更新，请刷新后再试',
   NOT_FOUND: '这件物品已经不在了',
+  MEDIA_NOT_FOUND: '这张图片已失效，请重新选择',
   TOO_MANY_PAGES: '库存数据较多，请增加筛选条件后再试',
 }
 

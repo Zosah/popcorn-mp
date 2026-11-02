@@ -8,6 +8,7 @@ import {
 } from '../../domain/expiry'
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
+import { mediaGateway } from '../../services/media'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
 
@@ -19,10 +20,10 @@ const LIFECYCLE_LABELS: Record<InventoryLifecycleStatus, string> = {
 }
 
 const ACTION_LABELS = {
-  consume: '标记用完',
-  discard: '标记丢弃',
-  archive: '归档记录',
-  restore: '恢复到库存',
+  consume: '用完',
+  discard: '丢弃',
+  archive: '归档',
+  restore: '恢复',
 } as const
 
 interface ItemDetailView extends InventoryItem {
@@ -32,6 +33,7 @@ interface ItemDetailView extends InventoryItem {
   expiry: ReturnType<typeof resolveExpiry>
   statusLabel: string
   updatedAtLabel: string
+  imageSrc: string
   actions: Array<{
     key: keyof typeof ACTION_LABELS
     label: string
@@ -43,6 +45,7 @@ Page({
   data: {
     id: '',
     loading: true,
+    hasShownOnce: false,
     errorMessage: '',
     item: null as ItemDetailView | null,
   },
@@ -50,20 +53,35 @@ Page({
   onLoad(options: Record<string, string | undefined>) {
     const id = options.id ?? ''
     this.setData({ id })
+    if (id) void this.loadItem(id)
   },
 
   onShow() {
+    if (!this.data.hasShownOnce) {
+      this.setData({ hasShownOnce: true })
+      return
+    }
     if (this.data.id) void this.loadItem()
   },
 
-  async loadItem() {
+  async loadItem(id?: string) {
+    const itemId = id ?? this.data.id
     this.setData({ loading: true, errorMessage: '', item: null })
     try {
-      const item = await inventoryGateway.get(this.data.id)
+      const item = await inventoryGateway.get(itemId)
       if (!item) {
         wx.showToast({ title: '物品不存在', icon: 'none' })
         navigateBackOrTab('/pages/inventory/index')
         return
+      }
+      let imageSrc = ''
+      if (item.imageMediaId) {
+        try {
+          const asset = await mediaGateway.get(item.imageMediaId)
+          imageSrc = asset.display.url
+        } catch {
+          // 图片失效时仍保留物品详情，分类图标作为兜底。
+        }
       }
       const today = getShanghaiDateOnly(Date.now())
       this.setData({
@@ -75,6 +93,7 @@ Page({
           expiry: resolveExpiry(item.expiresOn, today),
           statusLabel: LIFECYCLE_LABELS[item.status],
           updatedAtLabel: formatShanghaiDateTime(item.updatedAt),
+          imageSrc,
           actions: resolveInventoryLifecycleActions(item.status).map((action) => ({
             ...action,
             label: ACTION_LABELS[action.key],
@@ -94,7 +113,7 @@ Page({
   },
 
   onRetry() {
-    void this.loadItem()
+    void this.loadItem(this.data.id)
   },
 
   onBack() {
@@ -103,6 +122,12 @@ Page({
 
   onEdit() {
     wx.navigateTo({ url: `/pages/item-form/index?id=${this.data.id}` })
+  },
+
+  onPreviewImage() {
+    const src = this.data.item?.imageSrc
+    if (!src) return
+    wx.previewImage({ current: src, urls: [src] })
   },
 
   async onChangeStatus(event: {

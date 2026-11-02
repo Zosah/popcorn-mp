@@ -152,6 +152,7 @@ export interface ApiInventoryItem {
   openedOn: string | null
   expiresOn: string | null
   note: string
+  imageMediaId: string
   status: ApiInventoryLifecycleStatus
   version: number
   deletedAt: string | null
@@ -169,6 +170,7 @@ export interface ApiInventoryItemInput {
   openedOn: string | null
   expiresOn: string | null
   note: string
+  imageMediaId: string
 }
 
 export interface ApiInventoryItemList {

@@ -44,12 +44,12 @@
 
     <view class="event-field event-field--stack">
       <text class="event-label">标题 <text class="event-required">*</text></text>
-      <input class="event-input event-input--lead" value="{{form.title}}" maxlength="40" placeholder="发生了什么" bindinput="onTitleInput" />
+      <input class="event-input event-input--lead" value="{{form.title}}" maxlength="40" placeholder="发生了什么" bindinput="onTitleInput" placeholder-class="app-input-placeholder" />
     </view>
 
     <view class="event-field event-field--stack event-field--last">
       <text class="event-label">详细备注</text>
-      <textarea class="event-textarea" value="{{form.note}}" maxlength="300" placeholder="过程、结果、注意事项" bindinput="onNoteInput" />
+      <textarea class="event-textarea" value="{{form.note}}" maxlength="300" placeholder="过程、结果、注意事项" bindinput="onNoteInput" placeholder-class="app-input-placeholder" />
     </view>
   </view>
 
@@ -58,11 +58,11 @@
   <view class="paper-card event-card">
     <view class="event-field event-field--stack">
       <text class="event-label">医院 / 门店 / 地点</text>
-      <input class="event-input" value="{{form.provider}}" maxlength="60" placeholder="可选" bindinput="onProviderInput" />
+      <input class="event-input" value="{{form.provider}}" maxlength="60" placeholder="可选" bindinput="onProviderInput" placeholder-class="app-input-placeholder" />
     </view>
     <view class="event-field event-field--stack">
       <text class="event-label">费用</text>
-      <input class="event-input" type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" />
+      <input class="event-input" type="digit" value="{{form.cost}}" placeholder="可选，例如 280" bindinput="onCostInput" placeholder-class="app-input-placeholder" />
     </view>
     <view class="event-switch">
       <view class="event-switch__copy"><text>安排下次日期</text><text>可选，由你决定什么时候再看这件事</text></view>
