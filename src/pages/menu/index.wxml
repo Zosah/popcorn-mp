@@ -73,7 +73,7 @@
             <text>{{item.readyIngredientCount}} / {{item.ingredientCount}}</text>
           </view>
           <view wx:for="{{item.items}}" wx:for-item="dish" wx:key="id" class="menu-order__dish">
-            <view class="menu-order__dish-title">{{dish.recipeTitle}} · {{dish.servings}} 人份</view>
+            <view class="menu-order__dish-title">{{dish.recipeTitle}}</view>
             <view class="menu-order__ingredients">
               <view
                 wx:for="{{dish.ingredients}}"
@@ -261,18 +261,10 @@
 
       <view class="menu-cart-list">
         <view wx:for="{{cartItems}}" wx:key="id" class="menu-cart-item">
-          <view class="menu-cart-item__media">
-            <image wx:if="{{item.recipe.image && item.recipe.image.src}}" src="{{item.recipe.image.src}}" mode="aspectFill" />
-            <line-icon wx:else name="soup" size="28" tone="gold" />
-          </view>
+          <view class="menu-cart-item__index">{{index < 9 ? '0' : ''}}{{index + 1}}</view>
           <view class="menu-cart-item__body">
             <text>{{item.recipe.title}}</text>
             <text>{{item.recipe.cookingMinutes}} 分钟</text>
-          </view>
-          <view class="menu-cart-item__stepper">
-            <text data-id="{{item.recipe.id}}" data-delta="-1" bindtap="onCartStep">−</text>
-            <text>{{item.servings}}</text>
-            <text data-id="{{item.recipe.id}}" data-delta="1" bindtap="onCartStep">＋</text>
           </view>
           <view class="menu-cart-item__remove" data-id="{{item.recipe.id}}" bindtap="onRemoveCartItem">删除</view>
         </view>
@@ -333,7 +325,7 @@
             <text>{{historyDetailOrder.readyIngredientCount}} / {{historyDetailOrder.ingredientCount}}</text>
           </view>
           <view wx:for="{{historyDetailOrder.items}}" wx:for-item="dish" wx:key="id" class="menu-order-detail__dish">
-            <text class="menu-order-detail__dish-title">{{dish.recipeTitle}} · {{dish.servings}} 人份</text>
+            <text class="menu-order-detail__dish-title">{{dish.recipeTitle}}</text>
             <view wx:for="{{dish.ingredients}}" wx:for-item="ingredient" wx:key="id" class="menu-order-detail__ingredient">
               <view class="menu-order-detail__check {{ingredient.ready ? 'menu-order-detail__check--ready' : ''}}">{{ingredient.ready ? '✓' : ''}}</view>
               <text class="menu-order-detail__ingredient-name">{{ingredient.name}}</text>

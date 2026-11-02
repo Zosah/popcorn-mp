@@ -279,19 +279,14 @@ Page({
     const recipe = this.data.allRecipes.find((item) => item.id === event.currentTarget.dataset.id)
     if (!recipe) return
     const current = this.data.cartItems.find((item) => item.recipe.id === recipe.id)
-    const cartItems = current
-      ? this.data.cartItems.map((item) =>
-          item.recipe.id === recipe.id
-            ? { ...item, servings: Math.min(12, item.servings + 1) }
-            : item,
-        )
-      : [...this.data.cartItems, { id: recipe.id, recipe, servings: recipe.servings }]
+    if (current) {
+      wx.showToast({ title: '这道菜已经在桌上了', icon: 'none' })
+      return
+    }
+    const cartItems = [...this.data.cartItems, { id: recipe.id, recipe, servings: 1 }]
     this.setData({ cartItems, cartCount: cartItems.length })
     this.persistCart(cartItems)
-    wx.showToast({
-      title: current ? '份数已经加一' : '已放进待提交',
-      icon: 'none',
-    })
+    wx.showToast({ title: '已放进这一桌', icon: 'none' })
   },
 
   onOpenCart() {
@@ -322,22 +317,6 @@ Page({
         wx.showToast({ title: '这一桌已经清空', icon: 'none' })
       },
     })
-  },
-
-  onCartStep(event: {
-    currentTarget: { dataset: { id?: string; delta?: string } }
-  }) {
-    const id = event.currentTarget.dataset.id
-    const delta = Number(event.currentTarget.dataset.delta)
-    if (!id || !Number.isFinite(delta)) return
-    const cartItems = this.data.cartItems
-      .map((item) =>
-        item.recipe.id === id
-          ? { ...item, servings: Math.min(12, Math.max(1, item.servings + delta)) }
-          : item,
-      )
-    this.setData({ cartItems })
-    this.persistCart(cartItems)
   },
 
   onRemoveCartItem(event: { currentTarget: { dataset: { id?: string } } }) {
@@ -504,7 +483,7 @@ Page({
     const cartItems = stored.flatMap((entry) => {
       const recipe = recipes.find((item) => item.id === entry.recipeId)
       return recipe
-        ? [{ id: recipe.id, recipe, servings: Math.min(12, Math.max(1, entry.servings)) }]
+        ? [{ id: recipe.id, recipe, servings: 1 }]
         : []
     })
     this.setData({ cartItems, cartCount: cartItems.length })

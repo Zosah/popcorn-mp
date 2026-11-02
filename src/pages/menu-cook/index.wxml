@@ -65,18 +65,21 @@
       <view class="mc-section-head">
         <view>
           <text>备菜清单</text>
-          <text>点一下，备好就打勾</text>
+          <text>点一下，标记已经备好</text>
         </view>
       </view>
 
       <view class="mc-ingredients">
         <view wx:for="{{recipe.ingredients}}" wx:key="id" class="mc-ingredient {{item.ready ? 'mc-ingredient--ready' : ''}} {{activeIngredientId === item.id ? 'mc-ingredient--busy' : ''}}" data-id="{{item.id}}" bindtap="onToggleIngredient">
-          <view class="mc-ingredient__check">{{item.ready ? '✓' : ''}}</view>
+          <view class="mc-ingredient__number">{{index < 9 ? '0' : ''}}{{index + 1}}</view>
           <view class="mc-ingredient__body">
             <text>{{item.name}}</text>
             <text>{{item.source || '来源未填写'}}</text>
           </view>
-          <text class="mc-ingredient__amount">{{item.amount}}</text>
+          <view class="mc-ingredient__side">
+            <text class="mc-ingredient__amount">{{item.amount}}</text>
+            <text class="mc-ingredient__state">{{item.ready ? '已备好' : '待准备'}}</text>
+          </view>
         </view>
       </view>
 
