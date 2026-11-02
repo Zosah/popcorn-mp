@@ -78,6 +78,28 @@ interface DropRect {
 }
 
 const DRAG_ACTIVATION_MS = 280
+
+interface AppTabBarHandle {
+  refresh?: () => void
+}
+
+interface HomePageHandle {
+  refreshHomeShortcuts?: () => void
+}
+
+/**
+ * 配置页保存后页面栈里的底栏仍然挂载着。这里主动让已挂载组件重读最新配置，
+ * 避免真机上仅依赖模块监听时出现“保存成功但底栏还停在旧顺序”。
+ */
+function refreshMountedFeatureSurfaces(): void {
+  for (const page of getCurrentPages()) {
+    const tabBar = page.selectComponent?.('#app-tab-bar') as AppTabBarHandle | null
+    tabBar?.refresh?.()
+    const homePage = page as unknown as HomePageHandle
+    homePage.refreshHomeShortcuts?.()
+  }
+}
+
 const DRAG_MOVE_TOLERANCE = 12
 
 let pressTimer: ReturnType<typeof setTimeout> | undefined
@@ -327,6 +349,7 @@ Page({
       this.applySettings(saved, saved, saved.version, saved.updatedAt)
       // 首页快捷入口由功能配置实时推导，保存后丢弃旧页面快照，避免返回首页时短暂回显旧顺序。
       invalidatePageCache('home:')
+      wx.nextTick(refreshMountedFeatureSurfaces)
       this.setData({
         saving: false,
         syncText: appConfig.demoMode ? '已保存在本机' : '已同步到空间',

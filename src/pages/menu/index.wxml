@@ -120,5 +120,5 @@
     </view>
   </view>
   </block>
-  <app-tab-bar active="menu" />
+  <app-tab-bar id="app-tab-bar" active="menu" />
 </view>

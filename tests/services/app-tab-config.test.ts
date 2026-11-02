@@ -56,7 +56,17 @@ describe('底部导航配置', () => {
     ).toEqual({ slot2: 'menu', slot3: 'expense', slot4: 'travel' })
     expect(
       normalizeAppTabConfig({ slot2: 'unknown', slot3: 'todo', slot4: 'todo' }),
-    ).toEqual({ slot2: 'menu', slot3: 'expense', slot4: 'fitness' })
+    ).toEqual({ slot2: 'menu', slot3: 'todo', slot4: 'fitness' })
+  })
+
+  it('底栏使用首页默认功能时仍完整保留三个入口', () => {
+    expect(
+      normalizeAppTabConfig({ slot2: 'fitness', slot3: 'menu', slot4: 'pets' }),
+    ).toEqual({ slot2: 'fitness', slot3: 'menu', slot4: 'pets' })
+    expect(
+      resolveAppTabItems({ slot2: 'fitness', slot3: 'menu', slot4: 'pets' })
+        .map((item) => item.id),
+    ).toEqual(['home', 'fitness', 'menu', 'pets', 'profile'])
   })
 })
 

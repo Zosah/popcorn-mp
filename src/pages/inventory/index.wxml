@@ -98,5 +98,5 @@
       <view wx:if="{{viewMode === 'active'}}" class="inv-state__action" bindtap="onAddItem">添加物品</view>
     </view>
   </block>
-  <app-tab-bar active="inventory" />
+  <app-tab-bar id="app-tab-bar" active="inventory" />
 </view>

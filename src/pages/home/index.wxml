@@ -190,5 +190,5 @@
     </view>
   </view>
 
-  <app-tab-bar active="home" />
+  <app-tab-bar id="app-tab-bar" active="home" />
 </view>

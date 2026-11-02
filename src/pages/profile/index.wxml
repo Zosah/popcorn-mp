@@ -137,5 +137,5 @@
     <text class="profile-directory__arrow">›</text>
   </view>
 
-  <app-tab-bar active="profile" />
+  <app-tab-bar id="app-tab-bar" active="profile" />
 </view>

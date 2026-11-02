@@ -258,5 +258,5 @@
     <button wx:elif="{{!loading}}" class="pet-empty-state__button" bindtap="onAddPet">添加第一只伙伴</button>
   </view>
 
-  <app-tab-bar active="pets" />
+  <app-tab-bar id="app-tab-bar" active="pets" />
 </view>

@@ -119,5 +119,5 @@
     <view class="todo-state__action" bindtap="onCreate">记下第一件事</view>
   </view>
 
-  <app-tab-bar active="{{isPlanMode ? 'todo' : ''}}" />
+  <app-tab-bar id="app-tab-bar" active="{{isPlanMode ? 'todo' : ''}}" />
 </view>

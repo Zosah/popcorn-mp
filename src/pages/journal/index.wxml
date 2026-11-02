@@ -177,5 +177,5 @@
     </view>
   </view>
 
-  <app-tab-bar active="journal" />
+  <app-tab-bar id="app-tab-bar" active="journal" />
 </view>

@@ -10,7 +10,6 @@ import {
   getFeatureSettingsOwnerId,
   getFeatureSettingsSnapshot,
   getFeatureSettingsStorageKey,
-  normalizeFeatureSettings,
   saveFeatureSettingsConfig,
   saveFeatureSettingsSnapshot,
   subscribeFeatureSettings,
@@ -107,14 +106,42 @@ export function normalizeAppTabConfig(value: unknown): AppTabConfig {
   const record = value && typeof value === 'object'
     ? value as Record<string, unknown>
     : {}
-  const normalized = normalizeFeatureSettings({
-    homeSlots: DEFAULT_FEATURE_SETTINGS.homeSlots,
-    tabSlots: [record.slot2, record.slot3, record.slot4],
-  })
+  const candidates = [record.slot2, record.slot3, record.slot4]
+  const defaults = [
+    DEFAULT_APP_TAB_CONFIG.slot2,
+    DEFAULT_APP_TAB_CONFIG.slot3,
+    DEFAULT_APP_TAB_CONFIG.slot4,
+  ] as const
+  const used = new Set<AppTabCustomId>()
+  const slots: AppTabCustomId[] = []
+
+  const take = (candidate: unknown): AppTabCustomId | undefined => {
+    if (!isAppTabCustomId(candidate) || used.has(candidate)) return undefined
+    used.add(candidate)
+    return candidate
+  }
+
+  const takeFirstAvailable = (): AppTabCustomId | undefined => {
+    for (const option of APP_TAB_OPTIONS) {
+      const selected = take(option.id)
+      if (selected) return selected
+    }
+    return undefined
+  }
+
+  for (let index = 0; index < 3; index += 1) {
+    // 底栏是独立视图，不能拿包含首页默认项的全量配置来归一化；
+    // 否则“宠物”等已放在首页的功能会被误判为跨区域重复并从底栏丢弃。
+    const selected = take(candidates[index]) ??
+      take(defaults[index]) ??
+      takeFirstAvailable()
+    if (selected) slots.push(selected)
+  }
+
   return {
-    slot2: normalized.tabSlots[0] as AppTabCustomId,
-    slot3: normalized.tabSlots[1] as AppTabCustomId,
-    slot4: normalized.tabSlots[2] as AppTabCustomId,
+    slot2: slots[0] ?? DEFAULT_APP_TAB_CONFIG.slot2,
+    slot3: slots[1] ?? DEFAULT_APP_TAB_CONFIG.slot3,
+    slot4: slots[2] ?? DEFAULT_APP_TAB_CONFIG.slot4,
   }
 }
 
