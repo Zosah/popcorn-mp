@@ -37,6 +37,16 @@ interface CartItem {
 interface OrderDishView extends MealOrderItem {
   numberLabel: string
   readyCount: number
+  imageSrc: string
+  steps: MenuRecipe['steps']
+  expanded: boolean
+}
+
+interface RecipeStepView {
+  id: string
+  title: string
+  imageSrc: string
+  steps: MenuRecipe['steps']
 }
 
 interface OrderView extends Omit<MealOrder, 'items'> {
@@ -96,6 +106,7 @@ Page({
     orderActionId: '',
     ingredientActionId: '',
     historyDetailOrder: null as OrderView | null,
+    recipeStepDish: null as RecipeStepView | null,
   },
 
   onLoad() {
@@ -108,6 +119,7 @@ Page({
         cacheFresh: true,
         hasShown: false,
         cartPanelOpen: false,
+        recipeStepDish: null,
       })
       this.syncCartFromRecipes(this.data.allRecipes)
     }
@@ -150,6 +162,7 @@ Page({
         visibleHistoryOrders: [],
         hasMoreHistory: false,
         historyDetailOrder: null,
+        recipeStepDish: null,
         loading: false,
         hasLoaded: true,
         cacheFresh: false,
@@ -197,8 +210,8 @@ Page({
     const selectedCategoryId = categoryTabs.some((item) => item.id === this.data.selectedCategoryId)
       ? this.data.selectedCategoryId
       : 'all'
-    const activeOrders = orders.filter(isActiveOrder).map(toOrderView)
-    const historyOrders = orders.filter((order) => !isActiveOrder(order)).map(toOrderView)
+    const activeOrders = orders.filter(isActiveOrder).map((order) => toOrderView(order, recipes))
+    const historyOrders = orders.filter((order) => !isActiveOrder(order)).map((order) => toOrderView(order, recipes))
     this.setData({
       allRecipes: recipes,
       categories,
@@ -229,6 +242,7 @@ Page({
       ingredientActionId: _ingredientActionId,
       submittingOrder: _submittingOrder,
       historyDetailOrder: _historyDetailOrder,
+      recipeStepDish: _recipeStepDish,
       ...snapshot
     } = this.data as unknown as Record<string, unknown>
     wx.setStorageSync(menuPageCacheKey(), snapshot)
@@ -257,8 +271,8 @@ Page({
   async refreshOrders() {
     try {
       const orders = await mealOrderGateway.list()
-      const activeOrders = orders.filter(isActiveOrder).map(toOrderView)
-      const historyOrders = orders.filter((order) => !isActiveOrder(order)).map(toOrderView)
+      const activeOrders = orders.filter(isActiveOrder).map((order) => toOrderView(order, this.data.allRecipes))
+      const historyOrders = orders.filter((order) => !isActiveOrder(order)).map((order) => toOrderView(order, this.data.allRecipes))
       this.setData({
         activeOrders,
         historyOrders,
@@ -380,11 +394,11 @@ Page({
   },
 
   async onToggleIngredient(event: {
-    currentTarget: { dataset: { orderId?: string; ingredientId?: string; ready?: string } }
+    currentTarget: { dataset: { orderId?: string; ingredientId?: string; ready?: string | boolean } }
   }) {
     const orderId = event.currentTarget.dataset.orderId
     const ingredientId = event.currentTarget.dataset.ingredientId
-    const ready = event.currentTarget.dataset.ready !== 'true'
+    const ready = !(event.currentTarget.dataset.ready === true || event.currentTarget.dataset.ready === 'true')
     if (!orderId || !ingredientId || this.data.ingredientActionId) return
     const order = this.data.activeOrders.find((item) => item.id === orderId)
     if (!order) return
@@ -439,7 +453,7 @@ Page({
   },
 
   replaceOrder(order: MealOrder) {
-    const view = toOrderView(order)
+    const view = toOrderView(order, this.data.allRecipes)
     const activeOrders = isActiveOrder(order)
       ? replaceOrPrepend(this.data.activeOrders, view)
       : this.data.activeOrders.filter((item) => item.id !== order.id)
@@ -470,6 +484,59 @@ Page({
 
   onCloseOrderDetail() {
     this.setData({ historyDetailOrder: null })
+  },
+
+  onToggleDishIngredients(event: {
+    currentTarget: { dataset: { orderId?: string; dishId?: string } }
+  }) {
+    const orderId = event.currentTarget.dataset.orderId
+    const dishId = event.currentTarget.dataset.dishId
+    if (!orderId || !dishId) return
+    const toggleDish = (order: OrderView): OrderView => order.id !== orderId
+      ? order
+      : {
+          ...order,
+          items: order.items.map((dish) => dish.id === dishId ? { ...dish, expanded: !dish.expanded } : dish),
+        }
+    this.setData({
+      activeOrders: this.data.activeOrders.map(toggleDish),
+      historyOrders: this.data.historyOrders.map(toggleDish),
+      historyDetailOrder: this.data.historyDetailOrder
+        ? toggleDish(this.data.historyDetailOrder)
+        : null,
+    })
+  },
+
+  onOpenRecipeSteps(event: {
+    currentTarget: { dataset: { orderId?: string; dishId?: string } }
+  }) {
+    const orderId = event.currentTarget.dataset.orderId
+    const dishId = event.currentTarget.dataset.dishId
+    if (!orderId || !dishId) return
+    const orders = [
+      ...(this.data.historyDetailOrder ? [this.data.historyDetailOrder] : []),
+      ...this.data.activeOrders,
+      ...this.data.historyOrders,
+    ]
+    const order = orders.find((item) => item.id === orderId)
+    const dish = order?.items.find((item) => item.id === dishId)
+    if (!dish) return
+    if (!dish.steps.length) {
+      wx.showToast({ title: '这道菜还没有做法', icon: 'none' })
+      return
+    }
+    this.setData({
+      recipeStepDish: {
+        id: dish.id,
+        title: dish.recipeTitle,
+        imageSrc: dish.imageSrc,
+        steps: dish.steps,
+      },
+    })
+  },
+
+  onCloseRecipeSteps() {
+    this.setData({ recipeStepDish: null })
   },
 
   onCreate() {
@@ -549,16 +616,24 @@ function buildCategoryTabs(
   return tabs
 }
 
-function toOrderView(order: MealOrder): OrderView {
+function toOrderView(order: MealOrder, recipes: MenuRecipe[]): OrderView {
   const ingredients = order.items.flatMap((item) => item.ingredients)
   const action = orderAction(order.status)
+  const recipeById = new Map(recipes.map((recipe) => [recipe.id, recipe]))
   return {
     ...order,
-    items: order.items.map((item, index) => ({
-      ...item,
-      numberLabel: String(index + 1).padStart(2, '0'),
-      readyCount: item.ingredients.filter((ingredient) => ingredient.ready).length,
-    })),
+    items: order.items.map((item, index) => {
+      const recipe = recipeById.get(item.recipeId)
+      const readyCount = item.ingredients.filter((ingredient) => ingredient.ready).length
+      return {
+        ...item,
+        numberLabel: String(index + 1).padStart(2, '0'),
+        readyCount,
+        imageSrc: recipe?.image?.src || '',
+        steps: recipe?.steps || [],
+        expanded: readyCount < item.ingredients.length,
+      }
+    }),
     statusLabel: orderStatusLabel(order.status),
     actionLabel: action.label,
     nextStatus: action.nextStatus,
@@ -647,7 +722,7 @@ function readStoredPage(): Record<string, unknown> | null {
 
 function menuPageCacheKey(): string {
   const spaceId = readStoredApiSession()?.session.activeSpaceId || 'demo'
-  return `menu:overview:v6:${spaceId}`
+  return `menu:overview:v7:${spaceId}`
 }
 
 function cartStorageKey(): string {
