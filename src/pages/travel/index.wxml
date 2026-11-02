@@ -2,21 +2,6 @@
   <page-loading show="{{loading && !hasLoaded}}" title="正在收拾行囊" copy="把出发时间和要带的东西放在一起。" />
   <auth-preview-gate />
 
-  <view
-    class="travel-topbar"
-    style="padding-top: {{statusBarHeight + 10}}px;"
-  >
-    <view class="travel-topbar__leading">
-      <view class="travel-topbar__back" hover-class="travel-topbar__back--pressed" aria-role="button" aria-label="返回" bindtap="onBack">
-        <text>‹</text>
-      </view>
-      <view class="travel-topbar__copy">
-        <text class="travel-topbar__eyebrow">一起去远方</text>
-        <text class="travel-topbar__title">旅行</text>
-      </view>
-    </view>
-  </view>
-
   <view class="travel-hero">
     <view class="travel-hero__copy">
       <text class="travel-hero__kicker">{{activeTab === 'trips' ? '下一程，慢慢准备' : '少带漏带，都从日常开始'}}</text>

@@ -14,7 +14,6 @@
 
   <block wx:elif="{{recipe}}">
     <view class="mc-topbar">
-      <view class="mc-back" bindtap="onPauseAndBack">‹</view>
       <view class="mc-topbar__copy">
         <text>{{stage === 'prep' ? '备菜检查' : stage === 'cooking' ? '下厨中' : '完成啦'}}</text>
         <text>{{recipe.title}}</text>

@@ -1,6 +1,5 @@
 {
   "navigationBarTitleText": "旅行",
-  "navigationStyle": "custom",
   "enablePullDownRefresh": true,
   "backgroundColor": "#fbf8f3",
   "usingComponents": {

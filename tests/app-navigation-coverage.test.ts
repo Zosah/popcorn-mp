@@ -26,9 +26,11 @@ function readPageFile(page: string, extension: 'json' | 'ts' | 'wxml'): string {
 
 function readPageConfig(page: string): {
   navigationStyle?: string
+  navigationBarTitleText?: string
 } {
   return JSON.parse(readPageFile(page, 'json')) as {
     navigationStyle?: string
+    navigationBarTitleText?: string
   }
 }
 
@@ -51,14 +53,21 @@ describe('页面导航覆盖', () => {
     expect(customNavigationPages).toEqual([
       'pages/home/index',
       'pages/profile/index',
-      'pages/travel/index',
     ])
   })
 
-  it('旅行页在自绘导航下同时提供返回和首页兜底', () => {
-    expect(readPageFile('pages/travel/index', 'wxml')).toContain('bindtap="onBack"')
-    expect(readPageFile('pages/travel/index', 'ts')).toContain(
-      "navigateBackOrTab('/pages/home/index')",
-    )
+  it('除首页和个人页外都使用非空的原生标题', () => {
+    for (const page of APP_PAGES.pages) {
+      if (page === 'pages/home/index' || page === 'pages/profile/index') continue
+      const config = readPageConfig(page)
+      expect(config.navigationStyle, `${page} 不应关闭原生导航`).not.toBe('custom')
+      expect(config.navigationBarTitleText?.trim(), `${page} 缺少原生标题`).toBeTruthy()
+    }
+  })
+
+  it('旅行页不再重复绘制顶部标题和返回按钮', () => {
+    const wxml = readPageFile('pages/travel/index', 'wxml')
+    expect(wxml).not.toContain('travel-topbar')
+    expect(wxml).not.toContain('bindtap="onBack"')
   })
 })

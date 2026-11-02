@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "",
+  "navigationBarTitleText": "待办",
   "enablePullDownRefresh": true,
   "usingComponents": {
     "sync-badge": "/components/sync-badge/index",

@@ -217,18 +217,6 @@ Page({
     dropBlocked: false,
   },
 
-  onBack() {
-    if (this.data.saving) {
-      wx.showToast({ title: '正在保存，请稍候', icon: 'none' })
-      return
-    }
-    if (getCurrentPages().length > 1) {
-      wx.navigateBack()
-      return
-    }
-    wx.reLaunch({ url: '/pages/settings/index' })
-  },
-
   onLoad() {
     const initial = defaultConfig()
     this.setData({

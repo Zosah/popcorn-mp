@@ -4,9 +4,6 @@
   <page-loading show="{{initialLoading}}" title="正在整理功能" copy="把常用功能放到顺手的位置。" />
 
   <view class="config-head">
-    <view class="config-head__back" hover-class="config-head__back--pressed" aria-role="button" aria-label="返回" bindtap="onBack">
-      <text class="config-head__back-icon">‹</text>
-    </view>
     <view class="config-head__copy">
       <text class="config-head__eyebrow">MAKE IT YOURS</text>
       <text class="config-head__title">功能配置</text>

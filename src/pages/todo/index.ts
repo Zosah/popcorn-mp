@@ -13,7 +13,6 @@ import {
   type TodoStatus,
 } from '../../services/todo-gateway'
 import { decodeQueryValue } from '../../utils/app-navigation'
-import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
@@ -235,10 +234,6 @@ Page({
 
   onPullDownRefresh() {
     void this.refresh(true)
-  },
-
-  onBack() {
-    navigateBackOrTab('/pages/profile/index')
   },
 
   async refresh(fromPullDown = false) {

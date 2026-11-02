@@ -16,7 +16,6 @@ import {
   type TravelTemplateWriteInput,
   type TravelTrip,
 } from '../../services/travel-gateway'
-import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
@@ -144,7 +143,6 @@ Page({
     templateEditorOpen: false,
     templateSaving: false,
     templateDeleting: false,
-    statusBarHeight: 20,
     templateDraft: {
       id: '',
       title: '',
@@ -155,7 +153,6 @@ Page({
   },
 
   onLoad() {
-    this.measureNavBar()
     const cached = readPageCache<TravelPageCache>(TRAVEL_PAGE_CACHE_KEY)
     if (!cached) return
     this.applyData(cached.value.trips, cached.value.templates, {
@@ -178,20 +175,8 @@ Page({
     void this.refresh(true)
   },
 
-  onBack() {
-    navigateBackOrTab('/pages/home/index')
-  },
-
   onUnload() {
     travelRequestGate.invalidate()
-  },
-
-  measureNavBar() {
-    try {
-      this.setData({ statusBarHeight: wx.getWindowInfo().statusBarHeight || 20 })
-    } catch {
-      this.setData({ statusBarHeight: 20 })
-    }
   },
 
   async refresh(fromPullDown = false) {
