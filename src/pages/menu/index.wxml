@@ -13,10 +13,6 @@
       <view class="menu-hero__steam menu-hero__steam--two"></view>
       <view class="menu-hero__bowl"><line-icon name="soup" size="44" tone="gold" /></view>
     </view>
-    <view class="menu-add" bindtap="onCreate">
-      <line-icon name="plus" size="18" tone="white" />
-      <text>新菜谱</text>
-    </view>
   </view>
 
   <view wx:if="{{loading}}" class="menu-loading">
@@ -36,10 +32,12 @@
   <block wx:else>
     <view class="menu-tabs" role="tablist">
       <view class="menu-tab {{activeTab === 'eat' ? 'menu-tab--active' : ''}}" data-value="eat" bindtap="onSwitchTab">
+        <line-icon name="utensils" size="22" tone="accent" />
         <text>吃啥</text>
         <view wx:if="{{activeOrders.length}}" class="menu-tab__count">{{activeOrders.length}}</view>
       </view>
       <view class="menu-tab {{activeTab === 'recipes' ? 'menu-tab--active' : ''}}" data-value="recipes" bindtap="onSwitchTab">
+        <line-icon name="book-open" size="22" tone="accent" />
         <text>菜谱本</text>
         <view class="menu-tab__count">{{allRecipes.length}}</view>
       </view>
@@ -110,11 +108,26 @@
         </view>
       </view>
 
-      <view wx:if="{{!activeOrders.length}}" class="menu-empty menu-empty--eat">
-        <view class="menu-empty__icon"><line-icon name="utensils" size="36" tone="gold" /></view>
-        <view class="menu-empty__title">还没有人点菜</view>
-        <view class="menu-empty__copy">去菜谱本挑两道，提交后大家都能看到。</view>
-        <view class="menu-empty__action" data-value="recipes" bindtap="onSwitchTab">去菜谱本看看</view>
+      <view wx:if="{{!activeOrders.length}}" class="menu-eat-empty">
+        <view class="menu-eat-empty__art" aria-hidden="true">
+          <view class="menu-eat-empty__sun"></view>
+          <view class="menu-eat-empty__plate">
+            <view class="menu-eat-empty__food menu-eat-empty__food--one"></view>
+            <view class="menu-eat-empty__food menu-eat-empty__food--two"></view>
+            <view class="menu-eat-empty__food menu-eat-empty__food--three"></view>
+          </view>
+          <view class="menu-eat-empty__leaf menu-eat-empty__leaf--one"></view>
+          <view class="menu-eat-empty__leaf menu-eat-empty__leaf--two"></view>
+        </view>
+        <view class="menu-eat-empty__copy">
+          <text class="menu-eat-empty__eyebrow">今天的餐桌</text>
+          <text class="menu-eat-empty__title">想吃什么，点两道</text>
+          <text class="menu-eat-empty__desc">菜谱本里挑好，提交后空间里的每个人都能看到。</text>
+        </view>
+        <view class="menu-eat-empty__action" data-value="recipes" bindtap="onSwitchTab">
+          <text>去菜谱本点菜</text>
+          <line-icon name="plus" size="20" tone="white" />
+        </view>
       </view>
 
       <view wx:if="{{historyOrders.length}}" class="menu-history">
@@ -143,18 +156,23 @@
       </view>
 
       <view wx:if="{{recommended}}" class="menu-recommend">
-        <view class="menu-recommend__head">
-          <view>
-            <text class="menu-recommend__eyebrow">不知道吃什么时</text>
-            <text class="menu-recommend__title">{{recommended.title}}</text>
+        <view class="menu-recommend__art">
+          <image wx:if="{{recommended.image && recommended.image.src}}" src="{{recommended.image.src}}" mode="aspectFill" />
+          <view wx:else class="menu-recommend__fallback">
+            <line-icon name="soup" size="52" tone="gold" />
+            <view class="menu-recommend__steam"></view>
           </view>
-          <view class="menu-recommend__thumb">
-            <image wx:if="{{recommended.image && recommended.image.src}}" src="{{recommended.image.src}}" mode="aspectFill" />
-            <line-icon wx:else name="soup" size="34" tone="gold" />
+          <view class="menu-recommend__badge">今日推荐</view>
+        </view>
+        <view class="menu-recommend__body">
+          <text class="menu-recommend__eyebrow">不知道吃什么时</text>
+          <text class="menu-recommend__title">{{recommended.title}}</text>
+          <text class="menu-recommend__meta">{{recommended.cookingMinutes}} 分钟 · {{recommended.ingredients.length}} 样食材</text>
+          <view class="menu-recommend__action" bindtap="onOpenRecommended">
+            <text>看看这道菜</text>
+            <line-icon name="plus" size="18" tone="white" />
           </view>
         </view>
-        <view class="menu-recommend__meta">{{recommended.cookingMinutes}} 分钟 · {{recommended.ingredients.length}} 样食材</view>
-        <view class="menu-recommend__action" bindtap="onOpenRecommended">翻翻这道菜</view>
       </view>
     </view>
 
@@ -182,7 +200,13 @@
             <text>{{currentCategoryName}}</text>
             <text>{{categoryRecipes.length}} 道菜</text>
           </view>
-          <view wx:if="{{currentCategoryManageable}}" class="menu-recipes__manage" bindtap="onManageSelectedCategory">管理</view>
+          <view class="menu-recipes__actions">
+            <view wx:if="{{currentCategoryManageable}}" class="menu-recipes__manage" bindtap="onManageSelectedCategory">管理</view>
+            <view class="menu-add" bindtap="onCreate">
+              <line-icon name="plus" size="20" tone="white" />
+              <text>新菜谱</text>
+            </view>
+          </view>
         </view>
 
         <view wx:if="{{categoryRecipes.length}}" class="menu-recipe-list">
@@ -193,12 +217,15 @@
             </view>
             <view class="menu-recipe__body">
               <view class="menu-recipe__title">{{item.title}}</view>
-              <view class="menu-recipe__meta">{{item.cookingMinutes}} 分钟 · {{item.servings}} 人份</view>
-              <view class="menu-recipe__ingredients">{{item.ingredients.length}} 样食材 · {{item.categoryName || '未分类'}}</view>
+              <view wx:if="{{item.description}}" class="menu-recipe__desc">{{item.description}}</view>
+              <view class="menu-recipe__meta">
+                <text>{{item.cookingMinutes}} 分钟</text>
+                <text>{{item.servings}} 人份</text>
+                <text>{{item.ingredients.length}} 样食材</text>
+              </view>
             </view>
-            <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart">
-              <line-icon name="plus" size="14" tone="white" />
-              <text>吃它</text>
+            <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart" aria-label="添加{{item.title}}">
+              <line-icon name="plus" size="24" tone="white" />
             </view>
           </view>
         </view>
@@ -214,13 +241,19 @@
 
     <view wx:if="{{cartCount}}" class="menu-cart-bar" bindtap="onOpenCart">
       <view class="menu-cart-bar__left">
-        <view class="menu-cart-bar__bag"><line-icon name="bowl" size="24" tone="white" /></view>
+        <view class="menu-cart-bar__bag">
+          <line-icon name="bowl" size="27" tone="white" />
+          <view class="menu-cart-bar__badge">{{cartCount}}</view>
+        </view>
         <view class="menu-cart-bar__copy">
-          <text>已选 {{cartCount}} 道菜</text>
-          <text>看看这一桌要吃什么</text>
+          <text>已点 {{cartCount}} 道菜</text>
+          <text>看看这一桌想吃什么</text>
         </view>
       </view>
-      <view class="menu-cart-bar__action">去提交</view>
+      <view class="menu-cart-bar__action">
+        <text>去提交</text>
+        <line-icon name="check" size="19" tone="white" />
+      </view>
     </view>
   </block>
 

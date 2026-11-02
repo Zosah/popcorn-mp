@@ -24,6 +24,7 @@
 - [功能交付 Goal 模式](docs/10-feature-delivery-goal.md)：逐功能从设计、API、数据库、后端、前端、私有 COS、生产部署、真实联调，到小程序上传与体验版真机验收的闭环门禁。
 - [生活记录 1.22.0 真机验收](docs/11-journal-1.22.0-acceptance.md)：两个真实微信账号下的私密 / 共享图片、弱网恢复和图片替换 / 移除验收步骤。
 - [功能清单与快捷配置设计](docs/12-feature-configuration-design.md)：功能分类、个人页入口、首页快捷入口、底栏拖拽配置、数据模型与实施切片。
+- [当前能力清单（设计交接）](docs/13-current-capability-map.md)：当前已实现功能、对象关系、关键闭环与设计 Agent 输入。
 
 ## 技术决策
 
