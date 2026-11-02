@@ -1,79 +1,152 @@
 <view class="tab-page profile-page">
-  <page-loading show="{{initialLoading}}" title="正在准备你的空间" copy="登录状态和共同生活数据马上就好。" />
+  <page-loading show="{{initialLoading}}" title="正在打开你的空间" copy="把共同生活轻轻收在一起。" />
   <auth-preview-gate />
 
-  <view class="profile-heading">
+  <view
+    class="profile-heading"
+    style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
+  >
     <view class="profile-heading__copy">
+      <text class="profile-heading__eyebrow">PERSONAL SPACE</text>
       <text class="profile-heading__title">我的</text>
-      <text class="profile-heading__subtitle">{{isLoggedIn ? '你的空间，和每天会用到的东西' : '登录后把生活放在一起'}}</text>
     </view>
     <view
-      class="profile-toolbar__settings"
-      hover-class="profile-toolbar__settings--pressed"
+      class="profile-settings"
+      hover-class="profile-settings--pressed"
       aria-role="button"
       aria-label="打开设置"
       bindtap="onOpenSettings"
     >
-      <line-icon name="settings" size="23" tone="ink" />
+      <line-icon name="settings" size="30" tone="ink" />
       <text>设置</text>
     </view>
   </view>
 
-  <view class="profile-identity" hover-class="profile-identity--pressed" bindtap="onOpenAuth">
-    <view class="profile-avatar profile-avatar--{{avatarTone}}">
-      <image wx:if="{{avatarUrl}}" class="profile-avatar__image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
-      <text wx:else>{{avatarText}}</text>
-    </view>
-
-    <view class="profile-identity__body">
-      <text class="profile-identity__eyebrow">{{isLoggedIn ? '你好' : '时刻见'}}</text>
-      <text class="profile-identity__name">{{displayName}}</text>
-      <text class="profile-identity__account">{{isLoggedIn ? (spaceName || accountLabel) : accountLabel}}</text>
-    </view>
-
-    <view class="profile-identity__arrow">›</view>
-  </view>
-
-  <view class="feature-directory-head">
-    <view class="feature-directory-head__copy">
-      <text class="feature-directory-head__title">功能</text>
-      <text class="feature-directory-head__subtitle">工具、生活、备忘和家里的成员</text>
-    </view>
-    <view class="feature-directory-head__all" hover-class="feature-directory-head__all--pressed" bindtap="onOpenFeatureList">
-      <text>查看全部</text>
-      <text class="feature-directory-head__all-arrow">›</text>
-    </view>
-  </view>
-
-  <view class="profile-category-grid">
+  <view class="profile-space-card">
+    <view class="profile-space-card__orb"></view>
     <view
-      wx:for="{{featureGroups}}"
-      wx:key="key"
-      class="profile-category profile-category--{{item.category.tone}}"
+      class="profile-space-card__main"
+      hover-class="profile-space-card__main--pressed"
+      aria-role="button"
+      aria-label="查看共同空间"
+      bindtap="onOpenSpace"
     >
-      <view class="profile-category__head">
-        <text class="profile-category__title">{{item.category.title}}</text>
-        <text class="profile-category__description">{{item.category.description}}</text>
+      <view class="profile-space-mark profile-space-mark--{{avatarTone}}">
+        <image wx:if="{{avatarUrl}}" class="profile-space-mark__image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+        <text wx:else>{{avatarText}}</text>
+        <view wx:if="{{isLoggedIn}}" class="profile-space-mark__dot"></view>
       </view>
 
-      <view class="profile-category__items">
-        <view
-          wx:for="{{item.items}}"
-          wx:for-item="feature"
-          wx:key="id"
-          class="profile-feature"
-          hover-class="profile-feature--pressed"
-          data-id="{{feature.id}}"
-          bindtap="onOpenFeature"
-        >
-          <view class="profile-feature__icon profile-feature__icon--{{feature.tone}}">
-            <line-icon name="{{feature.icon}}" size="27" tone="{{feature.tone}}" />
-          </view>
-          <text class="profile-feature__title">{{feature.label}}</text>
-          <text class="profile-feature__arrow">›</text>
-        </view>
+      <view class="profile-space-card__copy">
+        <text class="profile-space-card__eyebrow">{{spaceEyebrow}}</text>
+        <text class="profile-space-card__title">{{isLoggedIn ? spaceName : '登录后，一起生活'}}</text>
+        <text class="profile-space-card__meta">{{spaceRelationship}}</text>
+      </view>
+
+      <view class="profile-space-card__arrow">›</view>
+    </view>
+
+    <view class="profile-space-stats">
+      <view class="profile-space-stat">
+        <text class="profile-space-stat__value">{{memberCount}}</text>
+        <text class="profile-space-stat__label">成员</text>
+      </view>
+      <view class="profile-space-stat">
+        <text class="profile-space-stat__value">{{todoCompleted}}</text>
+        <text class="profile-space-stat__label">已完成</text>
+      </view>
+      <view class="profile-space-stat">
+        <text class="profile-space-stat__value">{{journalTotal}}</text>
+        <text class="profile-space-stat__label">生活记录</text>
+      </view>
+      <view
+        class="profile-space-invite"
+        hover-class="profile-space-invite--pressed"
+        catchtap="onInvite"
+      >
+        <line-icon name="users" size="34" tone="ink" />
+        <text>{{isLoggedIn ? '邀请' : '登录'}}</text>
       </view>
     </view>
+  </view>
+
+  <view class="profile-section">
+    <view class="profile-section__head">
+      <view class="profile-section__copy">
+        <text class="profile-section__eyebrow">DAILY</text>
+        <text class="profile-section__title">一起生活</text>
+      </view>
+      <view
+        class="profile-section__action"
+        hover-class="profile-section__action--pressed"
+        bindtap="onOpenFeatureList"
+      >
+        <text>{{featureCount}} 个功能</text>
+        <text class="profile-section__action-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="profile-feature-grid">
+      <view
+        wx:for="{{dailyFeatures}}"
+        wx:key="id"
+        class="profile-feature-card profile-feature-card--{{item.cardTone}}"
+        hover-class="profile-feature-card--pressed"
+        data-id="{{item.id}}"
+        bindtap="onOpenFeature"
+      >
+        <view class="profile-feature-card__icon">
+          <line-icon name="{{item.icon}}" size="38" tone="{{item.tone}}" />
+        </view>
+        <view class="profile-feature-card__copy">
+          <text class="profile-feature-card__title">{{item.title}}</text>
+          <text class="profile-feature-card__meta">{{item.subtitle}}</text>
+        </view>
+        <text class="profile-feature-card__arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="profile-section profile-section--plans">
+    <view class="profile-section__head">
+      <view class="profile-section__copy">
+        <text class="profile-section__eyebrow">PLANS</text>
+        <text class="profile-section__title">让日子有期待</text>
+      </view>
+    </view>
+
+    <view class="profile-plan-grid">
+      <view
+        wx:for="{{planFeatures}}"
+        wx:key="id"
+        class="profile-plan-card profile-plan-card--{{item.cardTone}}"
+        hover-class="profile-plan-card--pressed"
+        data-id="{{item.id}}"
+        bindtap="onOpenFeature"
+      >
+        <view class="profile-plan-card__top">
+          <view class="profile-plan-card__icon">
+            <line-icon name="{{item.icon}}" size="38" tone="{{item.tone}}" />
+          </view>
+          <view class="profile-plan-card__arrow">›</view>
+        </view>
+        <text class="profile-plan-card__title">{{item.title}}</text>
+        <text class="profile-plan-card__meta">{{item.subtitle}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view
+    class="profile-directory"
+    hover-class="profile-directory--pressed"
+    bindtap="onOpenFeatureList"
+  >
+    <view class="profile-directory__icon"><line-icon name="list-todo" size="34" tone="green" /></view>
+    <view class="profile-directory__copy">
+      <text class="profile-directory__title">全部功能</text>
+      <text class="profile-directory__meta">工具、备忘与家庭成员都在这里</text>
+    </view>
+    <text class="profile-directory__arrow">›</text>
   </view>
 
   <app-tab-bar active="profile" />
