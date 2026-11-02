@@ -16,6 +16,7 @@ import {
   type TravelTemplateWriteInput,
   type TravelTrip,
 } from '../../services/travel-gateway'
+import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
@@ -175,6 +176,10 @@ Page({
 
   onPullDownRefresh() {
     void this.refresh(true)
+  },
+
+  onBack() {
+    navigateBackOrTab('/pages/home/index')
   },
 
   onUnload() {

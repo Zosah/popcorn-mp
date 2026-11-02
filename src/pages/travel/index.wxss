@@ -19,6 +19,40 @@
   padding: 2rpx 4rpx 22rpx;
 }
 
+.travel-topbar__leading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.travel-topbar__back {
+  display: flex;
+  width: 58rpx;
+  height: 58rpx;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12rpx 28rpx -22rpx rgba(74, 62, 52, 0.58);
+  box-sizing: border-box;
+  color: var(--travel-ink);
+  flex-shrink: 0;
+  font-family: Arial, sans-serif;
+  font-size: 46rpx;
+  font-weight: 300;
+  line-height: 1;
+  backdrop-filter: blur(18rpx);
+  -webkit-backdrop-filter: blur(18rpx);
+}
+
+.travel-topbar__back--pressed {
+  opacity: 0.62;
+  transform: scale(0.96);
+}
+
 .travel-topbar__copy {
   display: flex;
   min-width: 0;

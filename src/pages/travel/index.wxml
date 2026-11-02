@@ -6,9 +6,14 @@
     class="travel-topbar"
     style="padding-top: {{statusBarHeight + 10}}px;"
   >
-    <view class="travel-topbar__copy">
-      <text class="travel-topbar__eyebrow">一起去远方</text>
-      <text class="travel-topbar__title">旅行</text>
+    <view class="travel-topbar__leading">
+      <view class="travel-topbar__back" hover-class="travel-topbar__back--pressed" aria-role="button" aria-label="返回" bindtap="onBack">
+        <text>‹</text>
+      </view>
+      <view class="travel-topbar__copy">
+        <text class="travel-topbar__eyebrow">一起去远方</text>
+        <text class="travel-topbar__title">旅行</text>
+      </view>
     </view>
   </view>
 
