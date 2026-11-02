@@ -1,5 +1,7 @@
 import { readStoredApiSession } from '../stores/session'
 import type {
+  ApiMenuCategory,
+  ApiMenuCategoryList,
   ApiMenuRecipe,
   ApiMenuRecipeList,
   ApiMenuWriteRequest,
@@ -8,6 +10,7 @@ import { requestApiResponse } from './http'
 import { mediaGateway } from './media'
 import {
   MenuGatewayError,
+  type MenuCategory,
   type MenuGateway,
   type MenuListFilters,
   type MenuRecipe,
@@ -60,6 +63,71 @@ export class HttpMenuGateway implements MenuGateway {
       return toMenuRecipe(response.data, 'display')
     } catch (error) {
       if (error instanceof TransportError && error.code === 'NOT_FOUND') return null
+      throw toGatewayError(error)
+    }
+  }
+
+  async listCategories(): Promise<MenuCategory[]> {
+    const context = menuContext()
+    try {
+      const response = await retryNetwork(() => requestApiResponse<ApiMenuCategoryList>(
+        `/spaces/${encodeURIComponent(context.spaceId)}/menu-categories`,
+        { token: context.token },
+      ))
+      return response.data.items.map(toMenuCategory)
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
+
+  async createCategory(name: string): Promise<MenuCategory> {
+    const context = menuContext()
+    try {
+      const response = await retryNetwork(() => requestApiResponse<ApiMenuCategory>(
+        `/spaces/${encodeURIComponent(context.spaceId)}/menu-categories`,
+        {
+          method: 'POST',
+          token: context.token,
+          body: { name: name.trim() },
+          headers: { 'Idempotency-Key': createIdempotencyKey('category-create') },
+        },
+      ))
+      return toMenuCategory(response.data)
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
+
+  async updateCategory(id: string, name: string): Promise<MenuCategory> {
+    const context = menuContext()
+    try {
+      const response = await retryNetwork(() => requestApiResponse<ApiMenuCategory>(
+        `/spaces/${encodeURIComponent(context.spaceId)}/menu-categories/${encodeURIComponent(id)}`,
+        {
+          method: 'PUT',
+          token: context.token,
+          body: { name: name.trim() },
+          headers: { 'Idempotency-Key': createIdempotencyKey('category-update') },
+        },
+      ))
+      return toMenuCategory(response.data)
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
+
+  async removeCategory(id: string): Promise<void> {
+    const context = menuContext()
+    try {
+      await retryNetwork(() => requestApiResponse<void>(
+        `/spaces/${encodeURIComponent(context.spaceId)}/menu-categories/${encodeURIComponent(id)}`,
+        {
+          method: 'DELETE',
+          token: context.token,
+          headers: { 'Idempotency-Key': createIdempotencyKey('category-delete') },
+        },
+      ))
+    } catch (error) {
       throw toGatewayError(error)
     }
   }
@@ -221,15 +289,29 @@ function menuItemPath(spaceId: string, recipeId: string): string {
   return `/spaces/${encodeURIComponent(spaceId)}/menu-recipes/${encodeURIComponent(recipeId)}`
 }
 
+function toMenuCategory(item: ApiMenuCategory): MenuCategory {
+  return {
+    id: item.id,
+    name: item.name,
+    isSystem: item.isSystem === true,
+    sortOrder: item.sortOrder || 0,
+  }
+}
+
 async function toMenuRecipe(
   item: ApiMenuRecipe,
   variant: 'display' | 'thumb',
 ): Promise<MenuRecipe> {
-  const image = await resolveMenuImage(item.imageMediaId, variant, item.title)
+  const [image, noteImages] = await Promise.all([
+    resolveMenuImage(item.imageMediaId, variant, item.title),
+    resolveNoteImages(item.noteImageMediaIds ?? [], variant),
+  ])
   return {
     id: item.id,
     title: item.title,
     description: item.description,
+    categoryId: item.categoryId || '',
+    categoryName: item.categoryName || '',
     servings: item.servings,
     cookingMinutes: item.cookingMinutes,
     ingredients: item.ingredients.map((entry) => ({
@@ -252,7 +334,27 @@ async function toMenuRecipe(
     version: item.version,
     createdBy: item.createdBy,
     imageMediaId: item.imageMediaId || '',
+    noteImageMediaIds: [...(item.noteImageMediaIds ?? [])],
+    noteImages,
   }
+}
+
+async function resolveNoteImages(
+  mediaIds: string[],
+  variant: 'display' | 'thumb',
+): Promise<MenuRecipe['noteImages']> {
+  const resolved = await Promise.all(mediaIds.filter(Boolean).map(async (mediaId) => {
+    try {
+      const asset = await mediaGateway.get(mediaId)
+      return {
+        mediaId,
+        src: variant === 'thumb' ? asset.thumb.url : asset.display.url,
+      }
+    } catch {
+      return null
+    }
+  }))
+  return resolved.filter((item): item is NonNullable<typeof item> => item !== null)
 }
 
 async function resolveMenuImage(
@@ -279,9 +381,11 @@ function toApiInput(input: MenuWriteInput): ApiMenuWriteRequest {
   return {
     title: input.title.trim(),
     description: input.description.trim(),
+    categoryId: input.categoryId.trim(),
     servings: input.servings,
     cookingMinutes: input.cookingMinutes,
     imageMediaId: input.imageMediaId.trim(),
+    noteImageMediaIds: input.noteImageMediaIds.map((id) => id.trim()).filter(Boolean),
     ingredients: input.ingredients.map((item) => ({
       ...(item.id ? { id: item.id } : {}),
       name: item.name.trim(),

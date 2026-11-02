@@ -3,7 +3,7 @@
 > 最后更新：2026-11-01
 > 状态：已确认的 0→1 实施基线。后续架构、代码和部署变更应优先更新本文，避免仅存在于对话中。
 
-当前进度：前端升级到 v1.26.1，继续沿用「暖奶油手帐」视觉与自建五项毛玻璃底部导航。登录、真实头像、空间、库存、待办、生活记录、菜单、宠物照护和提醒设置均已接入真实 HTTP Gateway，并保留 Demo / HTTP 双模式；空间权限、幂等、乐观锁、私有 COS 图片和用户偏好持久化已经打通。v1.26.1 重构功能配置与个人页：配置页改为「全部功能池 + 首页快捷 4 位 + 底部导航 3 位」同屏拖拽，拖动只修改草稿，统一保存后递增版本；个人页设置入口移到右上角，功能按一级分类标题和简短描述直接展示。配置继续按「空间 + 用户」隔离，支持失败保留草稿、冲突载入最新、ETag 乐观锁和旧接口兼容。前端类型检查、49 个测试文件 / 262 项测试通过。
+当前进度：前端升级到 v1.37.0，继续沿用「暖奶油手帐」视觉与自建五项毛玻璃底部导航。登录、真实头像、空间、库存、待办、生活记录、菜谱、宠物照护和提醒设置均已接入真实 HTTP Gateway，并保留 Demo / HTTP 双模式；空间权限、幂等、乐观锁、私有 COS 图片和用户偏好持久化已经打通。v1.37.0 完成后厨升级：菜谱支持分类、逐行食材、逐行步骤和最多 9 张做法参考图；菜谱本支持分类双栏与本地加购，提交后生成空间共享用餐订单，成员可共同勾选备菜食材并按「待开火 → 备菜中 → 可以开饭 → 已吃完」流转归档。菜单页缓存按空间隔离，分类与订单状态变化会同步刷新缓存。前端类型检查、51 个测试文件 / 274 项测试通过。
 
 ## 1. 当前资源与约束
 
@@ -163,9 +163,14 @@ MVP 只建立以下表：
 - `t_app_tab_settings`：按「空间 + 用户」保存首页 4 个快捷槽位与底栏 3 个入口，含版本、幂等和更新时间。
 - `t_space_invites`：单次邀请、哈希、过期和接受状态。
 - `t_inventory_items`：库存内容、生命周期、日期、乐观锁和软删除。
-- `t_menu_recipes`：空间内菜谱主表、成品图片媒体 ID、人份、烹饪时间、乐观锁和软删除。
+- `t_menu_recipes`：空间内菜谱主表、分类、成品图片媒体 ID、人份、烹饪时间、乐观锁和软删除。
+- `t_menu_categories`：空间级菜谱分类，首次读取懒创建肉类、菜类、汤类、主食和其他默认分类。
 - `t_menu_ingredients`：菜谱食材、用量、来源、备齐状态和稳定排序。
 - `t_menu_steps`：菜谱步骤、说明和稳定排序。
+- `t_menu_recipe_note_images`：菜谱做法参考图，与私有 COS 媒体关联并限制最多 9 张。
+- `t_meal_orders`：空间共享用餐订单，按日期、餐次和状态归档，支持乐观锁。
+- `t_meal_order_items`：点菜项及菜谱标题快照，保留每餐实际内容。
+- `t_meal_order_ingredients`：备菜食材快照与逐项勾选状态。
 - `t_idempotency_keys`：写接口幂等重放。
 
 关键约定：
@@ -236,6 +241,18 @@ DELETE /spaces/{spaceId}/menu-recipes/{recipeId}
 PUT    /spaces/{spaceId}/menu-recipes/{recipeId}/servings
 POST   /spaces/{spaceId}/menu-recipes/{recipeId}/ingredients/{ingredientId}/ready
 POST   /spaces/{spaceId}/menu-recipes/{recipeId}/ingredients/{ingredientId}/unready
+
+GET    /spaces/{spaceId}/menu-categories
+POST   /spaces/{spaceId}/menu-categories
+PUT    /spaces/{spaceId}/menu-categories/{categoryId}
+DELETE /spaces/{spaceId}/menu-categories/{categoryId}
+
+POST   /spaces/{spaceId}/meal-orders
+GET    /spaces/{spaceId}/meal-orders
+GET    /spaces/{spaceId}/meal-orders/{orderId}
+PUT    /spaces/{spaceId}/meal-orders/{orderId}/status
+POST   /spaces/{spaceId}/meal-orders/{orderId}/ingredients/{ingredientId}/ready
+POST   /spaces/{spaceId}/meal-orders/{orderId}/ingredients/{ingredientId}/unready
 ```
 
 - JSON 字段统一使用 `camelCase`。
@@ -315,7 +332,8 @@ Pull Request
 19. ✅ 多空间加入与持久默认空间 1.25.0：迁移 16 增加 `t_users.default_space_id` 并回填已有用户；新增 `PUT /session/default-space`，切换前校验空间成员身份，非成员返回 `404 SPACE_NOT_FOUND`。空间页增加“我的空间”列表、当前默认标记和“输入邀请码”入口；接受邀请后自动切换至新空间并清理 `用户 + 空间` 页面缓存，切换后全局回到首页。创建人可以保留自己的空间，同时接受其他人的邀请。
 20. ✅ 宠物创建链路稳定性修复 1.25.1：新增独立宠物创建页，替代 `showActionSheet → showModal` 的连续原生弹窗入口；创建页支持头像、物种、性别、品种、生日、到家日、绝育日和状态，并调用真实 HTTP 宠物接口。当前宠物缓存从全局键迁移为 `popcorn_active_pet_id:{spaceId}`，空列表和删除操作会清理残留；宠物页恢复每次进入后台校验，避免缓存造成“本地有宠物、服务端为空”的假状态。生产真实微信脚本已覆盖创建、私有 COS 头像、体重、饮食、周期照护、用品、切换和删除。
 21. ✅ 功能清单与快捷配置 1.26.1：建立统一功能注册表，功能清单按工具、备忘、成员分类并标注「首页 / 底栏」位置。迁移 17 为 `t_app_tab_settings` 增加首页 4 个槽位及同区去重约束；新增 `GET/PUT /spaces/{spaceId}/feature-settings`，旧 `app-tab-settings` 只更新底栏并保留首页配置。1.26.1 将配置页重构为「全部功能池 + 首页快捷 4 位 + 底部导航 3 位」同屏拖拽，支持功能池投放、槽位交换、底栏资格阻断、草稿态统一保存、恢复默认后确认保存和版本冲突载入最新；个人页设置入口移到右上角，功能目录只保留一级分类标题、描述和功能行，首页与底栏实时订阅配置变化。
-22. ⏳ 后续加固：真实微信订阅模板配置与送达验收、限流、日志脱敏、COS 完整恢复演练和稳定性验收。
+22. ✅ 后厨共享点菜 1.37.0：迁移 21 新增菜谱分类、做法参考图和共享用餐订单数据模型；菜谱表单升级为分类、逐行食材、逐行步骤和最多 9 张参考图，详情页支持三列预览。菜单页提供「吃啥 / 菜谱本」分类双栏，菜谱可加入本地加购区并按早餐、午餐、晚餐或加餐提交共享订单；订单支持成员共同勾选备菜食材、乐观锁冲突刷新和状态归档，历史默认折叠 5 条。后端新增分类与订单接口，所有查询和写入均校验空间成员；前端与后端全量测试、类型检查、`go vet` 通过。
+23. ⏳ 后续加固：真实微信订阅模板配置与送达验收、限流、日志脱敏、COS 完整恢复演练和稳定性验收。
 
 ### 微信开发者工具上传排障
 

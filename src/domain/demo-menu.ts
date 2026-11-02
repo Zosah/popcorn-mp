@@ -15,6 +15,7 @@ export interface DemoMenuStep {
 export interface DemoMenuRecipeInput {
   title: string
   description: string
+  categoryId?: string
   servings: number
   cookingMinutes: number
   ingredients: Array<Pick<DemoMenuIngredient, 'name' | 'amount' | 'source'>>
@@ -23,6 +24,8 @@ export interface DemoMenuRecipeInput {
 
 export interface DemoMenuRecipe extends DemoMenuRecipeInput {
   id: string
+  categoryId?: string
+  noteImageMediaIds?: string[]
   ingredients: DemoMenuIngredient[]
   steps: DemoMenuStep[]
   createdAt: string
@@ -48,13 +51,14 @@ function normalizeInput(
   input: DemoMenuRecipeInput,
   nowMs: number,
   idPrefix: string,
-): Pick<DemoMenuRecipeInput, 'title' | 'description' | 'servings' | 'cookingMinutes'> & {
+): Pick<DemoMenuRecipeInput, 'title' | 'description' | 'categoryId' | 'servings' | 'cookingMinutes'> & {
   ingredients: DemoMenuIngredient[]
   steps: DemoMenuStep[]
 } {
   return {
     title: input.title.trim(),
     description: input.description.trim(),
+    categoryId: input.categoryId?.trim() ?? '',
     servings: normalizeServings(input.servings),
     cookingMinutes: normalizeCookingMinutes(input.cookingMinutes),
     ingredients: input.ingredients
@@ -123,6 +127,7 @@ export function normalizeDemoMenuRecipe(
     {
       title: recipe.title,
       description: recipe.description,
+      categoryId: recipe.categoryId,
       servings: recipe.servings,
       cookingMinutes: recipe.cookingMinutes,
       ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
@@ -196,6 +201,7 @@ export function createDemoMenuSeedRecipes(nowMs = Date.now()): DemoMenuRecipe[] 
     {
       title: '番茄牛腩',
       description: '慢慢炖一锅，把冰箱里该吃掉的番茄用起来。',
+      categoryId: 'demo-category-meat',
       servings: 2,
       cookingMinutes: 55,
       ingredients: [
@@ -224,6 +230,7 @@ export function createDemoMenuSeedRecipes(nowMs = Date.now()): DemoMenuRecipe[] 
       {
         title: '葱油拌面',
         description: '二十分钟能端上桌，适合不想复杂做饭的晚上。',
+        categoryId: 'demo-category-staple',
         servings: 2,
         cookingMinutes: 20,
         ingredients: [

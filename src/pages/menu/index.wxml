@@ -1,15 +1,21 @@
 <view class="page-shell menu-page">
-  <page-loading show="{{loading && !hasLoaded}}" title="正在翻菜谱本" copy="今天吃什么，很快就有点子了。" />
+  <page-loading show="{{loading && !hasLoaded}}" title="正在翻菜谱本" copy="今天的点子和常做的菜，很快就来。" />
   <auth-preview-gate />
 
-  <view class="menu-top">
-    <view class="menu-top__main">
-      <view class="menu-top__title">今天吃什么</view>
-      <view class="menu-top__sub">{{allRecipes.length}} 道常做的</view>
+  <view class="menu-hero">
+    <view class="menu-hero__copy">
+      <view class="menu-hero__eyebrow">一起吃点好的</view>
+      <view class="menu-hero__title">今天吃什么</view>
+      <view class="menu-hero__sub">{{allRecipes.length}} 道菜谱 · {{activeOrders.length}} 张待办点单</view>
+    </view>
+    <view class="menu-hero__mark" aria-hidden="true">
+      <view class="menu-hero__steam menu-hero__steam--one"></view>
+      <view class="menu-hero__steam menu-hero__steam--two"></view>
+      <view class="menu-hero__bowl"><line-icon name="soup" size="44" tone="gold" /></view>
     </view>
     <view class="menu-add" bindtap="onCreate">
-      <line-icon name="plus" size="22" tone="white" />
-      <text>新建</text>
+      <line-icon name="plus" size="18" tone="white" />
+      <text>新菜谱</text>
     </view>
   </view>
 
@@ -28,97 +34,250 @@
   </view>
 
   <block wx:else>
-  <view class="menu-tabs">
-    <view class="menu-tab {{activeTab === 'today' ? 'menu-tab--active' : ''}}" data-value="today" bindtap="onSwitchTab">今天</view>
-    <view class="menu-tab {{activeTab === 'all' ? 'menu-tab--active' : ''}}" data-value="all" bindtap="onSwitchTab">菜谱本</view>
-  </view>
-  <view wx:if="{{activeTab === 'today'}}">
-    <view wx:if="{{recommended}}" class="menu-recommend">
-      <view class="menu-recommend__head">
-        <view class="menu-recommend__eyebrow">今日推荐</view>
-        <view class="menu-recommend__shuffle" bindtap="onShuffleRecommendation">换一道</view>
+    <view class="menu-tabs" role="tablist">
+      <view class="menu-tab {{activeTab === 'eat' ? 'menu-tab--active' : ''}}" data-value="eat" bindtap="onSwitchTab">
+        <text>吃啥</text>
+        <view wx:if="{{activeOrders.length}}" class="menu-tab__count">{{activeOrders.length}}</view>
       </view>
-      <view class="menu-recommend__main">
-        <view class="menu-recommend__thumb">
-          <image wx:if="{{recommended.image && recommended.image.src}}" src="{{recommended.image.src}}" mode="aspectFill" />
-          <line-icon wx:else name="soup" size="42" tone="gold" />
+      <view class="menu-tab {{activeTab === 'recipes' ? 'menu-tab--active' : ''}}" data-value="recipes" bindtap="onSwitchTab">
+        <text>菜谱本</text>
+        <view class="menu-tab__count">{{allRecipes.length}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'eat'}}" class="menu-eat">
+      <view wx:if="{{activeOrders.length}}" class="menu-section-head">
+        <view>
+          <text>正在准备</text>
+          <text>点菜单会同步给空间里的每个人</text>
         </view>
-        <view class="menu-recommend__body">
-          <view class="menu-recommend__title">{{recommended.title}}</view>
-          <view class="menu-recommend__meta">{{recommended.cookingMinutes}} 分钟 · {{recommended.servings}} 人份 · 家常</view>
+        <text>{{activeOrders.length}} 单</text>
+      </view>
+
+      <view wx:for="{{activeOrders}}" wx:key="id" class="menu-order menu-order--{{item.status}}">
+        <view class="menu-order__head">
+          <view class="menu-order__who">
+            <view class="menu-order__avatar">{{item.creatorInitial}}</view>
+            <view class="menu-order__meta">
+              <text>{{item.dateLabel}} {{item.mealLabel}} · {{item.timeLabel}}</text>
+              <text>{{item.createdByName}} 点的菜</text>
+            </view>
+          </view>
+          <view class="menu-order__status">{{item.statusLabel}}</view>
+        </view>
+
+        <view class="menu-order__dishes">{{item.itemSummary}}</view>
+        <view wx:if="{{item.note}}" class="menu-order__note">“{{item.note}}”</view>
+
+        <view wx:if="{{item.ingredientCount}}" class="menu-order__prep">
+          <view class="menu-order__prep-head">
+            <text>备菜清单</text>
+            <text>{{item.readyIngredientCount}} / {{item.ingredientCount}}</text>
+          </view>
+          <view wx:for="{{item.items}}" wx:for-item="dish" wx:key="id" class="menu-order__dish">
+            <view class="menu-order__dish-title">{{dish.recipeTitle}} · {{dish.servings}} 人份</view>
+            <view class="menu-order__ingredients">
+              <view
+                wx:for="{{dish.ingredients}}"
+                wx:for-item="ingredient"
+                wx:key="id"
+                class="menu-order__ingredient {{ingredient.ready ? 'menu-order__ingredient--ready' : ''}}"
+                data-order-id="{{item.id}}"
+                data-ingredient-id="{{ingredient.id}}"
+                data-ready="{{ingredient.ready}}"
+                bindtap="onToggleIngredient"
+              >
+                <view class="menu-order__check">{{ingredient.ready ? '✓' : ''}}</view>
+                <text>{{ingredient.name}}</text>
+                <text>{{ingredient.amount}}</text>
+                <text>{{ingredient.source}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="menu-order__foot">
+          <text wx:if="{{item.ingredientCount}}">{{item.readyIngredientCount === item.ingredientCount ? '东西齐了，可以开火' : '边看边准备，不着急'}}</text>
+          <text wx:else>这道菜单没有写食材</text>
+          <button
+            wx:if="{{item.actionLabel}}"
+            class="menu-order__action {{orderActionId === item.id ? 'menu-order__action--busy' : ''}}"
+            data-id="{{item.id}}"
+            data-status="{{item.nextStatus}}"
+            disabled="{{orderActionId === item.id}}"
+            bindtap="onAdvanceOrder"
+          >{{item.actionLabel}}</button>
         </view>
       </view>
-      <view class="menu-recommend__button" bindtap="onOpenRecommended">就吃这个 · 打开菜谱</view>
-    </view>
 
-    <view wx:else class="menu-empty">
-      <view class="menu-empty__icon"><line-icon name="utensils" size="36" tone="gold" /></view>
-      <view class="menu-empty__title">菜单还是空的</view>
-      <view class="menu-empty__copy">先收一道常做的菜，下次不知道吃什么时就有答案了。</view>
-      <view class="menu-empty__action" bindtap="onCreate">添加第一道菜单</view>
-    </view>
-
-    <view class="menu-section-head"><text>快速决定</text><text>按场景</text></view>
-    <view class="menu-quick">
-      <view class="menu-quick__row" bindtap="onSelectFast">
-        <view class="menu-quick__icon menu-quick__icon--green"><line-icon name="clock-3" size="24" tone="green" /></view>
-        <text>30 分钟内能做好</text>
-        <text>{{fastCount}} 道</text>
+      <view wx:if="{{!activeOrders.length}}" class="menu-empty menu-empty--eat">
+        <view class="menu-empty__icon"><line-icon name="utensils" size="36" tone="gold" /></view>
+        <view class="menu-empty__title">还没有人点菜</view>
+        <view class="menu-empty__copy">去菜谱本挑两道，提交后大家都能看到。</view>
+        <view class="menu-empty__action" data-value="recipes" bindtap="onSwitchTab">去菜谱本看看</view>
       </view>
-      <view class="menu-quick__row" bindtap="onOpenRecipeBook">
-        <view class="menu-quick__icon menu-quick__icon--orange"><line-icon name="flame" size="24" tone="orange" /></view>
-        <text>慢慢翻一遍菜谱本</text>
-        <text>全部 {{allRecipes.length}} 道</text>
-      </view>
-    </view>
-  </view>
 
-  <view wx:if="{{activeTab === 'all'}}">
-    <view class="menu-search">
-      <line-icon name="search" size="21" tone="faint" />
-      <input
-        value="{{searchQuery}}"
-        confirm-type="search"
-        placeholder="搜菜名或介绍"
-        bindinput="onSearchInput"
-        bindconfirm="onSearchConfirm"
-      />
-      <view wx:if="{{searchQuery}}" class="menu-search__clear" bindtap="onClearSearch">清空</view>
-    </view>
-
-    <view class="menu-filters">
-      <view class="menu-filter {{recipeFilter === 'all' ? 'menu-filter--active' : ''}}" data-value="all" bindtap="onSelectFilter">全部</view>
-      <view class="menu-filter {{recipeFilter === 'fast' ? 'menu-filter--active' : ''}}" data-value="fast" bindtap="onSelectFilter">30 分钟内</view>
-      <view wx:if="{{listLoading}}" class="menu-filter__loading">正在筛选…</view>
-    </view>
-
-    <view wx:if="{{recipes.length}}" class="menu-section-head">
-      <text>常做的菜</text>
-      <text>{{recipes.length}} 道</text>
-    </view>
-    <view class="menu-list">
-      <view wx:for="{{recipes}}" wx:key="id" class="menu-card" data-id="{{item.id}}" bindtap="onOpenRecipe">
-        <view class="menu-card__media">
-          <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFill" />
-          <line-icon wx:else name="soup" size="36" tone="gold" />
+      <view wx:if="{{historyOrders.length}}" class="menu-history">
+        <view class="menu-section-head menu-section-head--history">
+          <view>
+            <text>吃过的这一桌</text>
+            <text>备菜和吃饭都完成后，会收在这里</text>
+          </view>
+          <text>{{historyOrders.length}} 次</text>
         </view>
-        <view class="menu-card__body">
-          <view class="menu-card__title">{{item.title}}</view>
-          <view class="menu-card__meta">{{item.cookingMinutes}} 分钟 · {{item.servings}} 人份 · {{item.ingredients.length}} 样食材</view>
-          <view class="menu-card__copy">{{item.description || '还没有写下这道菜的介绍。'}}</view>
+        <view class="menu-history__list">
+          <view wx:for="{{visibleHistoryOrders}}" wx:key="id" class="menu-history__row">
+            <view class="menu-history__date">
+              <text>{{item.dateLabel}}</text>
+              <text>{{item.mealLabel}} {{item.timeLabel}}</text>
+            </view>
+            <view class="menu-history__body">
+              <text>{{item.itemSummary}}</text>
+              <text>{{item.createdByName}} · {{item.statusLabel}}</text>
+            </view>
+          </view>
         </view>
-        <view class="menu-card__arrow">›</view>
+        <view wx:if="{{hasMoreHistory}}" class="menu-history__toggle" bindtap="onToggleHistory">
+          {{showAllHistory ? '收起一些' : '看看更早的'}}
+        </view>
+      </view>
+
+      <view wx:if="{{recommended}}" class="menu-recommend">
+        <view class="menu-recommend__head">
+          <view>
+            <text class="menu-recommend__eyebrow">不知道吃什么时</text>
+            <text class="menu-recommend__title">{{recommended.title}}</text>
+          </view>
+          <view class="menu-recommend__thumb">
+            <image wx:if="{{recommended.image && recommended.image.src}}" src="{{recommended.image.src}}" mode="aspectFill" />
+            <line-icon wx:else name="soup" size="34" tone="gold" />
+          </view>
+        </view>
+        <view class="menu-recommend__meta">{{recommended.cookingMinutes}} 分钟 · {{recommended.ingredients.length}} 样食材</view>
+        <view class="menu-recommend__action" bindtap="onOpenRecommended">翻翻这道菜</view>
       </view>
     </view>
 
-    <view wx:if="{{!recipes.length}}" class="menu-empty">
-      <view class="menu-empty__icon"><line-icon name="search" size="34" tone="gold" /></view>
-      <view class="menu-empty__title">{{allRecipes.length ? '没有找到合适的菜' : '菜单还是空的'}}</view>
-      <view class="menu-empty__copy">{{allRecipes.length ? '换个关键词，或看看全部菜谱。' : '先收一道常做的菜，下次不知道吃什么时就有答案了。'}}</view>
-      <view wx:if="{{!allRecipes.length}}" class="menu-empty__action" bindtap="onCreate">添加第一道菜单</view>
-      <view wx:else class="menu-empty__action" bindtap="onOpenRecipeBook">查看全部菜谱</view>
+    <view wx:if="{{activeTab === 'recipes'}}" class="menu-book">
+      <view class="menu-categories">
+        <view
+          wx:for="{{categoryTabs}}"
+          wx:key="id"
+          class="menu-category {{selectedCategoryId === item.id ? 'menu-category--active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSelectCategory"
+        >
+          <text>{{item.name}}</text>
+          <text>{{item.count}}</text>
+        </view>
+        <view class="menu-category menu-category--add" bindtap="onCreateCategory">
+          <line-icon name="plus" size="16" tone="gold" />
+          <text>分类</text>
+        </view>
+      </view>
+
+      <view class="menu-recipes">
+        <view class="menu-recipes__head">
+          <view>
+            <text>{{currentCategoryName}}</text>
+            <text>{{categoryRecipes.length}} 道菜</text>
+          </view>
+          <view wx:if="{{currentCategoryManageable}}" class="menu-recipes__manage" bindtap="onManageSelectedCategory">管理</view>
+        </view>
+
+        <view wx:if="{{categoryRecipes.length}}" class="menu-recipe-list">
+          <view wx:for="{{categoryRecipes}}" wx:key="id" class="menu-recipe" data-id="{{item.id}}" bindtap="onOpenRecipe">
+            <view class="menu-recipe__media">
+              <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFill" />
+              <line-icon wx:else name="soup" size="32" tone="gold" />
+            </view>
+            <view class="menu-recipe__body">
+              <view class="menu-recipe__title">{{item.title}}</view>
+              <view class="menu-recipe__meta">{{item.cookingMinutes}} 分钟 · {{item.servings}} 人份</view>
+              <view class="menu-recipe__ingredients">{{item.ingredients.length}} 样食材 · {{item.categoryName || '未分类'}}</view>
+            </view>
+            <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart">
+              <line-icon name="plus" size="14" tone="white" />
+              <text>吃它</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:else class="menu-empty menu-empty--book">
+          <view class="menu-empty__icon"><line-icon name="book-open" size="34" tone="orange" /></view>
+          <view class="menu-empty__title">{{allRecipes.length ? '这个分类还没有菜' : '菜谱本还是空的'}}</view>
+          <view class="menu-empty__copy">{{allRecipes.length ? '换一个分类看看，或者把常做的菜放进来。' : '先把一道拿手菜记下来吧。'}}</view>
+          <view class="menu-empty__action" bindtap="onCreate">新建菜谱</view>
+        </view>
+      </view>
     </view>
-  </view>
+
+    <view wx:if="{{cartCount}}" class="menu-cart-bar" bindtap="onOpenCart">
+      <view class="menu-cart-bar__left">
+        <view class="menu-cart-bar__bag"><line-icon name="bowl" size="24" tone="white" /></view>
+        <view class="menu-cart-bar__copy">
+          <text>已选 {{cartCount}} 道菜</text>
+          <text>看看这一桌要吃什么</text>
+        </view>
+      </view>
+      <view class="menu-cart-bar__action">去提交</view>
+    </view>
   </block>
+
+  <view wx:if="{{cartPanelOpen}}" class="menu-cart-mask" bindtap="onCloseCart" catchtouchmove="onStopTap">
+    <view class="menu-cart-sheet" catchtap="onStopTap" catchtouchmove="onStopTap">
+      <view class="menu-cart-sheet__handle"></view>
+      <view class="menu-cart-sheet__head">
+        <view>
+          <text>这一桌</text>
+          <text>{{mealType === 'breakfast' ? '早餐' : mealType === 'lunch' ? '午餐' : mealType === 'dinner' ? '晚餐' : '加餐'}} · {{cartCount}} 道</text>
+        </view>
+        <view class="menu-cart-sheet__close" bindtap="onCloseCart">×</view>
+      </view>
+
+      <view class="menu-cart-list">
+        <view wx:for="{{cartItems}}" wx:key="id" class="menu-cart-item">
+          <view class="menu-cart-item__media">
+            <image wx:if="{{item.recipe.image && item.recipe.image.src}}" src="{{item.recipe.image.src}}" mode="aspectFill" />
+            <line-icon wx:else name="soup" size="28" tone="gold" />
+          </view>
+          <view class="menu-cart-item__body">
+            <text>{{item.recipe.title}}</text>
+            <text>{{item.recipe.cookingMinutes}} 分钟</text>
+          </view>
+          <view class="menu-cart-item__stepper">
+            <text data-id="{{item.recipe.id}}" data-delta="-1" bindtap="onCartStep">−</text>
+            <text>{{item.servings}}</text>
+            <text data-id="{{item.recipe.id}}" data-delta="1" bindtap="onCartStep">＋</text>
+          </view>
+          <view class="menu-cart-item__remove" data-id="{{item.recipe.id}}" bindtap="onRemoveCartItem">×</view>
+        </view>
+      </view>
+
+      <view class="menu-cart-sheet__label">什么时候吃</view>
+      <view class="menu-meal-types">
+        <view class="menu-meal-type {{mealType === 'breakfast' ? 'menu-meal-type--active' : ''}}" data-value="breakfast" bindtap="onMealTypeSelect">早餐</view>
+        <view class="menu-meal-type {{mealType === 'lunch' ? 'menu-meal-type--active' : ''}}" data-value="lunch" bindtap="onMealTypeSelect">午餐</view>
+        <view class="menu-meal-type {{mealType === 'dinner' ? 'menu-meal-type--active' : ''}}" data-value="dinner" bindtap="onMealTypeSelect">晚餐</view>
+        <view class="menu-meal-type {{mealType === 'snack' ? 'menu-meal-type--active' : ''}}" data-value="snack" bindtap="onMealTypeSelect">加餐</view>
+      </view>
+
+      <view class="menu-cart-sheet__label">留句话给厨房</view>
+      <input
+        class="menu-cart-note"
+        value="{{mealNote}}"
+        maxlength="100"
+        placeholder="比如：少放辣，今晚七点吃"
+        placeholder-class="menu-field-placeholder"
+        bindinput="onMealNoteInput"
+      />
+
+      <button class="menu-cart-submit" loading="{{submittingOrder}}" disabled="{{submittingOrder}}" bindtap="onSubmitOrder">
+        {{submittingOrder ? '正在交给大家' : '提交给厨房'}}
+      </button>
+      <view class="menu-cart-sheet__safe"></view>
+    </view>
+  </view>
+
   <app-tab-bar id="app-tab-bar" active="menu" />
 </view>

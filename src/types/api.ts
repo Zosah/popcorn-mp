@@ -358,9 +358,11 @@ export interface ApiMenuStepWriteRequest {
 export interface ApiMenuWriteRequest {
   title: string
   description: string
+  categoryId: string
   servings: number
   cookingMinutes: number
   imageMediaId: string
+  noteImageMediaIds: string[]
   ingredients: ApiMenuIngredientWriteRequest[]
   steps: ApiMenuStepWriteRequest[]
 }
@@ -370,9 +372,12 @@ export interface ApiMenuRecipe {
   spaceId: string
   title: string
   description: string
+  categoryId: string
+  categoryName: string
   servings: number
   cookingMinutes: number
   imageMediaId: string
+  noteImageMediaIds: string[]
   ingredients: ApiMenuIngredient[]
   steps: ApiMenuStep[]
   version: number
@@ -384,6 +389,86 @@ export interface ApiMenuRecipe {
 
 export interface ApiMenuRecipeList {
   items: ApiMenuRecipe[]
+  nextCursor: string
+}
+
+export interface ApiMenuCategory {
+  id: string
+  spaceId: string
+  name: string
+  isSystem: boolean
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiMenuCategoryList {
+  items: ApiMenuCategory[]
+}
+
+export interface ApiMenuCategoryWriteRequest {
+  name: string
+}
+
+export type ApiMealOrderStatus =
+  | 'pending'
+  | 'preparing'
+  | 'ready'
+  | 'done'
+  | 'cancelled'
+
+export interface ApiMealOrderIngredient {
+  id: string
+  name: string
+  amount: string
+  source: string
+  ready: boolean
+  sortOrder: number
+}
+
+export interface ApiMealOrderItem {
+  id: string
+  recipeId: string
+  recipeTitle: string
+  servings: number
+  sortOrder: number
+  ingredients: ApiMealOrderIngredient[]
+}
+
+export interface ApiMealOrder {
+  id: string
+  spaceId: string
+  orderDate: string
+  mealType: ApiMealType
+  status: ApiMealOrderStatus
+  note: string
+  version: number
+  createdBy: string
+  createdByName: string
+  items: ApiMealOrderItem[]
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiMealOrderItemWriteRequest {
+  recipeId: string
+  servings: number
+}
+
+export interface ApiMealOrderWriteRequest {
+  orderDate: string
+  mealType: ApiMealType
+  note: string
+  items: ApiMealOrderItemWriteRequest[]
+}
+
+export interface ApiMealOrderStatusWriteRequest {
+  status: ApiMealOrderStatus
+}
+
+export interface ApiMealOrderList {
+  items: ApiMealOrder[]
   nextCursor: string
 }
 

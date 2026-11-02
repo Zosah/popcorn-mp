@@ -11,15 +11,27 @@ import {
 import { mediaGateway } from './media'
 import {
   MenuGatewayError,
+  type MenuCategory,
   type MenuGateway,
   type MenuListFilters,
   type MenuRecipe,
   type MenuWriteInput,
 } from './menu-gateway'
 
+const DEFAULT_CATEGORIES: MenuCategory[] = [
+  { id: 'demo-category-meat', name: '肉类', isSystem: true, sortOrder: 10 },
+  { id: 'demo-category-vegetable', name: '菜类', isSystem: true, sortOrder: 20 },
+  { id: 'demo-category-soup', name: '汤类', isSystem: true, sortOrder: 30 },
+  { id: 'demo-category-staple', name: '主食', isSystem: true, sortOrder: 40 },
+  { id: 'demo-category-other', name: '其他', isSystem: true, sortOrder: 50 },
+]
+
 export class DemoMenuGateway implements MenuGateway {
   private readonly versions = new Map<string, number>()
   private readonly mediaIds = new Map<string, string>()
+  private readonly noteMediaIds = new Map<string, string[]>()
+  private readonly categories: MenuCategory[] = DEFAULT_CATEGORIES.map((item) => ({ ...item }))
+  private nextCategoryId = 1
 
   async list(filters: MenuListFilters = {}): Promise<MenuRecipe[]> {
     const query = filters.query?.trim().toLocaleLowerCase() ?? ''
@@ -43,10 +55,61 @@ export class DemoMenuGateway implements MenuGateway {
     return recipe ? this.toRecipe(recipe) : null
   }
 
+  async listCategories(): Promise<MenuCategory[]> {
+    return this.categories.map((item) => ({ ...item }))
+  }
+
+  async createCategory(name: string): Promise<MenuCategory> {
+    const normalized = name.trim()
+    if (!normalized) throw new MenuGatewayError('VALIDATION_FAILED', '先写下分类名称')
+    if (this.categories.some((item) => item.name === normalized)) {
+      throw new MenuGatewayError('CATEGORY_EXISTS', '已经有同名分类了')
+    }
+    const category: MenuCategory = {
+      id: `demo-category-${Date.now()}-${this.nextCategoryId++}`,
+      name: normalized,
+      isSystem: false,
+      sortOrder: 100 + this.categories.length * 10,
+    }
+    this.categories.push(category)
+    return { ...category }
+  }
+
+  async updateCategory(id: string, name: string): Promise<MenuCategory> {
+    const category = this.categories.find((item) => item.id === id)
+    if (!category) throw new MenuGatewayError('CATEGORY_NOT_FOUND', '这个分类已经不存在')
+    if (category.isSystem) {
+      throw new MenuGatewayError('CATEGORY_SYSTEM', '默认分类不能修改')
+    }
+    const normalized = name.trim()
+    if (!normalized) throw new MenuGatewayError('VALIDATION_FAILED', '先写下分类名称')
+    if (this.categories.some((item) => item.id !== id && item.name === normalized)) {
+      throw new MenuGatewayError('CATEGORY_EXISTS', '已经有同名分类了')
+    }
+    category.name = normalized
+    return { ...category }
+  }
+
+  async removeCategory(id: string): Promise<void> {
+    const index = this.categories.findIndex((item) => item.id === id)
+    if (index < 0) throw new MenuGatewayError('CATEGORY_NOT_FOUND', '这个分类已经不存在')
+    if (this.categories[index]?.isSystem) {
+      throw new MenuGatewayError('CATEGORY_SYSTEM', '默认分类不能删除')
+    }
+    this.categories.splice(index, 1)
+    for (const recipe of listDemoMenuRecipes()) {
+      if (recipe.categoryId === id) {
+        updateDemoMenuRecipe(recipe.id, { ...recipe, categoryId: '' })
+      }
+    }
+  }
+
   async create(input: MenuWriteInput): Promise<MenuRecipe> {
+    this.assertCategory(input.categoryId)
     const created = addDemoMenuRecipe(toDemoInput(input))
     this.versions.set(created.id, 1)
     this.mediaIds.set(created.id, input.imageMediaId.trim())
+    this.noteMediaIds.set(created.id, [...input.noteImageMediaIds])
     return this.toRecipe(created)
   }
 
@@ -56,9 +119,11 @@ export class DemoMenuGateway implements MenuGateway {
     currentVersion: number,
   ): Promise<MenuRecipe> {
     this.assertVersion(id, currentVersion)
+    this.assertCategory(input.categoryId)
     try {
       const updated = updateDemoMenuRecipe(id, toDemoInput(input))
       this.mediaIds.set(id, input.imageMediaId.trim())
+      this.noteMediaIds.set(id, [...input.noteImageMediaIds])
       this.bumpVersion(id)
       return this.toRecipe(updated)
     } catch (error) {
@@ -73,6 +138,7 @@ export class DemoMenuGateway implements MenuGateway {
     }
     this.versions.delete(id)
     this.mediaIds.delete(id)
+    this.noteMediaIds.delete(id)
   }
 
   async setServings(
@@ -108,6 +174,8 @@ export class DemoMenuGateway implements MenuGateway {
 
   private async toRecipe(recipe: DemoMenuRecipe): Promise<MenuRecipe> {
     const imageMediaId = this.mediaIds.get(recipe.id) ?? recipe.image?.mediaId ?? ''
+    const category = this.categories.find((item) => item.id === recipe.categoryId)
+    const noteImageMediaIds = this.noteMediaIds.get(recipe.id) ?? recipe.noteImageMediaIds ?? []
     let image = recipe.image
     if (imageMediaId) {
       try {
@@ -122,12 +190,31 @@ export class DemoMenuGateway implements MenuGateway {
         image = recipe.image
       }
     }
+    const noteImages = (await Promise.all(noteImageMediaIds.map(async (mediaId) => {
+      try {
+        const asset = await mediaGateway.get(mediaId)
+        return { mediaId, src: asset.display.url }
+      } catch {
+        return null
+      }
+    }))).filter((item): item is NonNullable<typeof item> => item !== null)
     return {
       ...recipe,
+      categoryId: recipe.categoryId ?? '',
+      categoryName: category?.name ?? '',
+      noteImageMediaIds: [...noteImageMediaIds],
+      noteImages,
       ...(image ? { image } : {}),
       version: this.versions.get(recipe.id) ?? 1,
       createdBy: '',
       imageMediaId,
+    }
+  }
+
+  private assertCategory(categoryId: string): void {
+    const value = categoryId.trim()
+    if (value && !this.categories.some((item) => item.id === value)) {
+      throw new MenuGatewayError('CATEGORY_NOT_FOUND', '这个分类已经不存在')
     }
   }
 
@@ -147,6 +234,7 @@ function toDemoInput(input: MenuWriteInput) {
   return {
     title: input.title,
     description: input.description,
+    categoryId: input.categoryId,
     servings: input.servings,
     cookingMinutes: input.cookingMinutes,
     ingredients: input.ingredients.map((item) => ({

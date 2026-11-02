@@ -37,9 +37,12 @@ const apiMenu: ApiMenuRecipe = {
   spaceId: 's_1234567890',
   title: '番茄牛腩',
   description: '慢慢炖一锅',
+  categoryId: 'l_1234567890',
+  categoryName: '肉类',
   servings: 2,
   cookingMinutes: 55,
   imageMediaId: '',
+  noteImageMediaIds: [],
   ingredients: [
     {
       id: 'g_1234567890',
@@ -238,9 +241,11 @@ describe('HTTP 菜单网关', () => {
     const created = await gateway.create({
       title: '番茄牛腩',
       description: '慢慢炖一锅',
+      categoryId: 'l_1234567890',
       servings: 2,
       cookingMinutes: 55,
       imageMediaId: 'media-menu-1',
+      noteImageMediaIds: ['media-menu-1'],
       ingredients: [{
         id: 'g_1234567890',
         name: '牛腩',
@@ -262,7 +267,9 @@ describe('HTTP 菜单网关', () => {
     const request = requests.find((item) => item.method === 'POST')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^menu_create_/)
     expect(request?.data).toMatchObject({
+      categoryId: 'l_1234567890',
       imageMediaId: 'media-menu-1',
+      noteImageMediaIds: ['media-menu-1'],
       ingredients: [{ id: 'g_1234567890', name: '牛腩' }],
       steps: [{ id: 'p_1234567890', title: '焯水' }],
     })
@@ -276,9 +283,11 @@ describe('HTTP 菜单网关', () => {
     const updated = await gateway.update(apiMenu.id, {
       title: '番茄牛腩',
       description: '',
+      categoryId: 'l_1234567890',
       servings: 2,
       cookingMinutes: 55,
       imageMediaId: '',
+      noteImageMediaIds: [],
       ingredients: [{
         id: 'g_1234567890',
         name: '牛腩',
@@ -338,9 +347,11 @@ describe('HTTP 菜单网关', () => {
     await expect(gateway.update(apiMenu.id, {
       title: '番茄牛腩',
       description: '',
+      categoryId: 'l_1234567890',
       servings: 2,
       cookingMinutes: 55,
       imageMediaId: '',
+      noteImageMediaIds: [],
       ingredients: [{ name: '牛腩', amount: '', source: '' }],
       steps: [{ title: '焯水', description: '' }],
     }, 2)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' })

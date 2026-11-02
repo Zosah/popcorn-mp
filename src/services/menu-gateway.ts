@@ -21,12 +21,27 @@ export interface MenuStepWriteInput {
 export interface MenuWriteInput {
   title: string
   description: string
+  categoryId: string
   servings: number
   cookingMinutes: number
   ingredients: MenuIngredientWriteInput[]
   steps: MenuStepWriteInput[]
   /** 空字符串会清空图片；页面编辑时会显式回传当前值。 */
   imageMediaId: string
+  noteImageMediaIds: string[]
+}
+
+export interface MenuImage {
+  mediaId: string
+  src: string
+  caption?: string
+}
+
+export interface MenuCategory {
+  id: string
+  name: string
+  isSystem: boolean
+  sortOrder: number
 }
 
 /** HTTP 模式额外携带乐观锁版本；Demo 模式保持相同形状供页面复用。 */
@@ -34,11 +49,19 @@ export interface MenuRecipe extends DemoMenuRecipe {
   version: number
   createdBy: string
   imageMediaId: string
+  categoryId: string
+  categoryName: string
+  noteImageMediaIds: string[]
+  noteImages: MenuImage[]
 }
 
 export interface MenuGateway {
   list(filters?: MenuListFilters): Promise<MenuRecipe[]>
   get(id: string): Promise<MenuRecipe | null>
+  listCategories(): Promise<MenuCategory[]>
+  createCategory(name: string): Promise<MenuCategory>
+  updateCategory(id: string, name: string): Promise<MenuCategory>
+  removeCategory(id: string): Promise<void>
   create(input: MenuWriteInput): Promise<MenuRecipe>
   update(
     id: string,
@@ -92,6 +115,12 @@ export function getMenuErrorMessage(error: unknown, fallback: string): string {
       return '这份菜单已经不存在'
     case 'MEDIA_NOT_FOUND':
       return '这张图片已经失效，请重新上传'
+    case 'CATEGORY_NOT_FOUND':
+      return '这个分类已经不存在'
+    case 'CATEGORY_EXISTS':
+      return '已经有同名分类了'
+    case 'CATEGORY_SYSTEM':
+      return '默认分类不能修改或删除'
     case 'VALIDATION_FAILED':
       return error.message || '菜单内容还需要检查一下'
     default:

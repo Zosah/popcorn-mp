@@ -156,6 +156,17 @@ Page({
     })
   },
 
+  onPreviewNoteImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    const images = this.data.recipe?.noteImages ?? []
+    const index = Number(event.currentTarget.dataset.index)
+    const current = images[index]
+    if (!current?.src) return
+    wx.previewImage({
+      current: current.src,
+      urls: images.map((image) => image.src),
+    })
+  },
+
   async removeRecipe(recipe: MenuRecipe) {
     this.setData({ mutating: true })
     detailRequestGate.invalidate()
