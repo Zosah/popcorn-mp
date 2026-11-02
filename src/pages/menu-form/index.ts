@@ -150,14 +150,6 @@ Page({
     this.setData({ 'form.description': event.detail.value })
   },
 
-  onServingsInput(event: { detail: { value: string } }) {
-    this.setData({ 'form.servings': event.detail.value })
-  },
-
-  onMinutesInput(event: { detail: { value: string } }) {
-    this.setData({ 'form.cookingMinutes': event.detail.value })
-  },
-
   onCategoryChange(event: { detail: { value: string | number } }) {
     this.setData({ categoryIndex: Number(event.detail.value) })
   },

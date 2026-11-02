@@ -21,14 +21,35 @@
 
   <block wx:else>
     <view class="recipe-card paper-card">
-      <view class="recipe-field recipe-field--lead">
-        <text>菜名 <text class="required">*</text></text>
-        <input value="{{form.title}}" maxlength="30" placeholder="例如：番茄牛腩" placeholder-class="field-placeholder" bindinput="onTitleInput" />
+      <view class="recipe-intro">
+        <view class="recipe-intro__fields">
+          <view class="recipe-field recipe-field--lead">
+            <text>菜名 <text class="required">*</text></text>
+            <input value="{{form.title}}" maxlength="30" placeholder="例如：番茄牛腩" placeholder-class="field-placeholder" bindinput="onTitleInput" />
+          </view>
+          <view class="recipe-field recipe-field--description">
+            <text>一句话介绍</text>
+            <input value="{{form.description}}" maxlength="80" placeholder="什么时候会想做这道菜" placeholder-class="field-placeholder" bindinput="onDescriptionInput" />
+          </view>
+        </view>
+
+        <view class="recipe-cover">
+          <view wx:if="{{image && image.src}}" class="recipe-cover__preview" bindtap="onPreviewImage">
+            <image src="{{image.src}}" mode="aspectFit" />
+            <view class="recipe-cover__caption">成品图</view>
+            <view class="recipe-cover__remove" catchtap="onRemoveImage">移除</view>
+          </view>
+          <view wx:elif="{{imageUploading}}" class="recipe-cover__empty recipe-cover__empty--busy">
+            <line-icon name="image" size="30" tone="blue" />
+            <text>上传中</text>
+          </view>
+          <view wx:else class="recipe-cover__empty" bindtap="onChooseImage">
+            <line-icon name="image" size="32" tone="blue" />
+            <text>添加成品图</text>
+          </view>
+        </view>
       </view>
-      <view class="recipe-field">
-        <text>一句话介绍</text>
-        <input value="{{form.description}}" maxlength="80" placeholder="什么时候会想做这道菜" placeholder-class="field-placeholder" bindinput="onDescriptionInput" />
-      </view>
+
       <view class="recipe-field recipe-category-field">
         <text>分类</text>
         <view class="recipe-category-row">
@@ -40,48 +61,6 @@
           </picker>
           <view class="recipe-category-add" bindtap="onCreateCategory">+ 新分类</view>
         </view>
-      </view>
-      <view class="recipe-grid">
-        <view class="recipe-field">
-          <text>人份</text>
-          <input type="number" value="{{form.servings}}" placeholder="2" placeholder-class="field-placeholder" bindinput="onServingsInput" />
-        </view>
-        <view class="recipe-field">
-          <text>预计分钟</text>
-          <input type="number" value="{{form.cookingMinutes}}" placeholder="30" placeholder-class="field-placeholder" bindinput="onMinutesInput" />
-        </view>
-      </view>
-    </view>
-
-    <view class="recipe-section-head"><text>成品图</text><text>一张就够</text></view>
-    <view class="paper-card recipe-image-card">
-      <view wx:if="{{image && image.src}}" class="recipe-image-preview" bindtap="onPreviewImage">
-        <image src="{{image.src}}" mode="aspectFill" />
-        <view class="recipe-image-preview__badge"><line-icon name="image" size="18" tone="white" /><text>轻触查看</text></view>
-      </view>
-      <view wx:elif="{{imageUploading}}" class="recipe-image-empty">
-        <view class="recipe-image-empty__mark"><line-icon name="image" size="32" tone="blue" /></view>
-        <text>正在上传成品图</text>
-      </view>
-      <view wx:else class="recipe-image-empty" bindtap="onChooseImage">
-        <view class="recipe-image-empty__mark"><line-icon name="image" size="34" tone="blue" /></view>
-        <text>放一张做好的样子</text>
-      </view>
-      <view wx:if="{{image || imageMediaId}}" class="recipe-image-tools">
-        <view class="recipe-image-tools__copy">空间内可见</view>
-        <view class="recipe-image-tools__remove" catchtap="onRemoveImage">移除</view>
-      </view>
-    </view>
-
-    <view class="recipe-section-head"><text>做法参考图</text><text>最多 9 张</text></view>
-    <view class="note-image-grid">
-      <view wx:for="{{noteImages}}" wx:key="mediaId" class="note-image-item" data-index="{{index}}" bindtap="onPreviewNoteImage">
-        <image src="{{item.src}}" mode="aspectFill" />
-        <view class="note-image-remove" data-index="{{index}}" catchtap="onRemoveNoteImage">×</view>
-      </view>
-      <view wx:if="{{noteImages.length < 9}}" class="note-image-add" bindtap="onChooseNoteImages">
-        <line-icon name="plus" size="28" tone="faint" />
-        <text>{{noteImageUploading ? '上传中' : '添加'}}</text>
       </view>
     </view>
 
@@ -116,6 +95,18 @@
         bindinput="onStepsInput"
       />
       <view class="step-editor__hint">换行后会整理成步骤</view>
+    </view>
+
+    <view class="recipe-section-head"><text>做法参考图</text><text>最多 9 张</text></view>
+    <view class="note-image-grid">
+      <view wx:for="{{noteImages}}" wx:key="mediaId" class="note-image-item" data-index="{{index}}" bindtap="onPreviewNoteImage">
+        <image src="{{item.src}}" mode="aspectFill" />
+        <view class="note-image-remove" data-index="{{index}}" catchtap="onRemoveNoteImage">×</view>
+      </view>
+      <view wx:if="{{noteImages.length < 9}}" class="note-image-add" bindtap="onChooseNoteImages">
+        <line-icon name="plus" size="28" tone="faint" />
+        <text>{{noteImageUploading ? '上传中' : '添加'}}</text>
+      </view>
     </view>
 
     <button class="primary-button recipe-save" loading="{{saving || imageUploading || noteImageUploading}}" disabled="{{saving || imageUploading || noteImageUploading}}" bindtap="onSave">
