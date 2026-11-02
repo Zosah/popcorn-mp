@@ -144,7 +144,7 @@ Page({
     templateSaving: false,
     templateDeleting: false,
     statusBarHeight: 20,
-    navBarRight: 96,
+    navActionOffset: 24,
     templateDraft: {
       id: '',
       title: '',
@@ -187,12 +187,12 @@ Page({
       const windowInfo = wx.getWindowInfo()
       const statusBarHeight = windowInfo.statusBarHeight || 20
       const menu = wx.getMenuButtonBoundingClientRect()
-      this.setData({
-        statusBarHeight,
-        navBarRight: windowInfo.windowWidth - menu.left + 20,
-      })
+      // 标题仍从状态栏下开始，操作按钮顺延到微信胶囊下方；
+      // 两者共用同一右边界，避免按钮看起来悬在页面中间。
+      const navActionOffset = Math.max(16, menu.bottom - (statusBarHeight + 10) + 1)
+      this.setData({ statusBarHeight, navActionOffset })
     } catch {
-      this.setData({ statusBarHeight: 20, navBarRight: 96 })
+      this.setData({ statusBarHeight: 20, navActionOffset: 24 })
     }
   },
 

@@ -4,17 +4,17 @@
 
   <view
     class="travel-topbar"
-    style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
+    style="padding-top: {{statusBarHeight + 10}}px;"
   >
     <view class="travel-topbar__copy">
       <text class="travel-topbar__eyebrow">一起去远方</text>
       <text class="travel-topbar__title">旅行</text>
     </view>
-    <view wx:if="{{activeTab === 'trips'}}" class="travel-topbar__action" hover-class="travel-topbar__action--pressed" bindtap="onCreateTrip">
+    <view wx:if="{{activeTab === 'trips'}}" class="travel-topbar__action" style="margin-top: {{navActionOffset}}px;" hover-class="travel-topbar__action--pressed" bindtap="onCreateTrip">
       <line-icon name="plus" size="26" tone="ink" />
       <text>新建行程</text>
     </view>
-    <view wx:else class="travel-topbar__action" hover-class="travel-topbar__action--pressed" bindtap="onCreateTemplate">
+    <view wx:else class="travel-topbar__action" style="margin-top: {{navActionOffset}}px;" hover-class="travel-topbar__action--pressed" bindtap="onCreateTemplate">
       <line-icon name="plus" size="26" tone="ink" />
       <text>新建清单</text>
     </view>

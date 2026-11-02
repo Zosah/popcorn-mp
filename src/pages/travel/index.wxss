@@ -15,9 +15,9 @@
 
 .travel-topbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 2rpx 4rpx 22rpx;
+  padding: 2rpx 4rpx 8rpx;
   gap: 20rpx;
 }
 
@@ -55,6 +55,7 @@
   box-shadow: 0 10rpx 26rpx -24rpx rgba(74, 62, 52, 0.62);
   color: var(--travel-ink);
   flex-shrink: 0;
+  margin-left: auto;
   font-size: 24rpx;
   font-weight: 680;
   gap: 7rpx;
