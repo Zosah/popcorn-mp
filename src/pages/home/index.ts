@@ -269,6 +269,8 @@ Page({
     this.setData({ initialLoading: firstLoad })
 
     const auth = await hydrateAuthState()
+    // 会话恢复后 activeSpaceId 可能变化，快捷入口必须按最新空间重新取配置。
+    this.refreshHomeShortcuts()
     if (!homeRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
       return
@@ -471,6 +473,8 @@ Page({
       initialLoading: _initialLoading,
       cacheFresh: _cacheFresh,
       hasShown: _hasShown,
+      // 快捷入口始终从功能配置推导，不进入页面内容缓存，避免配置与缓存双写。
+      homeShortcuts: _homeShortcuts,
       ...snapshot
     } = data
     writePageCache(HOME_PAGE_CACHE_KEY, snapshot)

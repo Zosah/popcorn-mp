@@ -28,6 +28,7 @@ import {
   getFeatureSettingsErrorMessage,
   isFeatureSettingsVersionConflict,
 } from '../../services/feature-settings-gateway'
+import { invalidatePageCache } from '../../services/page-cache'
 import { waitForMinimumLoading } from '../../utils/loading'
 
 type ConfigRegion = 'home' | 'tab'
@@ -324,6 +325,8 @@ Page({
     try {
       const saved = await featureSettingsGateway.update(this.data.config, this.data.version)
       this.applySettings(saved, saved, saved.version, saved.updatedAt)
+      // 首页快捷入口由功能配置实时推导，保存后丢弃旧页面快照，避免返回首页时短暂回显旧顺序。
+      invalidatePageCache('home:')
       this.setData({
         saving: false,
         syncText: appConfig.demoMode ? '已保存在本机' : '已同步到空间',
