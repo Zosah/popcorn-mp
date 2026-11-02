@@ -18,6 +18,7 @@ interface FeatureListItemView extends FeatureDefinition {
 
 interface FeatureCategoryView {
   key: string
+  numberLabel: string
   category: FeatureCategoryDefinition
   items: FeatureListItemView[]
 }
@@ -33,8 +34,9 @@ function buildGroups(): FeatureCategoryView[] {
     ))
     : null
 
-  return getFeatureCategoryGroups('list').map((group) => ({
+  return getFeatureCategoryGroups('list').map((group, index) => ({
     key: group.category.id,
+    numberLabel: String(index + 1).padStart(2, '0'),
     category: group.category,
     items: group.items.map((feature) => {
       const onHome = settings?.homeSlots.includes(feature.id) ?? false

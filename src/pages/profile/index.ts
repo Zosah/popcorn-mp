@@ -269,11 +269,9 @@ Page({
     travelDestination: '',
     travelDueDate: '',
     travelPending: 0,
-    featureCount: 4,
     dailyFeatures: buildDailyFeatures(EMPTY_SNAPSHOT) as ProfileFeatureCard[],
     planFeatures: buildPlanFeatures(EMPTY_SNAPSHOT) as ProfileFeatureCard[],
-    statusBarHeight: 20,
-    navBarRight: 96,
+    headerTop: 72,
   },
 
   onLoad() {
@@ -305,14 +303,13 @@ Page({
   measureNavBar() {
     try {
       const windowInfo = wx.getWindowInfo()
-      const statusBarHeight = windowInfo.statusBarHeight || 20
       const menu = wx.getMenuButtonBoundingClientRect()
       this.setData({
-        statusBarHeight,
-        navBarRight: windowInfo.windowWidth - menu.left + 20,
+        headerTop: menu.bottom + 10,
       })
     } catch {
-      this.setData({ statusBarHeight: 20, navBarRight: 96 })
+      const statusBarHeight = wx.getWindowInfo().statusBarHeight || 20
+      this.setData({ headerTop: statusBarHeight + 58 })
     }
   },
 
@@ -492,7 +489,6 @@ Page({
       travelDestination: snapshot.travelDestination,
       travelDueDate: snapshot.travelDueDate,
       travelPending: snapshot.travelPending,
-      featureCount: 4,
       dailyFeatures: buildDailyFeatures(snapshot),
       planFeatures: buildPlanFeatures(snapshot),
     }

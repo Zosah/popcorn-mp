@@ -44,6 +44,7 @@ interface FeatureTileView {
   tabEligible: boolean
   placement: FeaturePlacement
   placementLabel: string
+  categoryTitle: string
   occupied: boolean
 }
 
@@ -119,6 +120,7 @@ function placementForFeature(config: FeatureSettingsConfig, id: FeatureId): Feat
 function toFeatureTile(
   feature: FeatureDefinition,
   config: FeatureSettingsConfig,
+  categoryTitle = '',
 ): FeatureTileView {
   const placement = placementForFeature(config, feature.id)
   return {
@@ -130,7 +132,8 @@ function toFeatureTile(
     tone: feature.tone,
     tabEligible: feature.tabEligible,
     placement,
-    placementLabel: placement === 'home' ? '首页' : placement === 'tab' ? '导航' : '',
+    placementLabel: placement === 'home' ? '首页' : placement === 'tab' ? '底栏' : '',
+    categoryTitle,
     occupied: Boolean(placement),
   }
 }
@@ -139,8 +142,14 @@ function buildFeatureGroups(config: FeatureSettingsConfig): FeatureCategoryView[
   return getFeatureCategoryGroups('list').map((group) => ({
     key: group.category.id,
     category: group.category,
-    items: group.items.map((feature) => toFeatureTile(feature, config)),
+    items: group.items.map((feature) => (
+      toFeatureTile(feature, config, group.category.title)
+    )),
   }))
+}
+
+function buildFeaturePool(config: FeatureSettingsConfig): FeatureTileView[] {
+  return buildFeatureGroups(config).flatMap((group) => group.items)
 }
 
 function buildSlots(config: FeatureSettingsConfig, region: ConfigRegion): PlacementSlotView[] {
@@ -165,7 +174,9 @@ Page({
     syncText: appConfig.demoMode ? '本机保存' : '已同步到空间',
     saveError: '',
     featureGroups: [] as FeatureCategoryView[],
+    featurePool: [] as FeatureTileView[],
     featureCount: 0,
+    featureProgress: 0,
     homeSlots: [] as PlacementSlotView[],
     tabSlots: [] as PlacementSlotView[],
     version: 1,
@@ -199,7 +210,9 @@ Page({
     const initial = defaultConfig()
     this.setData({
       featureGroups: buildFeatureGroups(initial),
+      featurePool: buildFeaturePool(initial),
       featureCount: initial.homeSlots.length + initial.tabSlots.length,
+      featureProgress: Math.round(((initial.homeSlots.length + initial.tabSlots.length) / 7) * 100),
     })
     void this.loadSettings()
   },
@@ -270,7 +283,9 @@ Page({
       version: version ?? this.data.version,
       updatedAt: updatedAt ?? this.data.updatedAt,
       featureGroups: buildFeatureGroups(normalized),
+      featurePool: buildFeaturePool(normalized),
       featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
+      featureProgress: Math.round(((normalized.homeSlots.length + normalized.tabSlots.length) / 7) * 100),
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, saved),
@@ -284,7 +299,9 @@ Page({
     this.setData({
       config: normalized,
       featureGroups: buildFeatureGroups(normalized),
+      featurePool: buildFeaturePool(normalized),
       featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
+      featureProgress: Math.round(((normalized.homeSlots.length + normalized.tabSlots.length) / 7) * 100),
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, this.data.savedConfig),

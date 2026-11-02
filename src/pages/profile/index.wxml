@@ -4,7 +4,7 @@
 
   <view
     class="profile-heading"
-    style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
+    style="padding-top: {{headerTop}}px;"
   >
     <view class="profile-heading__copy">
       <text class="profile-heading__eyebrow">PERSONAL SPACE</text>
@@ -76,14 +76,6 @@
         <text class="profile-section__eyebrow">DAILY</text>
         <text class="profile-section__title">一起生活</text>
       </view>
-      <view
-        class="profile-section__action"
-        hover-class="profile-section__action--pressed"
-        bindtap="onOpenFeatureList"
-      >
-        <text>{{featureCount}} 个功能</text>
-        <text class="profile-section__action-arrow">›</text>
-      </view>
     </view>
 
     <view class="profile-feature-grid">
@@ -141,11 +133,7 @@
     hover-class="profile-directory--pressed"
     bindtap="onOpenFeatureList"
   >
-    <view class="profile-directory__icon"><line-icon name="list-todo" size="34" tone="green" /></view>
-    <view class="profile-directory__copy">
-      <text class="profile-directory__title">全部功能</text>
-      <text class="profile-directory__meta">工具、备忘与家庭成员都在这里</text>
-    </view>
+    <text class="profile-directory__label">查看更多</text>
     <text class="profile-directory__arrow">›</text>
   </view>
 

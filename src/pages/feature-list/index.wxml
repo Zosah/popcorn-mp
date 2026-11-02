@@ -10,13 +10,21 @@
     </view>
   </view>
 
-  <view wx:for="{{groups}}" wx:key="key" class="feature-group">
+  <view
+    wx:for="{{groups}}"
+    wx:key="key"
+    class="feature-group feature-group--{{item.category.tone}}"
+  >
     <view class="feature-group__head">
+      <text class="feature-group__index">{{item.numberLabel}}</text>
       <view class="feature-group__copy">
-        <text class="feature-group__title">{{item.category.title}}</text>
+        <view class="feature-group__title-row">
+          <text class="feature-group__title">{{item.category.title}}</text>
+          <view class="feature-group__rule"></view>
+          <text class="feature-group__count">{{item.items.length}} 项</text>
+        </view>
         <text class="feature-group__description">{{item.category.description}}</text>
       </view>
-      <text class="feature-group__count">{{item.items.length}} 项</text>
     </view>
 
     <view class="feature-grid">
