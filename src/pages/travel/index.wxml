@@ -10,14 +10,6 @@
       <text class="travel-topbar__eyebrow">一起去远方</text>
       <text class="travel-topbar__title">旅行</text>
     </view>
-    <view wx:if="{{activeTab === 'trips'}}" class="travel-topbar__action" style="margin-top: {{navActionOffset}}px;" hover-class="travel-topbar__action--pressed" bindtap="onCreateTrip">
-      <line-icon name="plus" size="26" tone="ink" />
-      <text>新建行程</text>
-    </view>
-    <view wx:else class="travel-topbar__action" style="margin-top: {{navActionOffset}}px;" hover-class="travel-topbar__action--pressed" bindtap="onCreateTemplate">
-      <line-icon name="plus" size="26" tone="ink" />
-      <text>新建清单</text>
-    </view>
   </view>
 
   <view class="travel-hero">
@@ -63,6 +55,17 @@
 
   <block wx:else>
     <view wx:if="{{activeTab === 'trips'}}" class="travel-content">
+      <view wx:if="{{!loading}}" class="travel-content-head">
+        <view class="travel-content-head__copy">
+          <text class="travel-content-head__title">出行计划</text>
+          <text class="travel-content-head__meta">{{tripCount}} 段</text>
+        </view>
+        <view class="travel-create" hover-class="travel-create--pressed" bindtap="onCreateTrip">
+          <line-icon name="plus" size="20" tone="white" />
+          <text>新建行程</text>
+        </view>
+      </view>
+
       <view wx:if="{{!tripGroups.length && !loading}}" class="travel-empty">
         <view class="travel-empty__postcard">
           <line-icon name="plane" size="54" tone="blue" />
@@ -71,7 +74,6 @@
         </view>
         <text class="travel-empty__title">下一程还没有写下来</text>
         <text class="travel-empty__copy">先记出发和返回时间，再慢慢补上要带的东西。</text>
-        <view class="travel-empty__action" bindtap="onCreateTrip">新建一段行程</view>
       </view>
 
       <view wx:for="{{tripGroups}}" wx:key="key" class="travel-group">
@@ -128,11 +130,21 @@
     </view>
 
     <view wx:else class="travel-content travel-content--templates">
+      <view wx:if="{{!loading}}" class="travel-content-head">
+        <view class="travel-content-head__copy">
+          <text class="travel-content-head__title">必备清单</text>
+          <text class="travel-content-head__meta">{{templateCount}} 份</text>
+        </view>
+        <view class="travel-create" hover-class="travel-create--pressed" bindtap="onCreateTemplate">
+          <line-icon name="plus" size="20" tone="white" />
+          <text>新建清单</text>
+        </view>
+      </view>
+
       <view wx:if="{{!templateViews.length && !loading}}" class="travel-empty">
         <view class="travel-empty__mark"><line-icon name="package" size="40" tone="gold" /></view>
         <text class="travel-empty__title">先收一份自己的必备清单</text>
         <text class="travel-empty__copy">下次出发时，一键带进本次行程，再按需要删减。</text>
-        <view class="travel-empty__action" bindtap="onCreateTemplate">整理第一份清单</view>
       </view>
 
       <view
