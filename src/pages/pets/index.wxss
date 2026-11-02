@@ -79,11 +79,20 @@
   line-height: 1.35;
 }
 
-.pet-hero__chevron {
+.pet-hero__switch {
+  display: flex;
+  width: 42rpx;
+  height: 42rpx;
+  align-items: center;
+  justify-content: center;
   margin-left: 10rpx;
-  color: #667064;
-  font-size: 34rpx;
-  line-height: 1;
+  border: 1rpx solid rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(225, 235, 223, 0.7));
+  box-shadow:
+    0 5rpx 13rpx rgba(74, 86, 73, 0.15),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
+  box-sizing: border-box;
 }
 
 .pet-hero__sub {
@@ -1171,7 +1180,6 @@
 .pet-hero--custom .pet-hero__veil {
   background: linear-gradient(180deg, rgba(60, 35, 42, 0.12) 0%, rgba(251, 247, 246, 0.92) 86%);
 }
-.pet-hero__chevron,
 .pet-hero__status,
 .pet-theme-entry {
   color: #795e64;

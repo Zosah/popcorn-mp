@@ -23,7 +23,7 @@
           <text class="pet-eyebrow">我们的伙伴</text>
           <view class="pet-hero__name-row" bindtap="onChoosePet">
             <text class="pet-hero__name">{{profile.name}}</text>
-            <text class="pet-hero__chevron">⌄</text>
+            <view class="pet-hero__switch"><line-icon name="chevron-down" size="22" tone="ink" /></view>
           </view>
           <view class="pet-hero__sub">{{profile.breed}} · {{ageLabel}}</view>
           <view class="pet-hero__status">{{profile.status || '今天也在一起'}}</view>

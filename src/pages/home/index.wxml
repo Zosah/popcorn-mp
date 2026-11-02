@@ -9,7 +9,7 @@
     <view class="home-header__space" hover-class="tap-dim" bindtap="onOpenSpaceSwitcher" aria-label="切换空间">
       <view class="home-header__name-row">
         <text class="home-header__name">{{spaceName}}</text>
-        <view class="home-header__switch"><text class="home-header__chevron">⌄</text></view>
+        <view class="home-header__switch"><line-icon name="chevron-down" size="22" tone="muted" /></view>
       </view>
       <text class="home-header__date">{{snapshot.dateLabel}} · {{snapshot.weekdayLabel}}</text>
     </view>

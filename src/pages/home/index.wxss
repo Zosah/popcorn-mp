@@ -52,23 +52,18 @@
 
 .home-header__switch {
   display: flex;
-  width: 34rpx;
-  height: 34rpx;
+  width: 42rpx;
+  height: 42rpx;
   align-items: center;
   justify-content: center;
   margin-left: 10rpx;
-  border: 1rpx solid rgba(220, 209, 201, 0.86);
+  border: 1rpx solid rgba(255, 255, 255, 0.94);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.62);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(239, 232, 222, 0.84));
+  box-shadow:
+    0 5rpx 13rpx rgba(93, 79, 66, 0.14),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.98);
   box-sizing: border-box;
-}
-
-.home-header__chevron {
-  margin-top: -3rpx;
-  color: var(--c-muted);
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1;
 }
 
 .home-header__date {

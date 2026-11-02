@@ -23,19 +23,22 @@ interface IngredientDraft {
   key: string
   id?: string
   name: string
-  amount: string
+  quantity: string
+  unit: string
+  unitIndex: number
   source: string
-}
-
-interface StepDraft {
-  key: string
-  id?: string
-  title: string
-  description: string
 }
 
 const formRequestGate = createRequestGate()
 let draftSequence = 0
+
+const UNIT_OPTIONS = ['个', '克', '毫升', '捆', '包', '盒', '袋', '勺', '片', '根', '颗', '碗']
+const UNCATEGORIZED_OPTION: MenuCategory = {
+  id: '',
+  name: '未分类',
+  isSystem: true,
+  sortOrder: 0,
+}
 
 function nextDraftKey(prefix: string): string {
   draftSequence += 1
@@ -43,11 +46,14 @@ function nextDraftKey(prefix: string): string {
 }
 
 function emptyIngredient(): IngredientDraft {
-  return { key: nextDraftKey('ingredient'), name: '', amount: '', source: '' }
-}
-
-function emptyStep(): StepDraft {
-  return { key: nextDraftKey('step'), title: '', description: '' }
+  return {
+    key: nextDraftKey('ingredient'),
+    name: '',
+    quantity: '1',
+    unit: UNIT_OPTIONS[0] ?? '个',
+    unitIndex: 0,
+    source: '',
+  }
 }
 
 Page({
@@ -61,13 +67,15 @@ Page({
     version: 0,
     pageTitle: '记一道家常菜',
     saveText: '保存到菜谱本',
-    categories: [] as MenuCategory[],
+    defaultCategoryId: '',
+    categoryOptions: [UNCATEGORIZED_OPTION] as MenuCategory[],
     categoryIndex: 0,
     image: null as MenuFormImage | null,
     imageMediaId: '',
     noteImages: [] as MenuFormImage[],
     ingredients: [emptyIngredient()] as IngredientDraft[],
-    steps: [emptyStep()] as StepDraft[],
+    unitOptions: [...UNIT_OPTIONS],
+    stepsText: '',
     form: {
       title: '',
       description: '',
@@ -78,6 +86,7 @@ Page({
 
   onLoad(options: Record<string, string | undefined>) {
     const id = options.id ?? ''
+    this.setData({ defaultCategoryId: options.categoryId ?? '' })
     if (id) {
       this.setData({
         recipeId: id,
@@ -103,11 +112,14 @@ Page({
         navigateBackOrTab('/pages/menu/index')
         return
       }
-      const categoryIndex = recipe?.categoryId
-        ? Math.max(0, categories.findIndex((item) => item.id === recipe.categoryId))
-        : 0
+      const categoryOptions = [UNCATEGORIZED_OPTION, ...categories]
+      const selectedCategoryId = recipe?.categoryId || this.data.defaultCategoryId
+      const categoryIndex = Math.max(
+        0,
+        categoryOptions.findIndex((item) => item.id === selectedCategoryId),
+      )
       this.setData({
-        categories,
+        categoryOptions,
         categoryIndex,
         loading: false,
         loadError: '',
@@ -166,10 +178,10 @@ Page({
   async createCategory(name: string) {
     try {
       const category = await menuGateway.createCategory(name)
-      const categories = [...this.data.categories, category]
+      const categoryOptions = [...this.data.categoryOptions, category]
       this.setData({
-        categories,
-        categoryIndex: categories.length - 1,
+        categoryOptions,
+        categoryIndex: categoryOptions.length - 1,
       })
       wx.showToast({ title: '分类已添加', icon: 'success' })
     } catch (error) {
@@ -190,6 +202,31 @@ Page({
     this.setData({ [`ingredients[${index}].${field}`]: event.detail.value })
   },
 
+  onIngredientStep(event: {
+    currentTarget: { dataset: { index?: string; delta?: string } }
+  }) {
+    const index = Number(event.currentTarget.dataset.index)
+    const delta = Number(event.currentTarget.dataset.delta)
+    if (!Number.isInteger(index) || !Number.isFinite(delta)) return
+    const current = Number(this.data.ingredients[index]?.quantity)
+    const next = Math.min(999, Math.max(0, (Number.isFinite(current) ? current : 1) + delta))
+    this.setData({ [`ingredients[${index}].quantity`]: formatQuantity(next) })
+  },
+
+  onIngredientUnitChange(event: {
+    currentTarget: { dataset: { index?: string } }
+    detail: { value: string | number }
+  }) {
+    const index = Number(event.currentTarget.dataset.index)
+    const unitIndex = Number(event.detail.value)
+    const unit = this.data.unitOptions[unitIndex]
+    if (!Number.isInteger(index) || !unit) return
+    this.setData({
+      [`ingredients[${index}].unit`]: unit,
+      [`ingredients[${index}].unitIndex`]: unitIndex,
+    })
+  },
+
   onAddIngredient() {
     this.setData({ ingredients: [...this.data.ingredients, emptyIngredient()] })
   },
@@ -201,25 +238,8 @@ Page({
     this.setData({ ingredients: ingredients.length ? ingredients : [emptyIngredient()] })
   },
 
-  onStepInput(event: {
-    currentTarget: { dataset: { index?: string; field?: keyof StepDraft } }
-    detail: { value: string }
-  }) {
-    const index = Number(event.currentTarget.dataset.index)
-    const field = event.currentTarget.dataset.field
-    if (!Number.isInteger(index) || !field || field === 'key' || field === 'id') return
-    this.setData({ [`steps[${index}].${field}`]: event.detail.value })
-  },
-
-  onAddStep() {
-    this.setData({ steps: [...this.data.steps, emptyStep()] })
-  },
-
-  onRemoveStep(event: { currentTarget: { dataset: { index?: string } } }) {
-    const index = Number(event.currentTarget.dataset.index)
-    if (!Number.isInteger(index)) return
-    const steps = this.data.steps.filter((_, itemIndex) => itemIndex !== index)
-    this.setData({ steps: steps.length ? steps : [emptyStep()] })
+  onStepsInput(event: { detail: { value: string } }) {
+    this.setData({ stepsText: event.detail.value })
   },
 
   onChooseImage() {
@@ -311,11 +331,9 @@ Page({
     const servings = Number(form.servings)
     const cookingMinutes = Number(form.cookingMinutes)
     const ingredients = this.data.ingredients
-      .map(toIngredientInput)
+      .map((item) => toIngredientInput(item, this.data.unitOptions))
       .filter((item) => item.name)
-    const steps = this.data.steps
-      .map(toStepInput)
-      .filter((item) => item.title || item.description)
+    const steps = toStepInputs(this.data.stepsText)
 
     if (!form.title.trim()) {
       wx.showToast({ title: '先写下菜名吧', icon: 'none' })
@@ -338,7 +356,7 @@ Page({
       return
     }
 
-    const category = this.data.categories[this.data.categoryIndex]
+    const category = this.data.categoryOptions[this.data.categoryIndex]
     const input: MenuWriteInput = {
       title: form.title,
       description: form.description,
@@ -389,6 +407,7 @@ Page({
 })
 
 function recipeFormData(recipe: MenuRecipe) {
+  const unitOptions = buildUnitOptions(recipe)
   return {
     recipeId: recipe.id,
     version: recipe.version,
@@ -404,23 +423,16 @@ function recipeFormData(recipe: MenuRecipe) {
       mediaId: item.mediaId,
       src: item.src,
     })),
+    unitOptions,
     ingredients: recipe.ingredients.length
-      ? recipe.ingredients.map((item) => ({
-          key: nextDraftKey('ingredient'),
-          id: item.id,
-          name: item.name,
-          amount: item.amount,
-          source: item.source,
-        }))
+      ? recipe.ingredients.map((item) => ingredientDraftFromRecipe(item, unitOptions))
       : [emptyIngredient()],
-    steps: recipe.steps.length
-      ? recipe.steps.map((item) => ({
-          key: nextDraftKey('step'),
-          id: item.id,
-          title: item.title,
-          description: item.description,
-        }))
-      : [emptyStep()],
+    stepsText: recipe.steps.map((item) => {
+      const title = item.title.trim()
+      const description = item.description.trim()
+      if (title && description) return `${title}：${description}`
+      return title || description
+    }).filter(Boolean).join('\n'),
     form: {
       title: recipe.title,
       description: recipe.description,
@@ -430,21 +442,71 @@ function recipeFormData(recipe: MenuRecipe) {
   }
 }
 
-function toIngredientInput(item: IngredientDraft): MenuIngredientWriteInput {
+function ingredientDraftFromRecipe(
+  item: MenuRecipe['ingredients'][number],
+  unitOptions: string[],
+): IngredientDraft {
+  const parsed = parseAmount(item.amount)
+  return {
+    key: nextDraftKey('ingredient'),
+    id: item.id,
+    name: item.name,
+    quantity: parsed.quantity,
+    unit: parsed.unit,
+    unitIndex: unitOptions.indexOf(parsed.unit),
+    source: item.source,
+  }
+}
+
+function toIngredientInput(
+  item: IngredientDraft,
+  unitOptions: string[],
+): MenuIngredientWriteInput {
+  const unit = item.unit || unitOptions[item.unitIndex] || '个'
+  const quantity = item.quantity.trim() || '1'
   return {
     ...(item.id ? { id: item.id } : {}),
     name: item.name.trim(),
-    amount: item.amount.trim(),
+    amount: `${quantity} ${unit}`.trim(),
     source: item.source.trim(),
   }
 }
 
-function toStepInput(item: StepDraft): MenuStepWriteInput {
-  return {
-    ...(item.id ? { id: item.id } : {}),
-    title: item.title.trim(),
-    description: item.description.trim(),
+function toStepInputs(value: string): MenuStepWriteInput[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => ({ title: line, description: '' }))
+}
+
+function buildUnitOptions(recipe: MenuRecipe): string[] {
+  const units = [...UNIT_OPTIONS]
+  recipe.ingredients.forEach((item) => {
+    const unit = parseAmount(item.amount).unit
+    if (!units.includes(unit)) units.push(unit)
+  })
+  return units
+}
+
+function parseAmount(amount: string): {
+  quantity: string
+  unit: string
+} {
+  const value = amount.trim()
+  if (!value) return { quantity: '1', unit: UNIT_OPTIONS[0] ?? '个' }
+  const matched = value.match(/^(\d+(?:\.\d+)?)\s*(.+)?$/)
+  if (!matched) {
+    return { quantity: '1', unit: value }
   }
+  return {
+    quantity: matched[1] ?? '1',
+    unit: matched[2]?.trim() || UNIT_OPTIONS[0] || '个',
+  }
+}
+
+function formatQuantity(value: number): string {
+  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)))
 }
 
 function chooseImages(

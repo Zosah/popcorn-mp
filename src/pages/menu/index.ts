@@ -11,6 +11,7 @@ import {
 import { menuGateway } from '../../services/menu'
 import {
   getMenuErrorMessage,
+  type MenuCategory,
   type MenuRecipe,
 } from '../../services/menu-gateway'
 import { readStoredApiSession } from '../../stores/session'
@@ -45,6 +46,12 @@ interface OrderView extends MealOrder {
   creatorInitial: string
 }
 
+interface CategoryTab {
+  id: string
+  name: string
+  count: number
+}
+
 const menuRequestGate = createRequestGate()
 const HISTORY_LIMIT = 5
 
@@ -58,6 +65,10 @@ const MEAL_LABELS: Record<MealChoice, string> = {
 Page({
   data: {
     allRecipes: [] as MenuRecipe[],
+    categories: [] as MenuCategory[],
+    categoryTabs: [] as CategoryTab[],
+    selectedCategoryId: 'all',
+    categoryRecipes: [] as MenuRecipe[],
     activeTab: 'eat' as MenuTab,
     activeOrders: [] as OrderView[],
     historyOrders: [] as OrderView[],
@@ -124,6 +135,9 @@ Page({
       if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         allRecipes: [],
+        categories: [],
+        categoryTabs: [],
+        categoryRecipes: [],
         activeOrders: [],
         historyOrders: [],
         visibleHistoryOrders: [],
@@ -142,14 +156,15 @@ Page({
     const hasExistingData = this.data.allRecipes.length > 0 || this.data.activeOrders.length > 0
     this.setData({ loading: !hasExistingData, loadError: '' })
     try {
-      const [recipes, orders] = await Promise.all([
+      const [recipes, categories, orders] = await Promise.all([
         menuGateway.list(),
+        menuGateway.listCategories(),
         mealOrderGateway.list(),
       ])
       if (!menuRequestGate.isCurrent(sequence)) return
       if (firstLoad) await waitForMinimumLoading(startedAt)
       if (!menuRequestGate.isCurrent(sequence)) return
-      this.applyLoadedData(recipes, orders)
+      this.applyLoadedData(recipes, categories, orders)
     } catch (error) {
       if (!menuRequestGate.isCurrent(sequence)) return
       if (firstLoad) await waitForMinimumLoading(startedAt)
@@ -168,12 +183,21 @@ Page({
 
   applyLoadedData(
     recipes: MenuRecipe[],
+    categories: MenuCategory[],
     orders: MealOrder[],
   ) {
+    const categoryTabs = buildCategoryTabs(recipes, categories)
+    const selectedCategoryId = categoryTabs.some((item) => item.id === this.data.selectedCategoryId)
+      ? this.data.selectedCategoryId
+      : 'all'
     const activeOrders = orders.filter(isActiveOrder).map(toOrderView)
     const historyOrders = orders.filter((order) => !isActiveOrder(order)).map(toOrderView)
     this.setData({
       allRecipes: recipes,
+      categories,
+      categoryTabs,
+      selectedCategoryId,
+      categoryRecipes: recipesForCategory(recipes, selectedCategoryId),
       activeOrders,
       historyOrders,
       visibleHistoryOrders: historyOrders.slice(0, this.data.showAllHistory ? historyOrders.length : HISTORY_LIMIT),
@@ -212,6 +236,15 @@ Page({
     if (!value || value === this.data.activeTab) return
     this.setData({ activeTab: value, cartPanelOpen: false, historyDetailOrder: null })
     if (value === 'eat') void this.refreshOrders()
+  },
+
+  onSelectCategory(event: { currentTarget: { dataset: { id?: string } } }) {
+    const id = event.currentTarget.dataset.id
+    if (!id || id === this.data.selectedCategoryId) return
+    this.setData({
+      selectedCategoryId: id,
+      categoryRecipes: recipesForCategory(this.data.allRecipes, id),
+    }, () => this.cacheCurrentPage())
   },
 
   async refreshOrders() {
@@ -272,6 +305,23 @@ Page({
   onCloseCart() {
     if (this.data.submittingOrder) return
     this.setData({ cartPanelOpen: false })
+  },
+
+  onClearCart() {
+    if (this.data.submittingOrder || !this.data.cartItems.length) return
+    wx.showModal({
+      title: '删除这一桌？',
+      content: '已经选的菜会从待提交里移除，不会影响菜谱本。',
+      confirmText: '删除',
+      confirmColor: '#a8564e',
+      cancelText: '再想想',
+      success: (result) => {
+        if (!result.confirm) return
+        this.clearCart()
+        this.setData({ cartPanelOpen: false, mealNote: '' })
+        wx.showToast({ title: '这一桌已经清空', icon: 'none' })
+      },
+    })
   },
 
   onCartStep(event: {
@@ -438,7 +488,11 @@ Page({
 
   onCreate() {
     if (!requireAuthForWrite()) return
-    wx.navigateTo({ url: '/pages/menu-form/index' })
+    const categoryId = this.data.selectedCategoryId === 'all' || this.data.selectedCategoryId === 'uncategorized'
+      ? ''
+      : this.data.selectedCategoryId
+    const query = categoryId ? `?categoryId=${encodeURIComponent(categoryId)}` : ''
+    wx.navigateTo({ url: `/pages/menu-form/index${query}` })
   },
 
   onBack() {
@@ -469,6 +523,45 @@ Page({
     wx.removeStorageSync(cartStorageKey())
   },
 })
+
+function recipesForCategory(recipes: MenuRecipe[], categoryId: string): MenuRecipe[] {
+  if (categoryId === 'all') return recipes
+  if (categoryId === 'uncategorized') return recipes.filter((item) => !item.categoryId)
+  return recipes.filter((item) => item.categoryId === categoryId)
+}
+
+function buildCategoryTabs(
+  recipes: MenuRecipe[],
+  categories: MenuCategory[],
+): CategoryTab[] {
+  const categoryById = new Map(categories.map((category) => [category.id, category]))
+  const tabs: CategoryTab[] = [
+    { id: 'all', name: '全部', count: recipes.length },
+  ]
+  categories.forEach((category) => {
+    const count = recipes.filter((recipe) => recipe.categoryId === category.id).length
+    if (count > 0) tabs.push({ id: category.id, name: category.name, count })
+  })
+  recipes.forEach((recipe) => {
+    if (!recipe.categoryId || categoryById.has(recipe.categoryId)) return
+    const existing = tabs.find((tab) => tab.id === recipe.categoryId)
+    if (existing) {
+      existing.count += 1
+      return
+    }
+    tabs.push({
+      id: recipe.categoryId,
+      name: recipe.categoryName || '其他',
+      count: 1,
+    })
+  })
+  tabs.push({
+    id: 'uncategorized',
+    name: '未分组',
+    count: recipes.filter((recipe) => !recipe.categoryId).length,
+  })
+  return tabs
+}
 
 function toOrderView(order: MealOrder): OrderView {
   const ingredients = order.items.flatMap((item) => item.ingredients)
@@ -563,7 +656,7 @@ function readStoredPage(): Record<string, unknown> | null {
 
 function menuPageCacheKey(): string {
   const spaceId = readStoredApiSession()?.session.activeSpaceId || 'demo'
-  return `menu:overview:v4:${spaceId}`
+  return `menu:overview:v5:${spaceId}`
 }
 
 function cartStorageKey(): string {

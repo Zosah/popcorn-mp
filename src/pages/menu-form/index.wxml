@@ -32,10 +32,10 @@
       <view class="recipe-field recipe-category-field">
         <text>分类</text>
         <view class="recipe-category-row">
-          <picker class="recipe-category-picker" mode="selector" range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <picker class="recipe-category-picker" mode="selector" range="{{categoryOptions}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategoryChange">
             <view class="recipe-category-value">
-              <text>{{categories[categoryIndex].name || '未分类'}}</text>
-              <text class="recipe-category-chevron">⌄</text>
+              <text>{{categoryOptions[categoryIndex].name || '未分类'}}</text>
+              <view class="recipe-category-chevron"><line-icon name="chevron-down" size="22" tone="muted" /></view>
             </view>
           </picker>
           <view class="recipe-category-add" bindtap="onCreateCategory">+ 新分类</view>
@@ -88,32 +88,34 @@
     <view class="recipe-section-head"><text>准备食材</text><text>{{ingredients.length}} 样</text></view>
     <view class="ingredient-list">
       <view wx:for="{{ingredients}}" wx:key="key" class="ingredient-row paper-card">
-        <view class="ingredient-row__head">
-          <text>食材 {{index + 1}}</text>
-          <view class="row-remove" data-index="{{index}}" bindtap="onRemoveIngredient">移除</view>
+        <input class="ingredient-row__name" value="{{item.name}}" maxlength="40" placeholder="食材名" placeholder-class="field-placeholder" data-index="{{index}}" data-field="name" bindinput="onIngredientInput" />
+        <view class="ingredient-stepper">
+          <view class="ingredient-stepper__button" data-index="{{index}}" data-delta="-1" bindtap="onIngredientStep">−</view>
+          <input class="ingredient-stepper__value" type="digit" value="{{item.quantity}}" maxlength="6" data-index="{{index}}" data-field="quantity" bindinput="onIngredientInput" />
+          <view class="ingredient-stepper__button" data-index="{{index}}" data-delta="1" bindtap="onIngredientStep">＋</view>
         </view>
-        <input class="ingredient-row__name" value="{{item.name}}" maxlength="40" placeholder="食材名，例如牛腩" placeholder-class="field-placeholder" data-index="{{index}}" data-field="name" bindinput="onIngredientInput" />
-        <view class="ingredient-row__detail">
-          <input value="{{item.amount}}" maxlength="30" placeholder="用量，例如 400g" placeholder-class="field-placeholder" data-index="{{index}}" data-field="amount" bindinput="onIngredientInput" />
-          <input value="{{item.source}}" maxlength="40" placeholder="冰箱冷冻 / 需要买" placeholder-class="field-placeholder" data-index="{{index}}" data-field="source" bindinput="onIngredientInput" />
-        </view>
+        <picker class="ingredient-unit-picker" mode="selector" range="{{unitOptions}}" value="{{item.unitIndex}}" data-index="{{index}}" bindchange="onIngredientUnitChange">
+          <view class="ingredient-unit">
+            <text>{{item.unit || '个'}}</text>
+            <line-icon name="chevron-down" size="18" tone="muted" />
+          </view>
+        </picker>
+        <view class="row-remove" data-index="{{index}}" bindtap="onRemoveIngredient">删除</view>
       </view>
       <view class="add-row" bindtap="onAddIngredient"><line-icon name="plus" size="22" tone="gold" /><text>再加一样</text></view>
     </view>
 
-    <view class="recipe-section-head"><text>做法步骤</text><text>{{steps.length}} 步</text></view>
-    <view class="step-list">
-      <view wx:for="{{steps}}" wx:key="key" class="step-row paper-card">
-        <view class="step-row__number">{{index + 1}}</view>
-        <view class="step-row__body">
-          <view class="step-row__head">
-            <input value="{{item.title}}" maxlength="60" placeholder="这一步叫什么" placeholder-class="field-placeholder" data-index="{{index}}" data-field="title" bindinput="onStepInput" />
-            <view class="row-remove" data-index="{{index}}" bindtap="onRemoveStep">移除</view>
-          </view>
-          <textarea value="{{item.description}}" maxlength="300" auto-height placeholder="具体怎么做，例如先焯水再慢炖" placeholder-class="field-placeholder" data-index="{{index}}" data-field="description" bindinput="onStepInput" />
-        </view>
-      </view>
-      <view class="add-row" bindtap="onAddStep"><line-icon name="plus" size="22" tone="gold" /><text>再加一步</text></view>
+    <view class="recipe-section-head"><text>做法</text><text>一行一步</text></view>
+    <view class="step-editor paper-card">
+      <textarea
+        value="{{stepsText}}"
+        maxlength="3000"
+        auto-height
+        placeholder="先焯水去浮沫\n再小火慢炖，最后调味"
+        placeholder-class="field-placeholder"
+        bindinput="onStepsInput"
+      />
+      <view class="step-editor__hint">换行后会整理成步骤</view>
     </view>
 
     <button class="primary-button recipe-save" loading="{{saving || imageUploading || noteImageUploading}}" disabled="{{saving || imageUploading || noteImageUploading}}" bindtap="onSave">

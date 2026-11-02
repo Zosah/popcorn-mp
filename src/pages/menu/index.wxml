@@ -171,11 +171,24 @@
     </view>
 
     <view wx:if="{{activeTab === 'recipes'}}" class="menu-book">
+      <view class="menu-categories" role="tablist" aria-label="菜谱分类">
+        <view
+          wx:for="{{categoryTabs}}"
+          wx:key="id"
+          class="menu-category {{selectedCategoryId === item.id ? 'menu-category--active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSelectCategory"
+        >
+          <text class="menu-category__name">{{item.name}}</text>
+          <text class="menu-category__count">{{item.count}}</text>
+        </view>
+      </view>
+
       <view class="menu-recipes">
         <view class="menu-recipes__head">
           <view>
             <text>菜谱本</text>
-            <text>{{allRecipes.length}} 道菜</text>
+            <text>{{categoryRecipes.length}} 道菜</text>
           </view>
           <view class="menu-recipes__actions">
             <view class="menu-add" bindtap="onCreate">
@@ -185,32 +198,34 @@
           </view>
         </view>
 
-        <view wx:if="{{allRecipes.length}}" class="menu-recipe-list">
-          <view wx:for="{{allRecipes}}" wx:key="id" class="menu-recipe" data-id="{{item.id}}" bindtap="onOpenRecipe">
-            <view class="menu-recipe__media">
-              <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFill" />
-              <line-icon wx:else name="soup" size="32" tone="gold" />
-            </view>
-            <view class="menu-recipe__body">
-              <view class="menu-recipe__title">{{item.title}}</view>
-              <view wx:if="{{item.description}}" class="menu-recipe__desc">{{item.description}}</view>
-              <view class="menu-recipe__meta">
-                <text>{{item.cookingMinutes}} 分钟</text>
-                <text>{{item.servings}} 人份</text>
-                <text>{{item.ingredients.length}} 样食材</text>
+        <view wx:if="{{categoryRecipes.length}}" class="menu-recipe-list">
+          <view wx:for="{{categoryRecipes}}" wx:key="id" class="menu-recipe" data-id="{{item.id}}" bindtap="onOpenRecipe">
+            <view class="menu-recipe__top">
+              <view class="menu-recipe__body">
+                <view class="menu-recipe__title">{{item.title}}</view>
+                <view wx:if="{{item.description}}" class="menu-recipe__desc">{{item.description}}</view>
+                <view class="menu-recipe__meta"><text>{{item.ingredients.length}} 样食材</text></view>
+              </view>
+              <view class="menu-recipe__media">
+                <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFit" />
+                <line-icon wx:else name="soup" size="34" tone="gold" />
               </view>
             </view>
-            <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart" aria-label="添加{{item.title}}">
-              <line-icon name="plus" size="24" tone="white" />
+            <view class="menu-recipe__foot">
+              <text class="menu-recipe__hint">点进菜单可以编辑</text>
+              <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart" aria-label="添加{{item.title}}">
+                <line-icon name="plus" size="20" tone="white" />
+                <text>吃它</text>
+              </view>
             </view>
           </view>
         </view>
 
         <view wx:else class="menu-empty menu-empty--book">
           <view class="menu-empty__icon"><line-icon name="book-open" size="34" tone="orange" /></view>
-          <view class="menu-empty__title">菜谱本还是空的</view>
-          <view class="menu-empty__copy">把常做的菜和拿手菜谱记下来，点菜时会更容易。</view>
-          <view class="menu-empty__action" bindtap="onCreate">新建第一道菜谱</view>
+          <view class="menu-empty__title">{{allRecipes.length ? '这里还没有菜谱' : '菜谱本还是空的'}}</view>
+          <view class="menu-empty__copy">{{allRecipes.length ? '换一个分类看看，或者把这道菜放进这里。' : '把常做的菜和拿手菜谱记下来，点菜时会更容易。'}}</view>
+          <view class="menu-empty__action" bindtap="onCreate">{{allRecipes.length ? '新建菜谱' : '新建第一道菜谱'}}</view>
         </view>
       </view>
     </view>
@@ -227,7 +242,7 @@
         </view>
       </view>
       <view class="menu-cart-bar__action">
-        <text>去提交</text>
+        <text>选好了</text>
         <line-icon name="check" size="19" tone="white" />
       </view>
     </view>
@@ -241,7 +256,7 @@
           <text>这一桌</text>
           <text>{{mealType === 'breakfast' ? '早餐' : mealType === 'lunch' ? '午餐' : mealType === 'dinner' ? '晚餐' : '加餐'}} · {{cartCount}} 道</text>
         </view>
-        <view class="menu-cart-sheet__close" bindtap="onCloseCart">×</view>
+        <view class="menu-cart-sheet__delete" bindtap="onClearCart">删除</view>
       </view>
 
       <view class="menu-cart-list">
@@ -259,7 +274,7 @@
             <text>{{item.servings}}</text>
             <text data-id="{{item.recipe.id}}" data-delta="1" bindtap="onCartStep">＋</text>
           </view>
-          <view class="menu-cart-item__remove" data-id="{{item.recipe.id}}" bindtap="onRemoveCartItem">×</view>
+          <view class="menu-cart-item__remove" data-id="{{item.recipe.id}}" bindtap="onRemoveCartItem">删除</view>
         </view>
       </view>
 
