@@ -73,7 +73,13 @@
             <text>{{item.readyIngredientCount}} / {{item.ingredientCount}}</text>
           </view>
           <view wx:for="{{item.items}}" wx:for-item="dish" wx:key="id" class="menu-order__dish">
-            <view class="menu-order__dish-title">{{dish.recipeTitle}}</view>
+            <view class="menu-order__dish-head">
+              <view class="menu-order__dish-index">{{dish.numberLabel}}</view>
+              <view class="menu-order__dish-copy">
+                <text class="menu-order__dish-name">{{dish.recipeTitle}}</text>
+                <text class="menu-order__dish-meta">食材 {{dish.ingredients.length}} 样 · 已备 {{dish.readyCount}}</text>
+              </view>
+            </view>
             <view class="menu-order__ingredients">
               <view
                 wx:for="{{dish.ingredients}}"
@@ -86,9 +92,13 @@
                 bindtap="onToggleIngredient"
               >
                 <view class="menu-order__check">{{ingredient.ready ? '✓' : ''}}</view>
-                <text>{{ingredient.name}}</text>
-                <text>{{ingredient.amount}}</text>
-                <text>{{ingredient.source}}</text>
+                <view class="menu-order__ingredient-copy">
+                  <text class="menu-order__ingredient-name">{{ingredient.name}}</text>
+                  <view wx:if="{{ingredient.amount || ingredient.source}}" class="menu-order__ingredient-meta">
+                    <text wx:if="{{ingredient.amount}}" class="menu-order__ingredient-amount">{{ingredient.amount}}</text>
+                    <text wx:if="{{ingredient.source}}" class="menu-order__ingredient-source">{{ingredient.source}}</text>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
@@ -325,12 +335,24 @@
             <text>{{historyDetailOrder.readyIngredientCount}} / {{historyDetailOrder.ingredientCount}}</text>
           </view>
           <view wx:for="{{historyDetailOrder.items}}" wx:for-item="dish" wx:key="id" class="menu-order-detail__dish">
-            <text class="menu-order-detail__dish-title">{{dish.recipeTitle}}</text>
-            <view wx:for="{{dish.ingredients}}" wx:for-item="ingredient" wx:key="id" class="menu-order-detail__ingredient">
-              <view class="menu-order-detail__check {{ingredient.ready ? 'menu-order-detail__check--ready' : ''}}">{{ingredient.ready ? '✓' : ''}}</view>
-              <text class="menu-order-detail__ingredient-name">{{ingredient.name}}</text>
-              <text>{{ingredient.amount}}</text>
-              <text>{{ingredient.source}}</text>
+            <view class="menu-order-detail__dish-head">
+              <view class="menu-order-detail__dish-index">{{dish.numberLabel}}</view>
+              <view class="menu-order-detail__dish-copy">
+                <text class="menu-order-detail__dish-name">{{dish.recipeTitle}}</text>
+                <text class="menu-order-detail__dish-meta">食材 {{dish.ingredients.length}} 样 · 已备 {{dish.readyCount}}</text>
+              </view>
+            </view>
+            <view class="menu-order-detail__ingredients">
+              <view wx:for="{{dish.ingredients}}" wx:for-item="ingredient" wx:key="id" class="menu-order-detail__ingredient">
+                <view class="menu-order-detail__check {{ingredient.ready ? 'menu-order-detail__check--ready' : ''}}">{{ingredient.ready ? '✓' : ''}}</view>
+                <view class="menu-order-detail__ingredient-copy">
+                  <text class="menu-order-detail__ingredient-name">{{ingredient.name}}</text>
+                  <view wx:if="{{ingredient.amount || ingredient.source}}" class="menu-order-detail__ingredient-meta">
+                    <text wx:if="{{ingredient.amount}}" class="menu-order-detail__ingredient-amount">{{ingredient.amount}}</text>
+                    <text wx:if="{{ingredient.source}}" class="menu-order-detail__ingredient-source">{{ingredient.source}}</text>
+                  </view>
+                </view>
+              </view>
             </view>
           </view>
         </view>

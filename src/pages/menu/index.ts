@@ -6,6 +6,7 @@ import {
   getMealOrderErrorMessage,
   isMealOrderVersionConflict,
   type MealOrder,
+  type MealOrderItem,
   type MealOrderStatus,
 } from '../../services/meal-order-gateway'
 import { menuGateway } from '../../services/menu'
@@ -33,7 +34,12 @@ interface CartItem {
   servings: number
 }
 
-interface OrderView extends MealOrder {
+interface OrderDishView extends MealOrderItem {
+  numberLabel: string
+  readyCount: number
+}
+
+interface OrderView extends Omit<MealOrder, 'items'> {
   statusLabel: string
   actionLabel: string
   nextStatus: MealOrderStatus | ''
@@ -44,6 +50,7 @@ interface OrderView extends MealOrder {
   timeLabel: string
   itemSummary: string
   creatorInitial: string
+  items: OrderDishView[]
 }
 
 interface CategoryTab {
@@ -547,6 +554,11 @@ function toOrderView(order: MealOrder): OrderView {
   const action = orderAction(order.status)
   return {
     ...order,
+    items: order.items.map((item, index) => ({
+      ...item,
+      numberLabel: String(index + 1).padStart(2, '0'),
+      readyCount: item.ingredients.filter((ingredient) => ingredient.ready).length,
+    })),
     statusLabel: orderStatusLabel(order.status),
     actionLabel: action.label,
     nextStatus: action.nextStatus,
@@ -635,7 +647,7 @@ function readStoredPage(): Record<string, unknown> | null {
 
 function menuPageCacheKey(): string {
   const spaceId = readStoredApiSession()?.session.activeSpaceId || 'demo'
-  return `menu:overview:v5:${spaceId}`
+  return `menu:overview:v6:${spaceId}`
 }
 
 function cartStorageKey(): string {
