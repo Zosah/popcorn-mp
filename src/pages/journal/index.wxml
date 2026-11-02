@@ -155,7 +155,7 @@
             <view class="journal-note-row__body">
               <text class="journal-note-row__title">{{entry.title}}</text>
               <text class="journal-note-row__copy">{{entry.content}}</text>
-              <view wx:if="{{entry.images && entry.images.length}}" class="journal-photo-grid journal-photo-grid--note journal-photo-grid--count{{entry.images.length}}">
+              <view wx:if="{{entry.images && entry.images.length}}" class="journal-photo-grid">
                 <view wx:for="{{entry.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
                   <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load />
                   <view wx:else class="journal-photo-grid__placeholder"><line-icon name="image" size="22" tone="muted" /></view>
