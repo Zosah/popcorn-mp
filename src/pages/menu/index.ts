@@ -1,5 +1,4 @@
 import { appConfig } from '../../config/env'
-import { recommendationIndexForDate } from '../../domain/menu-discovery'
 import { hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
 import { mealOrderGateway } from '../../services/meal-order'
@@ -12,7 +11,6 @@ import {
 import { menuGateway } from '../../services/menu'
 import {
   getMenuErrorMessage,
-  type MenuCategory,
   type MenuRecipe,
 } from '../../services/menu-gateway'
 import { readStoredApiSession } from '../../stores/session'
@@ -47,14 +45,6 @@ interface OrderView extends MealOrder {
   creatorInitial: string
 }
 
-interface CategoryTab {
-  id: string
-  name: string
-  isSystem: boolean
-  count: number
-  manageable: boolean
-}
-
 const menuRequestGate = createRequestGate()
 const HISTORY_LIMIT = 5
 
@@ -68,12 +58,6 @@ const MEAL_LABELS: Record<MealChoice, string> = {
 Page({
   data: {
     allRecipes: [] as MenuRecipe[],
-    categories: [] as MenuCategory[],
-    categoryTabs: [] as CategoryTab[],
-    selectedCategoryId: 'all',
-    categoryRecipes: [] as MenuRecipe[],
-    currentCategoryName: '全部菜谱',
-    currentCategoryManageable: false,
     activeTab: 'eat' as MenuTab,
     activeOrders: [] as OrderView[],
     historyOrders: [] as OrderView[],
@@ -93,7 +77,7 @@ Page({
     submittingOrder: false,
     orderActionId: '',
     ingredientActionId: '',
-    recommended: null as MenuRecipe | null,
+    historyDetailOrder: null as OrderView | null,
   },
 
   onLoad() {
@@ -140,14 +124,11 @@ Page({
       if (firstLoad) await waitForMinimumLoading(startedAt)
       this.setData({
         allRecipes: [],
-        categories: [],
-        categoryTabs: [],
-        categoryRecipes: [],
         activeOrders: [],
         historyOrders: [],
         visibleHistoryOrders: [],
         hasMoreHistory: false,
-        recommended: null,
+        historyDetailOrder: null,
         loading: false,
         hasLoaded: true,
         cacheFresh: false,
@@ -161,15 +142,14 @@ Page({
     const hasExistingData = this.data.allRecipes.length > 0 || this.data.activeOrders.length > 0
     this.setData({ loading: !hasExistingData, loadError: '' })
     try {
-      const [recipes, categories, orders] = await Promise.all([
+      const [recipes, orders] = await Promise.all([
         menuGateway.list(),
-        menuGateway.listCategories(),
         mealOrderGateway.list(),
       ])
       if (!menuRequestGate.isCurrent(sequence)) return
       if (firstLoad) await waitForMinimumLoading(startedAt)
       if (!menuRequestGate.isCurrent(sequence)) return
-      this.applyLoadedData(recipes, categories, orders)
+      this.applyLoadedData(recipes, orders)
     } catch (error) {
       if (!menuRequestGate.isCurrent(sequence)) return
       if (firstLoad) await waitForMinimumLoading(startedAt)
@@ -188,26 +168,16 @@ Page({
 
   applyLoadedData(
     recipes: MenuRecipe[],
-    categories: MenuCategory[],
     orders: MealOrder[],
   ) {
-    const recommendedIndex = recommendationIndexForDate(recipes.length)
-    const selectedCategoryId = this.data.selectedCategoryId
     const activeOrders = orders.filter(isActiveOrder).map(toOrderView)
     const historyOrders = orders.filter((order) => !isActiveOrder(order)).map(toOrderView)
-    const categoryMeta = selectedCategoryMeta(recipes, categories, selectedCategoryId)
     this.setData({
       allRecipes: recipes,
-      categories,
-      categoryTabs: buildCategoryTabs(recipes, categories),
-      categoryRecipes: recipesForCategory(recipes, selectedCategoryId),
-      currentCategoryName: categoryMeta.name,
-      currentCategoryManageable: categoryMeta.manageable,
       activeOrders,
       historyOrders,
       visibleHistoryOrders: historyOrders.slice(0, this.data.showAllHistory ? historyOrders.length : HISTORY_LIMIT),
       hasMoreHistory: historyOrders.length > HISTORY_LIMIT,
-      recommended: recipes[recommendedIndex] ?? null,
       loading: false,
       hasLoaded: true,
       cacheFresh: true,
@@ -227,6 +197,7 @@ Page({
       orderActionId: _orderActionId,
       ingredientActionId: _ingredientActionId,
       submittingOrder: _submittingOrder,
+      historyDetailOrder: _historyDetailOrder,
       ...snapshot
     } = this.data as unknown as Record<string, unknown>
     wx.setStorageSync(menuPageCacheKey(), snapshot)
@@ -239,7 +210,7 @@ Page({
   onSwitchTab(event: { currentTarget: { dataset: { value?: MenuTab } } }) {
     const value = event.currentTarget.dataset.value
     if (!value || value === this.data.activeTab) return
-    this.setData({ activeTab: value, cartPanelOpen: false })
+    this.setData({ activeTab: value, cartPanelOpen: false, historyDetailOrder: null })
     if (value === 'eat') void this.refreshOrders()
   },
 
@@ -262,155 +233,7 @@ Page({
     }
   },
 
-  onSelectCategory(event: { currentTarget: { dataset: { id?: string } } }) {
-    const id = event.currentTarget.dataset.id || 'all'
-    const categoryMeta = selectedCategoryMeta(this.data.allRecipes, this.data.categories, id)
-    this.setData({
-      selectedCategoryId: id,
-      categoryRecipes: recipesForCategory(this.data.allRecipes, id),
-      currentCategoryName: categoryMeta.name,
-      currentCategoryManageable: categoryMeta.manageable,
-    }, () => this.cacheCurrentPage())
-  },
-
-  onManageSelectedCategory() {
-    if (!this.data.currentCategoryManageable) return
-    this.manageCategory(this.data.selectedCategoryId)
-  },
-
   onStopTap() {},
-
-  onCreateCategory() {
-    wx.showModal({
-      title: '新建分类',
-      editable: true,
-      placeholderText: '例如：烘焙、快手菜',
-      confirmText: '添加',
-      success: (result) => {
-        if (!result.confirm || !result.content?.trim()) return
-        void this.createCategory(result.content.trim())
-      },
-    })
-  },
-
-  async createCategory(name: string) {
-    try {
-      const category = await menuGateway.createCategory(name)
-      const categories = [...this.data.categories, category]
-      this.setData({
-        categories,
-        categoryTabs: buildCategoryTabs(this.data.allRecipes, categories),
-        selectedCategoryId: category.id,
-        categoryRecipes: recipesForCategory(this.data.allRecipes, category.id),
-        currentCategoryName: category.name,
-        currentCategoryManageable: true,
-      }, () => this.cacheCurrentPage())
-      wx.showToast({ title: '分类已添加', icon: 'success' })
-    } catch (error) {
-      wx.showToast({
-        title: getMenuErrorMessage(error, '分类没有添加成功'),
-        icon: 'none',
-      })
-    }
-  },
-
-  onManageCategory(event: { currentTarget: { dataset: { id?: string } } }) {
-    const id = event.currentTarget.dataset.id
-    if (id) this.manageCategory(id)
-  },
-
-  manageCategory(id: string) {
-    const category = this.data.categories.find((item) => item.id === id)
-    if (!category) return
-    if (category.isSystem) {
-      wx.showToast({ title: '默认分类不用管理', icon: 'none' })
-      return
-    }
-    wx.showActionSheet({
-      itemList: ['重命名分类', '删除分类'],
-      success: (result) => {
-        if (result.tapIndex === 0) this.renameCategory(category)
-        if (result.tapIndex === 1) this.deleteCategory(category)
-      },
-    })
-  },
-
-  renameCategory(category: MenuCategory) {
-    wx.showModal({
-      title: '重命名分类',
-      editable: true,
-      content: category.name,
-      placeholderText: '分类名称',
-      confirmText: '保存',
-      success: (result) => {
-        if (!result.confirm || !result.content?.trim()) return
-        void (async () => {
-          try {
-            const updated = await menuGateway.updateCategory(category.id, result.content!.trim())
-            const categories = this.data.categories.map((item) =>
-              item.id === updated.id ? updated : item,
-            )
-            const recipes = this.data.allRecipes.map((recipe) =>
-              recipe.categoryId === updated.id
-                ? { ...recipe, categoryName: updated.name }
-                : recipe,
-            )
-            this.setData({
-              categories,
-              categoryTabs: buildCategoryTabs(recipes, categories),
-              allRecipes: recipes,
-              categoryRecipes: recipesForCategory(recipes, this.data.selectedCategoryId),
-              currentCategoryName: this.data.selectedCategoryId === updated.id
-                ? updated.name
-                : this.data.currentCategoryName,
-            }, () => this.cacheCurrentPage())
-          } catch (error) {
-            wx.showToast({
-              title: getMenuErrorMessage(error, '分类没有改名成功'),
-              icon: 'none',
-            })
-          }
-        })()
-      },
-    })
-  },
-
-  deleteCategory(category: MenuCategory) {
-    wx.showModal({
-      title: `删除「${category.name}」？`,
-      content: '这个分类里的菜谱会回到未分类，菜谱本身不会删除。',
-      confirmText: '删除',
-      confirmColor: '#d9685b',
-      success: (result) => {
-        if (!result.confirm) return
-        void (async () => {
-          try {
-            await menuGateway.removeCategory(category.id)
-            const categories = this.data.categories.filter((item) => item.id !== category.id)
-            const recipes = this.data.allRecipes.map((recipe) =>
-              recipe.categoryId === category.id
-                ? { ...recipe, categoryId: '', categoryName: '' }
-                : recipe,
-            )
-            this.setData({
-              categories,
-              categoryTabs: buildCategoryTabs(recipes, categories),
-              allRecipes: recipes,
-              selectedCategoryId: 'all',
-              categoryRecipes: recipes,
-              currentCategoryName: '全部菜谱',
-              currentCategoryManageable: false,
-            }, () => this.cacheCurrentPage())
-          } catch (error) {
-            wx.showToast({
-              title: getMenuErrorMessage(error, '分类没有删除成功'),
-              icon: 'none',
-            })
-          }
-        })()
-      },
-    })
-  },
 
   onOpenRecipe(event: { currentTarget: { dataset: { id?: string } } }) {
     const id = event.currentTarget.dataset.id
@@ -603,19 +426,19 @@ Page({
     }, () => this.cacheCurrentPage())
   },
 
+  onOpenOrderDetail(event: { currentTarget: { dataset: { id?: string } } }) {
+    const id = event.currentTarget.dataset.id
+    const order = this.data.historyOrders.find((item) => item.id === id)
+    if (order) this.setData({ historyDetailOrder: order })
+  },
+
+  onCloseOrderDetail() {
+    this.setData({ historyDetailOrder: null })
+  },
+
   onCreate() {
     if (!requireAuthForWrite()) return
     wx.navigateTo({ url: '/pages/menu-form/index' })
-  },
-
-  onOpenRecommended() {
-    if (!this.data.recommended) {
-      this.onCreate()
-      return
-    }
-    wx.navigateTo({
-      url: `/pages/menu-detail/index?id=${encodeURIComponent(this.data.recommended.id)}`,
-    })
   },
 
   onBack() {
@@ -646,50 +469,6 @@ Page({
     wx.removeStorageSync(cartStorageKey())
   },
 })
-
-function recipesForCategory(recipes: MenuRecipe[], categoryId: string): MenuRecipe[] {
-  if (categoryId === 'all') return recipes
-  if (categoryId === 'uncategorized') return recipes.filter((item) => !item.categoryId)
-  return recipes.filter((item) => item.categoryId === categoryId)
-}
-
-function buildCategoryTabs(recipes: MenuRecipe[], categories: MenuCategory[]): CategoryTab[] {
-  const tabs: CategoryTab[] = [
-    { id: 'all', name: '全部', isSystem: true, count: recipes.length, manageable: false },
-    ...categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      isSystem: category.isSystem,
-      count: recipes.filter((recipe) => recipe.categoryId === category.id).length,
-      manageable: !category.isSystem,
-    })),
-  ]
-  const uncategorizedCount = recipes.filter((recipe) => !recipe.categoryId).length
-  if (uncategorizedCount > 0) {
-    tabs.push({
-      id: 'uncategorized',
-      name: '未分类',
-      isSystem: true,
-      count: uncategorizedCount,
-      manageable: false,
-    })
-  }
-  return tabs
-}
-
-function selectedCategoryMeta(
-  recipes: MenuRecipe[],
-  categories: MenuCategory[],
-  categoryId: string,
-): { name: string; manageable: boolean } {
-  if (categoryId === 'all') return { name: '全部菜谱', manageable: false }
-  if (categoryId === 'uncategorized') return { name: '未分类', manageable: false }
-  const category = categories.find((item) => item.id === categoryId)
-  return {
-    name: category?.name || '全部菜谱',
-    manageable: Boolean(category && !category.isSystem),
-  }
-}
 
 function toOrderView(order: MealOrder): OrderView {
   const ingredients = order.items.flatMap((item) => item.ingredients)
@@ -784,7 +563,7 @@ function readStoredPage(): Record<string, unknown> | null {
 
 function menuPageCacheKey(): string {
   const spaceId = readStoredApiSession()?.session.activeSpaceId || 'demo'
-  return `menu:overview:v3:${spaceId}`
+  return `menu:overview:v4:${spaceId}`
 }
 
 function cartStorageKey(): string {

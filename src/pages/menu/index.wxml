@@ -130,7 +130,7 @@
         </view>
       </view>
 
-      <view wx:if="{{historyOrders.length}}" class="menu-history">
+      <view class="menu-history">
         <view class="menu-section-head menu-section-head--history">
           <view>
             <text>吃过的这一桌</text>
@@ -138,8 +138,14 @@
           </view>
           <text>{{historyOrders.length}} 次</text>
         </view>
-        <view class="menu-history__list">
-          <view wx:for="{{visibleHistoryOrders}}" wx:key="id" class="menu-history__row">
+        <view wx:if="{{historyOrders.length}}" class="menu-history__list">
+          <view
+            wx:for="{{visibleHistoryOrders}}"
+            wx:key="id"
+            class="menu-history__row"
+            data-id="{{item.id}}"
+            bindtap="onOpenOrderDetail"
+          >
             <view class="menu-history__date">
               <text>{{item.dateLabel}}</text>
               <text>{{item.mealLabel}} {{item.timeLabel}}</text>
@@ -148,60 +154,30 @@
               <text>{{item.itemSummary}}</text>
               <text>{{item.createdByName}} · {{item.statusLabel}}</text>
             </view>
+            <view class="menu-history__arrow">›</view>
+          </view>
+        </view>
+        <view wx:else class="menu-history__empty">
+          <view class="menu-history__empty-icon"><line-icon name="clock-3" size="26" tone="muted" /></view>
+          <view class="menu-history__empty-copy">
+            <text>还没有吃过的这一桌</text>
+            <text>完成一次点单后，会在这里留下记录</text>
           </view>
         </view>
         <view wx:if="{{hasMoreHistory}}" class="menu-history__toggle" bindtap="onToggleHistory">
           {{showAllHistory ? '收起一些' : '看看更早的'}}
         </view>
       </view>
-
-      <view wx:if="{{recommended}}" class="menu-recommend">
-        <view class="menu-recommend__art">
-          <image wx:if="{{recommended.image && recommended.image.src}}" src="{{recommended.image.src}}" mode="aspectFill" />
-          <view wx:else class="menu-recommend__fallback">
-            <line-icon name="soup" size="52" tone="gold" />
-            <view class="menu-recommend__steam"></view>
-          </view>
-          <view class="menu-recommend__badge">今日推荐</view>
-        </view>
-        <view class="menu-recommend__body">
-          <text class="menu-recommend__eyebrow">不知道吃什么时</text>
-          <text class="menu-recommend__title">{{recommended.title}}</text>
-          <text class="menu-recommend__meta">{{recommended.cookingMinutes}} 分钟 · {{recommended.ingredients.length}} 样食材</text>
-          <view class="menu-recommend__action" bindtap="onOpenRecommended">
-            <text>看看这道菜</text>
-            <line-icon name="plus" size="18" tone="white" />
-          </view>
-        </view>
-      </view>
     </view>
 
     <view wx:if="{{activeTab === 'recipes'}}" class="menu-book">
-      <view class="menu-categories">
-        <view
-          wx:for="{{categoryTabs}}"
-          wx:key="id"
-          class="menu-category {{selectedCategoryId === item.id ? 'menu-category--active' : ''}}"
-          data-id="{{item.id}}"
-          bindtap="onSelectCategory"
-        >
-          <text>{{item.name}}</text>
-          <text>{{item.count}}</text>
-        </view>
-        <view class="menu-category menu-category--add" bindtap="onCreateCategory">
-          <line-icon name="plus" size="16" tone="gold" />
-          <text>分类</text>
-        </view>
-      </view>
-
       <view class="menu-recipes">
         <view class="menu-recipes__head">
           <view>
-            <text>{{currentCategoryName}}</text>
-            <text>{{categoryRecipes.length}} 道菜</text>
+            <text>菜谱本</text>
+            <text>{{allRecipes.length}} 道菜</text>
           </view>
           <view class="menu-recipes__actions">
-            <view wx:if="{{currentCategoryManageable}}" class="menu-recipes__manage" bindtap="onManageSelectedCategory">管理</view>
             <view class="menu-add" bindtap="onCreate">
               <line-icon name="plus" size="20" tone="white" />
               <text>新菜谱</text>
@@ -209,8 +185,8 @@
           </view>
         </view>
 
-        <view wx:if="{{categoryRecipes.length}}" class="menu-recipe-list">
-          <view wx:for="{{categoryRecipes}}" wx:key="id" class="menu-recipe" data-id="{{item.id}}" bindtap="onOpenRecipe">
+        <view wx:if="{{allRecipes.length}}" class="menu-recipe-list">
+          <view wx:for="{{allRecipes}}" wx:key="id" class="menu-recipe" data-id="{{item.id}}" bindtap="onOpenRecipe">
             <view class="menu-recipe__media">
               <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFill" />
               <line-icon wx:else name="soup" size="32" tone="gold" />
@@ -232,9 +208,9 @@
 
         <view wx:else class="menu-empty menu-empty--book">
           <view class="menu-empty__icon"><line-icon name="book-open" size="34" tone="orange" /></view>
-          <view class="menu-empty__title">{{allRecipes.length ? '这个分类还没有菜' : '菜谱本还是空的'}}</view>
-          <view class="menu-empty__copy">{{allRecipes.length ? '换一个分类看看，或者把常做的菜放进来。' : '先把一道拿手菜记下来吧。'}}</view>
-          <view class="menu-empty__action" bindtap="onCreate">新建菜谱</view>
+          <view class="menu-empty__title">菜谱本还是空的</view>
+          <view class="menu-empty__copy">把常做的菜和拿手菜谱记下来，点菜时会更容易。</view>
+          <view class="menu-empty__action" bindtap="onCreate">新建第一道菜谱</view>
         </view>
       </view>
     </view>
@@ -309,6 +285,52 @@
         {{submittingOrder ? '正在交给大家' : '提交给厨房'}}
       </button>
       <view class="menu-cart-sheet__safe"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{historyDetailOrder}}" class="menu-order-detail-mask" catchtap="onCloseOrderDetail" catchtouchmove="onStopTap">
+    <view class="menu-order-detail-sheet" catchtap="onStopTap" catchtouchmove="onStopTap">
+      <view class="menu-cart-sheet__handle"></view>
+      <view class="menu-order-detail__head">
+        <view class="menu-order-detail__head-copy">
+          <text class="menu-order-detail__eyebrow">这一餐</text>
+          <text class="menu-order-detail__title">{{historyDetailOrder.dateLabel}} · {{historyDetailOrder.mealLabel}}</text>
+        </view>
+        <view class="menu-cart-sheet__close" bindtap="onCloseOrderDetail">×</view>
+      </view>
+
+      <scroll-view class="menu-order-detail__scroll" scroll-y enhanced show-scrollbar="{{false}}">
+        <view class="menu-order-detail__summary">
+          <text class="menu-order-detail__dishes">{{historyDetailOrder.itemSummary}}</text>
+          <view class="menu-order-detail__status menu-order-detail__status--{{historyDetailOrder.status}}">{{historyDetailOrder.statusLabel}}</view>
+        </view>
+
+        <view class="menu-order-detail__meta">
+          <text>{{historyDetailOrder.createdByName}} 发起</text>
+          <text>{{historyDetailOrder.timeLabel}}</text>
+        </view>
+
+        <view wx:if="{{historyDetailOrder.note}}" class="menu-order-detail__note">“{{historyDetailOrder.note}}”</view>
+
+        <view wx:if="{{historyDetailOrder.ingredientCount}}" class="menu-order-detail__section">
+          <view class="menu-order-detail__section-head">
+            <text>备菜清单</text>
+            <text>{{historyDetailOrder.readyIngredientCount}} / {{historyDetailOrder.ingredientCount}}</text>
+          </view>
+          <view wx:for="{{historyDetailOrder.items}}" wx:for-item="dish" wx:key="id" class="menu-order-detail__dish">
+            <text class="menu-order-detail__dish-title">{{dish.recipeTitle}} · {{dish.servings}} 人份</text>
+            <view wx:for="{{dish.ingredients}}" wx:for-item="ingredient" wx:key="id" class="menu-order-detail__ingredient">
+              <view class="menu-order-detail__check {{ingredient.ready ? 'menu-order-detail__check--ready' : ''}}">{{ingredient.ready ? '✓' : ''}}</view>
+              <text class="menu-order-detail__ingredient-name">{{ingredient.name}}</text>
+              <text>{{ingredient.amount}}</text>
+              <text>{{ingredient.source}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:else class="menu-order-detail__empty">这次点单没有填写食材</view>
+        <view class="menu-order-detail__safe"></view>
+      </scroll-view>
     </view>
   </view>
 
