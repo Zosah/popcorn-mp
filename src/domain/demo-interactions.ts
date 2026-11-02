@@ -11,6 +11,7 @@ export type DemoTabPath =
   | '/pages/pets/index'
   | '/pages/todo/index'
   | '/pages/menu/index'
+  | '/pages/travel/index'
   | '/pages/profile/index'
 
 export type InventoryViewMode = 'active' | 'history'

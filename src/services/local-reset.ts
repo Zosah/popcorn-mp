@@ -8,6 +8,7 @@ import { clearPageCache } from './page-cache'
 import { refreshPetGateway } from './pet'
 import { refreshReminderGateway } from './reminder'
 import { refreshTodoGateway } from './todo'
+import { refreshTravelGateway } from './travel'
 
 /**
  * 清空当前设备上的全部小程序数据：登录态、Demo 数据、页面配置和缓存。
@@ -25,4 +26,5 @@ export function clearAllLocalData(): void {
   refreshPetGateway()
   refreshReminderGateway()
   refreshTodoGateway()
+  refreshTravelGateway()
 }

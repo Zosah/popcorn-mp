@@ -6,6 +6,7 @@ import { resetDemoPetData } from './demo-pet'
 import { resetDemoReminderSettings } from './demo-reminders'
 import { resetDemoSpaceName } from './demo-space'
 import { resetDemoTodoData } from './demo-todo'
+import { resetDemoTravelData } from './demo-travel'
 import { refreshInventoryGateway } from './inventory'
 import { refreshJournalGateway } from './journal'
 
@@ -20,4 +21,5 @@ export function resetAllDemoData(): void {
   resetDemoSpaceName()
   resetDemoInviteData()
   resetDemoTodoData()
+  resetDemoTravelData()
 }

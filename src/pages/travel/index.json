@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "旅行",
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#fbf8f3",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index",
+    "app-tab-bar": "/components/app-tab-bar/index",
+    "page-loading": "/components/page-loading/index",
+    "auth-preview-gate": "/components/auth-preview-gate/index"
+  }
+}

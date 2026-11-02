@@ -74,7 +74,7 @@ describe('自定义底栏二级功能', () => {
   it('可以直接跳转到旅行与健身等一级功能', () => {
     expect(getAppTabOption('travel')).toMatchObject({
       label: '旅行',
-      path: '/pages/todo/index?kind=travel',
+      path: '/pages/travel/index',
       parentId: 'travel',
     })
     expect(getAppTabOption('fitness')).toMatchObject({
@@ -94,16 +94,16 @@ describe('自定义底栏二级功能', () => {
     expect(
       resolveActiveAppTabItemId(
         items,
-        'pages/todo/index',
-        { kind: 'travel' },
-        'todo',
+        'pages/travel/index',
+        {},
+        'travel',
       ),
     ).toBe('travel')
     expect(
       resolveActiveAppTabItemId(
         items,
-        'pages/todo/index',
-        { kind: 'travel' },
+        'pages/travel/index',
+        {},
         'travel',
       ),
     ).toBe('travel')

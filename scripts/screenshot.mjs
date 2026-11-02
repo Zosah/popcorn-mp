@@ -16,19 +16,8 @@ async function open(url) {
 }
 
 // 截图使用固定的 Demo 种子数据，避免本地操作记录污染视觉验收。
-const profile = await open('/pages/profile/index')
-await miniProgram.mockWxMethod('showModal', { confirm: true, cancel: false })
-await profile.callMethod('onResetDemo')
-await wait(800)
-await miniProgram.restoreWxMethod('showModal')
-await miniProgram.callWxMethod(
-  'removeStorageSync',
-  'popcorn_demo_auth_account_v1',
-)
-await miniProgram.callWxMethod(
-  'removeStorageSync',
-  'popcorn_demo_auth_session_v1',
-)
+await miniProgram.callWxMethod('clearStorageSync')
+await wait(500)
 
 const capture = async (name) => {
   await wait(1800)

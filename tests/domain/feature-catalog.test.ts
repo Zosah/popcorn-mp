@@ -40,7 +40,7 @@ describe('功能注册表', () => {
     expect(getFeatureDefinition('travel')).toMatchObject({
       label: '旅行',
       category: 'life',
-      path: '/pages/todo/index?kind=travel',
+      path: '/pages/travel/index',
       launchMode: 'root',
     })
     expect(getFeatureDefinition('todo')).toMatchObject({

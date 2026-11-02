@@ -669,3 +669,78 @@ export interface ApiReminderSubscription {
 export interface ApiReminderSubscriptionWriteRequest {
   status: Exclude<ApiReminderSubscriptionStatus, 'none'>
 }
+
+export interface ApiTravelTripItem {
+  id: string
+  name: string
+  packed: boolean
+  sortOrder: number
+  templateItemId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiTravelTrip {
+  id: string
+  spaceId: string
+  title: string
+  destination: string
+  departAt: string
+  returnAt: string
+  days: number
+  nights: number
+  note: string
+  items: ApiTravelTripItem[]
+  version: number
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiTravelTripList {
+  items: ApiTravelTrip[]
+}
+
+export interface ApiTravelTripItemWriteRequest {
+  name: string
+  packed: boolean
+}
+
+export interface ApiTravelTripWriteRequest {
+  title: string
+  destination: string
+  departAt: string
+  returnAt: string
+  note: string
+  items: ApiTravelTripItemWriteRequest[]
+}
+
+export interface ApiTravelTemplateItem {
+  id: string
+  name: string
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiTravelTemplate {
+  id: string
+  spaceId: string
+  title: string
+  isDefault: boolean
+  items: ApiTravelTemplateItem[]
+  version: number
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiTravelTemplateList {
+  items: ApiTravelTemplate[]
+}
+
+export interface ApiTravelTemplateWriteRequest {
+  title: string
+  isDefault: boolean
+  items: Array<{ name: string }>
+}

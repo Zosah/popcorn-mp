@@ -61,11 +61,8 @@ async function waitForPage(path, check, label, timeoutMs = 12000) {
 }
 
 async function resetDemo() {
-  const page = await open('/pages/profile/index')
-  await confirmModal()
-  await page.callMethod('onResetDemo')
-  await wait(1000)
-  await restoreModal()
+  await miniProgram.callWxMethod('clearStorageSync')
+  await wait(500)
 }
 
 try {

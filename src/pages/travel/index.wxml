@@ -1,0 +1,232 @@
+<view class="page-shell travel-page">
+  <page-loading show="{{loading && !hasLoaded}}" title="正在收拾行囊" copy="把出发时间和要带的东西放在一起。" />
+  <auth-preview-gate />
+
+  <view
+    class="travel-topbar"
+    style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
+  >
+    <view class="travel-topbar__copy">
+      <text class="travel-topbar__eyebrow">一起去远方</text>
+      <text class="travel-topbar__title">旅行</text>
+    </view>
+    <view wx:if="{{activeTab === 'trips'}}" class="travel-topbar__action" hover-class="travel-topbar__action--pressed" bindtap="onCreateTrip">
+      <line-icon name="plus" size="26" tone="ink" />
+      <text>新建行程</text>
+    </view>
+    <view wx:else class="travel-topbar__action" hover-class="travel-topbar__action--pressed" bindtap="onCreateTemplate">
+      <line-icon name="plus" size="26" tone="ink" />
+      <text>新建清单</text>
+    </view>
+  </view>
+
+  <view class="travel-hero">
+    <view class="travel-hero__copy">
+      <text class="travel-hero__kicker">{{activeTab === 'trips' ? '下一程，慢慢准备' : '少带漏带，都从日常开始'}}</text>
+      <text class="travel-hero__title">{{activeTab === 'trips' ? '把出发这件小事，安顿好' : '常用物品，一次收进清单'}}</text>
+      <text class="travel-hero__meta">{{activeTab === 'trips' ? tripCount + ' 段旅程 · ' + upcomingCount + ' 段待出发' : templateCount + ' 份清单 · 随取随用'}}</text>
+    </view>
+    <view class="travel-hero__scene" aria-hidden="true">
+      <view class="travel-hero__sun"></view>
+      <view class="travel-hero__cloud travel-hero__cloud--one"></view>
+      <view class="travel-hero__cloud travel-hero__cloud--two"></view>
+      <view class="travel-hero__route"></view>
+      <view class="travel-hero__plane"><line-icon name="plane" size="54" tone="blue" /></view>
+      <view class="travel-hero__stamp">{{activeTab === 'trips' ? 'GO' : 'PACK'}}</view>
+    </view>
+  </view>
+
+  <view class="travel-tabs" role="tablist">
+    <view class="travel-tab {{activeTab === 'trips' ? 'travel-tab--active' : ''}}" data-value="trips" bindtap="onSwitchTab">
+      <line-icon name="plane" size="24" tone="{{activeTab === 'trips' ? 'ink' : 'muted'}}" />
+      <text>出行</text>
+      <text class="travel-tab__count">{{tripCount}}</text>
+    </view>
+    <view class="travel-tab {{activeTab === 'templates' ? 'travel-tab--active' : ''}}" data-value="templates" bindtap="onSwitchTab">
+      <line-icon name="package" size="24" tone="{{activeTab === 'templates' ? 'ink' : 'muted'}}" />
+      <text>必备清单</text>
+      <text class="travel-tab__count">{{templateCount}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading && hasLoaded}}" class="travel-inline-loading">
+    <view></view><view></view><view></view>
+    <text>正在更新</text>
+  </view>
+
+  <view wx:if="{{loadError && !tripCount && !templateCount}}" class="travel-empty travel-empty--error">
+    <view class="travel-empty__mark"><line-icon name="circle-alert" size="38" tone="orange" /></view>
+    <text class="travel-empty__title">还没把旅程接回来</text>
+    <text class="travel-empty__copy">{{loadError}}</text>
+    <view class="travel-empty__action" bindtap="onRetryLoad">再试一次</view>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{activeTab === 'trips'}}" class="travel-content">
+      <view wx:if="{{!tripGroups.length && !loading}}" class="travel-empty">
+        <view class="travel-empty__postcard">
+          <line-icon name="plane" size="54" tone="blue" />
+          <view class="travel-empty__line"></view>
+          <view class="travel-empty__line travel-empty__line--short"></view>
+        </view>
+        <text class="travel-empty__title">下一程还没有写下来</text>
+        <text class="travel-empty__copy">先记出发和返回时间，再慢慢补上要带的东西。</text>
+        <view class="travel-empty__action" bindtap="onCreateTrip">新建一段行程</view>
+      </view>
+
+      <view wx:for="{{tripGroups}}" wx:key="key" class="travel-group">
+        <view class="travel-group__head">
+          <view class="travel-group__title-row">
+            <text class="travel-group__title">{{item.label}}</text>
+            <text class="travel-group__count">{{item.items.length}}</text>
+          </view>
+          <text class="travel-group__hint">{{item.hint}}</text>
+        </view>
+
+        <view
+          wx:for="{{item.items}}"
+          wx:for-item="trip"
+          wx:key="id"
+          class="trip-ticket trip-ticket--{{trip.status}}"
+          data-id="{{trip.id}}"
+          bindtap="onOpenTrip"
+        >
+          <view class="trip-ticket__spine"></view>
+          <view class="trip-ticket__head">
+            <text class="trip-ticket__status">{{trip.statusLabel}}</text>
+            <text class="trip-ticket__duration">{{trip.durationLabel}}</text>
+          </view>
+          <view class="trip-ticket__body">
+            <view class="trip-ticket__title-wrap">
+              <text class="trip-ticket__title">{{trip.title}}</text>
+              <text wx:if="{{trip.destination}}" class="trip-ticket__destination">{{trip.destination}}</text>
+            </view>
+            <view class="trip-ticket__date-row">
+              <line-icon name="calendar-days" size="24" tone="muted" />
+              <text>{{trip.dateRange}}</text>
+            </view>
+          </view>
+          <view class="trip-ticket__perforation"></view>
+          <view class="trip-ticket__foot">
+            <view class="trip-ticket__packing">
+              <view class="trip-ticket__packing-head">
+                <text>行李</text>
+                <text>{{trip.packedCount}} / {{trip.itemCount}}</text>
+              </view>
+              <view class="trip-ticket__track">
+                <view class="trip-ticket__fill" style="width: {{trip.packingPercent}}%"></view>
+              </view>
+              <text class="trip-ticket__preview">{{trip.itemPreview}}</text>
+            </view>
+            <view class="trip-ticket__copy" data-id="{{trip.id}}" catchtap="onCopyTrip">
+              <line-icon name="rotate-ccw" size="22" tone="accent" />
+              <text>复制</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="travel-content travel-content--templates">
+      <view wx:if="{{!templateViews.length && !loading}}" class="travel-empty">
+        <view class="travel-empty__mark"><line-icon name="package" size="40" tone="gold" /></view>
+        <text class="travel-empty__title">先收一份自己的必备清单</text>
+        <text class="travel-empty__copy">下次出发时，一键带进本次行程，再按需要删减。</text>
+        <view class="travel-empty__action" bindtap="onCreateTemplate">整理第一份清单</view>
+      </view>
+
+      <view
+        wx:for="{{templateViews}}"
+        wx:key="id"
+        class="template-card {{item.isDefault ? 'template-card--default' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="onEditTemplate"
+      >
+        <view class="template-card__tab"></view>
+        <view class="template-card__head">
+          <view class="template-card__mark"><line-icon name="package" size="32" tone="gold" /></view>
+          <view class="template-card__title-wrap">
+            <view class="template-card__title-row">
+              <text class="template-card__title">{{item.title}}</text>
+              <text wx:if="{{item.isDefault}}" class="template-card__default">默认</text>
+            </view>
+            <text class="template-card__count">{{item.itemCount}} 件常用物品</text>
+          </view>
+          <text class="template-card__edit">整理</text>
+        </view>
+        <text class="template-card__preview">{{item.itemPreview}}</text>
+        <view class="template-card__foot">
+          <text>出发时带入本次行程，不影响这份清单</text>
+          <text class="template-card__arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{templateEditorOpen}}" class="template-sheet-mask" catchtap="onCloseTemplateEditor">
+    <view class="template-sheet" catchtap="noop">
+      <view class="template-sheet__handle"></view>
+      <view class="template-sheet__head">
+        <view>
+          <text class="template-sheet__eyebrow">{{templateDraft.id ? '整理清单' : '新清单'}}</text>
+          <text class="template-sheet__title">{{templateDraft.id ? '改一改常用物品' : '以后出发，带上这些'}}</text>
+        </view>
+        <view class="template-sheet__close" bindtap="onCloseTemplateEditor">关闭</view>
+      </view>
+
+      <view class="template-sheet__body">
+        <view class="template-field">
+          <text class="template-field__label">清单名称</text>
+          <input
+            class="template-field__input"
+            value="{{templateDraft.title}}"
+            maxlength="40"
+            placeholder="例如：短途旅行必备"
+            bindinput="onTemplateTitleInput"
+            placeholder-class="app-input-placeholder"
+          />
+        </view>
+
+        <view class="template-default-row">
+          <view class="template-default-row__copy">
+            <text>设为默认清单</text>
+            <text>带入时优先排在最前面</text>
+          </view>
+          <switch checked="{{templateDraft.isDefault}}" color="#668478" bindchange="onToggleTemplateDefault" />
+        </view>
+
+        <view class="template-items-head">
+          <text>要带的物品</text>
+          <text>{{templateDraft.items.length}} 项</text>
+        </view>
+        <view class="template-items">
+          <view wx:for="{{templateDraft.items}}" wx:key="index" class="template-item-row">
+            <text class="template-item-row__index">{{index + 1}}</text>
+            <input
+              class="template-item-row__input"
+              value="{{item}}"
+              maxlength="60"
+              placeholder="例如：身份证"
+              data-index="{{index}}"
+              bindinput="onTemplateItemInput"
+              placeholder-class="app-input-placeholder"
+            />
+            <view class="template-item-row__remove" data-index="{{index}}" bindtap="onRemoveTemplateItem">移除</view>
+          </view>
+        </view>
+        <view class="template-add-item" bindtap="onAddTemplateItem">
+          <line-icon name="plus" size="22" tone="green" />
+          <text>再加一项</text>
+        </view>
+      </view>
+
+      <view class="template-sheet__foot">
+        <view wx:if="{{templateDraft.id}}" class="template-sheet__delete" bindtap="onDeleteTemplate">{{templateDeleting ? '删除中…' : '删除清单'}}</view>
+        <view wx:else></view>
+        <view class="template-sheet__save {{templateSaving ? 'template-sheet__save--busy' : ''}}" bindtap="onSaveTemplate">{{templateSaving ? '保存中…' : '保存'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <app-tab-bar active="travel" />
+</view>

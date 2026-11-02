@@ -1,0 +1,172 @@
+<view class="travel-form-page">
+  <page-loading show="{{loading}}" title="正在打开行程" copy="把原来安排的内容取回来。" />
+  <auth-preview-gate />
+
+  <view class="travel-form-hero">
+    <view class="travel-form-hero__body">
+      <text class="travel-form-hero__eyebrow">{{mode === 'copy' ? '复制后可以重新改时间' : mode === 'edit' ? '重新安排这一程' : '先把时间定下来'}}</text>
+      <text class="travel-form-hero__title">{{heroTitle}}</text>
+      <view class="travel-form-hero__duration">
+        <line-icon name="clock-3" size="22" tone="green" />
+        <text>{{durationLabel}}</text>
+      </view>
+    </view>
+    <view class="travel-form-hero__art" aria-hidden="true">
+      <view class="travel-form-hero__ground"></view>
+      <view class="travel-form-hero__bag">
+        <view class="travel-form-hero__handle"></view>
+        <view class="travel-form-hero__tag">POP</view>
+      </view>
+      <view class="travel-form-hero__ticket">
+        <view></view><view></view><view></view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loadError}}" class="travel-form-error">
+    <view class="travel-form-error__icon"><line-icon name="circle-alert" size="36" tone="orange" /></view>
+    <text class="travel-form-error__title">行程没有打开</text>
+    <text class="travel-form-error__copy">{{loadError}}</text>
+    <view class="travel-form-error__action" bindtap="onRetryLoad">再试一次</view>
+  </view>
+
+  <block wx:else>
+    <view class="travel-form-card">
+      <view class="travel-form-field travel-form-field--lead">
+        <text class="travel-form-label">这次出行</text>
+        <input
+          class="travel-form-input travel-form-input--lead"
+          value="{{form.title}}"
+          maxlength="60"
+          placeholder="例如：去杭州过个周末"
+          bindinput="onTitleInput"
+          placeholder-class="app-input-placeholder"
+        />
+      </view>
+      <view class="travel-form-field travel-form-field--last">
+        <text class="travel-form-label">目的地</text>
+        <input
+          class="travel-form-input"
+          value="{{form.destination}}"
+          maxlength="80"
+          placeholder="例如：杭州"
+          bindinput="onDestinationInput"
+          placeholder-class="app-input-placeholder"
+        />
+      </view>
+    </view>
+
+    <view class="travel-form-card travel-time-card">
+      <view class="travel-time-block">
+        <view class="travel-time-block__head">
+          <view class="travel-time-block__mark travel-time-block__mark--depart">
+            <line-icon name="plane" size="25" tone="green" />
+          </view>
+          <view>
+            <text class="travel-time-block__title">出发</text>
+            <text class="travel-time-block__copy">从这里开始算旅程</text>
+          </view>
+        </view>
+        <view class="travel-time-pickers">
+          <picker mode="date" value="{{form.departDate}}" data-kind="depart" bindchange="onDateChange">
+            <view class="travel-time-picker {{form.departDate ? 'travel-time-picker--filled' : ''}}">
+              <text class="travel-time-picker__label">日期</text>
+              <text>{{form.departDate || '选择日期'}}</text>
+            </view>
+          </picker>
+          <picker mode="time" value="{{form.departTime}}" data-kind="depart" bindchange="onTimeChange">
+            <view class="travel-time-picker {{form.departTime ? 'travel-time-picker--filled' : ''}}">
+              <text class="travel-time-picker__label">时间</text>
+              <text>{{form.departTime || '选择时间'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="travel-time-divider">
+        <view class="travel-time-divider__line"></view>
+        <view class="travel-time-divider__duration">{{durationLabel}}</view>
+        <view class="travel-time-divider__line"></view>
+      </view>
+
+      <view class="travel-time-block travel-time-block--return">
+        <view class="travel-time-block__head">
+          <view class="travel-time-block__mark travel-time-block__mark--return">
+            <line-icon name="house" size="25" tone="pink" />
+          </view>
+          <view>
+            <text class="travel-time-block__title">返回</text>
+            <text class="travel-time-block__copy">同一天回来也可以</text>
+          </view>
+        </view>
+        <view class="travel-time-pickers">
+          <picker mode="date" value="{{form.returnDate}}" data-kind="return" bindchange="onDateChange">
+            <view class="travel-time-picker {{form.returnDate ? 'travel-time-picker--filled' : ''}}">
+              <text class="travel-time-picker__label">日期</text>
+              <text>{{form.returnDate || '选择日期'}}</text>
+            </view>
+          </picker>
+          <picker mode="time" value="{{form.returnTime}}" data-kind="return" bindchange="onTimeChange">
+            <view class="travel-time-picker {{form.returnTime ? 'travel-time-picker--filled' : ''}}">
+              <text class="travel-time-picker__label">时间</text>
+              <text>{{form.returnTime || '选择时间'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="travel-form-card travel-items-card">
+      <view class="travel-items-card__head">
+        <view>
+          <text class="travel-items-card__title">这次要带</text>
+          <text class="travel-items-card__copy">{{mode === 'edit' ? '物品在行程详情里继续勾选和调整' : '先随手记，之后还可以从必备清单带入'}}</text>
+        </view>
+        <text class="travel-items-card__count">{{items.length}} 件</text>
+      </view>
+
+      <view wx:if="{{items.length}}" class="travel-draft-items">
+        <view wx:for="{{items}}" wx:key="name" class="travel-draft-item">
+          <view class="travel-draft-item__dot"></view>
+          <text class="travel-draft-item__name">{{item.name}}</text>
+          <view wx:if="{{mode !== 'edit'}}" class="travel-draft-item__remove" data-index="{{index}}" bindtap="onRemoveItem">移除</view>
+        </view>
+      </view>
+      <view wx:else class="travel-items-empty">还没有放物品，可以先保存行程再来整理。</view>
+
+      <view wx:if="{{mode !== 'edit'}}" class="travel-add-item">
+        <input
+          class="travel-add-item__input"
+          value="{{itemInput}}"
+          maxlength="60"
+          placeholder="例如：身份证、充电器"
+          bindinput="onItemInput"
+          bindconfirm="onAddItem"
+          confirm-type="done"
+          placeholder-class="app-input-placeholder"
+        />
+        <view class="travel-add-item__button" bindtap="onAddItem">加入</view>
+      </view>
+    </view>
+
+    <view class="travel-form-card travel-note-card">
+      <text class="travel-form-label">备注</text>
+      <textarea
+        class="travel-note-input"
+        value="{{form.note}}"
+        maxlength="500"
+        auto-height
+        placeholder="住宿、同行的人，或者容易忘掉的安排"
+        bindinput="onNoteInput"
+        placeholder-class="app-input-placeholder"
+      />
+    </view>
+  </block>
+
+  <view class="travel-form-footer">
+    <button class="travel-form-save {{saving ? 'travel-form-save--busy' : ''}}" bindtap="onSave">
+      <line-icon name="check" size="25" tone="white" />
+      <text>{{saving ? '保存中…' : mode === 'edit' ? '保存修改' : mode === 'copy' ? '创建复制行程' : '保存行程'}}</text>
+    </button>
+  </view>
+</view>

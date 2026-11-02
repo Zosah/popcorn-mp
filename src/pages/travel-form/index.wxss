@@ -1,0 +1,514 @@
+.travel-form-page {
+  --form-ink: #252b27;
+  --form-ink-2: #5f5a53;
+  --form-ink-3: #837f76;
+  --form-line: rgba(226, 219, 209, 0.82);
+  --form-green: #668478;
+  --form-green-soft: #e2eee9;
+  --form-pink: #c67d6d;
+  --form-pink-soft: #f7e7e2;
+  min-height: 100vh;
+  padding: 24rpx 32rpx calc(176rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.travel-form-hero {
+  position: relative;
+  display: flex;
+  min-height: 238rpx;
+  overflow: hidden;
+  padding: 31rpx 26rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.94);
+  border-radius: 38rpx;
+  background:
+    radial-gradient(circle at 90% 0, rgba(247, 231, 226, 0.86), transparent 36%),
+    linear-gradient(140deg, rgba(255, 252, 247, 0.96), rgba(241, 244, 239, 0.84));
+  box-shadow: 0 22rpx 55rpx -40rpx rgba(73, 59, 46, 0.4);
+  box-sizing: border-box;
+}
+
+.travel-form-hero__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 67%;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.travel-form-hero__eyebrow {
+  color: #a76557;
+  font-size: 21rpx;
+  font-weight: 680;
+  letter-spacing: 0.8rpx;
+}
+
+.travel-form-hero__title {
+  margin-top: 11rpx;
+  color: var(--form-ink);
+  font-family: var(--font-serif);
+  font-size: 40rpx;
+  font-weight: 760;
+  letter-spacing: -1rpx;
+  line-height: 1.4;
+}
+
+.travel-form-hero__duration {
+  display: flex;
+  align-items: center;
+  margin-top: 22rpx;
+  padding: 9rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(226, 238, 233, 0.84);
+  color: #4f6e5d;
+  font-size: 22rpx;
+  font-weight: 680;
+  gap: 7rpx;
+}
+
+.travel-form-hero__art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 230rpx;
+  height: 100%;
+}
+
+.travel-form-hero__ground {
+  position: absolute;
+  right: 23rpx;
+  bottom: 24rpx;
+  width: 175rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: rgba(102, 132, 120, 0.11);
+}
+
+.travel-form-hero__bag {
+  position: absolute;
+  right: 75rpx;
+  bottom: 52rpx;
+  width: 93rpx;
+  height: 105rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.92);
+  border-radius: 24rpx 24rpx 27rpx 27rpx;
+  background: linear-gradient(145deg, #d6e6de, #aecbbb);
+  box-shadow: 0 17rpx 31rpx -24rpx rgba(70, 90, 78, 0.7);
+  transform: rotate(-4deg);
+}
+
+.travel-form-hero__handle {
+  position: absolute;
+  top: -18rpx;
+  left: 22rpx;
+  width: 44rpx;
+  height: 30rpx;
+  border: 7rpx solid #a4c1b2;
+  border-bottom: 0;
+  border-radius: 19rpx 19rpx 0 0;
+  box-sizing: border-box;
+}
+
+.travel-form-hero__tag {
+  position: absolute;
+  right: 12rpx;
+  bottom: 14rpx;
+  padding: 3rpx 7rpx;
+  border-radius: 7rpx;
+  background: rgba(255, 250, 243, 0.82);
+  color: rgba(76, 101, 87, 0.72);
+  font-family: var(--font-serif);
+  font-size: 14rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+
+.travel-form-hero__ticket {
+  position: absolute;
+  top: 35rpx;
+  right: 21rpx;
+  width: 82rpx;
+  height: 61rpx;
+  padding: 15rpx 12rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 15rpx;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12rpx 26rpx -20rpx rgba(72, 61, 47, 0.45);
+  box-sizing: border-box;
+  transform: rotate(9deg);
+}
+
+.travel-form-hero__ticket view {
+  height: 4rpx;
+  margin-bottom: 7rpx;
+  border-radius: 999rpx;
+  background: rgba(198, 125, 109, 0.45);
+}
+
+.travel-form-hero__ticket view:nth-child(2) { width: 78%; background: rgba(102, 132, 120, 0.45); }
+.travel-form-hero__ticket view:nth-child(3) { width: 56%; background: rgba(170, 160, 149, 0.4); }
+
+.travel-form-card {
+  overflow: hidden;
+  margin-top: 17rpx;
+  padding: 0 22rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 29rpx;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow:
+    0 13rpx 31rpx -29rpx rgba(73, 59, 47, 0.48),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16rpx);
+  -webkit-backdrop-filter: blur(16rpx);
+}
+
+.travel-form-field {
+  padding: 19rpx 0;
+  border-bottom: 1rpx solid var(--form-line);
+}
+
+.travel-form-field--lead {
+  padding-top: 23rpx;
+}
+
+.travel-form-field--last {
+  border-bottom: 0;
+}
+
+.travel-form-label {
+  display: block;
+  color: var(--form-ink-3);
+  font-size: 22rpx;
+  font-weight: 530;
+}
+
+.travel-form-input {
+  height: 59rpx;
+  margin-top: 3rpx;
+  color: var(--form-ink);
+  font-size: 29rpx;
+  font-weight: 650;
+}
+
+.travel-form-input--lead {
+  height: 66rpx;
+  font-size: 34rpx;
+}
+
+.travel-time-card {
+  padding: 22rpx;
+}
+
+.travel-time-block__head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.travel-time-block__mark {
+  display: flex;
+  width: 51rpx;
+  height: 51rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17rpx;
+  flex-shrink: 0;
+}
+
+.travel-time-block__mark--depart {
+  background: var(--form-green-soft);
+}
+
+.travel-time-block__mark--return {
+  background: var(--form-pink-soft);
+}
+
+.travel-time-block__title {
+  display: block;
+  color: var(--form-ink);
+  font-family: var(--font-serif);
+  font-size: 27rpx;
+  font-weight: 720;
+  line-height: 1.25;
+}
+
+.travel-time-block__copy {
+  display: block;
+  margin-top: 2rpx;
+  color: var(--form-ink-3);
+  font-size: 19rpx;
+}
+
+.travel-time-pickers {
+  display: grid;
+  margin-top: 13rpx;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9rpx;
+}
+
+.travel-time-picker {
+  display: flex;
+  min-height: 72rpx;
+  justify-content: center;
+  padding: 11rpx 13rpx;
+  border: 1rpx dashed rgba(211, 202, 191, 0.92);
+  border-radius: 18rpx;
+  background: rgba(249, 246, 241, 0.82);
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.travel-time-picker--filled {
+  border-style: solid;
+  border-color: rgba(102, 132, 120, 0.2);
+  background: rgba(240, 246, 242, 0.78);
+}
+
+.travel-time-picker__label {
+  color: var(--form-ink-3);
+  font-size: 18rpx;
+}
+
+.travel-time-picker text:last-child {
+  margin-top: 2rpx;
+  color: var(--form-ink);
+  font-size: 24rpx;
+  font-weight: 650;
+}
+
+.travel-time-divider {
+  display: flex;
+  align-items: center;
+  padding: 19rpx 4rpx 17rpx;
+  gap: 11rpx;
+}
+
+.travel-time-divider__line {
+  height: 1rpx;
+  background: var(--form-line);
+  flex: 1;
+}
+
+.travel-time-divider__duration {
+  padding: 5rpx 11rpx;
+  border-radius: 999rpx;
+  background: #f5eee1;
+  color: #926f36;
+  font-size: 19rpx;
+  font-weight: 680;
+}
+
+.travel-time-block--return .travel-time-block__head {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.travel-time-block--return .travel-time-block__mark {
+  order: 0;
+}
+
+.travel-items-card {
+  padding-top: 21rpx;
+  padding-bottom: 20rpx;
+}
+
+.travel-items-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.travel-items-card__title {
+  display: block;
+  color: var(--form-ink);
+  font-family: var(--font-serif);
+  font-size: 29rpx;
+  font-weight: 730;
+}
+
+.travel-items-card__copy {
+  display: block;
+  margin-top: 4rpx;
+  color: var(--form-ink-3);
+  font-size: 20rpx;
+  line-height: 1.5;
+}
+
+.travel-items-card__count {
+  padding: 6rpx 11rpx;
+  border-radius: 999rpx;
+  background: var(--form-green-soft);
+  color: #587564;
+  flex-shrink: 0;
+  font-size: 19rpx;
+  font-weight: 680;
+}
+
+.travel-draft-items {
+  display: flex;
+  margin-top: 14rpx;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.travel-draft-item {
+  display: flex;
+  min-height: 48rpx;
+  align-items: center;
+  padding: 0 10rpx 0 12rpx;
+  border: 1rpx solid rgba(223, 215, 205, 0.8);
+  border-radius: 999rpx;
+  background: rgba(250, 248, 244, 0.9);
+  gap: 6rpx;
+}
+
+.travel-draft-item__dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: var(--form-green);
+}
+
+.travel-draft-item__name {
+  color: var(--form-ink-2);
+  font-size: 22rpx;
+}
+
+.travel-draft-item__remove {
+  padding-left: 2rpx;
+  color: #b56d5f;
+  font-size: 18rpx;
+}
+
+.travel-items-empty {
+  margin-top: 14rpx;
+  padding: 15rpx 16rpx;
+  border-radius: 17rpx;
+  background: rgba(247, 243, 237, 0.82);
+  color: var(--form-ink-3);
+  font-size: 21rpx;
+}
+
+.travel-add-item {
+  display: flex;
+  height: 72rpx;
+  align-items: center;
+  margin-top: 12rpx;
+  padding: 0 7rpx 0 15rpx;
+  border: 1rpx solid rgba(215, 207, 196, 0.86);
+  border-radius: 20rpx;
+  background: #fff;
+  gap: 8rpx;
+}
+
+.travel-add-item__input {
+  height: 64rpx;
+  color: var(--form-ink);
+  flex: 1;
+  font-size: 25rpx;
+}
+
+.travel-add-item__button {
+  padding: 10rpx 15rpx;
+  border-radius: 14rpx;
+  background: var(--form-green-soft);
+  color: #4e6d5c;
+  flex-shrink: 0;
+  font-size: 21rpx;
+  font-weight: 680;
+}
+
+.travel-note-card {
+  padding: 21rpx 22rpx 19rpx;
+}
+
+.travel-note-input {
+  width: 100%;
+  min-height: 110rpx;
+  margin-top: 8rpx;
+  color: var(--form-ink);
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+.travel-form-error {
+  display: flex;
+  margin-top: 20rpx;
+  padding: 50rpx 24rpx;
+  align-items: center;
+  border: 1rpx solid rgba(198, 125, 109, 0.2);
+  border-radius: 30rpx;
+  background: rgba(255, 249, 247, 0.82);
+  flex-direction: column;
+  text-align: center;
+}
+
+.travel-form-error__icon {
+  display: flex;
+  width: 76rpx;
+  height: 76rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24rpx;
+  background: var(--form-pink-soft);
+}
+
+.travel-form-error__title {
+  margin-top: 15rpx;
+  color: var(--form-ink);
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.travel-form-error__copy {
+  margin-top: 6rpx;
+  color: var(--form-ink-3);
+  font-size: 22rpx;
+  line-height: 1.55;
+}
+
+.travel-form-error__action {
+  margin-top: 17rpx;
+  padding: 11rpx 20rpx;
+  border-radius: 999rpx;
+  background: var(--form-green-soft);
+  color: #4e6d5c;
+  font-size: 22rpx;
+  font-weight: 680;
+}
+
+.travel-form-footer {
+  position: fixed;
+  z-index: 850;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 15rpx 32rpx calc(15rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid rgba(229, 222, 212, 0.82);
+  background: rgba(252, 249, 244, 0.94);
+  backdrop-filter: blur(22rpx);
+  -webkit-backdrop-filter: blur(22rpx);
+}
+
+.travel-form-save {
+  display: flex;
+  width: 100%;
+  height: 86rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 26rpx;
+  background: var(--form-ink);
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+  gap: 8rpx;
+}
+
+.travel-form-save::after {
+  border: 0;
+}
+
+.travel-form-save--busy {
+  opacity: 0.58;
+}

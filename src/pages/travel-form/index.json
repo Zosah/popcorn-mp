@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "新建行程",
+  "backgroundColor": "#fbf8f3",
+  "usingComponents": {
+    "line-icon": "/components/line-icon/index",
+    "page-loading": "/components/page-loading/index",
+    "auth-preview-gate": "/components/auth-preview-gate/index"
+  }
+}

@@ -4,6 +4,7 @@ import {
   type PetDailySummaryItem,
 } from '../../domain/demo-pet'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import { formatTravelCardDate, resolveTravelTripStatus } from '../../domain/travel'
 import {
   getFeatureDefinition,
   type FeatureDefinition,
@@ -19,6 +20,8 @@ import { todoGateway } from '../../services/todo'
 import type { TodoItem, TodoSummary } from '../../services/todo-gateway'
 import type { SpaceMembersResult } from '../../services/space-gateway'
 import { activePetFrom } from '../../services/pet-gateway'
+import { travelGateway } from '../../services/travel'
+import type { TravelTrip } from '../../services/travel-gateway'
 import { readPageCache, writePageCache } from '../../services/page-cache'
 import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
@@ -54,7 +57,7 @@ interface ProfileSnapshot {
 }
 
 const profileRequestGate = createRequestGate()
-const PROFILE_PAGE_CACHE_KEY = 'profile:overview:v3'
+const PROFILE_PAGE_CACHE_KEY = 'profile:overview:v4'
 const EMPTY_SNAPSHOT: ProfileSnapshot = {
   memberCount: 0,
   journalTotal: 0,
@@ -126,7 +129,7 @@ function buildPlanFeatures(snapshot: ProfileSnapshot): ProfileFeatureCard[] {
   const travelCopy = snapshot.travelDestination
     ? `${snapshot.travelDestination}${snapshot.travelDueDate ? ` · ${snapshot.travelDueDate}` : ''}`
     : snapshot.travelPending
-      ? `${snapshot.travelPending} 项待准备`
+      ? `${snapshot.travelPending} 段行程待出发`
       : '计划下一程'
   return [
     buildFeatureCard(
@@ -159,11 +162,6 @@ function formatMoney(value: number): string {
   return Number.isInteger(value)
     ? String(value)
     : value.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
-}
-
-function formatMonthDay(value: string): string {
-  const [, month, day] = value.split('-').map(Number)
-  return month && day ? `${month}/${day}` : value
 }
 
 function getMonday(today: string): string {
@@ -199,15 +197,11 @@ function buildTodoSnapshot(
   today: string,
 ): Pick<
   ProfileSnapshot,
-  'todoCompleted' | 'todoPending' | 'expenseMonthTotal' | 'fitnessWeekCount' | 'travelDestination' | 'travelDueDate' | 'travelPending'
+  'todoCompleted' | 'todoPending' | 'expenseMonthTotal' | 'fitnessWeekCount'
 > {
   const monthPrefix = today.slice(0, 7)
   const weekStart = getMonday(today)
   const pendingTodos = todos.filter((item) => !item.done)
-  const pendingTravel = pendingTodos
-    .filter((item) => item.kind === 'travel')
-    .sort((left, right) => (left.dueDate || '9999-12-31').localeCompare(right.dueDate || '9999-12-31'))
-  const firstTravel = pendingTravel[0]
   const expenseMonthTotal = todos
     .filter((item) => item.kind === 'expense')
     .filter((item) => getShanghaiDateOnly(Date.parse(item.createdAt)).startsWith(`${monthPrefix}-`))
@@ -224,9 +218,31 @@ function buildTodoSnapshot(
     todoPending: summary?.pending ?? pendingTodos.length,
     expenseMonthTotal: Math.round(expenseMonthTotal * 100) / 100,
     fitnessWeekCount,
-    travelDestination: firstTravel?.destination || '',
-    travelDueDate: firstTravel?.dueDate ? formatMonthDay(firstTravel.dueDate) : '',
-    travelPending: pendingTravel.length,
+  }
+}
+
+function buildTravelSnapshot(
+  trips: TravelTrip[],
+  now = Date.now(),
+): Pick<ProfileSnapshot, 'travelDestination' | 'travelDueDate' | 'travelPending'> {
+  const traveling = trips
+    .filter((trip) => resolveTravelTripStatus(trip.departAt, trip.returnAt, now) === 'traveling')
+    .sort((left, right) => Date.parse(left.returnAt) - Date.parse(right.returnAt))
+  const upcoming = trips
+    .filter((trip) => resolveTravelTripStatus(trip.departAt, trip.returnAt, now) === 'upcoming')
+    .sort((left, right) => Date.parse(left.departAt) - Date.parse(right.departAt))
+  const firstTrip = traveling[0] || upcoming[0]
+  if (!firstTrip) {
+    return {
+      travelDestination: '',
+      travelDueDate: '',
+      travelPending: 0,
+    }
+  }
+  return {
+    travelDestination: firstTrip.destination.trim() || firstTrip.title,
+    travelDueDate: traveling.length ? '正在途中' : formatTravelCardDate(firstTrip.departAt),
+    travelPending: upcoming.length,
   }
 }
 
@@ -382,6 +398,7 @@ Page({
       menuResult,
       petResult,
       membersResult,
+      travelResult,
     ] = await Promise.allSettled([
       inventoryGateway.summary(today),
       journalGateway.summary(),
@@ -392,6 +409,7 @@ Page({
       auth.source === 'api' && auth.activeSpaceId
         ? listApiSpaceMembers(auth.activeSpaceId)
         : Promise.resolve(null),
+      travelGateway.listTrips(),
     ])
     if (!profileRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
@@ -418,6 +436,8 @@ Page({
       ? buildPetDailySummary(activePet.dailyLogs, today)
       : []
     const todoSnapshot = buildTodoSnapshot(todos, todoSummary, today)
+    const trips = travelResult.status === 'fulfilled' ? travelResult.value : []
+    const travelSnapshot = buildTravelSnapshot(trips)
 
     const currentSnapshot: ProfileSnapshot = {
       memberCount: this.data.memberCount,
@@ -451,6 +471,9 @@ Page({
     } else if (todoSummary) {
       partial.todoCompleted = todoSummary.completed
       partial.todoPending = todoSummary.pending
+    }
+    if (travelResult.status === 'fulfilled') {
+      Object.assign(partial, travelSnapshot)
     }
     const snapshot = pickSnapshotValue(currentSnapshot, partial)
 
