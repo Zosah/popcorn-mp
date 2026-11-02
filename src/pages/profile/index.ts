@@ -5,7 +5,6 @@ import {
 } from '../../domain/demo-pet'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import {
-  getFeatureCategoryGroups,
   getFeatureDefinition,
   type FeatureDefinition,
 } from '../../domain/feature-catalog'
@@ -55,7 +54,7 @@ interface ProfileSnapshot {
 }
 
 const profileRequestGate = createRequestGate()
-const PROFILE_PAGE_CACHE_KEY = 'profile:overview:v2'
+const PROFILE_PAGE_CACHE_KEY = 'profile:overview:v3'
 const EMPTY_SNAPSHOT: ProfileSnapshot = {
   memberCount: 0,
   journalTotal: 0,
@@ -270,8 +269,7 @@ Page({
     travelDestination: '',
     travelDueDate: '',
     travelPending: 0,
-    featureCount: getFeatureCategoryGroups('list')
-      .reduce((total, group) => total + group.items.length, 0),
+    featureCount: 4,
     dailyFeatures: buildDailyFeatures(EMPTY_SNAPSHOT) as ProfileFeatureCard[],
     planFeatures: buildPlanFeatures(EMPTY_SNAPSHOT) as ProfileFeatureCard[],
     statusBarHeight: 20,
@@ -338,11 +336,11 @@ Page({
     const avatarMediaId = loggedInUser?.avatarMediaId ?? ''
     const displayName = loggedInUser?.nickname || (isLoggedIn ? '待完善资料' : '还没有登录')
     const spaceName = auth.spaceName || '我们的共同空间'
-    const shortDisplayName = isLoggedIn
-      ? displayName.replace(/[（(].*$/, '').slice(0, 3)
+    const spaceDisplayName = isLoggedIn
+      ? displayName.replace(/[（(].*$/, '')
       : ''
     const spaceEyebrow = isLoggedIn
-      ? `${shortDisplayName || '我们'}的共同空间`
+      ? `${spaceDisplayName || '我们'}的共同空间`
       : '把普通日子安放在一起'
     const spaceRelationship = togetherDays !== null
       ? `在一起生活的第 ${togetherDays} 天`
@@ -494,6 +492,7 @@ Page({
       travelDestination: snapshot.travelDestination,
       travelDueDate: snapshot.travelDueDate,
       travelPending: snapshot.travelPending,
+      featureCount: 4,
       dailyFeatures: buildDailyFeatures(snapshot),
       planFeatures: buildPlanFeatures(snapshot),
     }
