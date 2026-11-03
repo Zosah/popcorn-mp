@@ -37,17 +37,17 @@
 .calendar-cell--muted { color: #c9c1b8; }
 .calendar-cell--today { border: 1rpx solid #efc2ca; color: var(--c-primary-link, #b86757); font-weight: 700; }
 .calendar-cell--today::after { position: absolute; bottom: 7rpx; left: 50%; width: 5rpx; height: 5rpx; border-radius: 50%; background: var(--calendar-pink); content: ""; transform: translateX(-50%); }
-.calendar-cell--selected { background: var(--calendar-deep); color: #ffffff; font-weight: 700; }
+.calendar-cell--selected { border: 1rpx solid #efc2ca; background: var(--calendar-pink-soft); color: var(--c-primary-link, #b86757); font-weight: 700; }
 .calendar-cell--selected::after { display: none; }
 .calendar-cell__dot { position: absolute; top: 6rpx; right: 8rpx; display: flex; min-width: 21rpx; height: 21rpx; align-items: center; justify-content: center; padding: 0 3rpx; border-radius: 999rpx; background: var(--calendar-pink); box-sizing: border-box; color: #fff; font-size: 15rpx; }
-.calendar-cell--selected .calendar-cell__dot { background: #ffffff; color: var(--calendar-deep); }
+.calendar-cell--selected .calendar-cell__dot { background: var(--calendar-pink); color: #ffffff; }
 
 .calendar-events-head { display: flex; align-items: flex-end; justify-content: space-between; margin: 30rpx 4rpx 12rpx; gap: 16rpx; }
 .calendar-events-head > view:first-child text { display: block; }
 .calendar-events-head > view:first-child text:first-child { color: var(--calendar-ink); font-size: 30rpx; font-weight: 700; }
 .calendar-events-head > view:first-child text:last-child { margin-top: 3rpx; color: var(--calendar-ink-3); font-size: 22rpx; }
-.calendar-events-head__add { display: flex; min-height: 60rpx; align-items: center; padding: 0 18rpx; border-radius: 999rpx; background: var(--calendar-deep); color: #fff; gap: 5rpx; font-size: 22rpx; }
-.calendar-events-head__add text { color: #fff; }
+.calendar-events-head__add { display: flex; min-height: 60rpx; align-items: center; padding: 0 18rpx; border: 1rpx solid #efc2ca; border-radius: 999rpx; background: var(--calendar-pink-soft); color: var(--c-primary-link, #b86757); gap: 5rpx; font-size: 22rpx; font-weight: 600; }
+.calendar-events-head__add text { color: var(--c-primary-link, #b86757); }
 
 .calendar-events { overflow: hidden; padding: 0 18rpx; }
 .calendar-event-row { display: flex; min-height: 96rpx; align-items: center; border-bottom: 1rpx solid var(--calendar-line); gap: 14rpx; }

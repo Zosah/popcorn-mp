@@ -28,7 +28,7 @@
 
   <view class="calendar-events-head">
     <view><text>{{selectedDateLabel}}</text><text>{{selectedEvents.length ? selectedEvents.length + ' 条记录' : '这天还没有记录'}}</text></view>
-    <view class="calendar-events-head__add" bindtap="onAddEvent"><line-icon name="system-add" size="19" tone="white" /><text>记护理</text></view>
+    <view class="calendar-events-head__add" bindtap="onAddEvent"><line-icon name="system-add" size="19" tone="pink" /><text>记护理</text></view>
   </view>
 
   <view wx:if="{{selectedEvents.length}}" class="calendar-events paper-card">
