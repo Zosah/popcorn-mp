@@ -15,14 +15,17 @@
 
   <view class="journal-segmented">
     <view class="journal-segmented__item {{activeSection === 'all' ? 'journal-segmented__item--active' : ''}}" data-value="all" bindtap="onSelectSection">
+      <line-icon name="journal-tab-all" size="38" tone="{{activeSection === 'all' ? 'green' : 'muted'}}" />
       <text>全部</text>
       <text>{{entries.length + notesCount}}</text>
     </view>
     <view class="journal-segmented__item {{activeSection === 'moments' ? 'journal-segmented__item--active' : ''}}" data-value="moments" bindtap="onSelectSection">
+      <line-icon name="journal-tab-moments" size="38" tone="{{activeSection === 'moments' ? 'green' : 'muted'}}" />
       <text>生活点滴</text>
       <text>{{entries.length}}</text>
     </view>
     <view class="journal-segmented__item {{activeSection === 'notes' ? 'journal-segmented__item--active' : ''}}" data-value="notes" bindtap="onSelectSection">
+      <line-icon name="journal-tab-notes" size="38" tone="{{activeSection === 'notes' ? 'green' : 'muted'}}" />
       <text>重要记录</text>
       <text>{{notesCount}}</text>
     </view>

@@ -33,8 +33,14 @@
   </view>
 
   <view class="inv-view-tabs">
-    <view class="inv-view-tab {{viewMode === 'active' ? 'inv-view-tab--active' : ''}}" data-value="active" bindtap="onSwitchView">正在库存</view>
-    <view class="inv-view-tab {{viewMode === 'history' ? 'inv-view-tab--active' : ''}}" data-value="history" bindtap="onSwitchView">历史记录</view>
+    <view class="inv-view-tab {{viewMode === 'active' ? 'inv-view-tab--active' : ''}}" data-value="active" bindtap="onSwitchView">
+      <line-icon name="inventory-status-active" size="38" tone="{{viewMode === 'active' ? 'green' : 'muted'}}" />
+      <text>正在库存</text>
+    </view>
+    <view class="inv-view-tab {{viewMode === 'history' ? 'inv-view-tab--active' : ''}}" data-value="history" bindtap="onSwitchView">
+      <line-icon name="inventory-status-archived" size="38" tone="{{viewMode === 'history' ? 'green' : 'muted'}}" />
+      <text>历史记录</text>
+    </view>
   </view>
 
   <view class="inv-search {{searchFocused ? 'inv-search--focused' : ''}}">

@@ -103,10 +103,13 @@
 
 .inv-view-tab {
   position: relative;
+  display: flex;
+  align-items: center;
   padding: 15rpx 0 17rpx;
   color: var(--inv-ink-3);
   font-size: 28rpx;
   font-weight: 500;
+  gap: 9rpx;
 }
 
 .inv-view-tab--active {

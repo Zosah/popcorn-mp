@@ -32,12 +32,12 @@
   <block wx:else>
     <view class="menu-tabs" role="tablist">
       <view class="menu-tab {{activeTab === 'eat' ? 'menu-tab--active' : ''}}" data-value="eat" bindtap="onSwitchTab">
-        <line-icon name="menu-tab-eat" size="22" tone="accent" />
+        <line-icon name="menu-tab-eat" size="36" tone="accent" />
         <text>吃啥</text>
         <view wx:if="{{activeOrders.length}}" class="menu-tab__count">{{activeOrders.length}}</view>
       </view>
       <view class="menu-tab {{activeTab === 'recipes' ? 'menu-tab--active' : ''}}" data-value="recipes" bindtap="onSwitchTab">
-        <line-icon name="menu-tab-recipes" size="22" tone="accent" />
+        <line-icon name="menu-tab-recipes" size="36" tone="accent" />
         <text>菜谱本</text>
         <view class="menu-tab__count">{{allRecipes.length}}</view>
       </view>

@@ -77,12 +77,13 @@
 
 .journal-segmented__item {
   display: flex;
-  height: 66rpx;
+  height: 78rpx;
   align-items: center;
   justify-content: center;
-  border-radius: 25rpx;
+  border-radius: 27rpx;
   color: var(--c-muted);
   flex: 1;
+  gap: 7rpx;
   font-size: 25rpx;
   transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }

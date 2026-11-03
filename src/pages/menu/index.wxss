@@ -165,7 +165,7 @@
 
 .menu-tab {
   display: flex;
-  height: 74rpx;
+  height: 82rpx;
   align-items: center;
   justify-content: center;
   border: 1rpx solid transparent;

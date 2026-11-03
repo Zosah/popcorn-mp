@@ -39,7 +39,7 @@
       >
         <view class="feature-tile__top">
           <view class="feature-tile__icon">
-            <line-icon name="{{feature.icon}}" size="32" tone="{{feature.tone}}" active="{{true}}" />
+            <line-icon name="{{feature.icon}}" size="80" tone="{{feature.tone}}" active="{{true}}" />
           </view>
           <text class="feature-tile__arrow">›</text>
         </view>

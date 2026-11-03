@@ -2,6 +2,7 @@ import { appConfig } from '../../config/env'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import {
   PET_DAILY_ICON_NAMES,
+  PET_EVENT_ICON_NAMES,
   PET_SUPPLY_ICON_NAMES,
   PET_TIMELINE_ICON_NAMES,
 } from '../../constants/icon-names'
@@ -676,7 +677,10 @@ Page({
     const vaccineNextLabel = latestVaccine?.nextOn
       ? `下次 ${formatShortDate(latestVaccine.nextOn)}`
       : ''
-    const careCards = buildPetCareCards(state.events, today)
+    const careCards = buildPetCareCards(state.events, today).map((item) => ({
+      ...item,
+      iconName: PET_EVENT_ICON_NAMES[item.type],
+    }))
     const careTimeline = timeline.filter((item) =>
       ['vaccine', 'grooming', 'internal-deworm', 'external-deworm', 'visit', 'illness'].includes(item.type),
     )

@@ -156,7 +156,7 @@
 
 .travel-tab {
   display: flex;
-  height: 76rpx;
+  height: 84rpx;
   align-items: center;
   justify-content: center;
   border-radius: 23rpx;

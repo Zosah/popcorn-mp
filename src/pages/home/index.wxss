@@ -178,7 +178,7 @@
 /* ================= 功能入口 ================= */
 .function-glass {
   display: grid;
-  min-height: 152rpx;
+  min-height: 184rpx;
   grid-template-columns: repeat(4, 1fr);
   gap: 10rpx;
   margin: 0 40rpx 36rpx;
@@ -211,7 +211,7 @@
   transform: scale(0.94);
 }
 
-.function-icon {display: flex; width: 72rpx; height: 72rpx; align-items: center; justify-content: center;}
+.function-icon {display: flex; width: 120rpx; height: 120rpx; align-items: center; justify-content: center;}
 
 
 

@@ -20,12 +20,12 @@
 
   <view class="travel-tabs" role="tablist">
     <view class="travel-tab {{activeTab === 'trips' ? 'travel-tab--active' : ''}}" data-value="trips" bindtap="onSwitchTab">
-      <line-icon name="feature-travel" size="24" tone="ink" active="{{true}}" />
+      <line-icon name="feature-travel" size="38" tone="ink" active="{{true}}" />
       <text>出行</text>
       <text class="travel-tab__count">{{tripCount}}</text>
     </view>
     <view class="travel-tab {{activeTab === 'templates' ? 'travel-tab--active' : ''}}" data-value="templates" bindtap="onSwitchTab">
-      <line-icon name="travel-tab-packing" size="24" tone="{{activeTab === 'templates' ? 'ink' : 'muted'}}" />
+      <line-icon name="travel-tab-packing" size="38" tone="{{activeTab === 'templates' ? 'ink' : 'muted'}}" />
       <text>必备清单</text>
       <text class="travel-tab__count">{{templateCount}}</text>
     </view>
@@ -146,7 +146,7 @@
       >
         <view class="template-card__tab"></view>
         <view class="template-card__head">
-          <view class="template-card__mark"><line-icon name="travel-tab-packing" size="32" tone="gold" /></view>
+          <view class="template-card__mark"><line-icon name="travel-tab-packing" size="38" tone="gold" /></view>
           <view class="template-card__title-wrap">
             <view class="template-card__title-row">
               <text class="template-card__title">{{item.title}}</text>
