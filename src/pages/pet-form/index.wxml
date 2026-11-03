@@ -41,7 +41,7 @@
       <text class="pet-form-label">它是</text>
       <view class="pet-form-options pet-form-options--species">
         <view wx:for="{{speciesOptions}}" wx:key="value" class="pet-form-option {{form.species === item.value ? 'pet-form-option--active' : ''}}" data-value="{{item.value}}" bindtap="onSpeciesSelect">
-          <view class="pet-form-option__icon"><line-icon name="{{item.icon}}" size="24" tone="{{form.species === item.value ? 'white' : 'green'}}" /></view>
+          <view class="pet-form-option__icon"><line-icon name="{{item.icon}}" size="24" tone="{{form.species === item.value ? 'ink' : 'green'}}" /></view>
           <view class="pet-form-option__copy"><text>{{item.label}}</text><text>{{item.hint}}</text></view>
         </view>
       </view>

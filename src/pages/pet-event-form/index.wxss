@@ -30,7 +30,7 @@
 .event-state__copy text:last-child { margin-top: 4rpx; font-size: 22rpx; line-height: 1.5; }
 .event-state__action { flex-shrink: 0; color: var(--c-primary-link, #b86757); font-size: 22rpx; font-weight: 600; }
 .event-hero { display: flex; align-items: flex-start; padding: 8rpx 2rpx 29rpx; gap: 18rpx; }
-.event-hero__mark { display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; border-radius: 24rpx; background: var(--event-pink-soft); flex-shrink: 0; }
+.event-hero__mark {display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 .event-hero__body { min-width: 0; flex: 1; }
 .event-hero__title {
   font-family: var(--font-serif); margin-top: 8rpx; color: var(--event-ink); font-size: 45rpx; font-weight: 700; line-height: 1.3; letter-spacing: -1.4rpx; }
@@ -87,7 +87,6 @@
   --event-pink-soft: #f7e6e9;
   background: #fbf7f6;
 }
-.event-hero__mark { background: #f7e6e9; }
 .paper-card { border-color: #eee1e3; background: rgba(255, 255, 255, 0.9); box-shadow: 0 12rpx 30rpx rgba(91, 57, 65, 0.045); }
 .event-textarea { background: #faf3f4; }
 .event-save {

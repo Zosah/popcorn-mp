@@ -155,20 +155,8 @@
   font-weight: 600;
 }
 
-.tab-settings-preview__icon {
-  display: flex;
-  width: 37rpx;
-  height: 37rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14rpx;
-}
+.tab-settings-preview__icon {display: flex; width: 37rpx; height: 37rpx; align-items: center; justify-content: center;}
 
-.tab-settings-preview__icon--blue { background: var(--c-sage-soft, #e2eee9); }
-.tab-settings-preview__icon--green { background: var(--c-sage-soft, #e2eee9); }
-.tab-settings-preview__icon--gold { background: var(--c-butter-soft, #f2e8cc); }
-.tab-settings-preview__icon--pink { background: var(--c-coral-soft, #f7e7e2); }
-.tab-settings-preview__icon--orange { background: var(--c-coral-soft, #f7e7e2); }
 
 .tab-settings-section-head {
   display: flex;
@@ -224,29 +212,10 @@
 }
 
 .tab-settings-slot__icon,
-.tab-settings-option__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
+.tab-settings-option__icon {display: flex; align-items: center; justify-content: center; flex: 0 0 auto;}
 
-.tab-settings-slot__icon {
-  width: 68rpx;
-  height: 68rpx;
-  border-radius: 22rpx;
-}
+.tab-settings-slot__icon {width: 68rpx; height: 68rpx;}
 
-.tab-settings-slot__icon--blue,
-.tab-settings-option__icon--blue { background: var(--c-sage-soft, #e2eee9); }
-.tab-settings-slot__icon--green,
-.tab-settings-option__icon--green { background: var(--c-sage-soft, #e2eee9); }
-.tab-settings-slot__icon--gold,
-.tab-settings-option__icon--gold { background: var(--c-butter-soft, #f2e8cc); }
-.tab-settings-slot__icon--pink,
-.tab-settings-option__icon--pink { background: var(--c-coral-soft, #f7e7e2); }
-.tab-settings-slot__icon--orange,
-.tab-settings-option__icon--orange { background: var(--c-coral-soft, #f7e7e2); }
 
 .tab-settings-slot__body {
   display: flex;
@@ -306,11 +275,7 @@
   opacity: 0.48;
 }
 
-.tab-settings-option__icon {
-  width: 62rpx;
-  height: 62rpx;
-  border-radius: 20rpx;
-}
+.tab-settings-option__icon {width: 62rpx; height: 62rpx;}
 
 .tab-settings-option__body {
   display: flex;

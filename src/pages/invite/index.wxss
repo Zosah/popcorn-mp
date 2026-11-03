@@ -11,7 +11,7 @@
   color: var(--invite-ink);
 }
 .invite-head { display: flex; align-items: flex-start; padding: 8rpx 2rpx 28rpx; gap: 18rpx; }
-.invite-head__mark { display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; border-radius: 24rpx; background: var(--invite-pink-soft); flex-shrink: 0; }
+.invite-head__mark {display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 .invite-head__body { min-width: 0; flex: 1; }
 .invite-head__title {
   font-family: var(--font-serif); margin-top: 8rpx; color: var(--invite-ink); font-size: 45rpx; font-weight: 700; line-height: 1.3; letter-spacing: -1.4rpx; }
@@ -23,7 +23,7 @@
 .home-ticket::before { left: -17rpx; }
 .home-ticket::after { right: -17rpx; }
 .home-ticket__top { display: flex; align-items: center; justify-content: space-between; }
-.home-ticket__mark { display: flex; width: 50rpx; height: 50rpx; align-items: center; justify-content: center; border-radius: 17rpx; background: rgba(255, 255, 255, 0.84); }
+.home-ticket__mark {display: flex; width: 50rpx; height: 50rpx; align-items: center; justify-content: center;}
 .home-ticket__number { color: var(--c-primary-link, #b86757); font-size: 21rpx; letter-spacing: 1rpx; }
 .home-ticket__label { margin-top: 28rpx; color: var(--c-primary-link, #b86757); font-size: 22rpx; }
 .home-ticket__name { margin-top: 4rpx; color: var(--invite-ink); font-family: "Songti SC", "STSong", serif; font-size: 46rpx; font-weight: 600; line-height: 1.32; }
@@ -41,7 +41,7 @@
 
 .code-card { margin-top: 20rpx; padding: 20rpx 22rpx; }
 .code-card__label { display: flex; align-items: center; gap: 11rpx; }
-.code-card__mark { display: flex; width: 48rpx; height: 48rpx; align-items: center; justify-content: center; border-radius: 16rpx; background: var(--invite-pink-soft); flex-shrink: 0; }
+.code-card__mark {display: flex; width: 48rpx; height: 48rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 .code-card__label > view:last-child text { display: block; }
 .code-card__label > view:last-child text:first-child { color: var(--invite-ink); font-size: 26rpx; font-weight: 700; }
 .code-card__label > view:last-child text:last-child { margin-top: 2rpx; color: var(--invite-ink-3); font-size: 21rpx; }
@@ -60,7 +60,7 @@
 .invite-vignette__tag { display: inline-flex; margin-top: 12rpx; padding: 5rpx 11rpx; border-radius: 999rpx; background: var(--invite-pink-soft); color: var(--c-primary-link, #b86757); font-size: 20rpx; }
 .invite-action { width: 100%; margin-top: 24rpx; gap: 9rpx; }
 .invite-note { display: flex; align-items: flex-start; margin-top: 22rpx; padding: 18rpx; border-radius: 24rpx; background: var(--c-paper-2, #f1ede7); gap: 12rpx; }
-.invite-note__mark { display: flex; width: 42rpx; height: 42rpx; align-items: center; justify-content: center; border-radius: 14rpx; background: #ffffff; flex-shrink: 0; }
+.invite-note__mark {display: flex; width: 42rpx; height: 42rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 .invite-note__body { min-width: 0; flex: 1; }
 .invite-note__body text { display: block; }
 .invite-note__body text:first-child { color: var(--invite-ink-2); font-size: 23rpx; font-weight: 600; }

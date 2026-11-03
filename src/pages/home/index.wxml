@@ -97,7 +97,7 @@
       <text class="scene-note">{{todoPendingCount ? '已经完成 ' + todoCompletedCount + ' 件，给今天留一点松弛感' : '把今天轻轻收好，剩下的时间留给自己'}}</text>
     </view>
     <view class="scene-preview">
-      <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="system-check" size="26" tone="white" /></view>
+      <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="system-check" size="26" tone="green" /></view>
       <view class="scene-preview__body">
         <text class="scene-preview__title">{{todoSummary}}</text>
         <text class="scene-preview__meta">待办 · 想到就记下</text>

@@ -22,18 +22,7 @@
   gap: 18rpx;
 }
 
-.todo-hero__mark {
-  display: flex;
-  width: 74rpx;
-  height: 74rpx;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.88);
-  border-radius: 24rpx;
-  background: var(--todo-green-soft);
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
-  flex-shrink: 0;
-}
+.todo-hero__mark {display: flex; width: 74rpx; height: 74rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 
 .todo-hero__body {
   min-width: 0;
@@ -288,16 +277,7 @@
   gap: 12rpx;
 }
 
-.todo-date__mark {
-  display: flex;
-  width: 52rpx;
-  height: 52rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 17rpx;
-  background: var(--todo-green-soft);
-  flex-shrink: 0;
-}
+.todo-date__mark {display: flex; width: 52rpx; height: 52rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 
 .todo-date__body {
   display: flex;
@@ -367,19 +347,8 @@
   text-align: center;
 }
 
-.todo-state__mark {
-  display: flex;
-  width: 80rpx;
-  height: 80rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 26rpx;
-  background: var(--todo-green-soft);
-}
+.todo-state__mark {display: flex; width: 80rpx; height: 80rpx; align-items: center; justify-content: center;}
 
-.todo-state--error .todo-state__mark {
-  background: var(--c-coral-soft, #f7e7e2);
-}
 
 .todo-state__title {
   margin-top: 16rpx;

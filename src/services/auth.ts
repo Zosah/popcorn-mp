@@ -96,7 +96,7 @@ export function getKnownAuthAccount(): DemoUserProfile | null {
   return user?.nickname ? toDemoUserProfile(user) : null
 }
 
-export async function loginAuth(): Promise<AuthActionResult> {
+export async function loginAuth(phoneCode = ''): Promise<AuthActionResult> {
   if (appConfig.demoMode) {
     const result = loginDemoAccount()
     if (!result.ok) {
@@ -120,7 +120,7 @@ export async function loginAuth(): Promise<AuthActionResult> {
     }
   }
 
-  const result = await loginWithApi()
+  const result = await loginWithApi(phoneCode)
   return {
     ok: result.ok,
     requiresProfile: result.requiresProfile,

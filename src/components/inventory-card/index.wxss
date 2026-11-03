@@ -9,22 +9,9 @@
   border-bottom: 0;
 }
 
-.row__icon {
-  display: flex;
-  width: 62rpx;
-  height: 62rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20rpx;
-  background: #f6ebe2;
-  flex-shrink: 0;
-}
+.row__icon {display: flex; width: 62rpx; height: 62rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 
-.row__icon--image {
-  overflow: hidden;
-  padding: 0;
-  background: #f4eee7;
-}
+.row__icon--image { border-radius: 20rpx;overflow: hidden; padding: 0;}
 
 .row__image {
   width: 100%;

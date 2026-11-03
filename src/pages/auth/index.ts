@@ -45,6 +45,8 @@ interface AuthPageData {
   backLabel: string
   loginNotice: string
   loginFootnote: string
+  requiresPhoneAuth: boolean
+  loginSubmitting: boolean
   registerCopy: string
   accountTypeLabel: string
 }
@@ -83,7 +85,9 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     loginNotice: '',
     loginFootnote: appConfig.demoMode
       ? '本地体验不会读取手机号'
-      : '仅使用微信身份登录，不读取手机号',
+      : '登录时会验证手机号，仅用于账号识别。',
+    requiresPhoneAuth: !appConfig.demoMode && appConfig.apiAuthMode === 'wechat',
+    loginSubmitting: false,
     registerCopy: appConfig.demoMode
       ? '修改只会更新当前设备上的资料。'
       : '修改后会同步到当前空间。',
@@ -203,28 +207,49 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     navigateBackOrTab('/pages/profile/index')
   },
 
-  async onWechatLogin() {
+  onGetPhoneNumber(event: { detail: { code?: string } }) {
+    if (this.data.loginSubmitting) return
+    const phoneCode = event.detail.code?.trim() ?? ''
+    if (!phoneCode) {
+      this.setData({ loginNotice: '需要授权手机号才能完成登录' })
+      wx.showToast({ title: '需要授权手机号才能登录', icon: 'none' })
+      return
+    }
+    void this.finishWeChatLogin(phoneCode)
+  },
+
+  async onDemoLogin() {
+    if (this.data.loginSubmitting) return
+    await this.finishWeChatLogin('')
+  },
+
+  async finishWeChatLogin(phoneCode: string) {
+    this.setData({ loginSubmitting: true, loginNotice: '' })
     wx.showLoading({
       title: this.data.hasAccount ? '正在登录' : '正在连接微信',
       mask: true,
     })
-    const result = await loginAuth()
+    const result = await loginAuth(phoneCode)
     wx.hideLoading()
 
     if (!result.ok) {
+      this.setData({ loginSubmitting: false })
       wx.showToast({ title: result.message || '登录没有完成', icon: 'none' })
       this.showLogin()
       return
     }
     if (result.requiresProfile) {
+      this.setData({ loginSubmitting: false })
       this.showRegister(false)
       return
     }
     if (!result.state.user) {
+      this.setData({ loginSubmitting: false })
       wx.showToast({ title: '没有读取到账号资料', icon: 'none' })
       return
     }
 
+    this.setData({ loginSubmitting: false })
     this.showAccount(result.state.user)
     void syncFeatureSettings().catch(() => undefined)
     wx.showToast({ title: '欢迎回来', icon: 'success' })

@@ -52,7 +52,7 @@ page {
   --c-glass: rgba(255, 255, 255, 0.68);
   --c-glass-border: rgba(255, 255, 255, 0.86);
 
-  /* ---- 领域色：只用于图标底和小面积点缀 ---- */
+  /* ---- 领域色：只用于图标着色和小面积点缀；页面图标不再套彩色底板 ---- */
   --c-mint-soft: #e2eee9;
   --c-peach-soft: #f7e7e2;
   --c-warm-soft: #f2e8cc;
@@ -286,15 +286,7 @@ page::-webkit-scrollbar {
   color: var(--c-danger);
 }
 
-.soft-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.86);
-  border-radius: 21rpx;
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 8rpx 20rpx -14rpx var(--c-shadow-strong);
-}
+.soft-icon {display: flex; align-items: center; justify-content: center;}
 
 /* 小标签：不再是全大写加字距的装饰性 eyebrow，改成真正用来标字段的注记 */
 .eyebrow {
@@ -325,21 +317,8 @@ page::-webkit-scrollbar {
   background: var(--c-danger-soft);
 }
 
-.state-card__icon {
-  display: flex;
-  width: 88rpx;
-  height: 88rpx;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid var(--c-line);
-  border-radius: 28rpx;
-  background: #fff;
-  box-shadow: 0 9rpx 20rpx -12rpx var(--c-shadow-strong);
-}
+.state-card__icon {display: flex; width: 88rpx; height: 88rpx; align-items: center; justify-content: center;}
 
-.state-card--error .state-card__icon {
-  border-color: rgba(168, 86, 78, 0.14);
-}
 
 .state-card__title {
   margin-top: 18rpx;
@@ -387,16 +366,7 @@ page::-webkit-scrollbar {
   background: var(--c-danger-soft);
 }
 
-.state-banner__icon {
-  display: flex;
-  width: 50rpx;
-  height: 50rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.7);
-  flex-shrink: 0;
-}
+.state-banner__icon {display: flex; width: 50rpx; height: 50rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 
 .state-banner__body {
   display: flex;

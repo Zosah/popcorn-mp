@@ -30,7 +30,7 @@
 .pet-form-eyebrow { color: #788476; font-size: 19rpx; font-weight: 700; letter-spacing: 3rpx; }
 .pet-form-hero__title { margin-top: 12rpx; font-family: var(--font-serif); font-size: 46rpx; font-weight: 700; letter-spacing: -1.5rpx; line-height: 1.34; }
 .pet-form-hero__sub { margin-top: 10rpx; color: #6d756a; font-size: 24rpx; line-height: 1.65; }
-.pet-form-hero__mark { display: flex; width: 104rpx; height: 104rpx; align-items: center; justify-content: center; border-radius: 34rpx; background: rgba(255, 255, 255, 0.52); flex: 0 0 auto; }
+.pet-form-hero__mark {display: flex; width: 104rpx; height: 104rpx; align-items: center; justify-content: center; flex: 0 0 auto;}
 
 .pet-form-avatar-card { display: flex; margin-top: 24rpx; padding: 24rpx; align-items: center; gap: 20rpx; border: 1rpx solid var(--pet-form-line); border-radius: 30rpx; background: rgba(255, 255, 255, 0.9); box-shadow: 0 14rpx 34rpx -30rpx rgba(46, 59, 49, 0.5); }
 .pet-form-avatar { width: 116rpx; height: 116rpx; overflow: hidden; border: 5rpx solid #f5f0e8; border-radius: 50%; background: #edf2e9; flex: 0 0 auto; }
@@ -61,8 +61,7 @@
 .pet-form-options--species { display: flex; margin-top: 14rpx; gap: 12rpx; }
 .pet-form-option { display: flex; min-width: 0; padding: 15rpx 13rpx; align-items: center; gap: 10rpx; border: 1rpx solid transparent; border-radius: 22rpx; background: #f6f4ef; flex: 1; }
 .pet-form-option--active { border-color: #d6e1d2; background: #e8eee2; }
-.pet-form-option__icon { display: flex; width: 52rpx; height: 52rpx; align-items: center; justify-content: center; border-radius: 17rpx; background: #fff; flex: 0 0 auto; }
-.pet-form-option--active .pet-form-option__icon { background: #2e3931; }
+.pet-form-option__icon {display: flex; width: 52rpx; height: 52rpx; align-items: center; justify-content: center; flex: 0 0 auto;}
 .pet-form-option__copy { min-width: 0; }
 .pet-form-option__copy text { display: block; }
 .pet-form-option__copy text:first-child { font-size: 24rpx; font-weight: 700; }

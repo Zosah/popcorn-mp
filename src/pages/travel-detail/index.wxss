@@ -24,15 +24,7 @@
   text-align: center;
 }
 
-.td-state__mark {
-  display: flex;
-  width: 88rpx;
-  height: 88rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 30rpx;
-  background: var(--td-coral-soft);
-}
+.td-state__mark {display: flex; width: 88rpx; height: 88rpx; align-items: center; justify-content: center;}
 
 .td-state__title {
   margin-top: 20rpx;
@@ -162,21 +154,7 @@
   transform: rotate(-18deg);
 }
 
-.td-hero__plane {
-  position: absolute;
-  right: 178rpx;
-  bottom: 35rpx;
-  display: flex;
-  width: 74rpx;
-  height: 74rpx;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.94);
-  border-radius: 25rpx;
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 13rpx 27rpx -20rpx rgba(69, 82, 75, 0.55);
-  transform: rotate(-11deg);
-}
+.td-hero__plane {position: absolute; right: 178rpx; bottom: 35rpx; display: flex; width: 74rpx; height: 74rpx; align-items: center; justify-content: center;}
 
 .td-hero__stamp {
   position: absolute;
@@ -456,16 +434,7 @@
   gap: 16rpx;
 }
 
-.td-items-empty__mark {
-  display: flex;
-  width: 72rpx;
-  height: 72rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 23rpx;
-  background: var(--td-gold-soft);
-  flex-shrink: 0;
-}
+.td-items-empty__mark {display: flex; width: 72rpx; height: 72rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 
 .td-items-empty__body {
   min-width: 0;
@@ -576,15 +545,7 @@
   font-weight: 680;
 }
 
-.td-note__mark {
-  display: flex;
-  width: 47rpx;
-  height: 47rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 15rpx;
-  background: var(--td-gold-soft);
-}
+.td-note__mark {display: flex; width: 47rpx; height: 47rpx; align-items: center; justify-content: center;}
 
 .td-note__copy {
   display: block;
@@ -725,15 +686,7 @@
 .td-sheet__loading view:nth-child(3) { animation-delay: 200ms; }
 .td-sheet__loading text { margin-left: 8rpx; }
 
-.td-sheet__empty-mark {
-  display: flex;
-  width: 78rpx;
-  height: 78rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 25rpx;
-  background: var(--td-gold-soft);
-}
+.td-sheet__empty-mark {display: flex; width: 78rpx; height: 78rpx; align-items: center; justify-content: center;}
 
 .td-sheet__empty text:nth-child(2) {
   margin-top: 14rpx;

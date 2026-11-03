@@ -27,9 +27,26 @@
           <view class="known-account__mark"><line-icon name="system-check" size="24" tone="blue" /></view>
         </view>
 
-        <button class="primary-button auth-primary" bindtap="onWechatLogin">
+        <button
+          wx:if="{{requiresPhoneAuth}}"
+          class="primary-button auth-primary"
+          open-type="getPhoneNumber"
+          bindgetphonenumber="onGetPhoneNumber"
+          loading="{{loginSubmitting}}"
+          disabled="{{loginSubmitting}}"
+        >
           <line-icon name="system-user" size="28" tone="white" />
-          <text>{{hasAccount ? '继续登录' : '微信一键登录'}}</text>
+          <text>立即登录</text>
+        </button>
+        <button
+          wx:else
+          class="primary-button auth-primary"
+          bindtap="onDemoLogin"
+          loading="{{loginSubmitting}}"
+          disabled="{{loginSubmitting}}"
+        >
+          <line-icon name="system-user" size="28" tone="white" />
+          <text>立即登录</text>
         </button>
         <view class="auth-secondary" bindtap="onBack">先看看，不登录</view>
       </view>

@@ -37,15 +37,7 @@
   justify-content: space-between;
 }
 
-.auth-gate__mark {
-  display: flex;
-  width: 66rpx;
-  height: 66rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 22rpx;
-  background: #dfe7e7;
-}
+.auth-gate__mark {display: flex; width: 66rpx; height: 66rpx; align-items: center; justify-content: center;}
 
 .auth-gate__close {
   display: flex;

@@ -67,10 +67,17 @@ describe('HTTP 登录网关', () => {
       getStorageSync: (key: string) => storage.get(key) ?? '',
       setStorageSync: (key: string, value: unknown) => storage.set(key, value),
       removeStorageSync: (key: string) => storage.delete(key),
+      login: (options: WechatMiniprogram.LoginOption) => {
+        options.success?.({ code: 'wx-code', errMsg: 'login:ok' })
+      },
       request: (options: WechatMiniprogram.RequestOption) => {
         requests.push(options)
         const url = String(options.url)
         if (url.endsWith('/auth/mock')) {
+          succeed(options, { ...loginSession, token: 'token-1' } satisfies ApiLoginResponse)
+          return
+        }
+        if (url.endsWith('/auth/wechat')) {
           succeed(options, { ...loginSession, token: 'token-1' } satisfies ApiLoginResponse)
           return
         }
@@ -114,6 +121,22 @@ describe('HTTP 登录网关', () => {
     expect(requests[0]).toMatchObject({
       url: 'https://api.test/auth/mock',
       method: 'POST',
+    })
+  })
+
+  it('微信登录会把手机号授权凭证一并交给后端', async () => {
+    Object.assign(appConfig, { apiAuthMode: 'wechat' })
+
+    await loginWithApi('phone-code-1')
+
+    expect(requests[0]).toMatchObject({
+      url: 'https://api.test/auth/wechat',
+      method: 'POST',
+      data: {
+        code: 'wx-code',
+        phoneCode: 'phone-code-1',
+        deviceLabel: '微信小程序',
+      },
     })
   })
 

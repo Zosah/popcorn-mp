@@ -205,23 +205,9 @@
   gap: 12rpx;
 }
 
-.travel-time-block__mark {
-  display: flex;
-  width: 51rpx;
-  height: 51rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 17rpx;
-  flex-shrink: 0;
-}
+.travel-time-block__mark {display: flex; width: 51rpx; height: 51rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 
-.travel-time-block__mark--depart {
-  background: var(--form-green-soft);
-}
 
-.travel-time-block__mark--return {
-  background: var(--form-pink-soft);
-}
 
 .travel-time-block__title {
   display: block;
@@ -303,9 +289,7 @@
   justify-content: flex-end;
 }
 
-.travel-time-block--return .travel-time-block__mark {
-  order: 0;
-}
+.travel-time-block--return .travel-time-block__mark {order: 0;}
 
 .travel-items-card {
   padding-top: 21rpx;
@@ -444,15 +428,7 @@
   text-align: center;
 }
 
-.travel-form-error__icon {
-  display: flex;
-  width: 76rpx;
-  height: 76rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 24rpx;
-  background: var(--form-pink-soft);
-}
+.travel-form-error__icon {display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center;}
 
 .travel-form-error__title {
   margin-top: 15rpx;

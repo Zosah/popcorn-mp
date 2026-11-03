@@ -416,16 +416,7 @@
   align-items: center;
 }
 
-.journal-section-head__icon {
-  display: flex;
-  width: 42rpx;
-  height: 42rpx;
-  align-items: center;
-  justify-content: center;
-  margin-right: 9rpx;
-  border-radius: 14rpx;
-  background: var(--c-sage-soft);
-}
+.journal-section-head__icon {display: flex; width: 42rpx; height: 42rpx; align-items: center; justify-content: center; margin-right: 9rpx;}
 
 .journal-section-head__link {
   color: var(--c-primary-link);
@@ -459,20 +450,8 @@
   border-bottom: 0;
 }
 
-.journal-note-group__icon {
-  display: flex;
-  width: 62rpx;
-  height: 62rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20rpx;
-  flex: 0 0 auto;
-}
+.journal-note-group__icon {display: flex; width: 62rpx; height: 62rpx; align-items: center; justify-content: center; flex: 0 0 auto;}
 
-.journal-note-group__icon--home { background: var(--c-sage-soft); }
-.journal-note-group__icon--health { background: var(--c-coral-soft); }
-.journal-note-group__icon--pet { background: var(--c-butter-soft); }
-.journal-note-group__icon--other { background: var(--c-paper-2); }
 
 .journal-note-group__body {
   display: flex;
@@ -618,19 +597,8 @@
   text-align: center;
 }
 
-.journal-state__icon {
-  display: flex;
-  width: 88rpx;
-  height: 88rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 28rpx;
-  background: var(--c-sage-soft);
-}
+.journal-state__icon {display: flex; width: 88rpx; height: 88rpx; align-items: center; justify-content: center;}
 
-.journal-state__icon--danger {
-  background: var(--c-coral-soft);
-}
 
 .journal-state__title {
   margin-top: 18rpx;

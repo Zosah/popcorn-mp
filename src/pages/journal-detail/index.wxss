@@ -12,7 +12,7 @@
 
 .paper-card { box-sizing: border-box; border: 1rpx solid var(--journal-line); border-radius: 30rpx; background: #ffffff; box-shadow: 0 12rpx 30rpx rgba(42, 62, 50, 0.045); }
 .journal-head { display: flex; align-items: flex-start; padding: 8rpx 2rpx 30rpx; gap: 18rpx; }
-.journal-head__mark { display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; border-radius: 24rpx; background: var(--journal-blue-soft); flex-shrink: 0; }
+.journal-head__mark {display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 .journal-head__body { min-width: 0; flex: 1; }
 .journal-head__meta { margin-top: 8rpx; color: var(--journal-ink-3); font-size: 22rpx; line-height: 1.55; }
 .journal-head__title {
@@ -45,8 +45,7 @@
 .journal-sync { display: flex; justify-content: center; margin-top: 18rpx; }
 
 .journal-state { display: flex; margin-top: 16rpx; padding: 56rpx 28rpx; align-items: center; flex-direction: column; text-align: center; }
-.journal-state__mark { display: flex; width: 84rpx; height: 84rpx; align-items: center; justify-content: center; border-radius: 27rpx; background: var(--journal-blue-soft); }
-.journal-state--error .journal-state__mark { background: var(--c-coral-soft, #f7e7e2); }
+.journal-state__mark {display: flex; width: 84rpx; height: 84rpx; align-items: center; justify-content: center;}
 .journal-state__title { margin-top: 16rpx; color: var(--journal-ink); font-size: 29rpx; font-weight: 700; }
 .journal-state__copy { max-width: 500rpx; margin-top: 7rpx; color: var(--journal-ink-3); font-size: 24rpx; line-height: 1.6; }
 .journal-state__action { margin-top: 18rpx; padding: 12rpx 22rpx; border-radius: 999rpx; background: var(--journal-deep); color: #fff; font-size: 23rpx; font-weight: 600; }

@@ -12,7 +12,7 @@
 }
 
 .recipe-head { display: flex; align-items: center; padding: 8rpx 2rpx 26rpx; gap: 17rpx; }
-.recipe-head__mark { display: flex; width: 72rpx; height: 72rpx; align-items: center; justify-content: center; border-radius: 24rpx; background: var(--c-butter-soft, #f2e8cc); flex-shrink: 0; }
+.recipe-head__mark {display: flex; width: 72rpx; height: 72rpx; align-items: center; justify-content: center; flex-shrink: 0;}
 .recipe-head__body { min-width: 0; flex: 1; }
 .eyebrow { color: var(--recipe-gold); font-size: 18rpx; font-weight: 700; letter-spacing: 4rpx; }
 .recipe-head__title { margin-top: 7rpx; font-family: var(--font-serif); font-size: 42rpx; font-weight: 700; letter-spacing: -1rpx; line-height: 1.25; }
@@ -111,8 +111,7 @@
 .recipe-save { width: 100%; margin-top: 32rpx; gap: 10rpx; }
 
 .recipe-state { padding: 54rpx 34rpx; text-align: center; }
-.recipe-state__mark { display: flex; width: 86rpx; height: 86rpx; margin: 0 auto 18rpx; align-items: center; justify-content: center; border-radius: 28rpx; background: var(--c-butter-soft, #f2e8cc); }
-.recipe-state--error .recipe-state__mark { background: #fbe8e3; }
+.recipe-state__mark {display: flex; width: 86rpx; height: 86rpx; margin: 0 auto 18rpx; align-items: center; justify-content: center;}
 .recipe-state__title { font-size: 31rpx; font-weight: 700; }
 .recipe-state__copy { margin-top: 10rpx; color: var(--recipe-ink-2); font-size: 25rpx; line-height: 1.65; }
 .recipe-state__action { display: inline-flex; min-width: 180rpx; height: 66rpx; margin-top: 24rpx; padding: 0 28rpx; box-sizing: border-box; align-items: center; justify-content: center; border-radius: 999rpx; background: var(--recipe-deep); color: #fff; font-size: 25rpx; font-weight: 600; }

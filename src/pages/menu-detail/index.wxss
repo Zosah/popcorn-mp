@@ -414,16 +414,7 @@
   font-size: 25rpx;
 }
 
-.md-loading__dish {
-  display: flex;
-  width: 96rpx;
-  height: 96rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 32rpx;
-  background: var(--md-butter);
-  animation: md-breathe 1.5s ease-in-out infinite;
-}
+.md-loading__dish {display: flex; width: 96rpx; height: 96rpx; align-items: center; justify-content: center; animation: md-breathe 1.5s ease-in-out infinite;}
 
 .md-error__title {
   margin-top: 18rpx;
@@ -465,7 +456,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .md-loading__dish {
-    animation: none;
-  }
+  .md-loading__dish {animation: none;}
 }
