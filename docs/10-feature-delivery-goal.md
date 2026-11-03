@@ -386,7 +386,7 @@ API / DB：复用媒体表、生活记录表和现有 mediaId 外键；本切片
 ### 私有 COS 用户媒体全链路
 
 - ✅ 生产 `healthz / readyz` 正常，私有桶为 `popcorn-1302154647`（`ap-guangzhou`）。
-- ✅ 统一路径继续使用 `popcorn/prod/media/spaces/{spaceId}/{mediaId}_display.jpg` 和 `..._thumb.jpg`；业务表只保存 `mediaId`。
+- ✅ 统一路径使用 `popcorn/prod/media/{spaceId}_{安全化用户名}/{mediaId}_display.jpg` 和 `..._thumb.jpg`；业务表只保存 `mediaId`。
 - ✅ 菜单图片：小程序前端真实上传、签名展示、创建菜谱、幂等重放、回读、替换、移除、软删除全部通过。
 - ✅ 生活记录图片：上传 `purpose=journal`、创建记录、列表与详情图片展示、幂等重放、软删除全部通过；截图为 `shots/journal-cos-production-list-vwlm85s.png`、`shots/journal-cos-production-detail-vwlm85s.png`。
 - ✅ 新增可重复生产验收脚本 `npm run verify:production-journal-ui`：真实微信会话创建私密重要记录、上传图片、列表缩略图、详情原图、签名地址 `200 image/jpeg` 和软删除清理全部通过。

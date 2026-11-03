@@ -271,7 +271,7 @@ try {
   const avatarUrl = new URL(avatarData.profile.avatarUrl)
   assert.equal(avatarUrl.hostname, 'popcorn-1302154647.cos.ap-guangzhou.myqcloud.com')
   assert.ok(
-    decodeURIComponent(avatarUrl.pathname).startsWith(`/popcorn/prod/media/spaces/${spaceId}/`),
+    decodeURIComponent(avatarUrl.pathname).startsWith(`/popcorn/prod/media/${spaceId}_`),
     `头像未进入空间媒体路径：${avatarUrl.pathname}`,
   )
   const avatarResponse = await fetch(avatarData.profile.avatarUrl)
