@@ -989,14 +989,6 @@
 
 /* ---------- 日常 ---------- */
 .daily-recent { margin-top: 28rpx; }
-.daily-list { overflow: hidden; border: 1rpx solid var(--pet-line); border-radius: 27rpx; background: #fff; }
-.daily-row { display: flex; min-height: 86rpx; align-items: center; padding: 0 18rpx; border-bottom: 1rpx solid var(--pet-line); gap: 12rpx; }
-.daily-row:last-child { border-bottom: 0; }
-.daily-row__icon { display: flex; width: 50rpx; height: 50rpx; align-items: center; justify-content: center; border-radius: 16rpx; background: var(--c-sage-soft); }
-.daily-row__body { display: flex; min-width: 0; flex: 1; flex-direction: column; }
-.daily-row__body text:first-child { overflow: hidden; font-size: 24rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.daily-row__body text:last-child { margin-top: 2rpx; color: var(--pet-ink-3); font-size: 19rpx; }
-.daily-row__time { color: var(--pet-ink-3); font-size: 19rpx; }
 
 /* ---------- 用品 ---------- */
 .current-supplies { width: calc(100% + 72rpx); margin-left: -36rpx; white-space: nowrap; }
@@ -1491,44 +1483,84 @@
 .daily-recent {
   margin-top: 34rpx;
 }
-.daily-list {
-  overflow: visible;
-  border: 0;
-  border-top: 1rpx solid rgba(232, 218, 220, 0.9);
-  border-radius: 0;
-  background: transparent;
+
+.daily-timeline {
+  padding: 2rpx 0 0;
 }
-.daily-row {
-  min-height: 94rpx;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid rgba(232, 218, 220, 0.82);
-  background: transparent;
+.daily-timeline__row {
+  display: grid;
+  min-height: 104rpx;
+  padding-bottom: 28rpx;
+  grid-template-columns: 42rpx minmax(0, 1fr);
+  column-gap: 13rpx;
+}
+.daily-timeline__rail {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+}
+.daily-timeline__dot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 38rpx;
+  height: 38rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #e8cdd2;
+  border-radius: 50%;
+  background: #f8e8eb;
   box-sizing: border-box;
 }
-.daily-row__icon {
-  width: 52rpx;
-  height: 52rpx;
-  border-radius: 17rpx;
-  background: #f7e7ea;
-  flex: 0 0 52rpx;
+.daily-timeline__line {
+  position: absolute;
+  top: 39rpx;
+  bottom: -1rpx;
+  left: 18rpx;
+  width: 2rpx;
+  background: linear-gradient(180deg, rgba(190, 139, 149, 0.42), rgba(232, 213, 216, 0.24));
 }
-.daily-row__body text:first-child {
-  overflow: visible;
-  font-size: 25rpx;
-  line-height: 1.45;
-  text-overflow: clip;
-  white-space: normal;
+.daily-timeline__row:last-child {
+  padding-bottom: 12rpx;
 }
-.daily-row__body text:last-child {
-  margin-top: 3rpx;
+.daily-timeline__row:last-child .daily-timeline__line {
+  display: none;
+}
+.daily-timeline__body {
+  min-width: 0;
+  padding-top: 1rpx;
+}
+.daily-timeline__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--pet-ink-3);
+  gap: 16rpx;
+  line-height: 1.35;
+}
+.daily-timeline__meta text:first-child {
+  color: #9c626d;
+  font-size: 21rpx;
+  font-weight: 600;
+}
+.daily-timeline__meta text:last-child {
+  flex-shrink: 0;
   font-size: 19rpx;
 }
-.daily-row__time {
-  align-self: flex-start;
-  padding-top: 4rpx;
-  font-size: 20rpx;
+.daily-timeline__title {
+  margin-top: 6rpx;
+  color: var(--pet-ink);
+  font-size: 27rpx;
+  font-weight: 650;
+  line-height: 1.45;
 }
-
+.daily-timeline__copy {
+  display: block;
+  margin-top: 5rpx;
+  color: var(--pet-ink-3);
+  font-size: 21rpx;
+  line-height: 1.55;
+}
 /* 时间轴整体左对齐，日期和内容共用同一条阅读起点 */
 .pet-timeline {
   margin-bottom: 0;

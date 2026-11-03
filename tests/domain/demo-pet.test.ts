@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildPetCareCards,
   buildPetCalendar,
+  buildPetDailyTimeline,
   buildPetDailySummary,
   buildPetHomeActivities,
   buildPetTimeline,
@@ -239,6 +240,68 @@ describe('每日吃喝拉撒记录', () => {
 
     expect(summary.find((item) => item.type === 'meal')?.count).toBe(0)
   })
+
+  it('成长记录保留所有日期，并按记录时间倒序', () => {
+    const timeline = buildPetDailyTimeline(
+      [
+        {
+          id: 'water-change-old',
+          type: 'water-change',
+          summary: '换了客厅的水',
+          note: '',
+          recordedAt: '2026-08-23T03:00:00.000Z',
+        },
+        {
+          id: 'water-change-latest',
+          type: 'water-change',
+          summary: '换了两个水碗',
+          note: '厨房和客厅',
+          recordedAt: '2026-08-25T02:00:00.000Z',
+        },
+        {
+          id: 'urine-latest',
+          type: 'urine',
+          summary: '2 个尿团 · 正常',
+          note: '',
+          recordedAt: '2026-08-27T01:30:00.000Z',
+        },
+      ],
+      Date.parse('2026-08-27T04:00:00.000Z'),
+    )
+
+    expect(timeline.map((item) => item.id)).toEqual([
+      'urine-latest',
+      'water-change-latest',
+      'water-change-old',
+    ])
+    expect(timeline[1]).toMatchObject({
+      recordedOn: '2026-08-25',
+      dateLabel: '8月25日',
+      timeLabel: '10:00',
+      elapsedLabel: '2 天 2 小时',
+    })
+  })
+
+  it('最近一次换水可以持续跟踪到具体日期和间隔', () => {
+    const timeline = buildPetDailyTimeline(
+      [
+        {
+          id: 'water-change',
+          type: 'water-change',
+          summary: '换了 2 处的水',
+          note: '',
+          recordedAt: '2026-08-25T07:00:00+08:00',
+        },
+      ],
+      Date.parse('2026-08-27T12:00:00+08:00'),
+    )
+
+    expect(timeline[0]).toMatchObject({
+      recordedOn: '2026-08-25',
+      timeLabel: '07:00',
+      elapsedLabel: '2 天 5 小时',
+    })
+  })
 })
 
 describe('宠物日历', () => {
@@ -269,5 +332,33 @@ describe('宠物日历', () => {
       isToday: true,
       eventCount: 1,
     })
+  })
+
+  it('月历格子的记录数同时包含日常与护理', () => {
+    const cells = buildPetCalendar(
+      [
+        {
+          id: 'care-event',
+          type: 'grooming',
+          occurredOn: '2026-09-02',
+          title: '洗澡',
+          note: '',
+          createdAt: '2026-09-02T00:00:00.000Z',
+        },
+      ],
+      '2026-09',
+      '2026-09-02',
+      [
+        {
+          id: 'daily-water-change',
+          type: 'water-change',
+          summary: '换了两个水碗',
+          note: '',
+          recordedAt: '2026-09-02T06:00:00.000Z',
+        },
+      ],
+    )
+
+    expect(cells.find((item) => item.date === '2026-09-02')?.eventCount).toBe(2)
   })
 })

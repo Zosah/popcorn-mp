@@ -145,6 +145,19 @@ export interface PetDailySummaryItem {
   elapsedLabel: string
 }
 
+export interface PetDailyTimelineItem {
+  id: string
+  type: PetDailyLogType
+  label: string
+  summary: string
+  note: string
+  recordedOn: string
+  yearLabel: string
+  dateLabel: string
+  timeLabel: string
+  elapsedLabel: string
+}
+
 export interface PetCalendarCell {
   date: string
   day: number
@@ -528,6 +541,35 @@ export function buildPetDailySummary(
   })
 }
 
+export function buildPetDailyTimeline(
+  logs: readonly DemoPetDailyLog[],
+  nowMs = Date.now(),
+): PetDailyTimelineItem[] {
+  return [...logs]
+    .filter((log) => Number.isFinite(Date.parse(log.recordedAt)))
+    .sort((left, right) =>
+      right.recordedAt.localeCompare(left.recordedAt)
+      || right.id.localeCompare(left.id),
+    )
+    .map((log) => {
+      const timestamp = Date.parse(log.recordedAt)
+      const recordedOn = getShanghaiDateOnly(timestamp)
+      const [year, month, day] = recordedOn.split('-')
+      return {
+        id: log.id,
+        type: log.type,
+        label: PET_DAILY_LOG_LABELS[log.type],
+        summary: log.summary,
+        note: log.note,
+        recordedOn,
+        yearLabel: year ? `${year}年` : '日期未知',
+        dateLabel: month && day ? `${Number(month)}月${Number(day)}日` : '日期未知',
+        timeLabel: formatShanghaiTime(timestamp),
+        elapsedLabel: formatPetElapsedHours(log.recordedAt, nowMs),
+      }
+    })
+}
+
 export function shiftPetCalendarMonth(
   yearMonth: string,
   delta: number,
@@ -542,11 +584,19 @@ export function buildPetCalendar(
   events: readonly DemoPetEvent[],
   yearMonth: string,
   today: string,
+  dailyLogs: readonly DemoPetDailyLog[] = [],
 ): PetCalendarCell[] {
   const [year, month] = yearMonth.split('-').map(Number)
   if (!year || !month) return []
   const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay()
   const start = Date.UTC(year, month - 1, 1 - firstDay)
+  const recordDates = [
+    ...events.map((event) => event.occurredOn),
+    ...dailyLogs
+      .map((log) => Date.parse(log.recordedAt))
+      .filter(Number.isFinite)
+      .map((timestamp) => getShanghaiDateOnly(timestamp)),
+  ]
 
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(start + index * 86400000)
@@ -556,7 +606,7 @@ export function buildPetCalendar(
       day: date.getUTCDate(),
       inCurrentMonth: date.getUTCMonth() === month - 1,
       isToday: dateOnly === today,
-      eventCount: events.filter((event) => event.occurredOn === dateOnly).length,
+      eventCount: recordDates.filter((recordDate) => recordDate === dateOnly).length,
     }
   })
 }

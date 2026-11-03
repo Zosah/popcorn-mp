@@ -2,9 +2,9 @@
   <view class="calendar-hero">
     <view class="calendar-hero__mark"><line-icon name="calendar-days" size="30" tone="pink" /></view>
     <view class="calendar-hero__body">
-      <view class="eyebrow">CARE CALENDAR</view>
-      <view class="calendar-hero__title">{{petName}}的照护月历</view>
-      <view class="calendar-hero__copy">历史记录、下次计划和内外驱推算都放在同一张月历里。</view>
+      <view class="eyebrow">DAILY · CARE</view>
+      <view class="calendar-hero__title">{{petName}}的月历</view>
+      <view class="calendar-hero__copy">日常、护理历史和下次计划都在这里。</view>
     </view>
   </view>
 
@@ -14,7 +14,7 @@
   <view class="paper-card calendar-card">
     <view class="calendar-nav">
       <view class="calendar-nav__button" bindtap="onPreviousMonth">‹</view>
-      <view class="calendar-nav__month"><text>{{monthLabel}}</text><text>照护安排</text></view>
+      <view class="calendar-nav__month"><text>{{monthLabel}}</text><text>日常与照护</text></view>
       <view class="calendar-nav__button" bindtap="onNextMonth">›</view>
     </view>
     <view class="calendar-week"><text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text></view>
@@ -27,21 +27,21 @@
   </view>
 
   <view class="calendar-events-head">
-    <view><text>{{selectedDate}}</text><text>{{selectedEvents.length ? selectedEvents.length + ' 项安排' : '这天没有记录'}}</text></view>
-    <view class="calendar-events-head__add" bindtap="onAddEvent"><line-icon name="plus" size="19" tone="white" /><text>记录事件</text></view>
+    <view><text>{{selectedDateLabel}}</text><text>{{selectedEvents.length ? selectedEvents.length + ' 条记录' : '这天还没有记录'}}</text></view>
+    <view class="calendar-events-head__add" bindtap="onAddEvent"><line-icon name="plus" size="19" tone="white" /><text>记护理</text></view>
   </view>
 
   <view wx:if="{{selectedEvents.length}}" class="calendar-events paper-card">
-    <view wx:for="{{selectedEvents}}" wx:key="id" class="calendar-event-row" data-id="{{item.eventId}}" bindtap="onOpenEvent">
+    <view wx:for="{{selectedEvents}}" wx:key="id" class="calendar-event-row calendar-event-row--{{item.source}}" data-id="{{item.eventId}}" bindtap="onOpenEvent">
       <view class="calendar-event-row__mark"><line-icon name="{{item.iconName}}" size="23" tone="pink" /></view>
-      <view class="calendar-event-row__body"><text>{{item.title}}</text><text>{{item.kindLabel}}</text></view>
-      <view class="calendar-event-row__arrow">›</view>
+      <view class="calendar-event-row__body"><text>{{item.title}}</text><text>{{item.kindLabel}}{{item.note ? ' · ' + item.note : ''}}</text></view>
+      <view wx:if="{{item.eventId}}" class="calendar-event-row__arrow">›</view>
     </view>
   </view>
 
   <view wx:else class="calendar-empty paper-card">
     <image class="calendar-empty__illustration" src="../../images/ink-cat.png" mode="aspectFit" />
-    <view class="calendar-empty__copy"><text>这一天还没有照护记录</text><text>可以补一条疫苗、洗护、就诊或外出。</text></view>
-    <view class="calendar-empty__action" bindtap="onAddEvent">补一条</view>
+    <view class="calendar-empty__copy"><text>这一天还没有日常或护理记录</text><text>日常在宠物页记，护理可以单独补一条。</text></view>
+    <view class="calendar-empty__action" bindtap="onAddEvent">记护理</view>
   </view>
 </view>

@@ -8,6 +8,7 @@ import {
 import {
   buildPetCareCards,
   buildPetDailySummary,
+  buildPetDailyTimeline,
   buildPetTimeline,
   filterPetSupplies,
   formatPetAge,
@@ -210,7 +211,7 @@ function composeDailyLogSummary(
   return extra ? `${extra} · ${choice}` : choice
 }
 
-const PET_PAGE_CACHE_KEY = 'pets:overview:v3'
+const PET_PAGE_CACHE_KEY = 'pets:overview:v4'
 
 function formatShortDate(value: string | null): string {
   if (!value) return '待补充'
@@ -218,12 +219,6 @@ function formatShortDate(value: string | null): string {
   return month && day ? `${month}.${day}` : value
 }
 
-function formatDailyTime(value: string): string {
-  const date = new Date(Date.parse(value) + 8 * 60 * 60 * 1000)
-  return `${String(date.getUTCHours()).padStart(2, '0')}:${String(
-    date.getUTCMinutes(),
-  ).padStart(2, '0')}`
-}
 
 Page({
   data: {
@@ -294,7 +289,6 @@ Page({
     vaccineNextLabel: '',
     latestWeight: '—',
     companionDays: 0,
-    dailyTodayCount: 0,
     featuredSupply: null as {
       id: string
       categoryLabel: string
@@ -350,13 +344,19 @@ Page({
         metaLabel: string
       }
     >,
-    recentDailyLogs: [] as Array<{
-      id: string
-      iconName: string
-      typeLabel: string
-      summary: string
-      timeLabel: string
-    }>,
+    dailyHistory: [] as Array<
+      ReturnType<typeof buildPetDailyTimeline>[number] & {
+        iconName: string
+        metaLabel: string
+      }
+    >,
+    dailyHistoryVisible: [] as Array<
+      ReturnType<typeof buildPetDailyTimeline>[number] & {
+        iconName: string
+        metaLabel: string
+      }
+    >,
+    dailyHistoryExpanded: false,
     supplyCategories: SUPPLY_CATEGORIES,
     selectedSupplyCategory: 'all' as SupplyFilter,
     currentSupplies: [] as Array<{
@@ -400,6 +400,7 @@ Page({
         uploadingAvatar: false,
         dailyEditorOpen: false,
         dailySaving: false,
+        dailyHistoryExpanded: false,
       })
     }
     const section = options.section
@@ -607,6 +608,16 @@ Page({
     })
   },
 
+  onToggleDailyHistory() {
+    const dailyHistoryExpanded = !this.data.dailyHistoryExpanded
+    this.setData({
+      dailyHistoryExpanded,
+      dailyHistoryVisible: dailyHistoryExpanded
+        ? this.data.dailyHistory
+        : this.data.dailyHistory.slice(0, 5),
+    })
+  },
+
   loadState(state: DemoPetState) {
     const today = getShanghaiDateOnly(Date.now())
     const timeline = buildPetTimeline(state).map((item) => {
@@ -649,12 +660,14 @@ Page({
         : Math.abs(weightDelta) < 0.05
           ? '和上次持平'
           : `较上次 ${weightDelta > 0 ? '+' : ''}${weightDelta.toFixed(1)} kg`
-    const todayDailyLogs = state.dailyLogs.filter(
-      (item) => getShanghaiDateOnly(Date.parse(item.recordedAt)) === today,
-    )
     const dailySummary = buildPetDailySummary(state.dailyLogs, today).map((item) => ({
       ...item,
       iconName: PET_DAILY_ICON_NAMES[item.type],
+    }))
+    const dailyHistory = buildPetDailyTimeline(state.dailyLogs).map((item) => ({
+      ...item,
+      iconName: PET_DAILY_ICON_NAMES[item.type],
+      metaLabel: `${item.label} · ${item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`}`,
     }))
     const vaccineEvents = state.events
       .filter((item) => item.type === 'vaccine')
@@ -697,7 +710,6 @@ Page({
       vaccineNextLabel,
       latestWeight: latestValue ? formatPetWeight(latestValue.value) : '—',
       companionDays,
-      dailyTodayCount: todayDailyLogs.length,
       featuredSupply: currentSupplies[0] ?? null,
       weightPoints,
       weightTrendLabel,
@@ -710,17 +722,16 @@ Page({
         : careTimeline.slice(0, 5),
       dailySummary: dailySummary.map((item) => ({
         ...item,
-        metaLabel: item.count > 0 ? `今天 ${item.count} 次` : '记一笔',
+        metaLabel: item.elapsedLabel === '还没有记录'
+          ? '还没有记录'
+          : item.count > 0
+            ? `今天 ${item.count} 次 · ${item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`}`
+            : `上次 ${item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`}`,
       })),
-      recentDailyLogs: [...todayDailyLogs]
-        .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
-        .map((item) => ({
-        id: item.id,
-        iconName: PET_DAILY_ICON_NAMES[item.type],
-        typeLabel: PET_DAILY_LOG_LABELS[item.type],
-        summary: item.summary,
-        timeLabel: formatDailyTime(item.recordedAt),
-        })),
+      dailyHistory,
+      dailyHistoryVisible: this.data.dailyHistoryExpanded
+        ? dailyHistory
+        : dailyHistory.slice(0, 5),
       currentSupplies,
       supplies: filterPetSupplies(
         state.supplies,

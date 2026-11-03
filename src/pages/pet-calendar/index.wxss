@@ -53,6 +53,9 @@
 .calendar-event-row { display: flex; min-height: 96rpx; align-items: center; border-bottom: 1rpx solid var(--calendar-line); gap: 14rpx; }
 .calendar-event-row:last-child { border-bottom: 0; }
 .calendar-event-row__mark { display: flex; width: 52rpx; height: 52rpx; align-items: center; justify-content: center; border-radius: 17rpx; background: var(--calendar-pink-soft); flex-shrink: 0; }
+.calendar-event-row--daily .calendar-event-row__mark { background: #edf3ee; }
+.calendar-event-row--plan .calendar-event-row__mark,
+.calendar-event-row--care .calendar-event-row__mark { background: #f6efe2; }
 .calendar-event-row__body { min-width: 0; flex: 1; }
 .calendar-event-row__body text { display: block; color: var(--calendar-ink); font-size: 26rpx; font-weight: 600; }
 .calendar-event-row__body text + text { margin-top: 3rpx; color: var(--calendar-ink-3); font-size: 21rpx; font-weight: 400; }

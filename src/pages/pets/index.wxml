@@ -147,7 +147,7 @@
 
       <block wx:elif="{{activeSection === 'daily'}}">
         <view class="pet-toolbar">
-          <text>{{dailyTodayCount ? '今天 ' + dailyTodayCount + ' 条' : '今天'}}</text>
+          <text>{{dailyHistory.length ? '共 ' + dailyHistory.length + ' 条记录' : '日常记录'}}</text>
         </view>
         <view class="daily-grid">
           <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card" data-type="{{item.type}}" bindtap="onAddDailyLog">
@@ -156,10 +156,24 @@
             <text class="daily-card__add">＋</text>
           </view>
         </view>
-        <view wx:if="{{recentDailyLogs.length}}" class="daily-recent">
-          <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">今天的记录</text></view><text>{{recentDailyLogs.length}} 条</text></view>
-          <view class="daily-list"><view wx:for="{{recentDailyLogs}}" wx:key="id" class="daily-row"><view class="daily-row__icon"><line-icon name="{{item.iconName}}" size="22" tone="pink" /></view><view class="daily-row__body"><text>{{item.summary}}</text><text>{{item.typeLabel}}</text></view><text class="daily-row__time">{{item.timeLabel}}</text></view></view>
+        <view wx:if="{{dailyHistoryVisible.length}}" class="daily-recent">
+          <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">日常记录</text></view><text>{{dailyHistory.length}} 条</text></view>
+          <view class="daily-timeline">
+            <view wx:for="{{dailyHistoryVisible}}" wx:key="id" class="daily-timeline__row">
+              <view class="daily-timeline__rail">
+                <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="16" tone="pink" /></view>
+                <view class="daily-timeline__line"></view>
+              </view>
+              <view class="daily-timeline__body">
+                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
+                <view class="daily-timeline__title">{{item.summary}}</view>
+                <text class="daily-timeline__copy">{{item.label}}<block wx:if="{{item.note}}"> · {{item.note}}</block></text>
+              </view>
+            </view>
+          </view>
+          <view wx:if="{{dailyHistory.length > 5}}" class="timeline-more" bindtap="onToggleDailyHistory">{{dailyHistoryExpanded ? '收起' : '查看更早记录'}}<text>{{dailyHistoryExpanded ? '↑' : '↓'}}</text></view>
         </view>
+        <view wx:else class="pet-empty-line">还没有日常记录</view>
       </block>
 
       <block wx:else>

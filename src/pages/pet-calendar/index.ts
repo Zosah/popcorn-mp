@@ -1,11 +1,15 @@
 import {
   buildPetCalendar,
   buildPetCareCards,
+  buildPetDailyTimeline,
   PET_EVENT_LABELS,
   shiftPetCalendarMonth,
   type DemoPetEvent,
 } from '../../domain/demo-pet'
-import { PET_EVENT_ICON_NAMES } from '../../constants/icon-names'
+import {
+  PET_DAILY_ICON_NAMES,
+  PET_EVENT_ICON_NAMES,
+} from '../../constants/icon-names'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import { petGateway } from '../../services/pet'
 import { activePetFrom, getPetErrorMessage } from '../../services/pet-gateway'
@@ -16,9 +20,16 @@ interface CalendarEventView {
   eventId: string
   date: string
   title: string
+  note: string
   typeLabel: string
   iconName: string
   kindLabel: string
+  source: 'event' | 'plan' | 'care' | 'daily'
+}
+
+function formatCalendarDateLabel(value: string): string {
+  const [, month, day] = value.split('-')
+  return month && day ? `${Number(month)}月${Number(day)}日` : value
 }
 
 Page({
@@ -29,6 +40,7 @@ Page({
     weekdays: ['日', '一', '二', '三', '四', '五', '六'],
     cells: [] as Array<ReturnType<typeof buildPetCalendar>[number]>,
     selectedDate: '',
+    selectedDateLabel: '',
     selectedEvents: [] as CalendarEventView[],
     calendarEvents: [] as CalendarEventView[],
     loading: true,
@@ -69,6 +81,7 @@ Page({
     const selectedDate = event.currentTarget.dataset.date
     this.setData({
       selectedDate,
+      selectedDateLabel: formatCalendarDateLabel(selectedDate),
       selectedEvents: this.data.calendarEvents.filter(
         (item) => item.date === selectedDate,
       ),
@@ -102,9 +115,11 @@ Page({
         eventId: event.id,
         date: event.occurredOn,
         title: event.title,
+        note: event.note,
         typeLabel: PET_EVENT_LABELS[event.type],
         iconName: PET_EVENT_ICON_NAMES[event.type],
         kindLabel: '已记录',
+        source: 'event',
       }))
       const plannedEvents: CalendarEventView[] = state.events
         .filter((event) => event.nextOn)
@@ -113,9 +128,11 @@ Page({
           eventId: event.id,
           date: event.nextOn!,
           title: `下次${PET_EVENT_LABELS[event.type]}`,
+          note: event.note,
           typeLabel: PET_EVENT_LABELS[event.type],
           iconName: PET_EVENT_ICON_NAMES[event.type],
           kindLabel: '计划',
+          source: 'plan',
         }))
       const careEvents: CalendarEventView[] = buildPetCareCards(
         state.events,
@@ -133,19 +150,41 @@ Page({
           eventId: '',
           date: item.nextOn!,
           title: item.title,
+          note: '',
           typeLabel: '周期照护',
           iconName: PET_EVENT_ICON_NAMES[item.type],
           kindLabel: '自动推算',
+          source: 'care',
         }))
-      const calendarEvents = [...actualEvents, ...plannedEvents, ...careEvents]
-      const eventDates: DemoPetEvent[] = calendarEvents.map((item) => ({
+      const dailyEvents: CalendarEventView[] = buildPetDailyTimeline(
+        state.dailyLogs,
+      ).map((item) => ({
+        id: item.id,
+        eventId: '',
+        date: item.recordedOn,
+        title: item.summary,
+        note: item.note,
+        typeLabel: item.label,
+        iconName: PET_DAILY_ICON_NAMES[item.type],
+        kindLabel: `日常 · ${item.label} · ${item.timeLabel}`,
+        source: 'daily',
+      }))
+      const calendarEvents = [
+        ...actualEvents,
+        ...dailyEvents,
+        ...plannedEvents,
+        ...careEvents,
+      ]
+      const eventDates: DemoPetEvent[] = calendarEvents
+        .filter((item) => item.source !== 'daily')
+        .map((item) => ({
         id: item.id,
         type: 'outing',
         occurredOn: item.date,
         title: item.title,
         note: '',
         createdAt: '',
-      }))
+        }))
       const [year, month] = this.data.yearMonth.split('-').map(Number)
       const selectedDate = keepSelection
         ? this.data.selectedDate
@@ -153,8 +192,14 @@ Page({
       this.setData({
         petName: state.profile.name,
         monthLabel: year && month ? `${year} 年 ${month} 月` : this.data.yearMonth,
-        cells: buildPetCalendar(eventDates, this.data.yearMonth, today),
+        cells: buildPetCalendar(
+          eventDates,
+          this.data.yearMonth,
+          today,
+          state.dailyLogs,
+        ),
         selectedDate,
+        selectedDateLabel: formatCalendarDateLabel(selectedDate),
         calendarEvents,
         selectedEvents: calendarEvents.filter((item) => item.date === selectedDate),
       })
