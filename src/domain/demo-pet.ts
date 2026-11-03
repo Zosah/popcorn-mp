@@ -106,6 +106,7 @@ export interface DemoPetSupply {
   note: string
   mediaId?: string
   mediaUrl?: string
+  mediaThumbUrl?: string
   recordedOn: string
   version?: number
 }

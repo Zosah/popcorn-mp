@@ -20,6 +20,11 @@ import { mediaGateway } from '../../services/media'
 import { getMediaErrorMessage } from '../../services/media-gateway'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import {
+  cropSquareImage,
+  editLocalImage,
+  isImageEditCancelled,
+} from '../../utils/image-editor'
 import { showMediaUploadError } from '../../utils/media-error'
 
 type AuthMode = 'login' | 'register' | 'account'
@@ -63,6 +68,16 @@ function formatAccountDate(isoDate: string): string {
 }
 
 let avatarUploadSequence = 0
+
+function getLocalFileSize(filePath: string): Promise<number> {
+  return new Promise((resolve) => {
+    wx.getFileSystemManager().getFileInfo({
+      filePath,
+      success: (result) => resolve(result.size),
+      fail: () => resolve(0),
+    })
+  })
+}
 
 Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   data: {
@@ -200,7 +215,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   },
 
   async loadProfileAvatar(mediaId: string) {
-    const url = await resolveAvatarUrl(mediaId)
+    const url = await resolveAvatarUrl(mediaId, 'display')
     if (this.data.avatarMediaId !== mediaId) return
     this.setData({ avatarPreviewUrl: url })
   },
@@ -285,46 +300,32 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     })
   },
 
-  onChooseAvatar(event: { detail: { avatarUrl?: string } }) {
+  async onChooseAvatar(event: { detail: { avatarUrl?: string } }) {
     if (this.data.avatarUploading) return
-    const filePath = event.detail.avatarUrl?.trim()
-    if (!filePath) return
-    const sequence = ++avatarUploadSequence
-    this.setData({ avatarPreviewUrl: filePath, avatarUploadError: '' })
-    wx.getFileSystemManager().getFileInfo({
-      filePath,
-      success: (result) => {
-        if (sequence !== avatarUploadSequence) return
-        if (result.size > 10 * 1024 * 1024) {
-          this.setData({
-            avatarPreviewUrl: '',
-            avatarUploadError: '图片有点大，请换一张试试',
-          })
-          return
-        }
-        void this.uploadAvatar(filePath, result.size, sequence)
-      },
-      fail: () => {
-        if (sequence !== avatarUploadSequence) return
-        void this.uploadAvatar(filePath, 0, sequence)
-      },
-    })
-  },
-
-  async uploadAvatar(filePath: string, fileSize: number, sequence: number) {
+    const rawPath = event.detail.avatarUrl?.trim()
+    if (!rawPath) return
     const previousMediaId = this.data.avatarMediaId
+    const sequence = ++avatarUploadSequence
     this.setData({ avatarUploading: true, avatarUploadError: '' })
     try {
+      const editedPath = await editLocalImage(rawPath)
+      const filePath = await cropSquareImage(editedPath)
+      const fileSize = await getLocalFileSize(filePath)
+      if (fileSize > 10 * 1024 * 1024) {
+        this.setData({ avatarUploadError: '图片有点大，请换一张试试' })
+        return
+      }
       const asset = await mediaGateway.upload(filePath, 'user_avatar', fileSize)
       if (sequence !== avatarUploadSequence) return
       this.setData({
         avatarMediaId: asset.id,
-        avatarPreviewUrl: asset.thumb.url || asset.display.url,
+        avatarPreviewUrl: asset.display.url || asset.thumb.url,
         avatarError: '',
       })
       wx.showToast({ title: '头像已设置', icon: 'success' })
     } catch (error) {
       if (sequence !== avatarUploadSequence) return
+      if (isImageEditCancelled(error)) return
       const message = getMediaErrorMessage(error, '头像上传没有完成')
       this.setData({ avatarMediaId: previousMediaId, avatarPreviewUrl: '', avatarUploadError: message })
       if (previousMediaId) void this.loadProfileAvatar(previousMediaId)

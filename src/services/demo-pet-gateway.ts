@@ -14,6 +14,7 @@ import {
   getDemoPetStore,
   removeDemoPet,
   removeDemoPetDailyLog,
+  updateDemoPetDailyLog,
   removeDemoPetEvent,
   removeDemoPetStatusNote,
   removeDemoPetWeight,
@@ -211,6 +212,21 @@ export class DemoPetGateway implements PetGateway {
       throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
     }
     return addDemoPetDailyLog(input)
+  }
+
+  async updateDailyLog(
+    petId: string,
+    logId: string,
+    input: PetDailyLogInput,
+  ): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    if (!pet.dailyLogs.some((item) => item.id === logId && !item.deletedAt)) {
+      throw new PetGatewayError('DAILY_LOG_NOT_FOUND', '日常记录不存在')
+    }
+    return updateDemoPetDailyLog(logId, input)
   }
 
   async removeDailyLog(petId: string, logId: string): Promise<DemoPetState> {

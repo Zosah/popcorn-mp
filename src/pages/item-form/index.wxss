@@ -28,7 +28,8 @@
 .form-photo-row__hint { color: var(--form-ink-3); font-size: 24rpx; line-height: 1.55; }
 .form-photo { position: relative; display: flex; width: 136rpx; height: 136rpx; align-items: center; justify-content: center; overflow: hidden; border-radius: 26rpx; flex-shrink: 0; }
 .form-photo__image { width: 100%; height: 100%; }
-.form-photo__remove { position: absolute; top: 8rpx; right: 8rpx; display: flex; width: 42rpx; height: 42rpx; align-items: center; justify-content: center; border: 2rpx solid rgba(255, 255, 255, 0.88); border-radius: 50%; background: rgba(37, 43, 39, 0.68); color: #fff; font-family: Arial, sans-serif; font-size: 31rpx; line-height: 1; }
+.form-photo__remove { position: absolute; top: 8rpx; right: 8rpx; display: flex; width: 42rpx; height: 42rpx; align-items: center; justify-content: center; border: 2rpx solid rgba(255, 255, 255, 0.88); border-radius: 50%; background: rgba(37, 43, 39, 0.58); color: #fff; font-family: Arial, sans-serif; font-size: 31rpx; line-height: 1; }
+.form-photo__edit { position: absolute; right: 9rpx; bottom: 9rpx; padding: 5rpx 11rpx; border-radius: 999rpx; background: rgba(255, 255, 255, 0.9); color: #8a5961; font-size: 18rpx; font-weight: 600; line-height: 1.35; }
 .form-photo--empty { border: 2rpx dashed #d9d3c9; background: var(--c-paper-2, #f5f0e9); color: var(--form-ink-3); flex-direction: column; gap: 7rpx; font-size: 21rpx; }
 .form-photo--busy { color: var(--form-ink-2); }
 .form-grid { display: grid; border-bottom: 1rpx solid var(--form-line); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20rpx; }

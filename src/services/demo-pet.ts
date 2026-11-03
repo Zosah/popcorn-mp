@@ -64,6 +64,7 @@ function cloneState(state: DemoPetState): DemoPetState {
             note: item.note ?? '',
             mediaId: item.mediaId ?? '',
             mediaUrl: item.mediaUrl ?? '',
+            mediaThumbUrl: item.mediaThumbUrl ?? item.mediaUrl ?? '',
             version: item.version ?? 1,
           }
         })
@@ -437,6 +438,30 @@ export function addDemoPetDailyLog(input: {
     recordedAt: input.recordedAt?.trim() || new Date(nowMs).toISOString(),
   }
   state.dailyLogs = [log, ...state.dailyLogs]
+  return saveDemoPetState(state)
+}
+
+export function updateDemoPetDailyLog(
+  id: string,
+  input: {
+    type: PetDailyLogType
+    summary: string
+    note?: string
+    recordedAt?: string
+  },
+): DemoPetState {
+  const state = getDemoPetState()
+  const existing = state.dailyLogs.find((item) => item.id === id && !item.deletedAt)
+  if (!existing) throw new Error('日常记录不存在')
+  state.dailyLogs = state.dailyLogs.map((item) => item.id === id
+    ? {
+        ...item,
+        type: input.type,
+        summary: input.summary.trim(),
+        note: input.note?.trim() ?? '',
+        recordedAt: input.recordedAt?.trim() || item.recordedAt,
+      }
+    : item)
   return saveDemoPetState(state)
 }
 

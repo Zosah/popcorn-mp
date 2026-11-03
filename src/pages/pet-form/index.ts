@@ -5,11 +5,16 @@ import { getMediaErrorMessage } from '../../services/media-gateway'
 import { petGateway } from '../../services/pet'
 import { getPetErrorMessage } from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import {
+  chooseEditableImages,
+  isImageEditCancelled,
+} from '../../utils/image-editor'
 import { showMediaUploadError } from '../../utils/media-error'
 
 interface PetFormAvatar {
   mediaId: string
   src: string
+  thumbSrc: string
 }
 
 const SPECIES_OPTIONS: Array<{
@@ -97,22 +102,21 @@ Page({
     this.setData({ 'form.neuteredOn': event.detail.value, errorText: '' })
   },
 
-  onChooseAvatar() {
+  async onChooseAvatar() {
     if (this.data.avatarUploading || this.data.saving) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      success: (result) => {
-        const file = result.tempFiles[0]
-        if (!file) return
-        if (file.size > 10 * 1024 * 1024) {
-          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
-          return
-        }
-        void this.uploadAvatar(file.tempFilePath, file.size)
-      },
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1, cropSquare: true })
+      if (!file) return
+      if (file.size > 10 * 1024 * 1024) {
+        wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+        return
+      }
+      await this.uploadAvatar(file.tempFilePath, file.size)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '照片没有准备好')
+      }
+    }
   },
 
   onAvatarTap() {
@@ -127,8 +131,13 @@ Page({
     this.setData({ avatarUploading: true, errorText: '' })
     try {
       const asset = await mediaGateway.upload(filePath, 'avatar', fileSize)
+      const src = asset.display.url || asset.thumb.url
       this.setData({
-        avatar: { mediaId: asset.id, src: asset.thumb.url || asset.display.url },
+        avatar: {
+          mediaId: asset.id,
+          src,
+          thumbSrc: asset.thumb.url || src,
+        },
         avatarMediaId: asset.id,
       })
       wx.showToast({ title: '照片已准备好', icon: 'success' })

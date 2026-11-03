@@ -10,7 +10,7 @@
 
   <view class="pet-form-avatar-card">
     <view class="pet-form-avatar" bindtap="onAvatarTap">
-      <image wx:if="{{avatar}}" src="{{avatar.src}}" mode="aspectFill" />
+      <image wx:if="{{avatar}}" src="{{avatar.thumbSrc || avatar.src}}" mode="aspectFill" />
       <view wx:elif="{{avatarUploading}}" class="pet-form-avatar__placeholder pet-form-avatar__placeholder--loading">
         <line-icon name="system-image" size="35" tone="green" />
         <text>正在上传</text>

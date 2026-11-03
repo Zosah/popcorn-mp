@@ -10,6 +10,11 @@ import {
   type MenuWriteInput,
 } from '../../services/menu-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import {
+  chooseEditableImages,
+  editRemoteImage,
+  isImageEditCancelled,
+} from '../../utils/image-editor'
 import { createRequestGate } from '../../utils/request-control'
 import { showMediaUploadError } from '../../utils/media-error'
 
@@ -234,24 +239,55 @@ Page({
     this.setData({ stepsText: event.detail.value })
   },
 
-  onChooseImage() {
+  async onChooseImage() {
     if (this.data.imageUploading || this.data.saving) return
-    chooseImages(1, (files) => {
-      if (files[0]) void this.uploadFinishedImage(files[0])
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1 })
+      if (file) await this.uploadFinishedImage(file.tempFilePath, file.size)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '成品图没有准备好')
+      }
+    }
   },
 
-  async uploadFinishedImage(file: WechatMiniprogram.MediaFile) {
+  async uploadFinishedImage(filePath: string, fileSize: number) {
     this.setData({ imageUploading: true })
     try {
-      const asset = await mediaGateway.upload(file.tempFilePath, 'menu', file.size)
+      const asset = await mediaGateway.upload(filePath, 'menu', fileSize)
       this.setData({
-        image: { mediaId: asset.id, src: asset.display.url },
+        image: { mediaId: asset.id, src: asset.display.url || asset.thumb.url },
         imageMediaId: asset.id,
       })
       wx.showToast({ title: '成品图已添加', icon: 'success' })
     } catch (error) {
       showMediaUploadError(error, '成品图没有上传成功')
+    } finally {
+      this.setData({ imageUploading: false })
+    }
+  },
+
+  async onEditImage() {
+    if (this.data.imageUploading || this.data.saving) return
+    const src = this.data.image?.src
+    if (!src) return
+    this.setData({ imageUploading: true })
+    try {
+      const localPath = await editRemoteImage(src)
+      const asset = await mediaGateway.upload(localPath, 'menu')
+      this.setData({
+        image: {
+          mediaId: asset.id,
+          src: asset.display.url || asset.thumb.url,
+          ...(this.data.image?.caption ? { caption: this.data.image.caption } : {}),
+        },
+        imageMediaId: asset.id,
+      })
+      wx.showToast({ title: '成品图已更新', icon: 'success' })
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '成品图没有更新成功')
+      }
     } finally {
       this.setData({ imageUploading: false })
     }
@@ -268,19 +304,24 @@ Page({
     this.setData({ image: null, imageMediaId: '' })
   },
 
-  onChooseNoteImages() {
+  async onChooseNoteImages() {
     if (this.data.noteImageUploading || this.data.saving) return
     const remaining = 9 - this.data.noteImages.length
     if (remaining <= 0) {
       wx.showToast({ title: '最多放 9 张参考图', icon: 'none' })
       return
     }
-    chooseImages(remaining, (files) => {
-      if (files.length) void this.uploadNoteImages(files)
-    })
+    try {
+      const files = await chooseEditableImages({ count: remaining })
+      if (files.length) await this.uploadNoteImages(files)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '参考图没有准备好')
+      }
+    }
   },
 
-  async uploadNoteImages(files: WechatMiniprogram.MediaFile[]) {
+  async uploadNoteImages(files: Array<{ tempFilePath: string; size: number }>) {
     this.setData({ noteImageUploading: true })
     try {
       const uploaded = await Promise.all(files.map(async (file) => {
@@ -305,6 +346,32 @@ Page({
       current: current.src,
       urls: this.data.noteImages.map((item) => item.src),
     })
+  },
+
+  async onEditNoteImage(event: { currentTarget: { dataset: { index?: string } } }) {
+    if (this.data.noteImageUploading || this.data.saving) return
+    const index = Number(event.currentTarget.dataset.index)
+    const current = this.data.noteImages[index]
+    if (!Number.isInteger(index) || !current?.src) return
+    this.setData({ noteImageUploading: true })
+    try {
+      const localPath = await editRemoteImage(current.src)
+      const asset = await mediaGateway.upload(localPath, 'menu')
+      const noteImages = [...this.data.noteImages]
+      if (!noteImages[index]) return
+      noteImages[index] = {
+        mediaId: asset.id,
+        src: asset.display.url || asset.thumb.url,
+      }
+      this.setData({ noteImages })
+      wx.showToast({ title: '参考图已更新', icon: 'success' })
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '参考图没有更新成功')
+      }
+    } finally {
+      this.setData({ noteImageUploading: false })
+    }
   },
 
   onRemoveNoteImage(event: { currentTarget: { dataset: { index?: string } } }) {
@@ -499,25 +566,6 @@ function parseAmount(amount: string): {
 
 function formatQuantity(value: number): string {
   return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)))
-}
-
-function chooseImages(
-  count: number,
-  onSelected: (files: WechatMiniprogram.MediaFile[]) => void,
-): void {
-  wx.chooseMedia({
-    count,
-    mediaType: ['image'],
-    sourceType: ['album', 'camera'],
-    success: (result) => {
-      const files = result.tempFiles.filter((file) => {
-        if (file.size <= 10 * 1024 * 1024) return true
-        wx.showToast({ title: '单张图片不能超过 10 MiB', icon: 'none' })
-        return false
-      })
-      onSelected(files)
-    },
-  })
 }
 
 function showConfirm(title: string, content: string, confirmText: string): Promise<boolean> {

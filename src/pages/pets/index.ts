@@ -47,22 +47,16 @@ import {
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { showMediaUploadError } from '../../utils/media-error'
+import { chooseEditableImages, editRemoteImage, isImageEditCancelled } from '../../utils/image-editor'
 
 type PetSection = 'profile' | 'care' | 'daily' | 'supplies'
 
-type CropImageApi = (options: {
-  src: string
-  cropScale: '1:1'
-  success: (result: { tempFilePath: string }) => void
-  fail: () => void
-}) => void
 type SupplyFilter = PetSupplyCategory | 'all'
 type PetWeightUnit = 'jin' | 'kg'
 
 type DailyTimelineView = ReturnType<typeof buildPetDailyTimeline>[number] & {
   iconName: string
   metaLabel: string
-  swipeOffset: number
 }
 
 const EMPTY_PROFILE: DemoPetProfile = {
@@ -287,6 +281,7 @@ Page({
     syncState: 'pending',
     uploadingAvatar: false,
     avatarPreviewOpen: false,
+    avatarPreviewUrl: '',
     backgroundPickerOpen: false,
     uploadingBackground: false,
     backgroundOptions: (Object.keys(PET_BACKGROUND_LABELS) as PetBackgroundKey[]).map((key) => ({
@@ -306,6 +301,7 @@ Page({
     supplyEditingVersion: 0,
     supplySaving: false,
     dailyEditorOpen: false,
+    dailyEditorEditingId: '',
     dailySaving: false,
     dailyEditor: {
       type: 'urine' as PetDailyLogType,
@@ -332,6 +328,7 @@ Page({
       note: '',
       mediaId: '',
       mediaUrl: '',
+      mediaThumbUrl: '',
     },
     petState: EMPTY_PET_STATE,
     petStates: [] as DemoPetState[],
@@ -425,9 +422,6 @@ Page({
     dailyHistory: [] as DailyTimelineView[],
     dailyHistoryVisible: [] as DailyTimelineView[],
     dailyHistoryExpanded: false,
-    dailySwipeIndex: -1,
-    dailyTouchStartX: 0,
-    dailyTouchStartY: 0,
     supplyCategories: SUPPLY_CATEGORIES,
     selectedSupplyCategory: 'all' as SupplyFilter,
     currentSupplies: [] as Array<{
@@ -446,6 +440,7 @@ Page({
       name: string
       brand: string
       mediaUrl: string
+      mediaThumbUrl: string
       preference: PetSupplyPreference
       preferenceLabel: string
       preferenceHearts: string
@@ -482,9 +477,9 @@ Page({
         weightEditorOpen: false,
         weightSaving: false,
         dailyEditorOpen: false,
+        dailyEditorEditingId: '',
         dailySaving: false,
         dailyHistoryExpanded: false,
-        dailySwipeIndex: -1,
       })
     }
     const section = options.section
@@ -625,6 +620,7 @@ Page({
       weightEditorOpen: _weightEditorOpen,
       weightSaving: _weightSaving,
       dailyEditorOpen: _dailyEditorOpen,
+      dailyEditorEditingId: _dailyEditorEditingId,
       dailySaving: _dailySaving,
       ...snapshot
     } = data
@@ -644,6 +640,7 @@ Page({
       weightEditorOpen: false,
       weightSaving: false,
       dailyEditorOpen: false,
+      dailyEditorEditingId: '',
       dailySaving: false,
       editingProfile: false,
       profileDraft: this.data.profile,
@@ -762,7 +759,6 @@ Page({
       ...item,
       iconName: PET_DAILY_ICON_NAMES[item.type],
       metaLabel: item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`,
-      swipeOffset: 0,
     }))
     const vaccineEvents = state.events
       .filter((item) => item.type === 'vaccine')
@@ -813,6 +809,7 @@ Page({
       profile: state.profile,
       profileInitial: state.profile.name.slice(0, 1),
       profileDraft: { ...state.profile },
+      avatarPreviewUrl: '',
       backgroundOptions,
       backgroundHistoryOptions,
       ageLabel: formatPetAge(state.profile.birthday, today),
@@ -856,10 +853,28 @@ Page({
         categoryLabel: item.categoryLabel || PET_SUPPLY_CATEGORY_LABELS[item.category],
         iconName: PET_SUPPLY_ICON_NAMES[item.category],
         mediaUrl: item.mediaUrl ?? '',
+        mediaThumbUrl: item.mediaThumbUrl ?? item.mediaUrl ?? '',
         preferenceLabel: getPetSupplyPreferenceLabel(item.preference),
         preferenceHearts: getPetSupplyPreferenceHearts(item.preference),
       })),
     }, () => this.cacheCurrentPage())
+    void this.loadAvatarPreview(state.profile)
+  },
+
+  async loadAvatarPreview(profile: DemoPetProfile) {
+    if (!profile.id || !profile.avatarMediaId) return
+    try {
+      const asset = await mediaGateway.get(profile.avatarMediaId)
+      if (
+        this.data.petState.profile.id !== profile.id
+        || this.data.profile.avatarMediaId !== profile.avatarMediaId
+      ) return
+      this.setData({ avatarPreviewUrl: asset.display.url || asset.thumb.url || '' })
+    } catch {
+      if (this.data.petState.profile.id === profile.id) {
+        this.setData({ avatarPreviewUrl: profile.avatarUrl || '' })
+      }
+    }
   },
 
   loadPetTabs(collection?: PetCollection) {
@@ -1049,9 +1064,16 @@ Page({
     })
   },
 
-  onOpenAvatarPreview() {
+  async onOpenAvatarPreview() {
     if (!this.data.profile.id) return
     this.setData({ avatarPreviewOpen: true })
+    if (!this.data.profile.avatarMediaId) return
+    try {
+      const asset = await mediaGateway.get(this.data.profile.avatarMediaId)
+      this.setData({ avatarPreviewUrl: asset.display.url || asset.thumb.url || '' })
+    } catch {
+      // 预览失败时保留档案列表里的缩略图，不阻断弹层。
+    }
   },
 
   onCloseAvatarPreview() {
@@ -1059,36 +1081,17 @@ Page({
     this.setData({ avatarPreviewOpen: false })
   },
 
-  onChooseAvatar() {
+  async onChooseAvatar() {
     if (this.data.uploadingAvatar || this.data.syncing) return
     if (!requireAuthForWrite()) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      sizeType: ['compressed'],
-      success: (result) => {
-        const file = result.tempFiles[0]
-        if (!file?.tempFilePath) return
-        const cropImage = (wx as unknown as { cropImage?: CropImageApi }).cropImage
-        if (!cropImage) {
-          wx.showToast({ title: '当前微信版本不支持 1:1 裁切，请升级微信', icon: 'none' })
-          return
-        }
-        cropImage({
-          src: file.tempFilePath,
-          cropScale: '1:1',
-          success: (cropped) => {
-            if (cropped.tempFilePath) {
-              void this.uploadPetAvatar(cropped.tempFilePath, file.size)
-            }
-          },
-          fail: () => {
-            // 取消裁切不产生上传副作用。
-          },
-        })
-      },
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1, cropSquare: true })
+      if (file) await this.uploadPetAvatar(file.tempFilePath, file.size)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '照片没有准备好')
+      }
+    }
   },
 
   async uploadPetAvatar(filePath: string, fileSize: number) {
@@ -1102,7 +1105,10 @@ Page({
         profile.version ?? 1,
       )
       this.applyPetState(updated)
-      this.setData({ avatarPreviewOpen: false })
+      this.setData({
+        avatarPreviewOpen: false,
+        avatarPreviewUrl: asset.display.url || asset.thumb.url || '',
+      })
       wx.showToast({ title: '照片已更新', icon: 'success' })
     } catch (error) {
       if (error instanceof PetGatewayError) {
@@ -1138,7 +1144,7 @@ Page({
             profile.version ?? 1,
           )
           this.applyPetState(updated)
-          this.setData({ avatarPreviewOpen: false })
+          this.setData({ avatarPreviewOpen: false, avatarPreviewUrl: '' })
           wx.showToast({ title: '照片已移除', icon: 'success' })
         } catch (error) {
           const message = getPetErrorMessage(error, '照片没有移除成功')
@@ -1152,7 +1158,7 @@ Page({
   },
 
   onAvatarError() {
-    this.setData({ 'profile.avatarUrl': '' })
+    this.setData({ 'profile.avatarUrl': '', avatarPreviewUrl: '' })
   },
 
   onOpenBackgroundPicker() {
@@ -1238,19 +1244,17 @@ Page({
     }
   },
 
-  onChooseBackground() {
+  async onChooseBackground() {
     if (this.data.uploadingBackground || this.data.syncing) return
     if (!requireAuthForWrite()) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      sizeType: ['compressed'],
-      success: (result) => {
-        const file = result.tempFiles[0]
-        if (file?.tempFilePath) void this.uploadPetBackground(file.tempFilePath, file.size)
-      },
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1 })
+      if (file) await this.uploadPetBackground(file.tempFilePath, file.size)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '背景图没有准备好')
+      }
+    }
   },
 
   async uploadPetBackground(filePath: string, fileSize: number) {
@@ -1297,6 +1301,7 @@ Page({
         note: '',
         mediaId: '',
         mediaUrl: '',
+        mediaThumbUrl: '',
       },
     })
   },
@@ -1322,15 +1327,64 @@ Page({
         note: supply.note,
         mediaId: supply.mediaId ?? '',
         mediaUrl: supply.mediaUrl ?? '',
+        mediaThumbUrl: supply.mediaThumbUrl ?? supply.mediaUrl ?? '',
       },
     })
   },
 
-  onPreviewSupplyImage(event: {
-    currentTarget: { dataset: { url: string } }
+  async onPreviewSupplyImage(event: {
+    currentTarget: { dataset: { id: string } }
   }) {
-    const url = event.currentTarget.dataset.url
-    if (url) wx.previewImage({ current: url, urls: [url] })
+    const id = event.currentTarget.dataset.id
+    const supply = this.data.petState.supplies.find((item) => item.id === id)
+    if (!supply?.mediaId) return
+    try {
+      const asset = await mediaGateway.get(supply.mediaId)
+      const url = asset.display.url || asset.thumb.url
+      if (url) wx.previewImage({ current: url, urls: [url] })
+    } catch (error) {
+      showMediaUploadError(error, '图片暂时无法查看')
+    }
+  },
+
+  async onPreviewSupplyEditorImage() {
+    const url = this.data.supplyDraft.mediaUrl
+      || this.data.supplyDraft.mediaThumbUrl
+    if (!url) return
+    wx.previewImage({ current: url, urls: [url] })
+  },
+
+  async onEditSupplyImage() {
+    if (this.data.supplySaving) return
+    const draft = this.data.supplyDraft
+    let source = draft.mediaUrl
+    if (!source && draft.mediaId) {
+      try {
+        const asset = await mediaGateway.get(draft.mediaId)
+        source = asset.display.url || asset.thumb.url
+      } catch (error) {
+        showMediaUploadError(error, '图片暂时无法编辑')
+        return
+      }
+    }
+    if (!source) return
+    try {
+      this.setData({ supplySaving: true })
+      const localPath = await editRemoteImage(source)
+      const asset = await mediaGateway.upload(localPath, 'pet')
+      this.setData({
+        'supplyDraft.mediaId': asset.id,
+        'supplyDraft.mediaUrl': asset.display.url || asset.thumb.url,
+        'supplyDraft.mediaThumbUrl': asset.thumb.url || asset.display.url,
+      })
+      wx.showToast({ title: '图片已更新', icon: 'success' })
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '用品图片没有更新成功')
+      }
+    } finally {
+      this.setData({ supplySaving: false })
+    }
   },
 
   onCloseSupplyEditor() {
@@ -1360,36 +1414,32 @@ Page({
     this.setData({ [`supplyDraft.${field}`]: event.detail.value })
   },
 
-  onChooseSupplyImage() {
+  async onChooseSupplyImage() {
     if (this.data.supplySaving) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      sizeType: ['compressed'],
-      success: async (result) => {
-        const file = result.tempFiles[0]
-        if (!file?.tempFilePath) return
-        this.setData({ supplySaving: true })
-        try {
-          const asset = await mediaGateway.upload(file.tempFilePath, 'pet', file.size)
-          this.setData({
-            'supplyDraft.mediaId': asset.id,
-            'supplyDraft.mediaUrl': asset.thumb.url || asset.display.url,
-          })
-        } catch (error) {
-          showMediaUploadError(error, '用品图片没有上传成功')
-        } finally {
-          this.setData({ supplySaving: false })
-        }
-      },
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1 })
+      if (!file) return
+      this.setData({ supplySaving: true })
+      const asset = await mediaGateway.upload(file.tempFilePath, 'pet', file.size)
+      this.setData({
+        'supplyDraft.mediaId': asset.id,
+        'supplyDraft.mediaUrl': asset.display.url || asset.thumb.url,
+        'supplyDraft.mediaThumbUrl': asset.thumb.url || asset.display.url,
+      })
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '用品图片没有上传成功')
+      }
+    } finally {
+      this.setData({ supplySaving: false })
+    }
   },
 
   onRemoveSupplyImage() {
     this.setData({
       'supplyDraft.mediaId': '',
       'supplyDraft.mediaUrl': '',
+      'supplyDraft.mediaThumbUrl': '',
     })
   },
 
@@ -1692,6 +1742,7 @@ Page({
     const recorded = toTravelDateTimeParts(new Date().toISOString())
     this.setData({
       dailyEditorOpen: true,
+      dailyEditorEditingId: '',
       dailyEditor: {
         type,
         title: type === 'record' ? '写一条记录' : PET_DAILY_LOG_LABELS[type],
@@ -1711,7 +1762,7 @@ Page({
 
   onCloseDailyEditor() {
     if (this.data.dailySaving) return
-    this.setData({ dailyEditorOpen: false })
+    this.setData({ dailyEditorOpen: false, dailyEditorEditingId: '' })
   },
 
   onDailyChoiceSelect(event: {
@@ -1752,62 +1803,73 @@ Page({
       ? draft.detail.trim()
       : composeDailyLogSummary(draft.type, draft.choice, draft.detail)
     this.setData({ dailySaving: true })
+    const editingId = this.data.dailyEditorEditingId
     const saved = await this.runPetMutation(
-      () => petGateway.addDailyLog(
-        this.data.petState.profile.id,
-        { type: draft.type, summary, recordedAt },
-      ),
-      `${PET_DAILY_LOG_LABELS[draft.type]}已记下`,
+      () => editingId
+        ? petGateway.updateDailyLog(
+            this.data.petState.profile.id,
+            editingId,
+            { type: draft.type, summary, recordedAt },
+          )
+        : petGateway.addDailyLog(
+            this.data.petState.profile.id,
+            { type: draft.type, summary, recordedAt },
+          ),
+      editingId ? '记录已更新' : `${PET_DAILY_LOG_LABELS[draft.type]}已记下`,
     )
-    this.setData({ dailySaving: false, dailyEditorOpen: !saved })
-  },
-
-  onDailyTouchStart(event: WechatMiniprogram.TouchEvent) {
-    const index = Number(event.currentTarget.dataset.index)
-    const touch = event.touches[0]
-    if (!Number.isFinite(index) || !touch) return
-    const updates: Record<string, number> = {
-      dailySwipeIndex: index,
-      dailyTouchStartX: touch.clientX,
-      dailyTouchStartY: touch.clientY,
-    }
-    this.data.dailyHistoryVisible.forEach((_item, itemIndex) => {
-      if (itemIndex !== index) {
-        updates[`dailyHistoryVisible[${itemIndex}].swipeOffset`] = 0
-      }
-    })
-    this.setData(updates)
-  },
-
-  onDailyTouchMove(event: WechatMiniprogram.TouchEvent) {
-    const index = Number(event.currentTarget.dataset.index)
-    const touch = event.touches[0]
-    if (!touch || index !== this.data.dailySwipeIndex) return
-    const deltaX = touch.clientX - this.data.dailyTouchStartX
-    const deltaY = touch.clientY - this.data.dailyTouchStartY
-    if (Math.abs(deltaX) <= Math.abs(deltaY)) return
-    const swipeOffset = Math.max(-132, Math.min(0, deltaX))
-    this.setData({ [`dailyHistoryVisible[${index}].swipeOffset`]: swipeOffset })
-  },
-
-  onDailyTouchEnd(event: WechatMiniprogram.TouchEvent) {
-    const index = Number(event.currentTarget.dataset.index)
-    const touch = event.changedTouches[0]
-    if (!touch || index !== this.data.dailySwipeIndex) return
-    const deltaX = touch.clientX - this.data.dailyTouchStartX
-    const deltaY = touch.clientY - this.data.dailyTouchStartY
-    const opened = Math.abs(deltaX) > Math.abs(deltaY) && deltaX < -44
     this.setData({
-      [`dailyHistoryVisible[${index}].swipeOffset`]: opened ? -132 : 0,
-      dailySwipeIndex: opened ? index : -1,
+      dailySaving: false,
+      dailyEditorOpen: !saved,
+      dailyEditorEditingId: saved ? '' : editingId,
     })
   },
 
-  onRemoveDailyLog(event: {
+  openDailyLogEditor(id: string) {
+    if (!requireAuthForWrite()) return
+    const log = this.data.dailyHistory.find((item) => item.id === id)
+    if (!log) return
+    const recorded = {
+      date: log.recordedOn,
+      time: log.timeLabel,
+    }
+    const config = DAILY_EDITOR_CONFIGS[log.type]
+    this.setData({
+      dailyEditorOpen: true,
+      dailyEditorEditingId: log.id,
+      dailyEditor: {
+        type: log.type,
+        title: '编辑记录',
+        iconName: PET_DAILY_ICON_NAMES[log.type],
+        choiceLabel: config.choiceLabel,
+        detailLabel: '记录内容',
+        detailPlaceholder: '改一改这次记录',
+        choices: config.choices,
+        choice: config.choices[0]?.value ?? '',
+        detail: log.summary,
+        recordedDate: recorded.date,
+        recordedTime: recorded.time,
+        freeform: true,
+      },
+    })
+  },
+
+  onDailyLogLongPress(event: {
     currentTarget: { dataset: { id: string } }
   }) {
     if (!requireAuthForWrite()) return
     const id = event.currentTarget.dataset.id
+    if (!id || !this.data.dailyHistory.some((item) => item.id === id)) return
+    wx.showActionSheet({
+      itemList: ['编辑记录', '删除记录'],
+      success: (result) => {
+        if (result.tapIndex === 0) this.openDailyLogEditor(id)
+        if (result.tapIndex === 1) this.confirmRemoveDailyLog(id)
+      },
+    })
+  },
+
+  confirmRemoveDailyLog(id: string) {
+    if (!requireAuthForWrite()) return
     const log = this.data.dailyHistory.find((item) => item.id === id)
     if (!log) return
     wx.showModal({
@@ -1817,11 +1879,10 @@ Page({
       confirmColor: '#b35f6d',
       success: async (result) => {
         if (!result.confirm) return
-        const saved = await this.runPetMutation(
+        await this.runPetMutation(
           () => petGateway.removeDailyLog(this.data.petState.profile.id, id),
           '这条记录已删除',
         )
-        if (saved) this.setData({ dailySwipeIndex: -1 })
       },
     })
   },

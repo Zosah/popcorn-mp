@@ -15,6 +15,11 @@ import {
   isJournalVersionConflict,
 } from '../../services/journal-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import {
+  chooseEditableImages,
+  editRemoteImage,
+  isImageEditCancelled,
+} from '../../utils/image-editor'
 import { showMediaUploadError } from '../../utils/media-error'
 
 const NOTE_CATEGORY_OPTIONS = Object.entries(DEMO_NOTE_CATEGORY_LABELS).map(
@@ -145,25 +150,25 @@ Page({
     this.setData({ 'form.content': event.detail.value })
   },
 
-  onChooseImage() {
+  async onChooseImage() {
     if (this.data.imageUploading) return
     const remaining = MAX_JOURNAL_IMAGES - this.data.images.length
     if (remaining <= 0) {
       wx.showToast({ title: '最多添加 9 张图片', icon: 'none' })
       return
     }
-    wx.chooseMedia({
-      count: remaining,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      success: (result) => {
-        const files = result.tempFiles.filter((file) => file.size <= 10 * 1024 * 1024)
-        if (files.length !== result.tempFiles.length) {
-          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
-        }
-        if (files.length) void this.uploadImages(files)
-      },
-    })
+    try {
+      const selected = await chooseEditableImages({ count: remaining })
+      const files = selected.filter((file) => file.size <= 10 * 1024 * 1024)
+      if (files.length !== selected.length) {
+        wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+      }
+      if (files.length) await this.uploadImages(files)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '图片没有准备好')
+      }
+    }
   },
 
   async uploadImages(files: Array<{ tempFilePath: string; size: number }>) {
@@ -221,6 +226,35 @@ Page({
     const selected = images[index]
     const current = selected?.src || selected?.thumbSrc || urls[0]
     wx.previewImage({ current, urls })
+  },
+
+  async onEditImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    if (this.data.imageUploading) return
+    const index = Number(event.currentTarget.dataset.index)
+    const image = this.data.images[index]
+    if (!image?.src) return
+    this.setData({ imageUploading: true, uploadProgress: '正在编辑图片' })
+    try {
+      const localPath = await editRemoteImage(image.src)
+      const asset = await mediaGateway.upload(localPath, 'journal')
+      const images = [...this.data.images]
+      const current = images[index]
+      if (!current) return
+      images[index] = {
+        ...current,
+        mediaId: asset.id,
+        src: asset.display.url || asset.thumb.url,
+        thumbSrc: asset.thumb.url || asset.display.url,
+      }
+      this.setData({ images })
+      wx.showToast({ title: '图片已更新', icon: 'success' })
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '图片没有更新成功')
+      }
+    } finally {
+      this.setData({ imageUploading: false, uploadProgress: '' })
+    }
   },
 
   onCategoryChange(event: { detail: { value: string } }) {

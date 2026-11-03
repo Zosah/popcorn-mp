@@ -189,18 +189,15 @@
             <view class="daily-head-actions"><text wx:if="{{dailyHistory.length}}">{{dailyHistory.length}} 条</text><view class="daily-head-record" bindtap="onOpenDailyRecord">＋ 记录</view></view>
           </view>
           <view wx:if="{{dailyHistoryVisible.length}}" class="daily-timeline">
-            <view wx:for="{{dailyHistoryVisible}}" wx:key="id" class="daily-swipe" data-index="{{index}}" bindtouchstart="onDailyTouchStart" bindtouchmove="onDailyTouchMove" bindtouchend="onDailyTouchEnd">
-              <view class="daily-swipe__delete" data-id="{{item.id}}" catchtap="onRemoveDailyLog">删除</view>
-              <view class="daily-timeline__row" style="left: {{item.swipeOffset}}rpx;">
-                <view class="daily-timeline__rail">
-                  <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
-                  <view class="daily-timeline__line"></view>
-                </view>
-                <view class="daily-timeline__body">
-                  <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
-                  <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
-                  <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
-                </view>
+            <view wx:for="{{dailyHistoryVisible}}" wx:key="id" class="daily-timeline__row" data-id="{{item.id}}" bindlongpress="onDailyLogLongPress">
+              <view class="daily-timeline__rail">
+                <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
+                <view class="daily-timeline__line"></view>
+              </view>
+              <view class="daily-timeline__body">
+                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
+                <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
+                <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
               </view>
             </view>
           </view>
@@ -217,7 +214,7 @@
         <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}"><view class="supply-filter__row"><view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view></view></scroll-view>
         <view class="supply-list">
           <view wx:for="{{supplies}}" wx:key="id" class="supply-row">
-            <image wx:if="{{item.mediaUrl}}" class="supply-row__image" src="{{item.mediaUrl}}" mode="aspectFill" data-url="{{item.mediaUrl}}" catchtap="onPreviewSupplyImage" />
+            <image wx:if="{{item.mediaThumbUrl || item.mediaUrl}}" class="supply-row__image" src="{{item.mediaThumbUrl || item.mediaUrl}}" mode="aspectFill" data-id="{{item.id}}" catchtap="onPreviewSupplyImage" />
             <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="44" tone="color" /></view>
             <view class="supply-row__body">
               <view class="supply-row__title-line" data-id="{{item.id}}" bindtap="onEditSupply"><text class="supply-category-label">{{item.categoryLabel}}</text><text class="supply-row__title">{{item.name}}</text></view>
@@ -326,14 +323,14 @@
           </view>
           <text class="daily-time-hint">可以补录以前发生的事，默认是现在</text>
         </view>
-        <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">{{dailyEditor.freeform ? '保存记录' : '记下这次' + dailyEditor.title}}</button>
+        <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">{{dailyEditorEditingId ? '保存修改' : dailyEditor.freeform ? '保存记录' : '记下这次' + dailyEditor.title}}</button>
       </view>
     </view>
 
     <view wx:if="{{avatarPreviewOpen}}" class="pet-modal" catchtap="onCloseAvatarPreview">
       <view class="avatar-preview" catchtap="noop">
         <view class="avatar-preview__visual">
-          <image wx:if="{{profile.avatarUrl}}" src="{{profile.avatarUrl}}" mode="aspectFill" />
+          <image wx:if="{{avatarPreviewUrl || profile.avatarUrl}}" src="{{avatarPreviewUrl || profile.avatarUrl}}" mode="aspectFill" />
           <block wx:elif="{{profile.species === 'cat'}}"><view class="avatar-preview__initial">猫</view></block>
           <view wx:else class="avatar-preview__initial">{{profileInitial}}</view>
         </view>
@@ -379,7 +376,19 @@
           <view class="supply-field"><text>品牌</text><input value="{{supplyDraft.brand}}" maxlength="40" placeholder="选填" data-field="brand" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
           <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view></view>
           <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-editor-section"><text class="supply-editor-label">图片</text><view wx:if="{{supplyDraft.mediaUrl}}" class="supply-editor-image"><image src="{{supplyDraft.mediaUrl}}" mode="aspectFill" /><view bindtap="onRemoveSupplyImage">移除</view></view><view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="system-camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view></view>
+          <view class="supply-editor-section">
+            <text class="supply-editor-label">图片</text>
+            <block wx:if="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}">
+              <view class="supply-editor-image"><image src="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}" mode="aspectFill" bindtap="onPreviewSupplyEditorImage" /></view>
+              <view class="supply-editor-image-actions">
+                <text bindtap="onPreviewSupplyEditorImage">查看</text>
+                <text bindtap="onEditSupplyImage">编辑</text>
+                <text bindtap="onChooseSupplyImage">更换</text>
+                <text class="is-danger" bindtap="onRemoveSupplyImage">移除</text>
+              </view>
+            </block>
+            <view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="system-camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view>
+          </view>
           <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">{{supplyEditorMode === 'edit' ? '保存修改' : '保存用品'}}</button>
         </scroll-view>
       </view>

@@ -29,6 +29,10 @@ import type { ApiSpace, ApiSpaceDetail, ApiSpaceMember } from '../../types/api'
 import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
+import {
+  chooseEditableImages,
+  isImageEditCancelled,
+} from '../../utils/image-editor'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 
@@ -56,17 +60,6 @@ interface SpaceSwitchView {
   roleLabel: '创建人' | '共创人'
   isActive: boolean
 }
-
-interface CroppedImageResult {
-  tempFilePath: string
-}
-
-type CropImageApi = (options: {
-  src: string
-  cropScale: '1:1'
-  success: (result: CroppedImageResult) => void
-  fail: () => void
-}) => void
 
 Page({
   data: {
@@ -342,42 +335,25 @@ Page({
     navigateBackOrTab('/pages/profile/index')
   },
 
-  onSpaceAvatarTap() {
+  async onSpaceAvatarTap() {
     if (!this.data.isOwner) {
       wx.showToast({ title: '只有创建人可以更换空间头像', icon: 'none' })
       return
     }
     if (this.data.avatarUploading) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      sizeType: ['compressed'],
-      success: (result) => {
-        const file = result.tempFiles[0]
-        if (!file?.tempFilePath) return
-        if (file.size > MAX_AVATAR_BYTES) {
-          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
-          return
-        }
-        const cropImage = (wx as unknown as { cropImage?: CropImageApi }).cropImage
-        if (!cropImage) {
-          wx.showToast({ title: '当前微信版本不支持裁剪，请升级后重试', icon: 'none' })
-          return
-        }
-        cropImage({
-          src: file.tempFilePath,
-          cropScale: '1:1',
-          success: (cropped) => {
-            if (!cropped.tempFilePath) return
-            void this.uploadSpaceAvatar(cropped.tempFilePath, file.size)
-          },
-          fail: () => {
-            // 用户取消裁剪时不产生上传副作用。
-          },
-        })
-      },
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1, cropSquare: true })
+      if (!file) return
+      if (file.size > MAX_AVATAR_BYTES) {
+        wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+        return
+      }
+      await this.uploadSpaceAvatar(file.tempFilePath, file.size)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        wx.showToast({ title: '空间头像没有准备好', icon: 'none' })
+      }
+    }
   },
 
   async uploadSpaceAvatar(filePath: string, fileSize: number) {

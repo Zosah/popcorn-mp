@@ -269,10 +269,14 @@ async function resolveJournalImages(
   return Promise.all(sources.map(async ({ mediaId, caption }) => {
     try {
       const asset = await mediaGateway.get(mediaId)
+      // src 始终保留展示图，列表组件单独使用 thumbSrc；
+      // 这样同一份列表数据在点击预览时不会被 320px 缩略图限制清晰度。
+      const displayUrl = asset.display.url || asset.thumb.url
+      const thumbUrl = asset.thumb.url || displayUrl
       return {
         mediaId,
-        src: variant === 'thumb' ? asset.thumb.url : asset.display.url,
-        thumbSrc: asset.thumb.url,
+        src: displayUrl,
+        thumbSrc: thumbUrl,
         ...(caption ? { caption } : {}),
       }
     } catch {

@@ -30,7 +30,7 @@
       <block wx:if="{{entry.images && entry.images.length}}">
         <view class="journal-photo-grid journal-photo-grid--count{{entry.images.length}}">
           <view wx:for="{{entry.images}}" wx:key="mediaId" class="journal-photo-grid__item" data-index="{{index}}" catchtap="onPreviewImage">
-            <image wx:if="{{item.src || item.thumbSrc}}" class="journal-photo-grid__image" src="{{item.src || item.thumbSrc}}" mode="aspectFill" lazy-load />
+            <image wx:if="{{item.thumbSrc || item.src}}" class="journal-photo-grid__image" src="{{entry.images.length === 1 ? item.src : item.thumbSrc || item.src}}" mode="aspectFill" lazy-load />
             <view wx:else class="journal-photo-grid__placeholder"><line-icon name="system-image" size="24" tone="muted" /></view>
           </view>
         </view>

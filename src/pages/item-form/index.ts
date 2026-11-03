@@ -12,6 +12,11 @@ import { mediaGateway } from '../../services/media'
 import { MediaGatewayError } from '../../services/media-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import {
+  chooseEditableImages,
+  editRemoteImage,
+  isImageEditCancelled,
+} from '../../utils/image-editor'
 import { showMediaUploadError } from '../../utils/media-error'
 
 interface PickerEvent {
@@ -29,6 +34,7 @@ interface SwitchEvent {
 interface InventoryImage {
   mediaId: string
   src: string
+  thumbSrc: string
 }
 
 const DEFAULT_FORM: InventoryItemInput = {
@@ -90,7 +96,8 @@ Page({
       if (item.imageMediaId) {
         try {
           const asset = await mediaGateway.get(item.imageMediaId)
-          image = { mediaId: asset.id, src: asset.display.url }
+          const src = asset.display.url || asset.thumb.url
+          image = { mediaId: asset.id, src, thumbSrc: asset.thumb.url || src }
         } catch (error) {
           // 只有确认图片不存在时才清空；临时签名失败仍保留原图，避免误删。
           if (error instanceof MediaGatewayError &&
@@ -160,35 +167,62 @@ Page({
     this.setData({ 'form.note': event.detail.value })
   },
 
-  onChooseImage() {
+  async onChooseImage() {
     if (this.data.imageUploading || this.data.saving) return
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      success: (result) => {
-        const file = result.tempFiles[0]
-        if (!file) return
-        if (file.size > 10 * 1024 * 1024) {
-          wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
-          return
-        }
-        void this.uploadImage(file)
-      },
-    })
+    try {
+      const [file] = await chooseEditableImages({ count: 1 })
+      if (!file) return
+      if (file.size > 10 * 1024 * 1024) {
+        wx.showToast({ title: '图片不能超过 10 MiB', icon: 'none' })
+        return
+      }
+      await this.uploadImage(file.tempFilePath, file.size)
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '图片没有准备好')
+      }
+    }
   },
 
-  async uploadImage(file: WechatMiniprogram.MediaFile) {
+  async uploadImage(filePath: string, fileSize: number) {
     this.setData({ imageUploading: true })
     try {
-      const asset = await mediaGateway.upload(file.tempFilePath, 'inventory', file.size)
+      const asset = await mediaGateway.upload(filePath, 'inventory', fileSize)
+      const src = asset.display.url || asset.thumb.url
       this.setData({
-        image: { mediaId: asset.id, src: asset.display.url },
+        image: { mediaId: asset.id, src, thumbSrc: asset.thumb.url || src },
         'form.imageMediaId': asset.id,
       })
       wx.showToast({ title: '图片已添加', icon: 'success' })
     } catch (error) {
       showMediaUploadError(error, '图片没有上传成功')
+    } finally {
+      this.setData({ imageUploading: false })
+    }
+  },
+
+  async onEditImage() {
+    if (this.data.imageUploading || this.data.saving) return
+    const src = this.data.image?.src
+    if (!src) return
+    this.setData({ imageUploading: true })
+    try {
+      const localPath = await editRemoteImage(src)
+      const asset = await mediaGateway.upload(localPath, 'inventory')
+      const displayUrl = asset.display.url || asset.thumb.url
+      this.setData({
+        image: {
+          mediaId: asset.id,
+          src: displayUrl,
+          thumbSrc: asset.thumb.url || displayUrl,
+        },
+        'form.imageMediaId': asset.id,
+      })
+      wx.showToast({ title: '图片已更新', icon: 'success' })
+    } catch (error) {
+      if (!isImageEditCancelled(error)) {
+        showMediaUploadError(error, '图片没有更新成功')
+      }
     } finally {
       this.setData({ imageUploading: false })
     }

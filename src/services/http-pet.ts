@@ -233,6 +233,26 @@ export class HttpPetGateway implements PetGateway {
     return this.writePet('daily', `${petPath(context.spaceId, petId)}/daily-logs`, 'POST', body)
   }
 
+  async updateDailyLog(
+    petId: string,
+    logId: string,
+    input: PetDailyLogInput,
+  ): Promise<DemoPetState> {
+    const context = petContext()
+    const body: ApiPetDailyLogWriteRequest = {
+      type: input.type,
+      summary: input.summary.trim(),
+      note: input.note?.trim() ?? '',
+      recordedAt: input.recordedAt?.trim() || new Date().toISOString(),
+    }
+    return this.writePet(
+      'daily-update',
+      `${petPath(context.spaceId, petId)}/daily-logs/${encodeURIComponent(logId)}`,
+      'PUT',
+      body,
+    )
+  }
+
   async removeDailyLog(petId: string, logId: string): Promise<DemoPetState> {
     const context = petContext()
     return this.writePet(
@@ -474,15 +494,26 @@ function clearActivePetIdIfMatches(spaceId: string, petId: string): void {
 }
 
 async function toPetState(item: ApiPet): Promise<DemoPetState> {
-  const [avatarUrl, backgroundUrl, backgroundHistory, supplyMediaUrls] = await Promise.all([
+  const [avatarUrl, backgroundUrl, backgroundHistory, supplyMedia] = await Promise.all([
     resolveMedia(item.avatarMediaId, 'thumb'),
     resolveMedia(item.backgroundMediaId, 'display'),
     Promise.all((item.backgroundHistory ?? []).map(async (background) => ({
       mediaId: background.mediaId,
       usedAt: background.usedAt,
-      url: await resolveMedia(background.mediaId, 'thumb') ?? '',
+      url: await resolveMedia(background.mediaId, 'display') ?? '',
     }))),
-    Promise.all(item.supplies.map((supply) => resolveMedia(supply.mediaId, 'thumb'))),
+    Promise.all(item.supplies.map(async (supply) => {
+      if (!supply.mediaId) return { display: '', thumb: '' }
+      try {
+        const asset = await mediaGateway.get(supply.mediaId)
+        return {
+          display: asset.display.url || asset.thumb.url || '',
+          thumb: asset.thumb.url || asset.display.url || '',
+        }
+      } catch {
+        return { display: '', thumb: '' }
+      }
+    })),
   ])
   const profile: DemoPetProfile = {
     id: item.id,
@@ -532,7 +563,8 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       preference: toSupplyPreference(supply.preference || supply.status),
       note: supply.note,
       mediaId: supply.mediaId || '',
-      mediaUrl: supplyMediaUrls[index] ?? '',
+      mediaUrl: supplyMedia[index]?.display ?? '',
+      mediaThumbUrl: supplyMedia[index]?.thumb ?? '',
       recordedOn: supply.recordedOn,
       version: supply.version,
     })),

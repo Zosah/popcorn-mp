@@ -29,7 +29,8 @@
           <text class="form-photo-row__hint">一张就够，之后更容易认出来</text>
         </view>
         <view wx:if="{{image && image.src}}" class="form-photo" bindtap="onPreviewImage">
-          <image class="form-photo__image" src="{{image.src}}" mode="aspectFill" />
+          <image class="form-photo__image" src="{{image.thumbSrc || image.src}}" mode="aspectFill" />
+          <view class="form-photo__edit" catchtap="onEditImage">编辑</view>
           <view class="form-photo__remove" catchtap="onRemoveImage">×</view>
         </view>
         <view wx:elif="{{imageUploading}}" class="form-photo form-photo--empty form-photo--busy">

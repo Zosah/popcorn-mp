@@ -37,6 +37,7 @@
           <view wx:if="{{image && image.src}}" class="recipe-cover__preview" bindtap="onPreviewImage">
             <image src="{{image.src}}" mode="aspectFit" />
             <view class="recipe-cover__caption">成品图</view>
+            <view class="recipe-cover__edit" catchtap="onEditImage">编辑</view>
             <view class="recipe-cover__remove" catchtap="onRemoveImage">移除</view>
           </view>
           <view wx:elif="{{imageUploading}}" class="recipe-cover__empty recipe-cover__empty--busy">
@@ -101,6 +102,7 @@
     <view class="note-image-grid">
       <view wx:for="{{noteImages}}" wx:key="mediaId" class="note-image-item" data-index="{{index}}" bindtap="onPreviewNoteImage">
         <image src="{{item.src}}" mode="aspectFill" />
+        <view class="note-image-edit" data-index="{{index}}" catchtap="onEditNoteImage">编辑</view>
         <view class="note-image-remove" data-index="{{index}}" catchtap="onRemoveNoteImage">×</view>
       </view>
       <view wx:if="{{noteImages.length < 9}}" class="note-image-add" bindtap="onChooseNoteImages">

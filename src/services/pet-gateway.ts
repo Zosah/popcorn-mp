@@ -105,6 +105,11 @@ export interface PetGateway {
   ): Promise<DemoPetState>
   removeWeight(petId: string, weightId: string): Promise<DemoPetState>
   addDailyLog(petId: string, input: PetDailyLogInput): Promise<DemoPetState>
+  updateDailyLog(
+    petId: string,
+    logId: string,
+    input: PetDailyLogInput,
+  ): Promise<DemoPetState>
   removeDailyLog(petId: string, logId: string): Promise<DemoPetState>
   createSupply(petId: string, input: PetSupplyInput): Promise<DemoPetState>
   updateSupply(

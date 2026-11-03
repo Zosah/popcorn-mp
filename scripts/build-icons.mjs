@@ -50,6 +50,7 @@ const petColorIconSpecs = {
   'pet-care-visit': { palette: 'teal', fill: [4], accent: [5] },
   'pet-daily-litter-change': { palette: 'gold', fill: [0], accent: [2, 3] },
   'pet-daily-meal': { palette: 'gold', fill: [0, 2, 3, 4], accent: [2, 3, 4] },
+  'pet-daily-record': { palette: 'purple', fill: [0], accent: [1, 2, 3] },
   'pet-daily-stool': { palette: 'coral', fill: [0] },
   'pet-daily-urine': { palette: 'blue', fill: [0, 1], accent: [1] },
   'pet-daily-water-change': { palette: 'blue', fill: [0], accent: [2, 3] },
