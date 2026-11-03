@@ -57,6 +57,13 @@ type CropImageApi = (options: {
   fail: () => void
 }) => void
 type SupplyFilter = PetSupplyCategory | 'all'
+type PetWeightUnit = 'jin' | 'kg'
+
+type DailyTimelineView = ReturnType<typeof buildPetDailyTimeline>[number] & {
+  iconName: string
+  metaLabel: string
+  swipeOffset: number
+}
 
 const EMPTY_PROFILE: DemoPetProfile = {
   id: '',
@@ -74,6 +81,7 @@ const EMPTY_PROFILE: DemoPetProfile = {
   backgroundKey: 'sage',
   backgroundMediaId: '',
   backgroundUrl: '',
+  statusNotes: [],
 }
 
 const EMPTY_PET_STATE: DemoPetState = {
@@ -136,7 +144,10 @@ interface DailyEditorConfig {
   detailLabel: string
   detailPlaceholder: string
   choices: DailyEditorOption[]
+  freeform?: boolean
 }
+
+const WEIGHT_UNIT_STORAGE_KEY = 'popcorn_pet_weight_unit'
 
 const DAILY_EDITOR_CONFIGS: Record<PetDailyLogType, DailyEditorConfig> = {
   meal: {
@@ -149,6 +160,13 @@ const DAILY_EDITOR_CONFIGS: Record<PetDailyLogType, DailyEditorConfig> = {
       { value: '冻干', label: '冻干' },
       { value: '其他', label: '其他' },
     ],
+  },
+  record: {
+    choiceLabel: '记录内容',
+    detailLabel: '记录内容',
+    detailPlaceholder: '写下这次想留住的事',
+    choices: [],
+    freeform: true,
   },
   water: {
     choiceLabel: '这次',
@@ -220,7 +238,28 @@ function composeDailyLogSummary(
   return extra ? `${extra} · ${choice}` : choice
 }
 
-const PET_PAGE_CACHE_KEY = 'pets:overview:v4'
+const PET_PAGE_CACHE_KEY = 'pets:overview:v5'
+
+function weightUnitLabel(unit: PetWeightUnit): string {
+  return unit === 'jin' ? '斤' : 'kg'
+}
+
+function weightInUnit(kgValue: string | number, unit: PetWeightUnit): number {
+  const kg = Number(kgValue)
+  return unit === 'jin' ? kg * 2 : kg
+}
+
+function formatWeightInUnit(kgValue: string, unit: PetWeightUnit): string {
+  const value = weightInUnit(kgValue, unit)
+  if (!Number.isFinite(value)) return '—'
+  return formatPetWeight(value.toFixed(1))
+}
+
+function formatWeightDelta(deltaKg: number, unit: PetWeightUnit): string {
+  const delta = weightInUnit(deltaKg, unit)
+  if (Math.abs(delta) < 0.05) return '和上次持平'
+  return `较上次 ${delta > 0 ? '+' : ''}${delta.toFixed(1)} ${weightUnitLabel(unit)}`
+}
 
 function formatShortDate(value: string | null): string {
   if (!value) return '待补充'
@@ -256,7 +295,15 @@ Page({
       selected: key === EMPTY_PROFILE.backgroundKey,
     })),
     backgroundHistoryOptions: [] as BackgroundHistoryOption[],
+    statusManagerOpen: false,
+    statusSaving: false,
+    statusEditingId: '',
+    statusEditingVersion: 0,
+    statusDraft: '',
     supplyEditorOpen: false,
+    supplyEditorMode: 'create' as 'create' | 'edit',
+    supplyEditingId: '',
+    supplyEditingVersion: 0,
     supplySaving: false,
     dailyEditorOpen: false,
     dailySaving: false,
@@ -268,6 +315,7 @@ Page({
       detailLabel: '次数或尿团',
       detailPlaceholder: '例如 2 个尿团',
       choices: [] as DailyEditorOption[],
+      freeform: false,
       choice: '',
       detail: '',
       recordedDate: '',
@@ -306,6 +354,16 @@ Page({
     latestVaccineLabel: '还没有记录',
     vaccineNextLabel: '',
     latestWeight: '—',
+    latestWeightKg: '',
+    weightUnit: 'jin' as PetWeightUnit,
+    weightUnitLabel: '斤',
+    weightEditorOpen: false,
+    weightSaving: false,
+    weightEditorMode: 'create' as 'create' | 'edit',
+    weightEditingId: '',
+    weightDraftValue: '',
+    weightDraftDate: '',
+    weightDraftUnit: 'jin' as PetWeightUnit,
     companionDays: 0,
     featuredSupply: null as {
       id: string
@@ -315,7 +373,9 @@ Page({
       note: string
     } | null,
     weightPoints: [] as Array<{
+      id: string
       value: string
+      valueKg: string
       dateLabel: string
       height: number
       active: boolean
@@ -362,19 +422,12 @@ Page({
         metaLabel: string
       }
     >,
-    dailyHistory: [] as Array<
-      ReturnType<typeof buildPetDailyTimeline>[number] & {
-        iconName: string
-        metaLabel: string
-      }
-    >,
-    dailyHistoryVisible: [] as Array<
-      ReturnType<typeof buildPetDailyTimeline>[number] & {
-        iconName: string
-        metaLabel: string
-      }
-    >,
+    dailyHistory: [] as DailyTimelineView[],
+    dailyHistoryVisible: [] as DailyTimelineView[],
     dailyHistoryExpanded: false,
+    dailySwipeIndex: -1,
+    dailyTouchStartX: 0,
+    dailyTouchStartY: 0,
     supplyCategories: SUPPLY_CATEGORIES,
     selectedSupplyCategory: 'all' as SupplyFilter,
     currentSupplies: [] as Array<{
@@ -402,6 +455,9 @@ Page({
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    const savedWeightUnit = String(wx.getStorageSync(WEIGHT_UNIT_STORAGE_KEY) || '')
+    const weightUnit: PetWeightUnit = savedWeightUnit === 'kg' ? 'kg' : 'jin'
+    this.setData({ weightUnit, weightUnitLabel: weightUnitLabel(weightUnit) })
     const cached = readPageCache<Record<string, unknown>>(PET_PAGE_CACHE_KEY)
     if (cached) {
       const cachedProfile = cached.value.profile as DemoPetProfile | undefined
@@ -416,9 +472,19 @@ Page({
         editingProfile: false,
         profileDraft: cachedProfile ?? EMPTY_PROFILE,
         uploadingAvatar: false,
+        statusManagerOpen: false,
+        statusSaving: false,
+        statusEditingId: '',
+        statusDraft: '',
+        supplyEditorOpen: false,
+        supplyEditorMode: 'create',
+        supplyEditingId: '',
+        weightEditorOpen: false,
+        weightSaving: false,
         dailyEditorOpen: false,
         dailySaving: false,
         dailyHistoryExpanded: false,
+        dailySwipeIndex: -1,
       })
     }
     const section = options.section
@@ -551,8 +617,13 @@ Page({
       avatarPreviewOpen: _avatarPreviewOpen,
       backgroundPickerOpen: _backgroundPickerOpen,
       uploadingBackground: _uploadingBackground,
+      statusManagerOpen: _statusManagerOpen,
+      statusSaving: _statusSaving,
       supplyEditorOpen: _supplyEditorOpen,
+      supplyEditingId: _supplyEditingId,
       supplySaving: _supplySaving,
+      weightEditorOpen: _weightEditorOpen,
+      weightSaving: _weightSaving,
       dailyEditorOpen: _dailyEditorOpen,
       dailySaving: _dailySaving,
       ...snapshot
@@ -565,8 +636,13 @@ Page({
       avatarPreviewOpen: false,
       backgroundPickerOpen: false,
       uploadingBackground: false,
+      statusManagerOpen: false,
+      statusSaving: false,
       supplyEditorOpen: false,
+      supplyEditingId: '',
       supplySaving: false,
+      weightEditorOpen: false,
+      weightSaving: false,
       dailyEditorOpen: false,
       dailySaving: false,
       editingProfile: false,
@@ -656,12 +732,14 @@ Page({
       }
     })
     const weights = state.weights.slice(-6)
-    const values = weights.map((item) => Number(item.value))
-    const min = Math.min(...values)
-    const max = Math.max(...values)
+    const values = weights.map((item) => Number(item.value)).filter(Number.isFinite)
+    const min = values.length ? Math.min(...values) : 0
+    const max = values.length ? Math.max(...values) : 0
     const spread = Math.max(max - min, 0.1)
     const weightPoints = weights.map((item, index) => ({
-      value: formatPetWeight(item.value),
+      id: item.id,
+      value: formatWeightInUnit(item.value, this.data.weightUnit),
+      valueKg: item.value,
       dateLabel: formatShortDate(item.recordedOn),
       height: Math.round(30 + ((Number(item.value) - min) / spread) * 58),
       active: index === weights.length - 1,
@@ -675,17 +753,16 @@ Page({
     const weightTrendLabel =
       weightDelta === null
         ? '还没有上一次记录'
-        : Math.abs(weightDelta) < 0.05
-          ? '和上次持平'
-          : `较上次 ${weightDelta > 0 ? '+' : ''}${weightDelta.toFixed(1)} kg`
+        : formatWeightDelta(weightDelta, this.data.weightUnit)
     const dailySummary = buildPetDailySummary(state.dailyLogs, today).map((item) => ({
       ...item,
       iconName: PET_DAILY_ICON_NAMES[item.type],
     }))
-    const dailyHistory = buildPetDailyTimeline(state.dailyLogs).map((item) => ({
+    const dailyHistory: DailyTimelineView[] = buildPetDailyTimeline(state.dailyLogs).map((item) => ({
       ...item,
       iconName: PET_DAILY_ICON_NAMES[item.type],
-      metaLabel: `${item.label} · ${item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`}`,
+      metaLabel: item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`,
+      swipeOffset: 0,
     }))
     const vaccineEvents = state.events
       .filter((item) => item.type === 'vaccine')
@@ -744,7 +821,9 @@ Page({
       neuteredOnLabel: formatShortDate(state.profile.neuteredOn),
       latestVaccineLabel: latestVaccine ? formatShortDate(latestVaccine.occurredOn) : '还没有记录',
       vaccineNextLabel,
-      latestWeight: latestValue ? formatPetWeight(latestValue.value) : '—',
+      latestWeight: latestValue ? formatWeightInUnit(latestValue.value, this.data.weightUnit) : '—',
+      latestWeightKg: latestValue?.value ?? '',
+      weightUnitLabel: weightUnitLabel(this.data.weightUnit),
       companionDays,
       featuredSupply: currentSupplies[0] ?? null,
       weightPoints,
@@ -823,10 +902,7 @@ Page({
   },
 
   onChoosePet() {
-    if (this.data.petTabs.length <= 1) {
-      this.onAddPet()
-      return
-    }
+    if (this.data.petTabs.length <= 1) return
     wx.showActionSheet({
       itemList: this.data.petTabs.map((item) => item.name),
       success: (selection) => {
@@ -864,6 +940,114 @@ Page({
   },
 
   noop() {},
+
+  onOpenStatusManager() {
+    this.setData({
+      statusManagerOpen: true,
+      statusEditingId: '',
+      statusEditingVersion: 0,
+      statusDraft: '',
+    })
+  },
+
+  onCloseStatusManager() {
+    if (this.data.statusSaving) return
+    this.setData({ statusManagerOpen: false })
+  },
+
+  onStartAddStatus() {
+    if (!requireAuthForWrite()) return
+    if (this.data.profile.statusNotes.length >= 2) {
+      wx.showToast({ title: '最近状态最多保留 2 条', icon: 'none' })
+      return
+    }
+    this.setData({
+      statusEditingId: '',
+      statusEditingVersion: 0,
+      statusDraft: '',
+    })
+  },
+
+  onEditStatus(event: {
+    currentTarget: { dataset: { id: string; version: string } }
+  }) {
+    if (!requireAuthForWrite()) return
+    const { id, version } = event.currentTarget.dataset
+    const note = this.data.profile.statusNotes.find((item) => item.id === id)
+    if (!note) return
+    this.setData({
+      statusEditingId: id,
+      statusEditingVersion: Number(version) || note.version,
+      statusDraft: note.content,
+    })
+  },
+
+  onStatusDraftInput(event: WechatMiniprogram.Input) {
+    this.setData({ statusDraft: event.detail.value })
+  },
+
+  async onSaveStatusNote() {
+    const content = this.data.statusDraft.trim()
+    if (!content) {
+      wx.showToast({ title: '先写一条最近状态', icon: 'none' })
+      return
+    }
+    this.setData({ statusSaving: true })
+    const editingId = this.data.statusEditingId
+    const saved = await this.runPetMutation(
+      () => editingId
+        ? petGateway.updateStatusNote(
+            this.data.petState.profile.id,
+            editingId,
+            content,
+            this.data.statusEditingVersion,
+          )
+        : petGateway.createStatusNote(this.data.petState.profile.id, content),
+      editingId ? '状态已更新' : '状态已添加',
+    )
+    this.setData({
+      statusSaving: false,
+      statusEditingId: saved ? '' : this.data.statusEditingId,
+      statusEditingVersion: saved ? 0 : this.data.statusEditingVersion,
+      statusDraft: saved ? '' : this.data.statusDraft,
+    })
+  },
+
+  onRemoveStatusNote(event: {
+    currentTarget: { dataset: { id: string; version: string } }
+  }) {
+    if (!requireAuthForWrite()) return
+    const { id } = event.currentTarget.dataset
+    const note = this.data.profile.statusNotes.find((item) => item.id === id)
+    if (!note) return
+    wx.showModal({
+      title: '删除这条最近状态？',
+      content: '删除后只会移出最近状态，不影响日常记录。',
+      confirmText: '删除',
+      confirmColor: '#b35f6d',
+      success: async (result) => {
+        if (!result.confirm) return
+        this.setData({ statusSaving: true })
+        await this.runPetMutation(
+          () => petGateway.removeStatusNote(
+            this.data.petState.profile.id,
+            note.id,
+            note.version,
+          ),
+          '状态已删除',
+        )
+        this.setData({ statusSaving: false, statusEditingId: '', statusDraft: '' })
+      },
+    })
+  },
+
+  onOpenLatestDailyRecord() {
+    this.setData({ statusManagerOpen: false, activeSection: 'daily' }, () => {
+      setTimeout(() => {
+        wx.pageScrollTo({ selector: '#daily-history', duration: 260 })
+      }, 40)
+    })
+  },
 
   onOpenAvatarPreview() {
     if (!this.data.profile.id) return
@@ -1101,6 +1285,9 @@ Page({
     if (!requireAuthForWrite()) return
     this.setData({
       supplyEditorOpen: true,
+      supplyEditorMode: 'create',
+      supplyEditingId: '',
+      supplyEditingVersion: 0,
       supplyDraft: {
         category: 'kibble',
         categoryLabel: '',
@@ -1114,9 +1301,41 @@ Page({
     })
   },
 
+  onEditSupply(event: {
+    currentTarget: { dataset: { id: string } }
+  }) {
+    if (!requireAuthForWrite()) return
+    const id = event.currentTarget.dataset.id
+    const supply = this.data.petState.supplies.find((item) => item.id === id)
+    if (!supply) return
+    this.setData({
+      supplyEditorOpen: true,
+      supplyEditorMode: 'edit',
+      supplyEditingId: supply.id,
+      supplyEditingVersion: supply.version ?? 1,
+      supplyDraft: {
+        category: supply.category,
+        categoryLabel: supply.categoryLabel,
+        name: supply.name,
+        brand: supply.brand,
+        preference: supply.preference,
+        note: supply.note,
+        mediaId: supply.mediaId ?? '',
+        mediaUrl: supply.mediaUrl ?? '',
+      },
+    })
+  },
+
+  onPreviewSupplyImage(event: {
+    currentTarget: { dataset: { url: string } }
+  }) {
+    const url = event.currentTarget.dataset.url
+    if (url) wx.previewImage({ current: url, urls: [url] })
+  },
+
   onCloseSupplyEditor() {
     if (this.data.supplySaving) return
-    this.setData({ supplyEditorOpen: false })
+    this.setData({ supplyEditorOpen: false, supplyEditingId: '' })
   },
 
   onSupplyCategorySelect(event: {
@@ -1185,19 +1404,32 @@ Page({
       return
     }
     this.setData({ supplySaving: true })
+    const input = {
+      category: draft.category,
+      categoryLabel: draft.categoryLabel.trim(),
+      name: draft.name.trim(),
+      brand: draft.brand.trim(),
+      preference: draft.preference,
+      note: draft.note.trim(),
+      mediaId: draft.mediaId,
+    }
+    const editingId = this.data.supplyEditingId
     const saved = await this.runPetMutation(
-      () => petGateway.createSupply(this.data.petState.profile.id, {
-        category: draft.category,
-        categoryLabel: draft.categoryLabel.trim(),
-        name: draft.name.trim(),
-        brand: draft.brand.trim(),
-        preference: draft.preference,
-        note: draft.note.trim(),
-        mediaId: draft.mediaId,
-      }),
-      '用品已收进清单',
+      () => editingId
+        ? petGateway.updateSupply(
+            this.data.petState.profile.id,
+            editingId,
+            input,
+            this.data.supplyEditingVersion,
+          )
+        : petGateway.createSupply(this.data.petState.profile.id, input),
+      editingId ? '用品信息已更新' : '用品已收进清单',
     )
-    this.setData({ supplySaving: false, supplyEditorOpen: !saved })
+    this.setData({
+      supplySaving: false,
+      supplyEditorOpen: !saved,
+      supplyEditingId: saved ? '' : this.data.supplyEditingId,
+    })
   },
 
   onBirthdayChange(event: { detail: { value: string } }) {
@@ -1287,27 +1519,125 @@ Page({
     })
   },
 
+  onToggleWeightUnit() {
+    const weightUnit: PetWeightUnit = this.data.weightUnit === 'jin' ? 'kg' : 'jin'
+    wx.setStorageSync(WEIGHT_UNIT_STORAGE_KEY, weightUnit)
+    this.setData(
+      { weightUnit, weightUnitLabel: weightUnitLabel(weightUnit) },
+      () => this.loadState(this.data.petState),
+    )
+  },
+
   onRecordWeight() {
     if (!requireAuthForWrite()) return
+    const recordedDate = getShanghaiDateOnly(Date.now())
+    this.setData({
+      weightEditorOpen: true,
+      weightEditorMode: 'create',
+      weightEditingId: '',
+      weightDraftValue: '',
+      weightDraftDate: recordedDate,
+      weightDraftUnit: this.data.weightUnit,
+    })
+  },
+
+  onOpenWeightRecord(event: {
+    currentTarget: { dataset: { id: string } }
+  }) {
+    if (!requireAuthForWrite()) return
+    const id = event.currentTarget.dataset.id
+    const weight = this.data.petState.weights.find((item) => item.id === id)
+    if (!weight) return
+    this.setData({
+      weightEditorOpen: true,
+      weightEditorMode: 'edit',
+      weightEditingId: weight.id,
+      weightDraftValue: formatWeightInUnit(weight.value, this.data.weightUnit),
+      weightDraftDate: weight.recordedOn,
+      weightDraftUnit: this.data.weightUnit,
+    })
+  },
+
+  onCloseWeightEditor() {
+    if (this.data.weightSaving) return
+    this.setData({ weightEditorOpen: false })
+  },
+
+  onWeightDraftInput(event: WechatMiniprogram.Input) {
+    this.setData({ weightDraftValue: event.detail.value })
+  },
+
+  onWeightDateChange(event: { detail: { value: string } }) {
+    this.setData({ weightDraftDate: event.detail.value })
+  },
+
+  onWeightDraftUnitSelect(event: {
+    currentTarget: { dataset: { value: PetWeightUnit } }
+  }) {
+    const nextUnit = event.currentTarget.dataset.value
+    if (!nextUnit || nextUnit === this.data.weightDraftUnit) return
+    const currentValue = Number(this.data.weightDraftValue)
+    const convertedValue = Number.isFinite(currentValue)
+      ? nextUnit === 'jin'
+        ? currentValue * 2
+        : currentValue / 2
+      : null
+    this.setData({
+      weightDraftUnit: nextUnit,
+      weightDraftValue: convertedValue === null
+        ? ''
+        : formatPetWeight(convertedValue.toFixed(1)),
+    })
+  },
+
+  async onSaveWeight() {
+    const numericValue = Number(this.data.weightDraftValue)
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      wx.showToast({ title: '请输入有效体重', icon: 'none' })
+      return
+    }
+    const kgValue = this.data.weightDraftUnit === 'jin'
+      ? numericValue / 2
+      : numericValue
+    if (kgValue > 100) {
+      wx.showToast({ title: '体重看起来太大了，请检查单位', icon: 'none' })
+      return
+    }
+    if (!this.data.weightDraftDate) {
+      wx.showToast({ title: '请选择记录日期', icon: 'none' })
+      return
+    }
+    const input = {
+      value: kgValue.toFixed(2).replace(/0+$/, '').replace(/\.$/, ''),
+      recordedOn: this.data.weightDraftDate,
+    }
+    this.setData({ weightSaving: true })
+    const editingId = this.data.weightEditingId
+    const saved = await this.runPetMutation(
+      () => editingId
+        ? petGateway.updateWeight(this.data.petState.profile.id, editingId, input)
+        : petGateway.addWeight(this.data.petState.profile.id, input),
+      editingId ? '体重记录已更新' : '体重已记下',
+    )
+    this.setData({ weightSaving: false, weightEditorOpen: !saved })
+  },
+
+  onDeleteWeight() {
+    if (!requireAuthForWrite() || !this.data.weightEditingId) return
+    const weightId = this.data.weightEditingId
     wx.showModal({
-      title: `记录${this.data.profile.name}的体重`,
-      editable: true,
-      placeholderText: '输入体重，例如 3.9',
-      confirmText: '保存',
+      title: '删除这条体重记录？',
+      content: '删除后，体重曲线会重新计算。',
+      confirmText: '删除',
+      confirmColor: '#b35f6d',
       success: async (result) => {
         if (!result.confirm) return
-        const value = Number(result.content)
-        if (!Number.isFinite(value) || value <= 0 || value > 100) {
-          wx.showToast({ title: '请输入有效体重', icon: 'none' })
-          return
-        }
-        await this.runPetMutation(
-          () => petGateway.addWeight(
-            this.data.petState.profile.id,
-            value.toFixed(1),
-          ),
-          '体重已记下',
+        this.setData({ weightSaving: true })
+        const saved = await this.runPetMutation(
+          () => petGateway.removeWeight(this.data.petState.profile.id, weightId),
+          '体重记录已删除',
         )
+        this.setData({ weightSaving: false, weightEditorOpen: !saved })
       },
     })
   },
@@ -1349,15 +1679,22 @@ Page({
   onAddDailyLog(event: {
     currentTarget: { dataset: { type: PetDailyLogType } }
   }) {
+    this.openDailyEditor(event.currentTarget.dataset.type)
+  },
+
+  onOpenDailyRecord() {
+    this.openDailyEditor('record')
+  },
+
+  openDailyEditor(type: PetDailyLogType) {
     if (!requireAuthForWrite()) return
-    const type = event.currentTarget.dataset.type
     const config = DAILY_EDITOR_CONFIGS[type]
     const recorded = toTravelDateTimeParts(new Date().toISOString())
     this.setData({
       dailyEditorOpen: true,
       dailyEditor: {
         type,
-        title: PET_DAILY_LOG_LABELS[type],
+        title: type === 'record' ? '写一条记录' : PET_DAILY_LOG_LABELS[type],
         iconName: PET_DAILY_ICON_NAMES[type],
         choiceLabel: config.choiceLabel,
         detailLabel: config.detailLabel,
@@ -1367,6 +1704,7 @@ Page({
         detail: '',
         recordedDate: recorded.date,
         recordedTime: recorded.time,
+        freeform: Boolean(config.freeform),
       },
     })
   },
@@ -1396,7 +1734,11 @@ Page({
 
   async onSaveDailyLog() {
     const draft = this.data.dailyEditor
-    if (!draft.choice) return
+    if (draft.freeform && !draft.detail.trim()) {
+      wx.showToast({ title: '先写下想记录的内容', icon: 'none' })
+      return
+    }
+    if (!draft.freeform && !draft.choice) return
     const recordedAt = toTravelISO(draft.recordedDate, draft.recordedTime)
     if (!recordedAt) {
       wx.showToast({ title: '请选择记录时间', icon: 'none' })
@@ -1406,7 +1748,9 @@ Page({
       wx.showToast({ title: '记录时间不能晚于现在', icon: 'none' })
       return
     }
-    const summary = composeDailyLogSummary(draft.type, draft.choice, draft.detail)
+    const summary = draft.freeform
+      ? draft.detail.trim()
+      : composeDailyLogSummary(draft.type, draft.choice, draft.detail)
     this.setData({ dailySaving: true })
     const saved = await this.runPetMutation(
       () => petGateway.addDailyLog(
@@ -1416,6 +1760,70 @@ Page({
       `${PET_DAILY_LOG_LABELS[draft.type]}已记下`,
     )
     this.setData({ dailySaving: false, dailyEditorOpen: !saved })
+  },
+
+  onDailyTouchStart(event: WechatMiniprogram.TouchEvent) {
+    const index = Number(event.currentTarget.dataset.index)
+    const touch = event.touches[0]
+    if (!Number.isFinite(index) || !touch) return
+    const updates: Record<string, number> = {
+      dailySwipeIndex: index,
+      dailyTouchStartX: touch.clientX,
+      dailyTouchStartY: touch.clientY,
+    }
+    this.data.dailyHistoryVisible.forEach((_item, itemIndex) => {
+      if (itemIndex !== index) {
+        updates[`dailyHistoryVisible[${itemIndex}].swipeOffset`] = 0
+      }
+    })
+    this.setData(updates)
+  },
+
+  onDailyTouchMove(event: WechatMiniprogram.TouchEvent) {
+    const index = Number(event.currentTarget.dataset.index)
+    const touch = event.touches[0]
+    if (!touch || index !== this.data.dailySwipeIndex) return
+    const deltaX = touch.clientX - this.data.dailyTouchStartX
+    const deltaY = touch.clientY - this.data.dailyTouchStartY
+    if (Math.abs(deltaX) <= Math.abs(deltaY)) return
+    const swipeOffset = Math.max(-132, Math.min(0, deltaX))
+    this.setData({ [`dailyHistoryVisible[${index}].swipeOffset`]: swipeOffset })
+  },
+
+  onDailyTouchEnd(event: WechatMiniprogram.TouchEvent) {
+    const index = Number(event.currentTarget.dataset.index)
+    const touch = event.changedTouches[0]
+    if (!touch || index !== this.data.dailySwipeIndex) return
+    const deltaX = touch.clientX - this.data.dailyTouchStartX
+    const deltaY = touch.clientY - this.data.dailyTouchStartY
+    const opened = Math.abs(deltaX) > Math.abs(deltaY) && deltaX < -44
+    this.setData({
+      [`dailyHistoryVisible[${index}].swipeOffset`]: opened ? -132 : 0,
+      dailySwipeIndex: opened ? index : -1,
+    })
+  },
+
+  onRemoveDailyLog(event: {
+    currentTarget: { dataset: { id: string } }
+  }) {
+    if (!requireAuthForWrite()) return
+    const id = event.currentTarget.dataset.id
+    const log = this.data.dailyHistory.find((item) => item.id === id)
+    if (!log) return
+    wx.showModal({
+      title: '删除这条日常记录？',
+      content: `${log.actionLabel} · ${log.statusLabel}`,
+      confirmText: '删除',
+      confirmColor: '#b35f6d',
+      success: async (result) => {
+        if (!result.confirm) return
+        const saved = await this.runPetMutation(
+          () => petGateway.removeDailyLog(this.data.petState.profile.id, id),
+          '这条记录已删除',
+        )
+        if (saved) this.setData({ dailySwipeIndex: -1 })
+      },
+    })
   },
 
   onAddSupply() {

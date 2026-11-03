@@ -42,6 +42,9 @@ function cloneState(state: DemoPetState): DemoPetState {
       backgroundHistory: Array.isArray(profile.backgroundHistory)
         ? profile.backgroundHistory.map((item) => ({ ...item }))
         : [],
+      statusNotes: Array.isArray(profile.statusNotes)
+        ? profile.statusNotes.map((item) => ({ ...item }))
+        : [],
     },
     events: Array.isArray(state.events)
       ? state.events.map((item) => ({ ...item, version: item.version ?? 1 }))
@@ -67,7 +70,7 @@ function cloneState(state: DemoPetState): DemoPetState {
       : [],
     weights: Array.isArray(state.weights) ? state.weights.map((item) => ({ ...item })) : [],
     dailyLogs: Array.isArray(state.dailyLogs)
-      ? state.dailyLogs.map((item) => ({ ...item }))
+      ? state.dailyLogs.map((item) => ({ ...item, deletedAt: item.deletedAt ?? null }))
       : [],
   }
 }
@@ -157,6 +160,7 @@ export function addDemoPet(input: {
       homeOn: today,
       neuteredOn: null,
       status: '刚刚加入这个家',
+      statusNotes: [],
       version: 1,
       avatarMediaId: '',
       avatarUrl: '',
@@ -325,6 +329,39 @@ export function addDemoPetSupply(input: {
   return saveDemoPetState(state)
 }
 
+export function updateDemoPetSupply(
+  id: string,
+  input: {
+    category: PetSupplyCategory
+    categoryLabel?: string
+    name: string
+    brand?: string
+    preference: PetSupplyPreference
+    note?: string
+    mediaId?: string
+  },
+): DemoPetState {
+  const state = getDemoPetState()
+  state.supplies = state.supplies.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          category: input.category,
+          categoryLabel: input.category === 'custom'
+            ? (input.categoryLabel?.trim() || '自定义')
+            : supplyCategoryLabel(input.category),
+          name: input.name.trim(),
+          brand: input.brand?.trim() ?? '',
+          preference: input.preference,
+          note: input.note?.trim() ?? '',
+          mediaId: input.mediaId?.trim() ?? '',
+          version: (item.version ?? 1) + 1,
+        }
+      : item,
+  )
+  return saveDemoPetState(state)
+}
+
 export function updateDemoPetSupplyStatus(
   id: string,
   preference: PetSupplyPreference,
@@ -350,15 +387,37 @@ function supplyCategoryLabel(category: PetSupplyCategory): string {
   return labels[category] ?? '用品'
 }
 
-export function addDemoPetWeight(value: string): DemoPetState {
+export function addDemoPetWeight(input: {
+  value: string
+  recordedOn: string
+}): DemoPetState {
   const state = getDemoPetState()
   const nowMs = Date.now()
   const weight: DemoPetWeight = {
     id: `pet-weight-${nowMs}`,
-    value,
-    recordedOn: getShanghaiDateOnly(nowMs),
+    value: input.value,
+    recordedOn: input.recordedOn,
   }
-  state.weights = [...state.weights, weight]
+  state.weights = [...state.weights, weight].sort((left, right) =>
+    left.recordedOn.localeCompare(right.recordedOn),
+  )
+  return saveDemoPetState(state)
+}
+
+export function updateDemoPetWeight(
+  id: string,
+  input: { value: string; recordedOn: string },
+): DemoPetState {
+  const state = getDemoPetState()
+  state.weights = state.weights
+    .map((item) => item.id === id ? { ...item, ...input } : item)
+    .sort((left, right) => left.recordedOn.localeCompare(right.recordedOn))
+  return saveDemoPetState(state)
+}
+
+export function removeDemoPetWeight(id: string): DemoPetState {
+  const state = getDemoPetState()
+  state.weights = state.weights.filter((item) => item.id !== id)
   return saveDemoPetState(state)
 }
 
@@ -378,5 +437,59 @@ export function addDemoPetDailyLog(input: {
     recordedAt: input.recordedAt?.trim() || new Date(nowMs).toISOString(),
   }
   state.dailyLogs = [log, ...state.dailyLogs]
+  return saveDemoPetState(state)
+}
+
+export function removeDemoPetDailyLog(id: string): DemoPetState {
+  const state = getDemoPetState()
+  const now = new Date().toISOString()
+  state.dailyLogs = state.dailyLogs.map((item) =>
+    item.id === id ? { ...item, deletedAt: now } : item,
+  )
+  return saveDemoPetState(state)
+}
+
+export function createDemoPetStatusNote(content: string): DemoPetState {
+  const state = getDemoPetState()
+  const active = state.profile.statusNotes.filter((item) => item.content)
+  if (active.length >= 2) throw new Error('最近状态最多保留 2 条')
+  const now = Date.now()
+  const baseId = `pet-status-${now}`
+  let id = baseId
+  let suffix = 2
+  while (state.profile.statusNotes.some((item) => item.id === id)) {
+    id = `${baseId}-${suffix}`
+    suffix += 1
+  }
+  state.profile.statusNotes = [
+    ...active,
+    {
+      id,
+      content: content.trim(),
+      version: 1,
+      sortOrder: active.length + 1,
+    },
+  ]
+  return saveDemoPetState(state)
+}
+
+export function updateDemoPetStatusNote(
+  id: string,
+  content: string,
+): DemoPetState {
+  const state = getDemoPetState()
+  state.profile.statusNotes = state.profile.statusNotes.map((item) =>
+    item.id === id
+      ? { ...item, content: content.trim(), version: item.version + 1 }
+      : item,
+  )
+  return saveDemoPetState(state)
+}
+
+export function removeDemoPetStatusNote(id: string): DemoPetState {
+  const state = getDemoPetState()
+  state.profile.statusNotes = state.profile.statusNotes
+    .filter((item) => item.id !== id)
+    .map((item, index) => ({ ...item, sortOrder: index + 1 }))
   return saveDemoPetState(state)
 }

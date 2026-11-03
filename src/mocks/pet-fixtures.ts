@@ -17,6 +17,10 @@ export function createDemoPetState(nowMs = Date.now()): DemoPetState {
       homeOn: '2023-07-02',
       neuteredOn: '2024-01-12',
       status: '精神不错',
+      statusNotes: [
+        { id: 'status-nuomi-1', content: '今天胃口不错', version: 1, sortOrder: 1 },
+        { id: 'status-nuomi-2', content: '午后在窗边睡了一觉', version: 1, sortOrder: 2 },
+      ],
       backgroundKey: 'sage',
     },
     events: [
@@ -48,6 +52,7 @@ export function createDemoPetState(nowMs = Date.now()): DemoPetState {
       { id: 'daily-urine', type: 'urine', summary: '尿团大小正常', note: '', recordedAt: new Date(todayStartMs + 7 * 60 * 60 * 1000).toISOString() },
       { id: 'daily-litter', type: 'litter-change', summary: '换掉结块并补了新砂', note: '', recordedAt: new Date(nowMs - 27 * 60 * 60 * 1000).toISOString() },
       { id: 'daily-water-change', type: 'water-change', summary: '清洗水碗并换了饮水', note: '', recordedAt: new Date(nowMs - 3 * 60 * 60 * 1000).toISOString() },
+      { id: 'daily-record', type: 'record', summary: '今天第一次主动跳到怀里', note: '待了很久，呼噜声很明显', recordedAt: new Date(nowMs - 5 * 60 * 60 * 1000).toISOString() },
     ],
   }
 }
@@ -66,6 +71,9 @@ export function createSecondDemoPetState(nowMs = Date.now()): DemoPetState {
       homeOn: '2024-05-18',
       neuteredOn: null,
       status: '今天很活泼',
+      statusNotes: [
+        { id: 'status-zhima-1', content: '散步回来很开心', version: 1, sortOrder: 1 },
+      ],
       backgroundKey: 'apricot',
     },
     events: [

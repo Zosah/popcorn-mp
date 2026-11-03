@@ -106,6 +106,17 @@ const apiPet: ApiPet = {
     createdAt,
     updatedAt,
   }],
+  statusNotes: [{
+    id: 'st_1234567890',
+    petId: 'e_1234567890',
+    content: '今天胃口不错',
+    sortOrder: 0,
+    version: 1,
+    createdBy: 'u_1234567890',
+    deletedAt: null,
+    createdAt,
+    updatedAt,
+  }],
 }
 
 const mediaAsset: ApiMediaAsset = {
@@ -236,6 +247,72 @@ describe('HTTP 宠物网关', () => {
           }, 201)
           return
         }
+        if (url.endsWith('/weights/w_1234567890') && method === 'PUT') {
+          const body = options.data && typeof options.data === 'object'
+            ? options.data as Record<string, unknown>
+            : {}
+          succeed(options, {
+            ...apiPet,
+            weights: [{ ...apiPet.weights[0], value: body.value, recordedOn: body.recordedOn }],
+          })
+          return
+        }
+        if (url.endsWith('/weights/w_1234567890') && method === 'DELETE') {
+          succeed(options, { ...apiPet, weights: [] })
+          return
+        }
+        if (url.endsWith('/daily-logs/d_1234567890') && method === 'DELETE') {
+          succeed(options, { ...apiPet, dailyLogs: [] })
+          return
+        }
+        if (url.endsWith('/supplies/q_1234567890') && method === 'PUT') {
+          const body = options.data && typeof options.data === 'object'
+            ? options.data as Record<string, unknown>
+            : {}
+          succeed(options, {
+            ...apiPet,
+            supplies: [{
+              ...apiPet.supplies[0],
+              ...body,
+              version: 5,
+            }],
+          })
+          return
+        }
+        if (url.endsWith('/status-notes') && method === 'POST') {
+          const body = options.data && typeof options.data === 'object'
+            ? options.data as Record<string, unknown>
+            : {}
+          succeed(options, {
+            ...apiPet,
+            statusNotes: [{
+              id: 'st_created0001',
+              petId: apiPet.id,
+              content: body.content,
+              sortOrder: 1,
+              version: 1,
+              createdBy: session.user.id,
+              deletedAt: null,
+              createdAt: updatedAt,
+              updatedAt,
+            }],
+          }, 201)
+          return
+        }
+        if (url.endsWith('/status-notes/st_1234567890') && method === 'PUT') {
+          const body = options.data && typeof options.data === 'object'
+            ? options.data as Record<string, unknown>
+            : {}
+          succeed(options, {
+            ...apiPet,
+            statusNotes: [{ ...apiPet.statusNotes?.[0], content: body.content, version: 2 }],
+          })
+          return
+        }
+        if (url.endsWith('/status-notes/st_1234567890') && method === 'DELETE') {
+          succeed(options, { ...apiPet, statusNotes: [] })
+          return
+        }
         if (url.endsWith('/events/n_1234567890') && method === 'PUT') {
           succeed(options, {
             ...apiPet,
@@ -311,6 +388,64 @@ describe('HTTP 宠物网关', () => {
     const request = requests.find((item) => item.method === 'POST')
     expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_create_/)
     expect(request?.data).toMatchObject({ name: '团子', species: 'other' })
+  })
+
+  it('体重、日常、用品和最近状态的详情写接口使用正确路径与版本头', async () => {
+    const gateway = new HttpPetGateway()
+
+    const weight = await gateway.updateWeight(apiPet.id, 'w_1234567890', {
+      value: '4.1',
+      recordedOn: '2026-11-01',
+    })
+    expect(weight.weights[0]).toMatchObject({ value: '4.1', recordedOn: '2026-11-01' })
+    await gateway.removeWeight(apiPet.id, 'w_1234567890')
+    await gateway.removeDailyLog(apiPet.id, 'd_1234567890')
+
+    const supply = await gateway.updateSupply(apiPet.id, 'q_1234567890', {
+      category: 'custom',
+      categoryLabel: '玩具',
+      name: '新逗猫棒',
+      brand: 'PIDAN',
+      preference: 'loved',
+      note: '很喜欢',
+      mediaId: '',
+    }, 4)
+    expect(supply.supplies[0]).toMatchObject({ name: '新逗猫棒', version: 5 })
+
+    await gateway.createStatusNote(apiPet.id, '  今天精神很好  ')
+    await gateway.updateStatusNote(apiPet.id, 'st_1234567890', '今天特别精神', 1)
+    await gateway.removeStatusNote(apiPet.id, 'st_1234567890', 1)
+
+    const weightUpdate = requests.find((item) =>
+      String(item.url).endsWith('/weights/w_1234567890') && item.method === 'PUT',
+    )
+    expect(weightUpdate?.header?.['Idempotency-Key']).toMatch(/^pet_weight-update_/)
+    expect(weightUpdate?.header?.['If-Match']).toBeUndefined()
+
+    const dailyDelete = requests.find((item) =>
+      String(item.url).endsWith('/daily-logs/d_1234567890') && item.method === 'DELETE',
+    )
+    expect(dailyDelete?.header?.['Idempotency-Key']).toMatch(/^pet_daily-delete_/)
+
+    const supplyUpdate = requests.find((item) =>
+      String(item.url).endsWith('/supplies/q_1234567890') && item.method === 'PUT',
+    )
+    expect(supplyUpdate?.header?.['If-Match']).toBe('"4"')
+
+    const statusCreate = requests.find((item) =>
+      String(item.url).endsWith('/status-notes') && item.method === 'POST',
+    )
+    expect(statusCreate?.data).toEqual({ content: '今天精神很好' })
+
+    const statusUpdate = requests.find((item) =>
+      String(item.url).endsWith('/status-notes/st_1234567890') && item.method === 'PUT',
+    )
+    expect(statusUpdate?.header?.['If-Match']).toBe('"1"')
+
+    const statusDelete = requests.find((item) =>
+      String(item.url).endsWith('/status-notes/st_1234567890') && item.method === 'DELETE',
+    )
+    expect(statusDelete?.header?.['If-Match']).toBe('"1"')
   })
 
   it('完整档案更新携带 If-Match 与幂等键', async () => {

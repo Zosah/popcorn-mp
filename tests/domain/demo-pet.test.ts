@@ -282,6 +282,37 @@ describe('每日吃喝拉撒记录', () => {
     })
   })
 
+  it('软删除的日常记录不会进入汇总、时间线和月历', () => {
+    const logs = [
+      {
+        id: 'deleted-log',
+        type: 'water-change' as const,
+        summary: '换了客厅的水',
+        note: '',
+        recordedAt: '2026-08-27T01:00:00.000Z',
+        deletedAt: '2026-08-27T02:00:00.000Z',
+      },
+      {
+        id: 'active-log',
+        type: 'record' as const,
+        summary: '第一次主动跳到怀里',
+        note: '呼噜声很明显',
+        recordedAt: '2026-08-27T03:00:00.000Z',
+      },
+    ]
+
+    expect(buildPetDailySummary(logs, '2026-08-27').find((item) => item.type === 'water-change')?.count).toBe(0)
+    expect(buildPetDailyTimeline(logs, Date.parse('2026-08-27T04:00:00.000Z'))).toEqual([
+      expect.objectContaining({
+        id: 'active-log',
+        actionLabel: '记录',
+        statusLabel: '第一次主动跳到怀里',
+        note: '呼噜声很明显',
+      }),
+    ])
+    expect(buildPetCalendar([], '2026-08', '2026-08-27', logs).find((item) => item.date === '2026-08-27')?.eventCount).toBe(1)
+  })
+
   it('最近一次换水可以持续跟踪到具体日期和间隔', () => {
     const timeline = buildPetDailyTimeline(
       [

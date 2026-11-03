@@ -23,10 +23,13 @@
           <text class="pet-eyebrow">我们的伙伴</text>
           <view class="pet-hero__name-row" bindtap="onChoosePet">
             <text class="pet-hero__name">{{profile.name}}</text>
-            <view class="pet-hero__switch"><line-icon name="system-expand" size="26" tone="ink" /></view>
+            <view wx:if="{{petTabs.length > 1}}" class="pet-hero__switch"><line-icon name="system-expand" size="26" tone="ink" /></view>
           </view>
           <view class="pet-hero__sub">{{profile.breed}} · {{ageLabel}}</view>
-          <view class="pet-hero__status">{{profile.status || '今天也在一起'}}</view>
+          <view class="pet-hero__status-list" catchtap="onOpenStatusManager">
+            <view wx:for="{{profile.statusNotes}}" wx:key="id" class="pet-hero__status">{{item.content}}</view>
+            <view wx:if="{{!profile.statusNotes.length}}" class="pet-hero__status pet-hero__status--empty">＋ 最近状态</view>
+          </view>
         </view>
 
         <view class="pet-portrait" bindtap="onOpenAvatarPreview">
@@ -46,16 +49,16 @@
         </view>
       </view>
 
+      <view class="pet-hero__background-action" catchtap="onOpenBackgroundPicker">
+        <line-icon name="system-image" size="20" tone="pink" />
+        <text>更换背景</text>
+      </view>
+
       <view class="pet-stats">
-        <view><view class="pet-stats__value">{{latestWeight}}<text>kg</text></view><view class="pet-stats__label">当前体重</view></view>
+        <view bindtap="onToggleWeightUnit"><view class="pet-stats__value">{{latestWeight}}<text>{{weightUnitLabel}}</text></view><view class="pet-stats__label">当前体重 · 点击切换</view></view>
         <view><view class="pet-stats__value">{{companionDays}}</view><view class="pet-stats__label">天陪伴日</view></view>
         <view><view class="pet-stats__value">{{timeline.length}}</view><view class="pet-stats__label">条成长记录</view></view>
       </view>
-    </view>
-
-    <view class="pet-theme-entry" catchtap="onOpenBackgroundPicker">
-      <line-icon name="system-image" size="24" tone="pink" />
-      <text>更换背景</text>
     </view>
 
     <view class="pet-nav">
@@ -113,10 +116,11 @@
           <view bindtap="onRecordWeight">记体重</view>
         </view>
         <view class="pet-weight">
-          <view class="pet-weight__head"><view><text>{{latestWeight}} kg</text><text>{{weightTrendLabel}}</text></view><text>近 {{weightPoints.length}} 次</text></view>
-          <view class="pet-weight__chart">
-            <view wx:for="{{weightPoints}}" wx:key="index" class="pet-weight__column {{item.active ? 'pet-weight__column--active' : ''}}"><text class="pet-weight__value">{{item.value}}</text><view class="pet-weight__track"><view class="pet-weight__bar" style="height: {{item.height}}%;"></view></view><text class="pet-weight__date">{{item.dateLabel}}</text></view>
+          <view class="pet-weight__head"><view><text>{{latestWeight}} {{weightUnitLabel}}</text><text>{{weightTrendLabel}}</text></view><text>近 {{weightPoints.length}} 次</text></view>
+          <view wx:if="{{weightPoints.length}}" class="pet-weight__chart">
+            <view wx:for="{{weightPoints}}" wx:key="id" class="pet-weight__column {{item.active ? 'pet-weight__column--active' : ''}}" data-id="{{item.id}}" bindtap="onOpenWeightRecord"><text class="pet-weight__value">{{item.value}}</text><view class="pet-weight__track"><view class="pet-weight__bar" style="height: {{item.height}}%;"></view></view><text class="pet-weight__date">{{item.dateLabel}}</text></view>
           </view>
+          <view wx:else class="pet-weight__empty">记下第一次体重，之后会在这里看到变化</view>
         </view>
 
         <view class="pet-section-head pet-section-head--plain">
@@ -172,9 +176,6 @@
       </block>
 
       <block wx:elif="{{activeSection === 'daily'}}">
-        <view class="pet-toolbar">
-          <text>{{dailyHistory.length ? '共 ' + dailyHistory.length + ' 条记录' : '日常记录'}}</text>
-        </view>
         <view class="daily-grid">
           <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card" data-type="{{item.type}}" bindtap="onAddDailyLog">
             <view class="daily-card__visual"><line-icon name="{{item.iconName}}" size="38" tone="color" /></view>
@@ -182,42 +183,103 @@
             <text class="daily-card__add">＋</text>
           </view>
         </view>
-        <view wx:if="{{dailyHistoryVisible.length}}" class="daily-recent">
-          <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">日常记录</text></view><text>{{dailyHistory.length}} 条</text></view>
-          <view class="daily-timeline">
-            <view wx:for="{{dailyHistoryVisible}}" wx:key="id" class="daily-timeline__row">
-              <view class="daily-timeline__rail">
-                <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
-                <view class="daily-timeline__line"></view>
-              </view>
-              <view class="daily-timeline__body">
-                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
-                <view class="daily-timeline__title">{{item.summary}}</view>
-                <text class="daily-timeline__copy">{{item.label}}<block wx:if="{{item.note}}"> · {{item.note}}</block></text>
+        <view id="daily-history" class="daily-recent">
+          <view class="pet-section-head pet-section-head--plain">
+            <view><text class="pet-section-head__title">日常记录</text></view>
+            <view class="daily-head-actions"><text wx:if="{{dailyHistory.length}}">{{dailyHistory.length}} 条</text><view class="daily-head-record" bindtap="onOpenDailyRecord">＋ 记录</view></view>
+          </view>
+          <view wx:if="{{dailyHistoryVisible.length}}" class="daily-timeline">
+            <view wx:for="{{dailyHistoryVisible}}" wx:key="id" class="daily-swipe" data-index="{{index}}" bindtouchstart="onDailyTouchStart" bindtouchmove="onDailyTouchMove" bindtouchend="onDailyTouchEnd">
+              <view class="daily-swipe__delete" data-id="{{item.id}}" catchtap="onRemoveDailyLog">删除</view>
+              <view class="daily-timeline__row" style="left: {{item.swipeOffset}}rpx;">
+                <view class="daily-timeline__rail">
+                  <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
+                  <view class="daily-timeline__line"></view>
+                </view>
+                <view class="daily-timeline__body">
+                  <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
+                  <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
+                  <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
+                </view>
               </view>
             </view>
           </view>
           <view wx:if="{{dailyHistory.length > 5}}" class="timeline-more" bindtap="onToggleDailyHistory">{{dailyHistoryExpanded ? '收起' : '查看更早记录'}}<text>{{dailyHistoryExpanded ? '↑' : '↓'}}</text></view>
+          <view wx:if="{{!dailyHistoryVisible.length}}" class="pet-empty-line">还没有日常记录，点右上角记下第一条</view>
         </view>
-        <view wx:else class="pet-empty-line">还没有日常记录</view>
       </block>
 
       <block wx:else>
         <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
         <view wx:if="{{currentSupplies.length}}" class="current-supplies-wrap">
-          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply"><text class="current-supply__label">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__name">{{item.name}}</view><view class="current-supply__note">{{item.categoryLabel}} · {{item.note || '用着不错'}}</view></view></view></scroll-view>
+          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply" data-id="{{item.id}}" bindtap="onEditSupply"><text class="current-supply__label">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__title-line"><text class="supply-category-label">{{item.categoryLabel}}</text><view class="current-supply__name">{{item.name}}</view></view><view class="current-supply__note">{{item.note || '用着不错'}}</view></view></view></scroll-view>
         </view>
         <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}"><view class="supply-filter__row"><view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view></view></scroll-view>
         <view class="supply-list">
           <view wx:for="{{supplies}}" wx:key="id" class="supply-row">
-            <image wx:if="{{item.mediaUrl}}" class="supply-row__image" src="{{item.mediaUrl}}" mode="aspectFill" />
+            <image wx:if="{{item.mediaUrl}}" class="supply-row__image" src="{{item.mediaUrl}}" mode="aspectFill" data-url="{{item.mediaUrl}}" catchtap="onPreviewSupplyImage" />
             <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="44" tone="color" /></view>
-            <view class="supply-row__body"><view class="supply-row__title">{{item.name}}</view><text>{{item.brand || '未记品牌'}} · {{item.categoryLabel}}</text><text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text></view>
+            <view class="supply-row__body">
+              <view class="supply-row__title-line" data-id="{{item.id}}" bindtap="onEditSupply"><text class="supply-category-label">{{item.categoryLabel}}</text><text class="supply-row__title">{{item.name}}</text></view>
+              <text>{{item.brand || '未记品牌'}}</text><text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text>
+            </view>
             <view class="supply-preference supply-preference--{{item.preference}}" data-id="{{item.id}}" catchtap="onChangeSupplyStatus"><text class="supply-preference__hearts">{{item.preferenceHearts}}</text><text>{{item.preferenceLabel}}</text></view>
           </view>
         </view>
         <view wx:if="{{!supplies.length}}" class="pet-empty-line" bindtap="onAddSupply">还没有用品，先记一件家里正在用的东西</view>
       </block>
+    </view>
+
+    <view wx:if="{{statusManagerOpen}}" class="pet-sheet-mask" catchtap="onCloseStatusManager">
+      <view class="pet-sheet pet-sheet--status" catchtap="noop">
+        <view class="pet-sheet__handle"></view>
+        <view class="pet-sheet__head">
+          <view><text class="pet-eyebrow">最近状态</text><text class="pet-sheet__title">此刻的{{profile.name}}</text></view>
+          <view bindtap="onCloseStatusManager">关闭</view>
+        </view>
+        <view class="status-note-list">
+          <view wx:for="{{profile.statusNotes}}" wx:key="id" class="status-note-row">
+            <view class="status-note-row__content">{{item.content}}</view>
+            <view class="status-note-row__actions">
+              <text data-id="{{item.id}}" data-version="{{item.version}}" bindtap="onEditStatus">编辑</text>
+              <text class="status-note-row__delete" data-id="{{item.id}}" data-version="{{item.version}}" bindtap="onRemoveStatusNote">删除</text>
+            </view>
+          </view>
+          <view wx:if="{{!profile.statusNotes.length}}" class="status-note-empty">还没有最近状态，写一条放在名字下面</view>
+        </view>
+        <view wx:if="{{statusEditingId || profile.statusNotes.length < 2}}" class="status-note-form">
+          <textarea value="{{statusDraft}}" maxlength="60" auto-height placeholder="例如：今天胃口不错" bindinput="onStatusDraftInput" placeholder-class="app-input-placeholder" />
+          <view class="status-note-form__footer">
+            <text>{{statusEditingId ? '正在编辑已有状态' : profile.statusNotes.length + ' / 2'}}</text>
+            <button loading="{{statusSaving}}" disabled="{{statusSaving}}" bindtap="onSaveStatusNote">{{statusEditingId ? '保存修改' : '添加状态'}}</button>
+          </view>
+        </view>
+        <view wx:else class="status-note-limit">已记录 2 条最近状态，点击上方内容编辑，或删除后再添加。</view>
+        <view wx:if="{{dailyHistory.length}}" class="status-latest-entry" bindtap="onOpenLatestDailyRecord">最近记录：{{dailyHistory[0].statusLabel}}<text>去看看 ›</text></view>
+      </view>
+    </view>
+
+    <view wx:if="{{weightEditorOpen}}" class="pet-sheet-mask" catchtap="onCloseWeightEditor">
+      <view class="pet-sheet pet-sheet--weight" catchtap="noop">
+        <view class="pet-sheet__handle"></view>
+        <view class="pet-sheet__head">
+          <view><text class="pet-eyebrow">体重记录</text><text class="pet-sheet__title">{{weightEditorMode === 'edit' ? '调整这次记录' : '称一称，记下来'}}</text></view>
+          <view bindtap="onCloseWeightEditor">关闭</view>
+        </view>
+        <view class="weight-editor-unit-row">
+          <view class="weight-editor-unit {{weightDraftUnit === 'jin' ? 'weight-editor-unit--active' : ''}}" data-value="jin" bindtap="onWeightDraftUnitSelect">斤</view>
+          <view class="weight-editor-unit {{weightDraftUnit === 'kg' ? 'weight-editor-unit--active' : ''}}" data-value="kg" bindtap="onWeightDraftUnitSelect">公斤</view>
+        </view>
+        <view class="weight-editor-input">
+          <input type="digit" value="{{weightDraftValue}}" maxlength="8" placeholder="{{weightDraftUnit === 'jin' ? '例如 8.4' : '例如 4.2'}}" bindinput="onWeightDraftInput" placeholder-class="app-input-placeholder" />
+          <text>{{weightDraftUnit === 'jin' ? '斤' : 'kg'}}</text>
+        </view>
+        <picker mode="date" value="{{weightDraftDate}}" bindchange="onWeightDateChange">
+          <view class="weight-editor-date"><text>记录日期</text><text>{{weightDraftDate}} ›</text></view>
+        </picker>
+        <button class="pet-sheet__primary" loading="{{weightSaving}}" disabled="{{weightSaving}}" bindtap="onSaveWeight">{{weightEditorMode === 'edit' ? '保存修改' : '记下体重'}}</button>
+        <view wx:if="{{weightEditorMode === 'edit'}}" class="weight-editor-delete" bindtap="onDeleteWeight">删除这条体重记录</view>
+      </view>
     </view>
 
     <view wx:if="{{dailyEditorOpen}}" class="pet-sheet-mask" catchtap="onCloseDailyEditor">
@@ -230,16 +292,22 @@
           </view>
           <view bindtap="onCloseDailyEditor" aria-label="关闭">关闭</view>
         </view>
-        <view class="daily-editor__section">
-          <text class="daily-editor__label">{{dailyEditor.choiceLabel}}</text>
-          <view class="choice-row">
-            <view wx:for="{{dailyEditor.choices}}" wx:key="value" class="choice-chip {{dailyEditor.choice === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onDailyChoiceSelect">{{item.label}}</view>
-          </view>
-        </view>
-        <view class="daily-editor__field">
+        <view wx:if="{{dailyEditor.freeform}}" class="daily-editor__field daily-editor__field--freeform">
           <text>{{dailyEditor.detailLabel}}</text>
-          <input value="{{dailyEditor.detail}}" maxlength="60" placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" placeholder-class="app-input-placeholder" />
+          <textarea class="daily-editor__textarea" value="{{dailyEditor.detail}}" maxlength="500" auto-height placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" placeholder-class="app-input-placeholder" />
         </view>
+        <block wx:else>
+          <view class="daily-editor__section">
+            <text class="daily-editor__label">{{dailyEditor.choiceLabel}}</text>
+            <view class="choice-row">
+              <view wx:for="{{dailyEditor.choices}}" wx:key="value" class="choice-chip {{dailyEditor.choice === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onDailyChoiceSelect">{{item.label}}</view>
+            </view>
+          </view>
+          <view class="daily-editor__field">
+            <text>{{dailyEditor.detailLabel}}</text>
+            <input value="{{dailyEditor.detail}}" maxlength="60" placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" placeholder-class="app-input-placeholder" />
+          </view>
+        </block>
         <view class="daily-editor__section daily-editor__time-section">
           <text class="daily-editor__label">记录时间</text>
           <view class="daily-time-row">
@@ -258,7 +326,7 @@
           </view>
           <text class="daily-time-hint">可以补录以前发生的事，默认是现在</text>
         </view>
-        <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">记下这次{{dailyEditor.title}}</button>
+        <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">{{dailyEditor.freeform ? '保存记录' : '记下这次' + dailyEditor.title}}</button>
       </view>
     </view>
 
@@ -303,7 +371,7 @@
     <view wx:if="{{supplyEditorOpen}}" class="pet-sheet-mask" catchtap="onCloseSupplyEditor">
       <view class="pet-sheet pet-sheet--supply" catchtap="noop">
         <view class="pet-sheet__handle"></view>
-        <view class="pet-sheet__head"><view><text class="pet-eyebrow">新增用品</text><text class="pet-sheet__title">记下值得记住的体验</text></view><view bindtap="onCloseSupplyEditor">关闭</view></view>
+        <view class="pet-sheet__head"><view><text class="pet-eyebrow">{{supplyEditorMode === 'edit' ? '编辑用品' : '新增用品'}}</text><text class="pet-sheet__title">{{supplyEditorMode === 'edit' ? '补充这件用品的信息' : '记下值得记住的体验'}}</text></view><view bindtap="onCloseSupplyEditor">关闭</view></view>
         <scroll-view class="supply-editor-scroll" scroll-y enhanced show-scrollbar="{{false}}">
           <view class="supply-editor-section"><text class="supply-editor-label">类型</text><view class="choice-row"><view wx:for="{{supplyEditorCategories}}" wx:key="value" class="choice-chip {{supplyDraft.category === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyCategorySelect">{{item.label}}</view></view></view>
           <view wx:if="{{supplyDraft.category === 'custom'}}" class="supply-field"><text>自定义类型</text><input value="{{supplyDraft.categoryLabel}}" maxlength="32" placeholder="例如：玩具、护理" data-field="categoryLabel" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
@@ -312,7 +380,7 @@
           <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view></view>
           <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
           <view class="supply-editor-section"><text class="supply-editor-label">图片</text><view wx:if="{{supplyDraft.mediaUrl}}" class="supply-editor-image"><image src="{{supplyDraft.mediaUrl}}" mode="aspectFill" /><view bindtap="onRemoveSupplyImage">移除</view></view><view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="system-camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view></view>
-          <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">保存用品</button>
+          <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">{{supplyEditorMode === 'edit' ? '保存修改' : '保存用品'}}</button>
         </scroll-view>
       </view>
     </view>

@@ -65,3 +65,38 @@
 .calendar-empty__copy text:first-child { color: var(--calendar-ink); font-size: 25rpx; font-weight: 600; }
 .calendar-empty__copy text:last-child { margin-top: 4rpx; color: var(--calendar-ink-3); font-size: 21rpx; line-height: 1.55; }
 .calendar-empty__action { padding: 9rpx 14rpx; border-radius: 999rpx; background: var(--calendar-pink-soft); color: var(--c-primary-link, #b86757); flex-shrink: 0; font-size: 21rpx; font-weight: 600; }
+
+/* 日常记录沿用宠物页的动作、状态、备注层级 */
+.calendar-event-row__badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.calendar-event-row__action {
+  padding: 4rpx 10rpx;
+  border-radius: 999rpx;
+  background: var(--calendar-pink-soft);
+  color: var(--calendar-pink);
+  font-size: 18rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.calendar-event-row__status {
+  color: var(--calendar-ink);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+.calendar-event-row__note {
+  margin-top: 5rpx;
+  color: var(--calendar-ink-2) !important;
+  font-size: 20rpx !important;
+  font-weight: 400 !important;
+  line-height: 1.5;
+}
+.calendar-event-row__time {
+  margin-top: 4rpx;
+  color: var(--calendar-ink-3) !important;
+  font-size: 19rpx !important;
+  font-weight: 400 !important;
+}

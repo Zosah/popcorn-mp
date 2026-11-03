@@ -20,6 +20,7 @@ import type {
   ApiPetDailyLogWriteRequest,
   ApiPetEventWriteRequest,
   ApiPetProfileWriteRequest,
+  ApiPetStatusNoteWriteRequest,
   ApiPetSupplyWriteRequest,
   ApiPetWeightWriteRequest,
 } from '../types/api'
@@ -34,6 +35,7 @@ import {
   type PetGateway,
   type PetProfileInput,
   type PetSupplyInput,
+  type PetWeightInput,
 } from './pet-gateway'
 import { TransportError } from './transport'
 
@@ -178,13 +180,43 @@ export class HttpPetGateway implements PetGateway {
     )
   }
 
-  async addWeight(petId: string, value: string): Promise<DemoPetState> {
+  async addWeight(
+    petId: string,
+    input: PetWeightInput,
+  ): Promise<DemoPetState> {
     const context = petContext()
     const body: ApiPetWeightWriteRequest = {
-      value,
-      recordedOn: getShanghaiDateOnly(Date.now()),
+      value: input.value,
+      recordedOn: input.recordedOn,
     }
     return this.writePet('weight', `${petPath(context.spaceId, petId)}/weights`, 'POST', body)
+  }
+
+  async updateWeight(
+    petId: string,
+    weightId: string,
+    input: PetWeightInput,
+  ): Promise<DemoPetState> {
+    const context = petContext()
+    const body: ApiPetWeightWriteRequest = {
+      value: input.value,
+      recordedOn: input.recordedOn,
+    }
+    return this.writePet(
+      'weight-update',
+      `${petPath(context.spaceId, petId)}/weights/${encodeURIComponent(weightId)}`,
+      'PUT',
+      body,
+    )
+  }
+
+  async removeWeight(petId: string, weightId: string): Promise<DemoPetState> {
+    const context = petContext()
+    return this.writePet(
+      'weight-delete',
+      `${petPath(context.spaceId, petId)}/weights/${encodeURIComponent(weightId)}`,
+      'DELETE',
+    )
   }
 
   async addDailyLog(
@@ -199,6 +231,15 @@ export class HttpPetGateway implements PetGateway {
       recordedAt: input.recordedAt?.trim() || new Date().toISOString(),
     }
     return this.writePet('daily', `${petPath(context.spaceId, petId)}/daily-logs`, 'POST', body)
+  }
+
+  async removeDailyLog(petId: string, logId: string): Promise<DemoPetState> {
+    const context = petContext()
+    return this.writePet(
+      'daily-delete',
+      `${petPath(context.spaceId, petId)}/daily-logs/${encodeURIComponent(logId)}`,
+      'DELETE',
+    )
   }
 
   async createSupply(
@@ -219,6 +260,35 @@ export class HttpPetGateway implements PetGateway {
     return this.writePet('supply-create', `${petPath(context.spaceId, petId)}/supplies`, 'POST', body)
   }
 
+  async updateSupply(
+    petId: string,
+    supplyId: string,
+    input: PetSupplyInput,
+    currentVersion: number,
+  ): Promise<DemoPetState> {
+    const context = petContext()
+    const existing = (await this.list()).pets
+      .flatMap((pet) => pet.supplies)
+      .find((supply) => supply.id === supplyId)
+    const body: ApiPetSupplyWriteRequest = {
+      category: input.category,
+      categoryLabel: input.categoryLabel?.trim() ?? '',
+      name: input.name.trim(),
+      brand: input.brand?.trim() ?? '',
+      preference: input.preference,
+      note: input.note?.trim() ?? '',
+      mediaId: input.mediaId?.trim() ?? '',
+      recordedOn: existing?.recordedOn ?? getShanghaiDateOnly(Date.now()),
+    }
+    return this.writePet(
+      'supply-update',
+      `${petPath(context.spaceId, petId)}/supplies/${encodeURIComponent(supplyId)}`,
+      'PUT',
+      body,
+      currentVersion,
+    )
+  }
+
   async setSupplyStatus(
     petId: string,
     supplyId: string,
@@ -231,6 +301,49 @@ export class HttpPetGateway implements PetGateway {
       `${petPath(context.spaceId, petId)}/supplies/${encodeURIComponent(supplyId)}/status`,
       'PUT',
       { preference },
+      currentVersion,
+    )
+  }
+
+  async createStatusNote(petId: string, content: string): Promise<DemoPetState> {
+    const context = petContext()
+    const body: ApiPetStatusNoteWriteRequest = { content: content.trim() }
+    return this.writePet(
+      'status-create',
+      `${petPath(context.spaceId, petId)}/status-notes`,
+      'POST',
+      body,
+    )
+  }
+
+  async updateStatusNote(
+    petId: string,
+    noteId: string,
+    content: string,
+    currentVersion: number,
+  ): Promise<DemoPetState> {
+    const context = petContext()
+    const body: ApiPetStatusNoteWriteRequest = { content: content.trim() }
+    return this.writePet(
+      'status-update',
+      `${petPath(context.spaceId, petId)}/status-notes/${encodeURIComponent(noteId)}`,
+      'PUT',
+      body,
+      currentVersion,
+    )
+  }
+
+  async removeStatusNote(
+    petId: string,
+    noteId: string,
+    currentVersion: number,
+  ): Promise<DemoPetState> {
+    const context = petContext()
+    return this.writePet(
+      'status-delete',
+      `${petPath(context.spaceId, petId)}/status-notes/${encodeURIComponent(noteId)}`,
+      'DELETE',
+      undefined,
       currentVersion,
     )
   }
@@ -381,6 +494,12 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
     homeOn: item.homeOn,
     neuteredOn: item.neuteredOn || null,
     status: item.status,
+    statusNotes: (item.statusNotes ?? []).map((note) => ({
+      id: note.id,
+      content: note.content,
+      version: note.version,
+      sortOrder: note.sortOrder,
+    })),
     version: item.version,
     avatarMediaId: item.avatarMediaId || '',
     avatarUrl: avatarUrl ?? '',
@@ -428,6 +547,7 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       summary: log.summary,
       note: log.note,
       recordedAt: log.recordedAt,
+      deletedAt: log.deletedAt ?? null,
     })),
   }
 }
@@ -489,7 +609,8 @@ function toEventType(value: string): PetEventType {
 }
 
 function toDailyLogType(value: string): PetDailyLogType {
-  return value === 'water'
+  return value === 'record'
+    || value === 'water'
     || value === 'stool'
     || value === 'urine'
     || value === 'litter-change'

@@ -10,13 +10,20 @@ import {
   addDemoPetEvent,
   addDemoPetSupply,
   addDemoPetWeight,
+  createDemoPetStatusNote,
   getDemoPetStore,
   removeDemoPet,
+  removeDemoPetDailyLog,
   removeDemoPetEvent,
+  removeDemoPetStatusNote,
+  removeDemoPetWeight,
   switchDemoPet,
   updateDemoPetEvent,
   updateDemoPetProfile,
+  updateDemoPetSupply,
   updateDemoPetSupplyStatus,
+  updateDemoPetStatusNote,
+  updateDemoPetWeight,
 } from './demo-pet'
 import {
   PetGatewayError,
@@ -34,11 +41,11 @@ function collection(): PetCollection {
   return {
     activePetId: store.activePetId,
     pets: store.pets.map((pet) => ({
-      profile: { ...pet.profile },
       events: pet.events.map((event) => ({ ...event })),
       supplies: pet.supplies.map((item) => ({ ...item })),
       weights: pet.weights.map((item) => ({ ...item })),
       dailyLogs: pet.dailyLogs.map((item) => ({ ...item })),
+      profile: { ...pet.profile, statusNotes: pet.profile.statusNotes.map((item) => ({ ...item })) },
     })),
   }
 }
@@ -160,11 +167,40 @@ export class DemoPetGateway implements PetGateway {
     return removeDemoPetEvent(eventId)
   }
 
-  async addWeight(petId: string, value: string): Promise<DemoPetState> {
+  async addWeight(
+    petId: string,
+    input: { value: string; recordedOn: string },
+  ): Promise<DemoPetState> {
     if (activePet().profile.id !== petId) {
       throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
     }
-    return addDemoPetWeight(value)
+    return addDemoPetWeight(input)
+  }
+
+  async updateWeight(
+    petId: string,
+    weightId: string,
+    input: { value: string; recordedOn: string },
+  ): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    if (!pet.weights.some((item) => item.id === weightId)) {
+      throw new PetGatewayError('WEIGHT_NOT_FOUND', '体重记录不存在')
+    }
+    return updateDemoPetWeight(weightId, input)
+  }
+
+  async removeWeight(petId: string, weightId: string): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    if (!pet.weights.some((item) => item.id === weightId)) {
+      throw new PetGatewayError('WEIGHT_NOT_FOUND', '体重记录不存在')
+    }
+    return removeDemoPetWeight(weightId)
   }
 
   async addDailyLog(
@@ -177,6 +213,17 @@ export class DemoPetGateway implements PetGateway {
     return addDemoPetDailyLog(input)
   }
 
+  async removeDailyLog(petId: string, logId: string): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    if (!pet.dailyLogs.some((item) => item.id === logId && !item.deletedAt)) {
+      throw new PetGatewayError('DAILY_LOG_NOT_FOUND', '日常记录不存在')
+    }
+    return removeDemoPetDailyLog(logId)
+  }
+
   async createSupply(
     petId: string,
     input: PetSupplyInput,
@@ -185,6 +232,22 @@ export class DemoPetGateway implements PetGateway {
       throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
     }
     return addDemoPetSupply(input)
+  }
+
+  async updateSupply(
+    petId: string,
+    supplyId: string,
+    input: PetSupplyInput,
+    currentVersion: number,
+  ): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    const supply = pet.supplies.find((item) => item.id === supplyId)
+    if (!supply) throw new PetGatewayError('SUPPLY_NOT_FOUND', '宠物用品不存在')
+    assertVersion(supply.version, currentVersion)
+    return updateDemoPetSupply(supplyId, input)
   }
 
   async setSupplyStatus(
@@ -201,6 +264,47 @@ export class DemoPetGateway implements PetGateway {
     if (!supply) throw new PetGatewayError('SUPPLY_NOT_FOUND', '宠物用品不存在')
     assertVersion(supply.version, currentVersion)
     return updateDemoPetSupplyStatus(supplyId, preference)
+  }
+
+  async createStatusNote(petId: string, content: string): Promise<DemoPetState> {
+    if (activePet().profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    if (activePet().profile.statusNotes.length >= 2) {
+      throw new PetGatewayError('STATUS_LIMIT', '最近状态最多保留 2 条')
+    }
+    return createDemoPetStatusNote(content)
+  }
+
+  async updateStatusNote(
+    petId: string,
+    noteId: string,
+    content: string,
+    currentVersion: number,
+  ): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    const note = pet.profile.statusNotes.find((item) => item.id === noteId)
+    if (!note) throw new PetGatewayError('STATUS_NOT_FOUND', '最近状态不存在')
+    assertVersion(note.version, currentVersion)
+    return updateDemoPetStatusNote(noteId, content)
+  }
+
+  async removeStatusNote(
+    petId: string,
+    noteId: string,
+    currentVersion: number,
+  ): Promise<DemoPetState> {
+    const pet = activePet()
+    if (pet.profile.id !== petId) {
+      throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
+    }
+    const note = pet.profile.statusNotes.find((item) => item.id === noteId)
+    if (!note) throw new PetGatewayError('STATUS_NOT_FOUND', '最近状态不存在')
+    assertVersion(note.version, currentVersion)
+    return removeDemoPetStatusNote(noteId)
   }
 
   async findEvent(eventId: string): Promise<PetEventMatch | null> {

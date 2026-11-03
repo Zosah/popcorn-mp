@@ -517,6 +517,19 @@ export interface ApiPetDailyLog {
   recordedAt: string
   createdBy: string
   createdAt: string
+  deletedAt?: string | null
+}
+
+export interface ApiPetStatusNote {
+  id: string
+  petId: string
+  content: string
+  sortOrder: number
+  version: number
+  createdBy: string
+  deletedAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ApiPetSupply {
@@ -567,6 +580,7 @@ export interface ApiPet {
   weights: ApiPetWeight[]
   dailyLogs: ApiPetDailyLog[]
   supplies: ApiPetSupply[]
+  statusNotes?: ApiPetStatusNote[]
 }
 
 export interface ApiPetList {
@@ -623,6 +637,10 @@ export interface ApiPetSupplyWriteRequest {
 
 export interface ApiPetSupplyPreferenceWriteRequest {
   preference: string
+}
+
+export interface ApiPetStatusNoteWriteRequest {
+  content: string
 }
 
 export interface ApiAppTabSettings {

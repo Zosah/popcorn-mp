@@ -53,6 +53,11 @@ export interface PetSupplyInput {
   mediaId?: string
 }
 
+export interface PetWeightInput {
+  value: string
+  recordedOn: string
+}
+
 export interface PetCollection {
   activePetId: string
   pets: DemoPetState[]
@@ -89,13 +94,41 @@ export interface PetGateway {
     eventId: string,
     currentVersion: number,
   ): Promise<DemoPetState>
-  addWeight(petId: string, value: string): Promise<DemoPetState>
+  addWeight(
+    petId: string,
+    input: PetWeightInput,
+  ): Promise<DemoPetState>
+  updateWeight(
+    petId: string,
+    weightId: string,
+    input: PetWeightInput,
+  ): Promise<DemoPetState>
+  removeWeight(petId: string, weightId: string): Promise<DemoPetState>
   addDailyLog(petId: string, input: PetDailyLogInput): Promise<DemoPetState>
+  removeDailyLog(petId: string, logId: string): Promise<DemoPetState>
   createSupply(petId: string, input: PetSupplyInput): Promise<DemoPetState>
+  updateSupply(
+    petId: string,
+    supplyId: string,
+    input: PetSupplyInput,
+    currentVersion: number,
+  ): Promise<DemoPetState>
   setSupplyStatus(
     petId: string,
     supplyId: string,
     preference: PetSupplyPreference,
+    currentVersion: number,
+  ): Promise<DemoPetState>
+  createStatusNote(petId: string, content: string): Promise<DemoPetState>
+  updateStatusNote(
+    petId: string,
+    noteId: string,
+    content: string,
+    currentVersion: number,
+  ): Promise<DemoPetState>
+  removeStatusNote(
+    petId: string,
+    noteId: string,
     currentVersion: number,
   ): Promise<DemoPetState>
   findEvent(eventId: string): Promise<PetEventMatch | null>
@@ -136,6 +169,14 @@ export function getPetErrorMessage(error: unknown, fallback: string): string {
       return '这条宠物记录已经不存在'
     case 'SUPPLY_NOT_FOUND':
       return '这条用品记录已经不存在'
+    case 'WEIGHT_NOT_FOUND':
+      return '这条体重记录已经不存在'
+    case 'DAILY_LOG_NOT_FOUND':
+      return '这条日常记录已经不存在'
+    case 'STATUS_NOT_FOUND':
+      return '这条最近状态已经不存在'
+    case 'STATUS_LIMIT':
+      return '最近状态最多保留 2 条'
     case 'MEDIA_NOT_FOUND':
       return '这张宠物照片已经失效，请重新上传'
     case 'VALIDATION_FAILED':

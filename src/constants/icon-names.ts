@@ -63,6 +63,7 @@ export const PET_DAILY_ICON_NAMES: Record<PetDailyLogType, string> = {
   urine: 'pet-daily-urine',
   'litter-change': 'pet-daily-litter-change',
   'water-change': 'pet-daily-water-change',
+  record: 'journal-tab-notes',
 }
 
 export const PET_SUPPLY_ICON_NAMES: Record<PetSupplyCategory, string> = {

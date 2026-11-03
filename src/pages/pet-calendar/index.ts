@@ -24,6 +24,9 @@ interface CalendarEventView {
   typeLabel: string
   iconName: string
   kindLabel: string
+  actionLabel?: string
+  statusLabel?: string
+  timeLabel?: string
   source: 'event' | 'plan' | 'care' | 'daily'
 }
 
@@ -166,7 +169,10 @@ Page({
         note: item.note,
         typeLabel: item.label,
         iconName: PET_DAILY_ICON_NAMES[item.type],
-        kindLabel: `日常 · ${item.label} · ${item.timeLabel}`,
+        kindLabel: '',
+        actionLabel: item.actionLabel,
+        statusLabel: item.statusLabel,
+        timeLabel: item.timeLabel,
         source: 'daily',
       }))
       const calendarEvents = [

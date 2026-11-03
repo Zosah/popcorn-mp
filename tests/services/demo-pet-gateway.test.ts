@@ -171,6 +171,116 @@ describe('Demo 宠物网关', () => {
     })
   })
 
+  it('体重记录支持新增、编辑和删除', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    if (!pet) throw new Error('缺少演示宠物')
+
+    const created = await gateway.addWeight(pet.profile.id, {
+      value: '4.6',
+      recordedOn: '2026-11-03',
+    })
+    const weight = created.weights.find((item) => item.recordedOn === '2026-11-03')
+    if (!weight) throw new Error('新增体重记录失败')
+
+    const updated = await gateway.updateWeight(pet.profile.id, weight.id, {
+      value: '4.8',
+      recordedOn: '2026-11-02',
+    })
+    expect(updated.weights.find((item) => item.id === weight.id)).toMatchObject({
+      value: '4.8',
+      recordedOn: '2026-11-02',
+    })
+
+    const removed = await gateway.removeWeight(pet.profile.id, weight.id)
+    expect(removed.weights.some((item) => item.id === weight.id)).toBe(false)
+  })
+
+  it('日常记录删除后保留软删除标记并从页面数据中过滤', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    const log = pet?.dailyLogs.find((item) => !item.deletedAt)
+    if (!pet || !log) throw new Error('缺少演示日常记录')
+
+    const removed = await gateway.removeDailyLog(pet.profile.id, log.id)
+    expect(removed.dailyLogs.find((item) => item.id === log.id)?.deletedAt).toBeTruthy()
+    await expect(gateway.removeDailyLog(pet.profile.id, log.id)).rejects.toMatchObject({
+      code: 'DAILY_LOG_NOT_FOUND',
+    })
+  })
+
+  it('用品支持整条编辑并校验用品自身版本', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    const supply = pet?.supplies[0]
+    if (!pet || !supply) throw new Error('缺少演示宠物用品')
+
+    const updated = await gateway.updateSupply(pet.profile.id, supply.id, {
+      category: 'custom',
+      categoryLabel: '玩具',
+      name: '新逗猫棒',
+      brand: 'PIDAN',
+      preference: 'loved',
+      note: '很喜欢',
+      mediaId: '',
+    }, supply.version ?? 1)
+
+    expect(updated.supplies.find((item) => item.id === supply.id)).toMatchObject({
+      category: 'custom',
+      categoryLabel: '玩具',
+      name: '新逗猫棒',
+      preference: 'loved',
+      version: (supply.version ?? 1) + 1,
+    })
+    await expect(gateway.updateSupply(pet.profile.id, supply.id, {
+      category: supply.category,
+      categoryLabel: supply.categoryLabel,
+      name: supply.name,
+      brand: supply.brand,
+      preference: supply.preference,
+      note: supply.note,
+      mediaId: supply.mediaId ?? '',
+    }, supply.version ?? 1)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' })
+  })
+
+  it('最近状态最多两条，并支持编辑和删除', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    if (!pet) throw new Error('缺少演示宠物')
+
+    let current = pet
+    for (const note of pet.profile.statusNotes) {
+      current = await gateway.removeStatusNote(
+        pet.profile.id,
+        note.id,
+        note.version,
+      )
+    }
+
+    current = await gateway.createStatusNote(pet.profile.id, '今天精神很好')
+    const first = current.profile.statusNotes[0]
+    if (!first) throw new Error('新增最近状态失败')
+    current = await gateway.updateStatusNote(pet.profile.id, first.id, '今天特别精神', first.version)
+    expect(current.profile.statusNotes[0]?.content).toBe('今天特别精神')
+
+    current = await gateway.createStatusNote(pet.profile.id, '晚饭吃得很快')
+    expect(current.profile.statusNotes).toHaveLength(2)
+    await expect(gateway.createStatusNote(pet.profile.id, '第三条')).rejects.toMatchObject({
+      code: 'STATUS_LIMIT',
+    })
+
+    const removed = await gateway.removeStatusNote(
+      pet.profile.id,
+      current.profile.statusNotes[0]?.id ?? '',
+      current.profile.statusNotes[0]?.version ?? 1,
+    )
+    expect(removed.profile.statusNotes).toHaveLength(1)
+  })
+
   it('删除当前宠物后切换剩余档案，最后一只删除后保持空状态', async () => {
     const gateway = new DemoPetGateway()
     const initial = await gateway.list()

@@ -23,6 +23,7 @@ export type PetDailyLogType =
   | 'urine'
   | 'litter-change'
   | 'water-change'
+  | 'record'
 
 export type PetSpecies = 'cat' | 'dog' | 'other'
 
@@ -64,6 +65,7 @@ export interface DemoPetProfile {
   homeOn: string
   neuteredOn: string | null
   status: string
+  statusNotes: DemoPetStatusNote[]
   version?: number
   avatarMediaId?: string
   avatarUrl?: string
@@ -71,6 +73,13 @@ export interface DemoPetProfile {
   backgroundMediaId?: string
   backgroundUrl?: string
   backgroundHistory?: DemoPetBackgroundMedia[]
+}
+
+export interface DemoPetStatusNote {
+  id: string
+  content: string
+  version: number
+  sortOrder?: number
 }
 
 export interface DemoPetEvent {
@@ -113,6 +122,7 @@ export interface DemoPetDailyLog {
   summary: string
   note: string
   recordedAt: string
+  deletedAt?: string | null
 }
 
 export interface DemoPetState {
@@ -156,6 +166,8 @@ export interface PetDailyTimelineItem {
   id: string
   type: PetDailyLogType
   label: string
+  actionLabel: string
+  statusLabel: string
   summary: string
   note: string
   recordedOn: string
@@ -223,6 +235,7 @@ export const PET_DAILY_LOG_LABELS: Record<PetDailyLogType, string> = {
   urine: '尿尿',
   'litter-change': '换猫砂',
   'water-change': '换水',
+  record: '记录',
 }
 
 export const PET_BACKGROUND_LABELS: Record<PetBackgroundKey, string> = {
@@ -361,7 +374,8 @@ export function buildPetHomeActivities(
   limit = 3,
 ): PetHomeActivity[] {
   const activities: PetHomeActivity[] = []
-  const todayLogs = state.dailyLogs
+  const activeDailyLogs = state.dailyLogs.filter((log) => !log.deletedAt)
+  const todayLogs = activeDailyLogs
     .filter((log) => getShanghaiDateOnly(Date.parse(log.recordedAt)) === today)
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
 
@@ -525,6 +539,7 @@ export function buildPetDailySummary(
     : Date.parse(`${today}T23:59:59+08:00`)
   return PET_DAILY_LOG_TYPES.map((type) => {
     const matchingLogs = logs
+      .filter((log) => !log.deletedAt)
       .filter((log) => log.type === type)
       .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
     const todayLogs = matchingLogs.filter(
@@ -553,6 +568,7 @@ export function buildPetDailyTimeline(
   nowMs = Date.now(),
 ): PetDailyTimelineItem[] {
   return [...logs]
+    .filter((log) => !log.deletedAt)
     .filter((log) => Number.isFinite(Date.parse(log.recordedAt)))
     .sort((left, right) =>
       right.recordedAt.localeCompare(left.recordedAt)
@@ -566,6 +582,8 @@ export function buildPetDailyTimeline(
         id: log.id,
         type: log.type,
         label: PET_DAILY_LOG_LABELS[log.type],
+        actionLabel: PET_DAILY_LOG_LABELS[log.type],
+        statusLabel: log.summary,
         summary: log.summary,
         note: log.note,
         recordedOn,
@@ -600,6 +618,7 @@ export function buildPetCalendar(
   const recordDates = [
     ...events.map((event) => event.occurredOn),
     ...dailyLogs
+      .filter((log) => !log.deletedAt)
       .map((log) => Date.parse(log.recordedAt))
       .filter(Number.isFinite)
       .map((timestamp) => getShanghaiDateOnly(timestamp)),
