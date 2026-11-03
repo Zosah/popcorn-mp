@@ -45,7 +45,6 @@ interface AuthPageData {
   backLabel: string
   loginNotice: string
   loginFootnote: string
-  requiresPhoneAuth: boolean
   loginSubmitting: boolean
   registerCopy: string
   accountTypeLabel: string
@@ -84,9 +83,8 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     backLabel: '← 返回我的',
     loginNotice: '',
     loginFootnote: appConfig.demoMode
-      ? '本地体验不会读取手机号'
-      : '登录时会验证手机号，仅用于账号识别。',
-    requiresPhoneAuth: !appConfig.demoMode && appConfig.apiAuthMode === 'wechat',
+      ? '本地体验不会连接微信'
+      : '仅使用微信登录身份，不读取手机号。',
     loginSubmitting: false,
     registerCopy: appConfig.demoMode
       ? '修改只会更新当前设备上的资料。'
@@ -207,29 +205,14 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     navigateBackOrTab('/pages/profile/index')
   },
 
-  onGetPhoneNumber(event: { detail: { code?: string } }) {
+  async onWechatLogin() {
     if (this.data.loginSubmitting) return
-    const phoneCode = event.detail.code?.trim() ?? ''
-    if (!phoneCode) {
-      this.setData({ loginNotice: '需要授权手机号才能完成登录' })
-      wx.showToast({ title: '需要授权手机号才能登录', icon: 'none' })
-      return
-    }
-    void this.finishWeChatLogin(phoneCode)
-  },
-
-  async onDemoLogin() {
-    if (this.data.loginSubmitting) return
-    await this.finishWeChatLogin('')
-  },
-
-  async finishWeChatLogin(phoneCode: string) {
     this.setData({ loginSubmitting: true, loginNotice: '' })
     wx.showLoading({
       title: this.data.hasAccount ? '正在登录' : '正在连接微信',
       mask: true,
     })
-    const result = await loginAuth(phoneCode)
+    const result = await loginAuth()
     wx.hideLoading()
 
     if (!result.ok) {

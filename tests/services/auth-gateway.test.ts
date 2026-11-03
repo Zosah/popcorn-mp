@@ -124,20 +124,20 @@ describe('HTTP 登录网关', () => {
     })
   })
 
-  it('微信登录会把手机号授权凭证一并交给后端', async () => {
+  it('微信登录只提交 openid 登录凭证', async () => {
     Object.assign(appConfig, { apiAuthMode: 'wechat' })
 
-    await loginWithApi('phone-code-1')
+    await loginWithApi()
 
     expect(requests[0]).toMatchObject({
       url: 'https://api.test/auth/wechat',
       method: 'POST',
       data: {
         code: 'wx-code',
-        phoneCode: 'phone-code-1',
         deviceLabel: '微信小程序',
       },
     })
+    expect(requests[0]?.data).not.toHaveProperty('phoneCode')
   })
 
   it('保存资料使用 PUT，并保留登录 Token', async () => {

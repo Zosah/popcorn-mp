@@ -93,7 +93,6 @@ export interface RenameSpaceRequest {
 
 export interface LoginRequest {
   code: string
-  phoneCode: string
   deviceLabel: string
 }
 

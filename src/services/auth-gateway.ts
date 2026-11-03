@@ -22,11 +22,11 @@ export interface AuthGatewayResult {
   requiresProfile?: boolean
 }
 
-export async function loginWithApi(phoneCode = ''): Promise<AuthGatewayResult> {
+export async function loginWithApi(): Promise<AuthGatewayResult> {
   try {
     const response = appConfig.apiAuthMode === 'mock'
       ? await loginMock()
-      : await loginWeChat(phoneCode)
+      : await loginWeChat()
     saveApiSession(response, response.token)
     return {
       ok: true,
@@ -107,11 +107,10 @@ async function loginMock(): Promise<ApiLoginResponse> {
   })
 }
 
-async function loginWeChat(phoneCode: string): Promise<ApiLoginResponse> {
+async function loginWeChat(): Promise<ApiLoginResponse> {
   const code = await requestWeChatCode()
   const body: LoginRequest = {
     code,
-    phoneCode,
     deviceLabel: '微信小程序',
   }
   return requestApi<ApiLoginResponse>('/auth/wechat', {

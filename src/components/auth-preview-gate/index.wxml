@@ -1,19 +1,28 @@
 <view wx:if="{{visible}}" class="auth-gate" catchtouchmove="noop" catchtap="noop">
   <view class="auth-gate__card" catchtap="noop">
-    <view class="auth-gate__top">
-      <view class="auth-gate__mark"><line-icon name="system-user" size="30" tone="blue" /></view>
-      <view class="auth-gate__close" hover-class="auth-gate__close--pressed" bindtap="dismiss" aria-label="关闭登录提示">
-        <text>×</text>
+    <view
+      class="auth-gate__close"
+      hover-class="auth-gate__close--pressed"
+      bindtap="dismiss"
+      aria-label="关闭登录提示"
+    >
+      <line-icon name="system-close" size="38" tone="muted" />
+    </view>
+
+    <view class="auth-gate__mark">
+      <line-icon name="feature-journal" size="128" active="{{true}}" />
+    </view>
+
+    <view class="auth-gate__content">
+      <text class="auth-gate__title">{{force ? '登录后继续' : '登录后，一起记录'}}</text>
+      <text class="auth-gate__copy">{{force ? '这一步需要登录后才能保存。' : '先看看也可以，想保存时再登录。'}}</text>
+      <view class="auth-gate__privacy">
+        <line-icon name="system-lock" size="26" tone="muted" />
+        <text>仅使用微信身份，不读取手机号</text>
       </view>
     </view>
-    <text class="auth-gate__eyebrow">{{force ? '需要登录' : '欢迎先看看'}}</text>
-    <text class="auth-gate__title">{{force ? '登录后才能保存这次修改' : '登录后，把生活一起收进来'}}</text>
-    <text class="auth-gate__copy">{{force ? '这次操作不会写入空间。登录后可以继续编辑、上传图片并和家人一起维护。' : '你可以先预览页面；需要新增、编辑或上传图片时，再登录也不迟。'}}</text>
-    <button class="auth-gate__login" bindtap="goLogin">
-      <line-icon name="system-user" size="24" tone="white" />
-      <text>微信一键登录</text>
-    </button>
-    <view class="auth-gate__preview" bindtap="dismiss">先预览，稍后再登录</view>
-    <text class="auth-gate__note">仅读取微信登录身份；头像和昵称由你在微信授权面板中确认。</text>
+
+    <button class="auth-gate__login" bindtap="goLogin">微信一键登录</button>
+    <view wx:if="{{!force}}" class="auth-gate__preview" bindtap="dismiss">暂时看看</view>
   </view>
 </view>

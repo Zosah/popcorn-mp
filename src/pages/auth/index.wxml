@@ -28,25 +28,13 @@
         </view>
 
         <button
-          wx:if="{{requiresPhoneAuth}}"
           class="primary-button auth-primary"
-          open-type="getPhoneNumber"
-          bindgetphonenumber="onGetPhoneNumber"
+          bindtap="onWechatLogin"
           loading="{{loginSubmitting}}"
           disabled="{{loginSubmitting}}"
         >
-          <line-icon name="system-user" size="28" tone="white" />
-          <text>立即登录</text>
-        </button>
-        <button
-          wx:else
-          class="primary-button auth-primary"
-          bindtap="onDemoLogin"
-          loading="{{loginSubmitting}}"
-          disabled="{{loginSubmitting}}"
-        >
-          <line-icon name="system-user" size="28" tone="white" />
-          <text>立即登录</text>
+          <line-icon name="system-user" size="32" tone="white" />
+          <text>微信一键登录</text>
         </button>
         <view class="auth-secondary" bindtap="onBack">先看看，不登录</view>
       </view>
