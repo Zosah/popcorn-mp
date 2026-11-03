@@ -177,7 +177,7 @@ async function assertSignedImage(url, label) {
   const parsed = new URL(url)
   assert.equal(parsed.hostname, 'popcorn-1302154647.cos.ap-guangzhou.myqcloud.com')
   assert.ok(
-    decodeURIComponent(parsed.pathname).startsWith(`/popcorn/prod/media/${spaceId}_`),
+    decodeURIComponent(parsed.pathname).startsWith(`/popcorn/prod/media/spaces/${spaceId}/`),
     `${label} 未进入空间媒体路径：${parsed.pathname}`,
   )
   const response = await fetch(url)
