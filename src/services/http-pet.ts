@@ -196,7 +196,7 @@ export class HttpPetGateway implements PetGateway {
       type: input.type,
       summary: input.summary.trim(),
       note: input.note?.trim() ?? '',
-      recordedAt: new Date().toISOString(),
+      recordedAt: input.recordedAt?.trim() || new Date().toISOString(),
     }
     return this.writePet('daily', `${petPath(context.spaceId, petId)}/daily-logs`, 'POST', body)
   }
@@ -361,9 +361,14 @@ function clearActivePetIdIfMatches(spaceId: string, petId: string): void {
 }
 
 async function toPetState(item: ApiPet): Promise<DemoPetState> {
-  const [avatarUrl, backgroundUrl, supplyMediaUrls] = await Promise.all([
+  const [avatarUrl, backgroundUrl, backgroundHistory, supplyMediaUrls] = await Promise.all([
     resolveMedia(item.avatarMediaId, 'thumb'),
     resolveMedia(item.backgroundMediaId, 'display'),
+    Promise.all((item.backgroundHistory ?? []).map(async (background) => ({
+      mediaId: background.mediaId,
+      usedAt: background.usedAt,
+      url: await resolveMedia(background.mediaId, 'thumb') ?? '',
+    }))),
     Promise.all(item.supplies.map((supply) => resolveMedia(supply.mediaId, 'thumb'))),
   ])
   const profile: DemoPetProfile = {
@@ -382,6 +387,7 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
     backgroundKey: toBackgroundKey(item.backgroundKey),
     backgroundMediaId: item.backgroundMediaId || '',
     backgroundUrl: backgroundUrl ?? '',
+    backgroundHistory: backgroundHistory.filter((background) => Boolean(background.url)),
   }
   return {
     profile,

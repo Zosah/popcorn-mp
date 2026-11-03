@@ -217,6 +217,25 @@ describe('HTTP 宠物网关', () => {
           }, 201)
           return
         }
+        if (url.endsWith('/pets/e_1234567890/daily-logs') && method === 'POST') {
+          const body = options.data && typeof options.data === 'object'
+            ? options.data as Record<string, unknown>
+            : {}
+          succeed(options, {
+            ...apiPet,
+            dailyLogs: [{
+              id: 'd_created0001',
+              petId: apiPet.id,
+              type: body.type,
+              summary: body.summary,
+              note: body.note ?? '',
+              recordedAt: body.recordedAt,
+              createdBy: session.user.id,
+              createdAt: updatedAt,
+            }, ...apiPet.dailyLogs],
+          }, 201)
+          return
+        }
         if (url.endsWith('/events/n_1234567890') && method === 'PUT') {
           succeed(options, {
             ...apiPet,
@@ -338,6 +357,30 @@ describe('HTTP 宠物网关', () => {
     const request = requests.find((item) => item.method === 'PUT')
     expect(request?.header?.['If-Match']).toBe('"3"')
     expect(request?.data).toMatchObject({ avatarMediaId: '' })
+  })
+
+  it('补录日常记录时提交用户选择的日期和时分', async () => {
+    const gateway = new HttpPetGateway()
+    const updated = await gateway.addDailyLog(apiPet.id, {
+      type: 'litter-change',
+      summary: '整盆更换',
+      recordedAt: '2026-11-02T00:35:00.000Z',
+    })
+
+    expect(updated.dailyLogs[0]).toMatchObject({
+      type: 'litter-change',
+      summary: '整盆更换',
+      recordedAt: '2026-11-02T00:35:00.000Z',
+    })
+    const request = requests.find(
+      (item) => item.method === 'POST' && String(item.url).endsWith('/daily-logs'),
+    )
+    expect(request?.data).toMatchObject({
+      type: 'litter-change',
+      summary: '整盆更换',
+      recordedAt: '2026-11-02T00:35:00.000Z',
+    })
+    expect(request?.header?.['Idempotency-Key']).toMatch(/^pet_daily_/)
   })
 
   it('创建和修改周期照护事件时提交 recurrenceDays', async () => {

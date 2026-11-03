@@ -94,7 +94,25 @@ export class DemoPetGateway implements PetGateway {
       throw new PetGatewayError('NOT_FOUND', '宠物档案不存在')
     }
     assertVersion(pet.profile.version, currentVersion)
-    return updateDemoPetProfile(input)
+    const backgroundChanged = (pet.profile.backgroundMediaId ?? '') !== input.backgroundMediaId
+    if (!backgroundChanged) return updateDemoPetProfile(input)
+    const history = input.backgroundMediaId
+      ? [
+          {
+            mediaId: input.backgroundMediaId,
+            usedAt: new Date().toISOString(),
+            url: input.backgroundUrl ?? '',
+          },
+          ...(pet.profile.backgroundHistory ?? []).filter(
+            (item) => item.mediaId !== input.backgroundMediaId,
+          ),
+        ].slice(0, 12)
+      : pet.profile.backgroundHistory ?? []
+    return updateDemoPetProfile({
+      ...input,
+      backgroundUrl: input.backgroundUrl ?? '',
+      backgroundHistory: history,
+    })
   }
 
   async remove(petId: string, currentVersion: number): Promise<void> {

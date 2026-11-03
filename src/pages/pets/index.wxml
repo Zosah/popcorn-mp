@@ -9,11 +9,11 @@
 
       <view class="pet-hero__topbar">
         <view class="pet-glass-button" bindtap="onOpenCalendar" aria-label="打开照护月历">
-          <line-icon name="system-calendar" size="26" tone="ink" />
+          <line-icon name="system-calendar" size="31" tone="ink" />
         </view>
         <view class="pet-hero__actions">
-          <view class="pet-glass-button" bindtap="onAddPet" aria-label="添加宠物">
-            <line-icon name="system-add" size="26" tone="ink" />
+          <view class="pet-glass-button" bindtap="onAddPetWithConfirm" aria-label="添加宠物">
+            <line-icon name="system-add" size="30" tone="ink" />
           </view>
         </view>
       </view>
@@ -27,10 +27,6 @@
           </view>
           <view class="pet-hero__sub">{{profile.breed}} · {{ageLabel}}</view>
           <view class="pet-hero__status">{{profile.status || '今天也在一起'}}</view>
-          <view class="pet-theme-entry" catchtap="onOpenBackgroundPicker">
-            <line-icon name="system-image" size="20" tone="ink" />
-            <text>换个背景</text>
-          </view>
         </view>
 
         <view class="pet-portrait" bindtap="onOpenAvatarPreview">
@@ -55,6 +51,11 @@
         <view><view class="pet-stats__value">{{companionDays}}</view><view class="pet-stats__label">天陪伴日</view></view>
         <view><view class="pet-stats__value">{{timeline.length}}</view><view class="pet-stats__label">条成长记录</view></view>
       </view>
+    </view>
+
+    <view class="pet-theme-entry" catchtap="onOpenBackgroundPicker">
+      <line-icon name="system-image" size="24" tone="pink" />
+      <text>更换背景</text>
     </view>
 
     <view class="pet-nav">
@@ -239,6 +240,24 @@
           <text>{{dailyEditor.detailLabel}}</text>
           <input value="{{dailyEditor.detail}}" maxlength="60" placeholder="{{dailyEditor.detailPlaceholder}}" bindinput="onDailyDetailInput" placeholder-class="app-input-placeholder" />
         </view>
+        <view class="daily-editor__section daily-editor__time-section">
+          <text class="daily-editor__label">记录时间</text>
+          <view class="daily-time-row">
+            <picker class="daily-time-picker" mode="date" value="{{dailyEditor.recordedDate}}" bindchange="onDailyDateChange">
+              <view class="daily-time-picker__value">
+                <text>日期</text>
+                <view>{{dailyEditor.recordedDate}}</view>
+              </view>
+            </picker>
+            <picker class="daily-time-picker daily-time-picker--clock" mode="time" value="{{dailyEditor.recordedTime}}" bindchange="onDailyTimeChange">
+              <view class="daily-time-picker__value">
+                <text>时间</text>
+                <view>{{dailyEditor.recordedTime}}</view>
+              </view>
+            </picker>
+          </view>
+          <text class="daily-time-hint">可以补录以前发生的事，默认是现在</text>
+        </view>
         <button class="pet-sheet__primary" loading="{{dailySaving}}" disabled="{{dailySaving}}" bindtap="onSaveDailyLog">记下这次{{dailyEditor.title}}</button>
       </view>
     </view>
@@ -258,14 +277,26 @@
     </view>
 
     <view wx:if="{{backgroundPickerOpen}}" class="pet-sheet-mask" catchtap="onCloseBackgroundPicker">
-      <view class="pet-sheet" catchtap="noop">
+      <view class="pet-sheet pet-sheet--background" catchtap="noop">
         <view class="pet-sheet__handle"></view>
         <view class="pet-sheet__head"><view><text class="pet-eyebrow">宠物背景</text><text class="pet-sheet__title">给{{profile.name}}换个心情</text></view><view bindtap="onCloseBackgroundPicker">关闭</view></view>
+        <text class="background-section-label">系统背景</text>
         <view class="background-options">
           <view wx:for="{{backgroundOptions}}" wx:key="key" class="background-option background-option--{{item.key}} {{item.selected ? 'background-option--selected' : ''}}" data-key="{{item.key}}" bindtap="onSelectBackgroundTheme"><view class="background-option__swatch"></view><text>{{item.label}}</text><line-icon wx:if="{{item.selected}}" name="system-check" size="15" tone="green" /></view>
         </view>
-        <button class="pet-sheet__primary" bindtap="onChooseBackground">{{uploadingBackground ? '正在上传…' : '上传自己的背景图'}}</button>
-        <view class="pet-sheet__hint">支持 JPG、PNG、WebP，原图会保留在 COS。</view>
+        <view wx:if="{{backgroundHistoryOptions.length}}" class="background-history">
+          <text class="background-section-label">用过的照片</text>
+          <scroll-view class="background-history__scroll" scroll-x enhanced show-scrollbar="{{false}}">
+            <view class="background-history__row">
+              <view wx:for="{{backgroundHistoryOptions}}" wx:key="mediaId" class="background-history__item {{item.selected ? 'background-history__item--selected' : ''}}" data-media-id="{{item.mediaId}}" bindtap="onSelectBackgroundHistory">
+                <image src="{{item.url}}" mode="aspectFill" />
+                <view class="background-history__meta"><text>{{item.usedAtLabel}}</text><line-icon wx:if="{{item.selected}}" name="system-check" size="14" tone="green" /></view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <button class="pet-sheet__primary" bindtap="onChooseBackground">{{uploadingBackground ? '正在上传…' : '上传新的背景图'}}</button>
+        <view class="pet-sheet__hint">换回系统背景也不会丢掉用过的照片。</view>
       </view>
     </view>
 

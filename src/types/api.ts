@@ -538,6 +538,11 @@ export interface ApiPetSupply {
   updatedAt: string
 }
 
+export interface ApiPetBackgroundMedia {
+  mediaId: string
+  usedAt: string
+}
+
 export interface ApiPet {
   id: string
   spaceId: string
@@ -552,6 +557,7 @@ export interface ApiPet {
   avatarMediaId: string
   backgroundKey: string
   backgroundMediaId: string
+  backgroundHistory?: ApiPetBackgroundMedia[]
   version: number
   createdBy: string
   deletedAt: string | null

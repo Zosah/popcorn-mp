@@ -39,6 +39,9 @@ function cloneState(state: DemoPetState): DemoPetState {
       backgroundKey: profile.backgroundKey ?? 'sage',
       backgroundMediaId: profile.backgroundMediaId ?? '',
       backgroundUrl: profile.backgroundUrl ?? '',
+      backgroundHistory: Array.isArray(profile.backgroundHistory)
+        ? profile.backgroundHistory.map((item) => ({ ...item }))
+        : [],
     },
     events: Array.isArray(state.events)
       ? state.events.map((item) => ({ ...item, version: item.version ?? 1 }))
@@ -363,6 +366,7 @@ export function addDemoPetDailyLog(input: {
   type: PetDailyLogType
   summary: string
   note?: string
+  recordedAt?: string
 }): DemoPetState {
   const state = getDemoPetState()
   const nowMs = Date.now()
@@ -371,7 +375,7 @@ export function addDemoPetDailyLog(input: {
     type: input.type,
     summary: input.summary.trim(),
     note: input.note?.trim() ?? '',
-    recordedAt: new Date(nowMs).toISOString(),
+    recordedAt: input.recordedAt?.trim() || new Date(nowMs).toISOString(),
   }
   state.dailyLogs = [log, ...state.dailyLogs]
   return saveDemoPetState(state)

@@ -22,6 +22,7 @@ export interface PetProfileInput {
   avatarMediaId: string
   backgroundKey: PetBackgroundKey
   backgroundMediaId: string
+  backgroundUrl?: string
 }
 
 export interface PetEventInput {
@@ -39,6 +40,7 @@ export interface PetDailyLogInput {
   type: PetDailyLogType
   summary: string
   note?: string
+  recordedAt?: string
 }
 
 export interface PetSupplyInput {

@@ -48,6 +48,12 @@ export type PetSupplyStatus =
 
 export type PetBackgroundKey = 'sage' | 'apricot' | 'mist'
 
+export interface DemoPetBackgroundMedia {
+  mediaId: string
+  usedAt: string
+  url?: string
+}
+
 export interface DemoPetProfile {
   id: string
   name: string
@@ -64,6 +70,7 @@ export interface DemoPetProfile {
   backgroundKey: PetBackgroundKey
   backgroundMediaId?: string
   backgroundUrl?: string
+  backgroundHistory?: DemoPetBackgroundMedia[]
 }
 
 export interface DemoPetEvent {

@@ -1,5 +1,6 @@
 import { appConfig } from '../../config/env'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import { toTravelDateTimeParts, toTravelISO } from '../../domain/travel'
 import {
   PET_DAILY_ICON_NAMES,
   PET_EVENT_ICON_NAMES,
@@ -118,6 +119,13 @@ const SUPPLY_EDITOR_CATEGORIES: Array<{
   { value: 'custom', label: '自定义' },
 ]
 
+interface BackgroundHistoryOption {
+  mediaId: string
+  url: string
+  usedAtLabel: string
+  selected: boolean
+}
+
 interface DailyEditorOption {
   value: string
   label: string
@@ -179,8 +187,8 @@ const DAILY_EDITOR_CONFIGS: Record<PetDailyLogType, DailyEditorConfig> = {
     detailLabel: '猫砂盆',
     detailPlaceholder: '例如 2 个',
     choices: [
-      { value: '局部清理', label: '局部清理' },
       { value: '整盆更换', label: '整盆更换' },
+      { value: '局部清理', label: '局部清理' },
     ],
   },
   'water-change': {
@@ -220,6 +228,12 @@ function formatShortDate(value: string | null): string {
   return month && day ? `${month}.${day}` : value
 }
 
+function formatBackgroundUsedAt(value: string): string {
+  const timestamp = Date.parse(value)
+  if (!Number.isFinite(timestamp)) return '用过的照片'
+  return `${formatShortDate(getShanghaiDateOnly(timestamp))} 用过`
+}
+
 
 Page({
   data: {
@@ -241,6 +255,7 @@ Page({
       label: PET_BACKGROUND_LABELS[key],
       selected: key === EMPTY_PROFILE.backgroundKey,
     })),
+    backgroundHistoryOptions: [] as BackgroundHistoryOption[],
     supplyEditorOpen: false,
     supplySaving: false,
     dailyEditorOpen: false,
@@ -255,6 +270,8 @@ Page({
       choices: [] as DailyEditorOption[],
       choice: '',
       detail: '',
+      recordedDate: '',
+      recordedTime: '',
     },
     supplyPreferenceOptions: SUPPLY_PREFERENCE_OPTIONS,
     supplyEditorCategories: SUPPLY_EDITOR_CATEGORIES,
@@ -699,6 +716,19 @@ Page({
       Number.isFinite(homeTimestamp) && Number.isFinite(todayTimestamp)
         ? Math.max(1, Math.floor((todayTimestamp - homeTimestamp) / 86400000) + 1)
         : 0
+    const backgroundOptions = (Object.keys(PET_BACKGROUND_LABELS) as PetBackgroundKey[]).map((key) => ({
+      key,
+      label: PET_BACKGROUND_LABELS[key],
+      selected: state.profile.backgroundKey === key && !state.profile.backgroundMediaId,
+    }))
+    const backgroundHistoryOptions = (state.profile.backgroundHistory ?? [])
+      .filter((item) => Boolean(item.url))
+      .map((item) => ({
+        mediaId: item.mediaId,
+        url: item.url ?? '',
+        usedAtLabel: formatBackgroundUsedAt(item.usedAt),
+        selected: state.profile.backgroundMediaId === item.mediaId,
+      }))
 
     this.setData({
       hasActivePet: true,
@@ -706,6 +736,8 @@ Page({
       profile: state.profile,
       profileInitial: state.profile.name.slice(0, 1),
       profileDraft: { ...state.profile },
+      backgroundOptions,
+      backgroundHistoryOptions,
       ageLabel: formatPetAge(state.profile.birthday, today),
       birthdayLabel: formatShortDate(state.profile.birthday),
       homeOnLabel: formatShortDate(state.profile.homeOn),
@@ -807,6 +839,20 @@ Page({
   onAddPet() {
     if (!requireAuthForWrite()) return
     wx.navigateTo({ url: '/pages/pet-form/index' })
+  },
+
+  onAddPetWithConfirm() {
+    if (!requireAuthForWrite()) return
+    wx.showModal({
+      title: '再添加一只伙伴？',
+      content: '会新建一份独立的宠物档案，已有记录不会受到影响。',
+      confirmText: '继续添加',
+      cancelText: '先不添加',
+      confirmColor: '#b86772',
+      success: (result) => {
+        if (result.confirm) wx.navigateTo({ url: '/pages/pet-form/index' })
+      },
+    })
   },
 
   onToggleProfileEditor() {
@@ -927,11 +973,16 @@ Page({
 
   onOpenBackgroundPicker() {
     if (!requireAuthForWrite()) return
+    const profile = this.data.profile
     this.setData({
       backgroundPickerOpen: true,
       backgroundOptions: this.data.backgroundOptions.map((item) => ({
         ...item,
-        selected: item.key === this.data.profile.backgroundKey,
+        selected: item.key === profile.backgroundKey && !profile.backgroundMediaId,
+      })),
+      backgroundHistoryOptions: this.data.backgroundHistoryOptions.map((item) => ({
+        ...item,
+        selected: item.mediaId === profile.backgroundMediaId,
       })),
     })
   },
@@ -958,11 +1009,44 @@ Page({
           ...toPetProfileInput(profile),
           backgroundKey: key,
           backgroundMediaId: '',
+          backgroundUrl: '',
         },
         profile.version ?? 1,
       )
       this.applyPetState(updated)
       this.setData({ backgroundPickerOpen: false })
+    } catch (error) {
+      wx.showToast({ title: getPetErrorMessage(error, '背景没有保存成功'), icon: 'none' })
+    } finally {
+      this.setData({ uploadingBackground: false })
+    }
+  },
+
+  async onSelectBackgroundHistory(event: {
+    currentTarget: { dataset: { mediaId: string } }
+  }) {
+    const mediaId = event.currentTarget.dataset.mediaId
+    const option = this.data.backgroundHistoryOptions.find((item) => item.mediaId === mediaId)
+    const profile = this.data.profile
+    if (!option) return
+    if (profile.backgroundMediaId === mediaId && profile.backgroundUrl === option.url) {
+      this.setData({ backgroundPickerOpen: false })
+      return
+    }
+    this.setData({ uploadingBackground: true })
+    try {
+      const updated = await petGateway.updateProfile(
+        profile.id,
+        {
+          ...toPetProfileInput(profile),
+          backgroundMediaId: option.mediaId,
+          backgroundUrl: option.url,
+        },
+        profile.version ?? 1,
+      )
+      this.applyPetState(updated)
+      this.setData({ backgroundPickerOpen: false })
+      wx.showToast({ title: '已换回这张背景', icon: 'success' })
     } catch (error) {
       wx.showToast({ title: getPetErrorMessage(error, '背景没有保存成功'), icon: 'none' })
     } finally {
@@ -995,6 +1079,7 @@ Page({
         {
           ...toPetProfileInput(profile),
           backgroundMediaId: asset.id,
+          backgroundUrl: asset.display.url || asset.thumb.url || '',
         },
         profile.version ?? 1,
       )
@@ -1267,6 +1352,7 @@ Page({
     if (!requireAuthForWrite()) return
     const type = event.currentTarget.dataset.type
     const config = DAILY_EDITOR_CONFIGS[type]
+    const recorded = toTravelDateTimeParts(new Date().toISOString())
     this.setData({
       dailyEditorOpen: true,
       dailyEditor: {
@@ -1279,6 +1365,8 @@ Page({
         choices: config.choices,
         choice: config.choices[0]?.value ?? '',
         detail: '',
+        recordedDate: recorded.date,
+        recordedTime: recorded.time,
       },
     })
   },
@@ -1298,15 +1386,32 @@ Page({
     this.setData({ 'dailyEditor.detail': event.detail.value })
   },
 
+  onDailyDateChange(event: { detail: { value: string } }) {
+    this.setData({ 'dailyEditor.recordedDate': event.detail.value })
+  },
+
+  onDailyTimeChange(event: { detail: { value: string } }) {
+    this.setData({ 'dailyEditor.recordedTime': event.detail.value })
+  },
+
   async onSaveDailyLog() {
     const draft = this.data.dailyEditor
     if (!draft.choice) return
+    const recordedAt = toTravelISO(draft.recordedDate, draft.recordedTime)
+    if (!recordedAt) {
+      wx.showToast({ title: '请选择记录时间', icon: 'none' })
+      return
+    }
+    if (Date.parse(recordedAt) > Date.now() + 60_000) {
+      wx.showToast({ title: '记录时间不能晚于现在', icon: 'none' })
+      return
+    }
     const summary = composeDailyLogSummary(draft.type, draft.choice, draft.detail)
     this.setData({ dailySaving: true })
     const saved = await this.runPetMutation(
       () => petGateway.addDailyLog(
         this.data.petState.profile.id,
-        { type: draft.type, summary },
+        { type: draft.type, summary, recordedAt },
       ),
       `${PET_DAILY_LOG_LABELS[draft.type]}已记下`,
     )

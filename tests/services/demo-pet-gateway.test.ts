@@ -104,6 +104,73 @@ describe('Demo 宠物网关', () => {
     })
   })
 
+  it('自定义背景会保留历史，切回系统背景也不会丢失', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    if (!pet) throw new Error('缺少演示宠物')
+
+    const first = await gateway.updateProfile(pet.profile.id, {
+      name: pet.profile.name,
+      species: pet.profile.species,
+      breed: pet.profile.breed,
+      sex: pet.profile.sex,
+      birthday: pet.profile.birthday,
+      homeOn: pet.profile.homeOn,
+      neuteredOn: pet.profile.neuteredOn,
+      status: pet.profile.status,
+      avatarMediaId: pet.profile.avatarMediaId ?? '',
+      backgroundKey: pet.profile.backgroundKey,
+      backgroundMediaId: 'media-first',
+      backgroundUrl: '/images/demo-flowers.jpg',
+    }, pet.profile.version ?? 1)
+
+    const second = await gateway.updateProfile(pet.profile.id, {
+      name: first.profile.name,
+      species: first.profile.species,
+      breed: first.profile.breed,
+      sex: first.profile.sex,
+      birthday: first.profile.birthday,
+      homeOn: first.profile.homeOn,
+      neuteredOn: first.profile.neuteredOn,
+      status: first.profile.status,
+      avatarMediaId: first.profile.avatarMediaId ?? '',
+      backgroundKey: 'mist',
+      backgroundMediaId: '',
+    }, first.profile.version ?? 1)
+
+    expect(second.profile).toMatchObject({
+      backgroundKey: 'mist',
+      backgroundMediaId: '',
+      backgroundUrl: '',
+    })
+    expect(second.profile.backgroundHistory).toEqual([
+      expect.objectContaining({
+        mediaId: 'media-first',
+        url: '/images/demo-flowers.jpg',
+      }),
+    ])
+  })
+
+  it('日常记录可以使用补录时间', async () => {
+    const gateway = new DemoPetGateway()
+    const collection = await gateway.list()
+    const pet = collection.pets[0]
+    if (!pet) throw new Error('缺少演示宠物')
+
+    const updated = await gateway.addDailyLog(pet.profile.id, {
+      type: 'litter-change',
+      summary: '整盆更换',
+      recordedAt: '2026-11-02T00:35:00.000Z',
+    })
+
+    expect(updated.dailyLogs[0]).toMatchObject({
+      type: 'litter-change',
+      summary: '整盆更换',
+      recordedAt: '2026-11-02T00:35:00.000Z',
+    })
+  })
+
   it('删除当前宠物后切换剩余档案，最后一只删除后保持空状态', async () => {
     const gateway = new DemoPetGateway()
     const initial = await gateway.list()
