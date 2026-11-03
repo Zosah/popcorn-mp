@@ -1,6 +1,6 @@
-# 小程序线性图标
+# 时刻见小程序图标
 
-图标来自 [Lucide Static 0.468.0](https://lucide.dev/)，许可证为 ISC。原始 SVG 存放在仓库根目录的 `assets/lucide-icons/`，小程序包内只保留渲染后的 PNG。
+图标母版存放在仓库根目录的 `assets/shikejian-icons/`，小程序包内只发布构建后的 PNG。
 
 ## 生成
 
@@ -8,20 +8,16 @@
 npm run icons:build
 ```
 
-脚本会读取 `assets/lucide-icons/*.svg`，输出 96 × 96 RGBA PNG 到当前目录。新增图标时，把同版本 SVG 放进源目录后再执行生成命令，不要手工改 PNG。
+脚本会读取全部 SVG 母版，输出 96 × 96 透明 PNG 到当前目录。新增或调整图标时，只修改 SVG 母版并重新生成，不手工编辑 PNG。
 
-## 色调
+## 两类资源
 
-| 后缀 | 色值 | 用途 |
-| --- | --- | --- |
-| `muted` | `#5f605a` | 常规辅助、列表与表单 |
-| `ink` | `#1b1b18` | 选中态、正文操作 |
-| `accent` | `#743e37` | 需要提示的内容锚点 |
-| `white` | `#ffffff` | 深色按钮与反白场景 |
+- **单态图标**：读取 SVG 中的 `currentColor`，按 `muted / ink / accent / green / gold / danger / white` 七种语义色生成。
+- **双态图标**：底部导航和一级功能使用 `*-active.svg`、`*-inactive.svg` 独立母版，保留设计稿的局部填充和选中层级。
 
 ## 使用原则
 
-- 图标只辅助识别，不替代文字，也不单独承担关键操作。
-- 图标保持细线、同一视觉重量，常规尺寸 22–32rpx。
-- 不做图标墙；同一区域通常只放 1–3 个，避免装饰性堆叠。
-- 页面通过 `line-icon` 组件使用：`<line-icon name="package" size="32" tone="accent" />`。
+- 页面统一通过 `line-icon` 组件调用：`<line-icon name="feature-inventory" size="28" tone="green" />`。
+- 双态场景传入语义名称和 `active`：`<line-icon name="nav-home" active="{{selected}}" />`。
+- 不在深色按钮上直接复用双态底栏图标；账号、登录等场景使用 `system-user` 等单态图标。
+- 图标不替代文字，也不单独承担关键操作；常规显示尺寸为 22–32rpx。

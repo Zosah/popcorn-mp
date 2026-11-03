@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="expense-action-add">
+  <title>expense-action-add</title>
+  <g id="expense-action-add" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.0 3.6h9.6l4.0 4.0v12.8l-2.3-1.6-2.3 1.6-2.3-1.6-2.3 1.6-2.3-1.6-2.1 1.6V5.0A1.4 1.4 0 0 1 5.0 3.6Z"/><path d="M14.2 3.6v4.0h4.4"/><path d="M7.4 11.4h5.6M7.4 14.8h3.6"/></g>
+  </g>
+</svg>

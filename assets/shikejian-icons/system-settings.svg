@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="system-settings">
+  <title>system-settings</title>
+  <g id="system-settings" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.0l1.6 1.9 2.4-.5.5 2.4 2.1 1.2-1.1 2.2 1.1 2.2-2.1 1.2-.5 2.4-2.4-.5L12 21.0l-1.6-1.9-2.4.5-.5-2.4-2.1-1.2 1.1-2.2-1.1-2.2 2.1-1.2.5-2.4 2.4.5Z"/><circle cx="12" cy="12" r="3.2"/></g>
+  </g>
+</svg>

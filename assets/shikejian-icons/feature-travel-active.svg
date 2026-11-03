@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-travel">
+  <title>feature-travel-active</title>
+  <g id="feature-travel-active" fill="none">
+    <path d="M20.6 3.7 3.7 10.5l5.4 2.2 2.2 5.4Z" fill="#E2EEE9" stroke="none"/>
+    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 3.7 3.7 10.5l5.4 2.2 2.2 5.4Z"/><path d="M9.1 12.7 20.6 3.7"/><path d="M3.2 20.2c1.4-1.5 2.9-1.5 4.3-.1"/></g>
+  </g>
+</svg>

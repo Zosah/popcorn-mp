@@ -13,19 +13,19 @@
       <view class="travel-hero__cloud travel-hero__cloud--one"></view>
       <view class="travel-hero__cloud travel-hero__cloud--two"></view>
       <view class="travel-hero__route"></view>
-      <view class="travel-hero__plane"><line-icon name="plane" size="54" tone="blue" /></view>
+      <view class="travel-hero__plane"><line-icon name="feature-travel" size="54" tone="blue" active="{{true}}" /></view>
       <view class="travel-hero__stamp">{{activeTab === 'trips' ? 'GO' : 'PACK'}}</view>
     </view>
   </view>
 
   <view class="travel-tabs" role="tablist">
     <view class="travel-tab {{activeTab === 'trips' ? 'travel-tab--active' : ''}}" data-value="trips" bindtap="onSwitchTab">
-      <line-icon name="plane" size="24" tone="{{activeTab === 'trips' ? 'ink' : 'muted'}}" />
+      <line-icon name="feature-travel" size="24" tone="ink" active="{{true}}" />
       <text>出行</text>
       <text class="travel-tab__count">{{tripCount}}</text>
     </view>
     <view class="travel-tab {{activeTab === 'templates' ? 'travel-tab--active' : ''}}" data-value="templates" bindtap="onSwitchTab">
-      <line-icon name="package" size="24" tone="{{activeTab === 'templates' ? 'ink' : 'muted'}}" />
+      <line-icon name="travel-tab-packing" size="24" tone="{{activeTab === 'templates' ? 'ink' : 'muted'}}" />
       <text>必备清单</text>
       <text class="travel-tab__count">{{templateCount}}</text>
     </view>
@@ -37,7 +37,7 @@
   </view>
 
   <view wx:if="{{loadError && !tripCount && !templateCount}}" class="travel-empty travel-empty--error">
-    <view class="travel-empty__mark"><line-icon name="circle-alert" size="38" tone="orange" /></view>
+    <view class="travel-empty__mark"><line-icon name="system-alert" size="38" tone="orange" /></view>
     <text class="travel-empty__title">还没把旅程接回来</text>
     <text class="travel-empty__copy">{{loadError}}</text>
     <view class="travel-empty__action" bindtap="onRetryLoad">再试一次</view>
@@ -51,14 +51,14 @@
           <text class="travel-content-head__meta">{{tripCount}} 段</text>
         </view>
         <view class="travel-create" hover-class="travel-create--pressed" bindtap="onCreateTrip">
-          <line-icon name="plus" size="20" tone="white" />
+          <line-icon name="system-add" size="20" tone="white" />
           <text>新建行程</text>
         </view>
       </view>
 
       <view wx:if="{{!tripGroups.length && !loading}}" class="travel-empty">
         <view class="travel-empty__postcard">
-          <line-icon name="plane" size="54" tone="blue" />
+          <line-icon name="feature-travel" size="54" tone="blue" active="{{true}}" />
           <view class="travel-empty__line"></view>
           <view class="travel-empty__line travel-empty__line--short"></view>
         </view>
@@ -94,7 +94,7 @@
               <text wx:if="{{trip.destination}}" class="trip-ticket__destination">{{trip.destination}}</text>
             </view>
             <view class="trip-ticket__date-row">
-              <line-icon name="calendar-days" size="24" tone="muted" />
+              <line-icon name="system-calendar" size="24" tone="muted" />
               <text>{{trip.dateRange}}</text>
             </view>
           </view>
@@ -111,7 +111,7 @@
               <text class="trip-ticket__preview">{{trip.itemPreview}}</text>
             </view>
             <view class="trip-ticket__copy" data-id="{{trip.id}}" catchtap="onCopyTrip">
-              <line-icon name="rotate-ccw" size="22" tone="accent" />
+              <line-icon name="system-refresh" size="22" tone="accent" />
               <text>复制</text>
             </view>
           </view>
@@ -126,13 +126,13 @@
           <text class="travel-content-head__meta">{{templateCount}} 份</text>
         </view>
         <view class="travel-create" hover-class="travel-create--pressed" bindtap="onCreateTemplate">
-          <line-icon name="plus" size="20" tone="white" />
+          <line-icon name="system-add" size="20" tone="white" />
           <text>新建清单</text>
         </view>
       </view>
 
       <view wx:if="{{!templateViews.length && !loading}}" class="travel-empty">
-        <view class="travel-empty__mark"><line-icon name="package" size="40" tone="gold" /></view>
+        <view class="travel-empty__mark"><line-icon name="travel-tab-packing" size="40" tone="gold" /></view>
         <text class="travel-empty__title">先收一份自己的必备清单</text>
         <text class="travel-empty__copy">下次出发时，一键带进本次行程，再按需要删减。</text>
       </view>
@@ -146,7 +146,7 @@
       >
         <view class="template-card__tab"></view>
         <view class="template-card__head">
-          <view class="template-card__mark"><line-icon name="package" size="32" tone="gold" /></view>
+          <view class="template-card__mark"><line-icon name="travel-tab-packing" size="32" tone="gold" /></view>
           <view class="template-card__title-wrap">
             <view class="template-card__title-row">
               <text class="template-card__title">{{item.title}}</text>
@@ -217,7 +217,7 @@
           </view>
         </view>
         <view class="template-add-item" bindtap="onAddTemplateItem">
-          <line-icon name="plus" size="22" tone="green" />
+          <line-icon name="system-add" size="22" tone="green" />
           <text>再加一项</text>
         </view>
       </view>

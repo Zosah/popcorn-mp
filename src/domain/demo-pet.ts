@@ -368,7 +368,7 @@ export function buildPetHomeActivities(
       copy: `${labels.join('、')} · ${todayLogs.length} 条记录`,
       occurredOn: today,
       typeLabel: '日常',
-      icon: 'heart-pulse',
+      icon: 'pet-tab-daily',
       target: 'daily',
     })
   }
@@ -391,7 +391,7 @@ export function buildPetHomeActivities(
           : `现在 ${latestWeight.value} kg · 较上次 ${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`,
       occurredOn: latestWeight.recordedOn,
       typeLabel: '体重',
-      icon: 'chart-no-axes-column',
+      icon: 'pet-metric-weight',
       target: 'profile',
     })
   }
@@ -408,10 +408,10 @@ export function buildPetHomeActivities(
       typeLabel: PET_EVENT_LABELS[latestEvent.type],
       icon:
         latestEvent.type === 'grooming'
-          ? 'droplets'
+          ? 'pet-care-grooming'
           : latestEvent.type === 'vaccine'
-            ? 'droplet'
-            : 'paw-print',
+            ? 'pet-care-vaccine'
+            : 'pet-tab-care',
       target: 'event',
       eventId: latestEvent.id,
     })

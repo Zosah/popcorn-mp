@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="pet-daily-water">
+  <title>pet-daily-water</title>
+  <g id="pet-daily-water" fill="none">
+    <path d="M4.6 12.4c1.7-1.8 3.3-1.8 4.8 0s3.1 1.8 4.8 0 3.3-1.8 4.8 0v3.4a5.0 5.0 0 0 1-5.0 5.0H7.6a5.0 5.0 0 0 1-5.0-5.0Z" fill="currentColor" fill-opacity="0.14" stroke="none"/>
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 11.0h18.8v4.8a5.0 5.0 0 0 1-5.0 5.0H7.6a5.0 5.0 0 0 1-5.0-5.0Z"/><path d="M4.6 12.4c1.7-1.8 3.3-1.8 4.8 0s3.1 1.8 4.8 0 3.3-1.8 4.8 0"/><path d="M4.2 21.2h15.6"/></g>
+  </g>
+</svg>

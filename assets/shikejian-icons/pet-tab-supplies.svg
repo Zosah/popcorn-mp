@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="pet-tab-supplies">
+  <title>pet-tab-supplies</title>
+  <g id="pet-tab-supplies" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.0 8.6h14l-1.2 11.0a1.8 1.8 0 0 1-1.8 1.6H8.0a1.8 1.8 0 0 1-1.8-1.6Z"/><path d="M8.4 8.6V6.6a3.6 3.6 0 0 1 7.2 0v2.0"/><circle cx="10.0" cy="15.4" r="1.05"/><circle cx="14.0" cy="15.4" r="1.05"/><circle cx="12.0" cy="17.9" r="1.05"/></g>
+  </g>
+</svg>

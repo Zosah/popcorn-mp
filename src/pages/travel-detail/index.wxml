@@ -3,7 +3,7 @@
   <auth-preview-gate />
 
   <view wx:if="{{loadError && !trip}}" class="td-state td-state--error">
-    <view class="td-state__mark"><line-icon name="circle-alert" size="42" tone="orange" /></view>
+    <view class="td-state__mark"><line-icon name="system-alert" size="42" tone="orange" /></view>
     <text class="td-state__title">这趟行程还没打开</text>
     <text class="td-state__copy">{{loadError}}</text>
     <view class="td-state__action" bindtap="onRetryLoad">再试一次</view>
@@ -16,7 +16,7 @@
         <view class="td-hero__cloud td-hero__cloud--one"></view>
         <view class="td-hero__cloud td-hero__cloud--two"></view>
         <view class="td-hero__route"></view>
-        <view class="td-hero__plane"><line-icon name="plane" size="42" tone="blue" /></view>
+        <view class="td-hero__plane"><line-icon name="feature-travel" size="42" tone="blue" active="{{true}}" /></view>
         <view class="td-hero__stamp">{{trip.status === 'traveling' ? 'NOW' : trip.status === 'ended' ? 'KEEP' : 'NEXT'}}</view>
       </view>
 
@@ -26,20 +26,20 @@
       </view>
       <text class="td-hero__title">{{trip.title}}</text>
       <view class="td-hero__destination">
-        <line-icon name="plane" size="23" tone="green" />
+        <line-icon name="travel-tab-plan" size="23" tone="green" />
         <text>{{trip.destination}}</text>
       </view>
       <view class="td-hero__date">
-        <line-icon name="calendar-days" size="23" tone="muted" />
+        <line-icon name="system-calendar" size="23" tone="muted" />
         <text>{{trip.dateRange}}</text>
       </view>
       <view class="td-hero__actions">
         <view class="td-hero__action" bindtap="onEdit">
-          <line-icon name="pen-line" size="23" tone="ink" />
+          <line-icon name="system-edit" size="23" tone="ink" />
           <text>调整安排</text>
         </view>
         <view class="td-hero__action" bindtap="onCopy">
-          <line-icon name="rotate-ccw" size="23" tone="accent" />
+          <line-icon name="system-refresh" size="23" tone="accent" />
           <text>复制出行</text>
         </view>
       </view>
@@ -70,7 +70,7 @@
           bindtap="onToggleItem"
         >
           <view class="td-item__check {{item.packed ? 'td-item__check--done' : ''}}">
-            <line-icon wx:if="{{item.packed}}" name="check" size="20" tone="white" />
+            <line-icon wx:if="{{item.packed}}" name="system-check" size="20" tone="white" />
           </view>
           <view class="td-item__body">
             <text class="td-item__name">{{item.name}}</text>
@@ -81,7 +81,7 @@
       </view>
 
       <view wx:else class="td-items-empty">
-        <view class="td-items-empty__mark"><line-icon name="package" size="38" tone="gold" /></view>
+        <view class="td-items-empty__mark"><line-icon name="travel-tab-packing" size="38" tone="gold" /></view>
         <view class="td-items-empty__body">
           <text class="td-items-empty__title">清单还是空的</text>
           <text class="td-items-empty__copy">从常用清单带入，或者在下面随手加一件。</text>
@@ -90,11 +90,11 @@
 
       <view class="td-item-tools">
         <view class="td-item-tool td-item-tool--primary" bindtap="onOpenTemplates">
-          <line-icon name="package" size="24" tone="green" />
+          <line-icon name="travel-object-item" size="24" tone="green" />
           <text>从必备清单带入</text>
         </view>
         <view class="td-item-tool" bindtap="onFocusQuickAdd">
-          <line-icon name="plus" size="22" tone="accent" />
+          <line-icon name="system-add" size="22" tone="accent" />
           <text>添加物品</text>
         </view>
       </view>
@@ -114,14 +114,14 @@
           placeholder-class="app-input-placeholder"
         />
         <view class="td-quick-add__button {{mutating ? 'td-quick-add__button--busy' : ''}}" bindtap="onAddItem">
-          <line-icon name="plus" size="22" tone="white" />
+          <line-icon name="system-add" size="22" tone="white" />
         </view>
       </view>
     </view>
 
     <view wx:if="{{trip.note}}" class="td-note">
       <view class="td-note__head">
-        <view class="td-note__mark"><line-icon name="notebook-tabs" size="22" tone="gold" /></view>
+        <view class="td-note__mark"><line-icon name="journal-note-other" size="22" tone="gold" /></view>
         <text>行程备注</text>
       </view>
       <text class="td-note__copy">{{trip.note}}</text>
@@ -153,7 +153,7 @@
       </view>
 
       <view wx:elif="{{templateError}}" class="td-sheet__empty">
-        <line-icon name="circle-alert" size="34" tone="orange" />
+        <line-icon name="system-alert" size="34" tone="orange" />
         <text>{{templateError}}</text>
         <view class="td-sheet__retry" bindtap="onOpenTemplates">再试一次</view>
       </view>
@@ -181,7 +181,7 @@
       </view>
 
       <view wx:else class="td-sheet__empty">
-        <view class="td-sheet__empty-mark"><line-icon name="package" size="38" tone="gold" /></view>
+        <view class="td-sheet__empty-mark"><line-icon name="travel-tab-packing" size="38" tone="gold" /></view>
         <text>还没有必备清单</text>
         <text class="td-sheet__empty-copy">回到旅行页的“必备清单”里整理一份，下次就能一键带入。</text>
       </view>

@@ -24,11 +24,11 @@
         binderror="onSpaceAvatarError"
       />
       <view wx:else class="space-avatar__fallback">
-        <line-icon name="house" size="56" tone="ink" />
+        <line-icon name="system-space" size="56" tone="ink" />
       </view>
       <view wx:if="{{isOwner}}" class="space-avatar__action">
         <view wx:if="{{avatarUploading}}" class="space-avatar__spinner"></view>
-        <line-icon wx:else name="image" size="25" tone="white" />
+        <line-icon wx:else name="system-image" size="25" tone="white" />
       </view>
     </view>
 
@@ -55,7 +55,7 @@
 
   <view wx:if="{{!isLoggedIn}}" class="login-hint">
     <view class="login-hint__mark">
-      <line-icon name="users" size="31" tone="blue" />
+      <line-icon name="system-members" size="31" tone="blue" />
     </view>
     <view class="login-hint__body">
       <text>登录后查看共同空间</text>
@@ -67,11 +67,11 @@
   <block wx:if="{{isLoggedIn}}">
     <view class="space-section-head">
       <view class="space-section-head__label">
-        <line-icon name="house" size="28" tone="green" />
+        <line-icon name="system-space" size="28" tone="green" />
         <text>我的空间</text>
       </view>
       <view class="space-section-head__action" hover-class="space-section-head__action--pressed" bindtap="onOpenInvite">
-        <line-icon name="plus" size="20" tone="pink" />
+        <line-icon name="system-add" size="20" tone="pink" />
         <text>输入邀请码</text>
       </view>
     </view>
@@ -83,7 +83,7 @@
         class="space-switch-row {{item.isActive ? 'space-switch-row--active' : ''}}"
       >
         <view class="space-switch-row__mark">
-          <line-icon name="house" size="28" tone="{{item.isActive ? 'ink' : 'green'}}" />
+          <line-icon name="system-space" size="28" tone="{{item.isActive ? 'ink' : 'green'}}" />
         </view>
         <view class="space-switch-row__body">
           <view class="space-switch-row__name-line">
@@ -108,7 +108,7 @@
 
     <view class="space-section-head">
       <view class="space-section-head__label">
-        <line-icon name="users" size="28" tone="blue" />
+        <line-icon name="system-members" size="28" tone="blue" />
         <text>一起生活的人</text>
       </view>
       <text>{{memberCount}} 位</text>
@@ -137,7 +137,7 @@
 
     <view wx:if="{{isOwner}}" class="space-section-head space-section-head--spaced">
       <view class="space-section-head__label">
-        <line-icon name="ticket" size="28" tone="pink" />
+        <line-icon name="system-invite" size="28" tone="pink" />
         <text>邀请一个人回家</text>
       </view>
       <text>一次性 · 7 天有效</text>
@@ -167,7 +167,7 @@
 
     <view wx:if="{{spaceRole === 'member'}}" class="leave-panel">
       <view class="leave-panel__mark">
-        <line-icon name="heart-pulse" size="29" tone="pink" />
+        <line-icon name="pet-tab-care" size="29" tone="pink" />
       </view>
       <view class="leave-panel__body">
         <text class="leave-panel__title">关于离开</text>

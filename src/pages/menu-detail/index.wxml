@@ -1,11 +1,11 @@
 <view class="page-shell menu-detail-page">
   <view wx:if="{{loading}}" class="md-loading">
-    <view class="md-loading__dish"><line-icon name="soup" size="46" tone="gold" /></view>
+    <view class="md-loading__dish"><line-icon name="menu-category-soup" size="46" tone="gold" /></view>
     <text>正在把菜谱翻出来…</text>
   </view>
 
   <view wx:elif="{{loadError}}" class="md-error">
-    <line-icon name="circle-alert" size="36" tone="orange" />
+    <line-icon name="system-alert" size="36" tone="orange" />
     <view class="md-error__title">菜单没加载出来</view>
     <view class="md-error__copy">{{loadError}}</view>
     <view class="md-error__action" bindtap="onRetryLoad">再试一次</view>
@@ -18,7 +18,7 @@
         <view class="md-top__title">{{recipe.title}}</view>
         <view class="md-top__sub">{{recipe.cookingMinutes}} 分钟 · {{recipe.servings}} 人份</view>
       </view>
-      <view class="md-edit" bindtap="onEdit"><line-icon name="pen-line" size="18" tone="ink" /><text>编辑</text></view>
+      <view class="md-edit" bindtap="onEdit"><line-icon name="system-edit" size="18" tone="ink" /><text>编辑</text></view>
     </view>
 
     <view wx:if="{{recipe.image && recipe.image.src}}" class="md-hero">
@@ -33,7 +33,7 @@
       <view class="md-hero__illustration">
         <view class="md-hero__steam md-hero__steam--one"></view>
         <view class="md-hero__steam md-hero__steam--two"></view>
-        <line-icon name="soup" size="54" tone="gold" />
+        <line-icon name="menu-category-soup" size="54" tone="gold" />
       </view>
       <view class="md-hero__copy">
         <view class="md-hero__title">{{recipe.title}}</view>
@@ -88,7 +88,7 @@
     </view>
 
     <button class="md-start {{mutating ? 'md-start--busy' : ''}}" bindtap="onStartCooking">
-      <line-icon name="flame" size="21" tone="white" />
+      <line-icon name="system-flame" size="21" tone="white" />
       <text>开始做饭</text>
     </button>
     <button class="md-delete" disabled="{{mutating}}" bindtap="onDelete">删除这份菜单</button>

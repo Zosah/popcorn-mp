@@ -119,7 +119,7 @@ Demo 0.3 不急着增加接口，而是先确认三件事：
 | 内容容器 | 默认大圆角玻璃卡（32–42rpx），半透明白色渐变、轻阴影和内侧高光；同屏只让真正重要的卡获得更强层级 |
 | 玻璃兼容 | `backdrop-filter` 只作增强；卡片的底色、边框和文字必须在不支持模糊时仍清楚可读 |
 | 图片 | 保留叙事影像卡和生活插画；每页最多一个主影像锚点，并就近标注示例/来源 |
-| 功能图标 | 统一使用 Lucide Static 0.468.0 线性图标，放入柔和图标容器；辅助文字识别，不单独承担关键操作 |
+| 功能图标 | 统一使用时刻见自有圆润线面图标，放入柔和图标容器；一级功能与底栏保留双态，其余按语义色适配；辅助文字识别，不单独承担关键操作 |
 | 底部导航 | 微信原生 TabBar，4 个入口 + 当前项品牌色选中态；切换保留各一级页面状态并降低渲染开销 |
 | 动效 | 只反馈切换、完成和保存等真实操作；不做每张卡依次浮入的装饰动画 |
 
@@ -194,7 +194,7 @@ npm test
 npm run typecheck
 npm run verify:demo  # 需先开启开发者工具自动化端口
 npm run test:coverage
-npm run icons:build  # 仅在修改 assets/lucide-icons 后执行
+npm run icons:build  # 仅在修改 assets/shikejian-icons 后执行
 ```
 
 然后在微信开发者工具中导入仓库根目录。`project.config.json` 已将 `miniprogramRoot` 和 `srcMiniprogramRoot` 指向 `src/`。

@@ -9,7 +9,7 @@
       bindtap="onSelect"
     >
       <view class="app-tab-item__icon">
-        <line-icon name="{{item.icon}}" size="40" tone="{{visualActiveId === item.id ? 'ink' : 'muted'}}" />
+        <line-icon name="{{item.icon}}" size="40" active="{{visualActiveId === item.id}}" />
       </view>
       <text class="app-tab-item__label">{{item.label}}</text>
     </view>

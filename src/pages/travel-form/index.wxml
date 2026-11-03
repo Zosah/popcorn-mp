@@ -7,7 +7,7 @@
       <text class="travel-form-hero__eyebrow">{{mode === 'copy' ? '复制后可以重新改时间' : mode === 'edit' ? '重新安排这一程' : '先把时间定下来'}}</text>
       <text class="travel-form-hero__title">{{heroTitle}}</text>
       <view class="travel-form-hero__duration">
-        <line-icon name="clock-3" size="22" tone="green" />
+        <line-icon name="system-clock" size="22" tone="green" />
         <text>{{durationLabel}}</text>
       </view>
     </view>
@@ -24,7 +24,7 @@
   </view>
 
   <view wx:if="{{loadError}}" class="travel-form-error">
-    <view class="travel-form-error__icon"><line-icon name="circle-alert" size="36" tone="orange" /></view>
+    <view class="travel-form-error__icon"><line-icon name="system-alert" size="36" tone="orange" /></view>
     <text class="travel-form-error__title">行程没有打开</text>
     <text class="travel-form-error__copy">{{loadError}}</text>
     <view class="travel-form-error__action" bindtap="onRetryLoad">再试一次</view>
@@ -60,7 +60,7 @@
       <view class="travel-time-block">
         <view class="travel-time-block__head">
           <view class="travel-time-block__mark travel-time-block__mark--depart">
-            <line-icon name="plane" size="25" tone="green" />
+            <line-icon name="travel-tab-plan" size="25" tone="green" />
           </view>
           <view>
             <text class="travel-time-block__title">出发</text>
@@ -92,7 +92,7 @@
       <view class="travel-time-block travel-time-block--return">
         <view class="travel-time-block__head">
           <view class="travel-time-block__mark travel-time-block__mark--return">
-            <line-icon name="house" size="25" tone="pink" />
+            <line-icon name="system-space" size="25" tone="pink" />
           </view>
           <view>
             <text class="travel-time-block__title">返回</text>
@@ -165,7 +165,7 @@
 
   <view class="travel-form-footer">
     <button class="travel-form-save {{saving ? 'travel-form-save--busy' : ''}}" bindtap="onSave">
-      <line-icon name="check" size="25" tone="white" />
+      <line-icon name="system-check" size="25" tone="white" />
       <text>{{saving ? '保存中…' : mode === 'edit' ? '保存修改' : mode === 'copy' ? '创建复制行程' : '保存行程'}}</text>
     </button>
   </view>

@@ -7,8 +7,8 @@
     </view>
     <view class="tab-settings-hero__art">
       <view class="tab-settings-hero__sun"></view>
-      <view class="tab-settings-hero__paw"><line-icon name="paw-print" size="44" tone="pink" /></view>
-      <view class="tab-settings-hero__house"><line-icon name="house" size="36" tone="blue" /></view>
+      <view class="tab-settings-hero__paw"><line-icon name="pet-tab-profile" size="44" tone="pink" /></view>
+      <view class="tab-settings-hero__house"><line-icon name="system-space" size="36" tone="blue" /></view>
     </view>
   </view>
 
@@ -20,7 +20,7 @@
     <view class="tab-settings-preview__bar">
       <view wx:for="{{previewItems}}" wx:key="id" class="tab-settings-preview__item">
         <view class="tab-settings-preview__icon tab-settings-preview__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="25" tone="ink" />
+          <line-icon name="{{item.icon}}" size="25" tone="ink" active="{{true}}" />
         </view>
         <text>{{item.label}}</text>
       </view>
@@ -29,7 +29,7 @@
 
   <view wx:if="{{errorText}}" class="tab-settings-error">
     <view class="tab-settings-error__copy">
-      <line-icon name="circle-alert" size="24" tone="orange" />
+      <line-icon name="system-alert" size="24" tone="orange" />
       <text>{{errorText}}</text>
     </view>
     <view class="tab-settings-error__retry" bindtap="onRetry">重试</view>
@@ -50,7 +50,7 @@
       <view class="tab-settings-slot__label">{{item.positionLabel}}</view>
       <view class="tab-settings-slot__main">
         <view class="tab-settings-slot__icon tab-settings-slot__icon--{{item.tone}}">
-          <line-icon name="{{item.icon}}" size="30" tone="ink" />
+          <line-icon name="{{item.icon}}" size="30" tone="ink" active="{{true}}" />
         </view>
         <view class="tab-settings-slot__body">
           <text>{{item.label}}</text>
@@ -84,7 +84,7 @@
         bindtap="onChooseCandidate"
       >
         <view class="tab-settings-option__icon tab-settings-option__icon--{{option.tone}}">
-          <line-icon name="{{option.icon}}" size="30" tone="ink" />
+          <line-icon name="{{option.icon}}" size="30" tone="ink" active="{{true}}" />
         </view>
         <view class="tab-settings-option__body">
           <view class="tab-settings-option__title-row">
@@ -94,15 +94,15 @@
           <text class="tab-settings-option__copy">{{option.description}}</text>
         </view>
         <view class="tab-settings-option__check">
-          <line-icon wx:if="{{option.selected}}" name="circle-check" size="27" tone="green" />
-          <line-icon wx:else name="plus" size="24" tone="faint" />
+          <line-icon wx:if="{{option.selected}}" name="system-success" size="27" tone="green" />
+          <line-icon wx:else name="system-add" size="24" tone="faint" />
         </view>
       </view>
     </view>
   </view>
 
   <view class="tab-settings-note">
-    <line-icon name="circle-alert" size="24" tone="orange" />
+    <line-icon name="system-alert" size="24" tone="orange" />
     <text>同一功能只能放在一个位置。设置会跟随当前账号同步到共同空间，同时保留本机缓存。</text>
   </view>
 </view>

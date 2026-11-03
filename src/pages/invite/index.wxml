@@ -1,6 +1,6 @@
 <view class="page-shell invite-page">
   <view class="invite-head">
-    <view class="invite-head__mark"><line-icon name="ticket" size="29" tone="pink" /></view>
+    <view class="invite-head__mark"><line-icon name="system-invite" size="29" tone="pink" /></view>
     <view class="invite-head__body">
       <view class="eyebrow">WELCOME TOGETHER</view>
       <view class="invite-head__title">{{statusTitle}}</view>
@@ -10,7 +10,7 @@
 
   <view wx:if="{{status === 'available' || status === 'accepted'}}" class="home-ticket">
     <view class="home-ticket__top">
-      <view class="home-ticket__mark"><line-icon name="house" size="22" tone="ink" /></view>
+      <view class="home-ticket__mark"><line-icon name="system-space" size="22" tone="ink" /></view>
       <view class="home-ticket__number">共同空间 · 邀请函</view>
     </view>
     <view class="home-ticket__label">你将加入</view>
@@ -20,11 +20,11 @@
       <view wx:else class="home-ticket__avatar home-ticket__avatar--{{inviterAvatarTone}}">{{inviterAvatar}}</view>
       <view class="home-ticket__inviter-body"><text>{{inviterName}}</text><text>邀请你共同记录家里的小事</text></view>
     </view>
-    <view class="home-ticket__code"><line-icon name="ticket" size="18" tone="muted" /><text>邀请码 · {{code}}<text wx:if="{{expiresLabel}}"> · {{expiresLabel}}</text></text></view>
+    <view class="home-ticket__code"><line-icon name="system-invite" size="18" tone="muted" /><text>邀请码 · {{code}}<text wx:if="{{expiresLabel}}"> · {{expiresLabel}}</text></text></view>
   </view>
 
   <view class="paper-card code-card">
-    <view class="code-card__label"><view class="code-card__mark"><line-icon name="ticket" size="21" tone="pink" /></view><view><text>输入邀请码</text><text>10 位字母或数字</text></view></view>
+    <view class="code-card__label"><view class="code-card__mark"><line-icon name="system-invite" size="21" tone="pink" /></view><view><text>输入邀请码</text><text>10 位字母或数字</text></view></view>
     <view class="code-card__input-row">
       <input value="{{codeInput}}" maxlength="10" placeholder="例如 7K3M9Q2XAB" placeholder-class="code-card__placeholder" bindinput="onCodeInput" />
       <view bindtap="onValidate">确认</view>
@@ -41,11 +41,11 @@
     </view>
   </view>
 
-  <button wx:if="{{canAccept}}" class="primary-button invite-action" loading="{{isSubmitting}}" bindtap="onAccept"><line-icon name="plus" size="23" tone="white" /><text>加入 {{spaceName}}</text></button>
-  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" loading="{{isEntering}}" disabled="{{isEntering}}" bindtap="onGoHome"><line-icon name="house" size="23" tone="ink" /><text>进入这个空间</text></button>
+  <button wx:if="{{canAccept}}" class="primary-button invite-action" loading="{{isSubmitting}}" bindtap="onAccept"><line-icon name="system-add" size="23" tone="white" /><text>加入 {{spaceName}}</text></button>
+  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" loading="{{isEntering}}" disabled="{{isEntering}}" bindtap="onGoHome"><line-icon name="system-space" size="23" tone="ink" /><text>进入这个空间</text></button>
 
   <view class="invite-note">
-    <view class="invite-note__mark"><line-icon name="lock" size="21" tone="muted" /></view>
+    <view class="invite-note__mark"><line-icon name="system-lock" size="21" tone="muted" /></view>
     <view class="invite-note__body">
       <text>{{isDemoMode ? '这次加入只保存在当前设备' : '邀请由服务端校验'}}</text>
       <text>{{isDemoMode ? '真实版本会由服务端校验 7 天有效期、单次使用状态和空间成员权限。' : '服务端会在事务中校验 7 天有效期、单次使用状态和空间成员权限。'}}</text>

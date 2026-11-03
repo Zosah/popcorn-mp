@@ -13,7 +13,7 @@ Page({
     petId: '',
     petName: '',
     typeLabel: '',
-    iconName: 'heart-pulse',
+    iconName: 'pet-tab-care',
     event: null as DemoPetEvent | null,
     loading: true,
     loaded: false,

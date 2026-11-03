@@ -49,11 +49,11 @@ export const DEMO_TODO_KIND_OPTIONS: Array<{
   icon: string
   hint: string
 }> = [
-  { value: 'travel', label: '旅行准备', icon: 'plane', hint: '目的地、清单和物品' },
-  { value: 'plan', label: '待办', icon: 'list-todo', hint: '想到的事，用自己的标签收好' },
-  { value: 'fitness', label: '健身', icon: 'dumbbell', hint: '运动、时长和热量' },
-  { value: 'meal', label: '今天吃什么', icon: 'utensils', hint: '菜单、记录和推荐' },
-  { value: 'expense', label: '我们的账单', icon: 'wallet', hint: '花了多少、买了什么' },
+  { value: 'travel', label: '旅行准备', icon: 'travel-tab-plan', hint: '目的地、清单和物品' },
+  { value: 'plan', label: '待办', icon: 'todo-status-pending', hint: '想到的事，用自己的标签收好' },
+  { value: 'fitness', label: '健身', icon: 'fitness-object-exercise', hint: '运动、时长和热量' },
+  { value: 'meal', label: '今天吃什么', icon: 'menu-tab-eat', hint: '菜单、记录和推荐' },
+  { value: 'expense', label: '我们的账单', icon: 'expense-metric-monthly', hint: '花了多少、买了什么' },
 ]
 
 export const DEMO_TODO_KIND_LABELS: Record<DemoTodoKind, string> = {

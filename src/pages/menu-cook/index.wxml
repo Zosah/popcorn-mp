@@ -1,11 +1,11 @@
 <view class="mc-page">
   <view wx:if="{{loading}}" class="mc-loading">
-    <view class="mc-loading__icon"><line-icon name="soup" size="46" tone="gold" /></view>
+    <view class="mc-loading__icon"><line-icon name="menu-category-soup" size="46" tone="gold" /></view>
     <text>正在系上围裙…</text>
   </view>
 
   <view wx:elif="{{loadError}}" class="mc-error">
-    <line-icon name="circle-alert" size="38" tone="orange" />
+    <line-icon name="system-alert" size="38" tone="orange" />
     <view class="mc-error__title">暂时做不了这道菜</view>
     <view class="mc-error__copy">{{loadError}}</view>
     <view wx:if="{{recipe}}" class="mc-error__action" bindtap="onRetryLoad">再试一次</view>
@@ -19,11 +19,11 @@
         <text>{{recipe.title}}</text>
       </view>
       <view wx:if="{{stage === 'cooking'}}" class="mc-timer">
-        <line-icon name="clock-3" size="18" tone="green" />
+        <line-icon name="system-clock" size="18" tone="green" />
         <text>{{elapsedLabel}}</text>
       </view>
       <view wx:else class="mc-duration">
-        <line-icon name="clock-3" size="17" tone="muted" />
+        <line-icon name="system-clock" size="17" tone="muted" />
         <text>{{recipe.cookingMinutes}} 分</text>
       </view>
     </view>
@@ -54,7 +54,7 @@
       </view>
 
       <view wx:if="{{missingIngredients.length > 0}}" class="mc-missing">
-        <view class="mc-missing__icon"><line-icon name="bowl" size="24" tone="orange" /></view>
+        <view class="mc-missing__icon"><line-icon name="menu-object-ingredient" size="24" tone="orange" /></view>
         <view class="mc-missing__copy">
           <text>还差 {{missingIngredients.length}} 样</text>
           <text>没有备齐也可以开始，做菜时再回来确认。</text>
@@ -83,7 +83,7 @@
       </view>
 
       <view class="mc-tip">
-        <line-icon name="notebook-tabs" size="24" tone="gold" />
+        <line-icon name="menu-tab-recipes" size="24" tone="gold" />
         <view>
           <text>小提示</text>
           <text>开始后步骤和计时会留在本机，中途退出也能接着做。</text>
@@ -91,7 +91,7 @@
       </view>
 
       <button class="mc-primary {{mutating ? 'mc-primary--busy' : ''}}" bindtap="onBeginCooking">
-        <line-icon name="flame" size="22" tone="white" />
+        <line-icon name="system-flame" size="22" tone="white" />
         <text>{{missingIngredients.length > 0 ? '还是开始做饭' : '食材齐了，开始做饭'}}</text>
       </button>
     </block>
@@ -113,7 +113,7 @@
       <view class="mc-step-stage {{isReviewing ? 'mc-step-stage--reviewing' : ''}}">
         <view class="mc-step-stage__top">
           <view class="mc-step-stage__badge">{{stepBadgeLabel}}</view>
-          <view class="mc-step-stage__leaf"><line-icon name="flame" size="30" tone="gold" /></view>
+          <view class="mc-step-stage__leaf"><line-icon name="system-flame" size="30" tone="gold" /></view>
         </view>
         <view class="mc-step-stage__title">{{currentStep.title}}</view>
         <view class="mc-step-stage__copy">{{currentStep.description || '按自己的节奏完成这一步。'}}</view>
@@ -148,7 +148,7 @@
       </view>
 
       <button class="mc-primary" bindtap="onPrimaryStepAction">
-        <line-icon name="{{isReviewing ? 'rotate-ccw' : isLastStep ? 'check' : 'check'}}" size="22" tone="white" />
+        <line-icon name="{{isReviewing ? 'system-refresh' : isLastStep ? 'system-check' : 'system-check'}}" size="22" tone="white" />
         <text>{{primaryActionLabel}}</text>
       </button>
       <view class="mc-pause" bindtap="onPauseAndBack">先歇一下，进度会保留</view>
@@ -158,7 +158,7 @@
       <view class="mc-done-card">
         <view class="mc-done-card__sun">
           <view class="mc-done-card__ring"></view>
-          <line-icon name="flame" size="54" tone="gold" />
+          <line-icon name="system-flame" size="54" tone="gold" />
         </view>
         <view class="mc-kicker">今天也有好好吃饭</view>
         <view class="mc-done-card__title">这道菜，做好了。</view>
@@ -180,12 +180,12 @@
       </view>
 
       <view class="mc-done-note">
-        <line-icon name="circle-check" size="24" tone="green" />
+        <line-icon name="system-success" size="24" tone="green" />
         <text>菜谱还在菜单里，这次做菜进度只保存在本机。</text>
       </view>
 
       <button class="mc-primary" bindtap="onFinishCooking">
-        <line-icon name="check" size="22" tone="white" />
+        <line-icon name="system-check" size="22" tone="white" />
         <text>结束这次做饭</text>
       </button>
     </block>

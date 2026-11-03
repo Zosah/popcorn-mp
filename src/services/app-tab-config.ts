@@ -205,10 +205,10 @@ export function saveAppTabConfig(
 
 export function getAppTabOption(id: AppTabId): AppTabItem {
   if (id === 'home') {
-    return fixedTabOption(id, '家', '今天的家', 'house', '/pages/home/index')
+    return fixedTabOption(id, '家', '今天的家', 'nav-home', '/pages/home/index')
   }
   if (id === 'profile') {
-    return fixedTabOption(id, '我的', '账号与设置', 'user-round', '/pages/profile/index')
+    return fixedTabOption(id, '我的', '账号与设置', 'nav-profile', '/pages/profile/index')
   }
   const option = APP_TAB_OPTIONS.find((item) => item.id === id)
   if (!option) throw new Error(`底部导航引用了未知功能：${id}`)

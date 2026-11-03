@@ -1,7 +1,7 @@
 <view class="page-shell detail-page">
   <view wx:if="{{loading}}" class="detail-state">正在打开这件物品…</view>
   <view wx:elif="{{errorMessage}}" class="detail-state">
-    <view class="detail-state__icon"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="detail-state__icon"><line-icon name="system-alert" size="34" tone="danger" /></view>
     <view class="detail-state__title">详情暂时没连上</view>
     <view class="detail-state__copy">{{errorMessage}}</view>
     <view class="detail-state__action" bindtap="onRetry">重新加载</view>
@@ -15,7 +15,7 @@
       </view>
       <view class="detail-top__actions">
         <view class="detail-edit" bindtap="onEdit">
-          <line-icon name="pen-line" size="18" tone="ink" />
+          <line-icon name="system-edit" size="18" tone="ink" />
           <text>编辑</text>
         </view>
         <view class="detail-top__delete" bindtap="onDelete">删除</view>
@@ -73,7 +73,7 @@
     <view class="detail-section-head"><text>处理这件东西</text><text>先做最常用的一步</text></view>
     <view class="detail-actions">
       <button wx:for="{{item.actions}}" wx:key="key" class="detail-action detail-action--{{item.key}}" data-status="{{item.nextStatus}}" bindtap="onChangeStatus">
-        <line-icon name="{{item.key === 'discard' ? 'circle-alert' : item.key === 'archive' ? 'package' : item.key === 'restore' ? 'rotate-ccw' : 'check'}}" size="22" tone="{{item.key === 'discard' ? 'danger' : 'ink'}}" />
+        <line-icon name="{{item.key === 'discard' ? 'system-alert' : item.key === 'archive' ? 'inventory-status-archived' : item.key === 'restore' ? 'system-refresh' : 'system-check'}}" size="22" tone="{{item.key === 'discard' ? 'danger' : 'ink'}}" />
         <text>{{item.label}}</text>
       </button>
     </view>

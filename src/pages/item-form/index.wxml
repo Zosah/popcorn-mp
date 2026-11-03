@@ -1,6 +1,6 @@
 <view class="page-shell item-form-page">
   <view class="form-hero">
-    <view class="form-hero__icon"><line-icon name="package" size="30" tone="orange" /></view>
+    <view class="form-hero__icon"><line-icon name="inventory-category-other" size="30" tone="orange" /></view>
     <view class="form-hero__body">
       <view class="eyebrow">HOME INVENTORY</view>
       <view class="form-hero__title">{{itemId ? '改一改这条记录' : '记一件家里的东西'}}</view>
@@ -10,7 +10,7 @@
 
   <view wx:if="{{loading}}" class="form-state paper-card">正在打开这件物品…</view>
   <view wx:elif="{{loadError}}" class="form-state form-state--error paper-card">
-    <view class="form-state__icon"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="form-state__icon"><line-icon name="system-alert" size="34" tone="danger" /></view>
     <view class="form-state__title">物品信息暂时没连上</view>
     <view class="form-state__copy">{{loadError}}</view>
     <view class="form-state__action" bindtap="onRetryLoad">重新加载</view>
@@ -33,11 +33,11 @@
           <view class="form-photo__remove" catchtap="onRemoveImage">×</view>
         </view>
         <view wx:elif="{{imageUploading}}" class="form-photo form-photo--empty form-photo--busy">
-          <line-icon name="image" size="28" tone="blue" />
+          <line-icon name="system-image" size="28" tone="blue" />
           <text>上传中</text>
         </view>
         <view wx:else class="form-photo form-photo--empty" bindtap="onChooseImage">
-          <line-icon name="image" size="30" tone="blue" />
+          <line-icon name="system-image" size="30" tone="blue" />
           <text>添加图片</text>
         </view>
       </view>
@@ -89,7 +89,7 @@
         <picker mode="date" value="{{form.expiresOn}}" bindchange="onExpiryChange">
           <view class="form-picker form-picker--date">
             <text>{{form.expiresOn || '选择日期'}}</text>
-            <line-icon name="calendar-days" size="23" tone="blue" />
+            <line-icon name="system-calendar" size="23" tone="blue" />
           </view>
         </picker>
       </view>
@@ -102,7 +102,7 @@
 
     <view class="form-footer">
       <button class="primary-button form-submit" loading="{{saving || imageUploading}}" disabled="{{saving || imageUploading}}" bindtap="onSave">
-        <line-icon name="{{itemId ? 'pen-line' : 'plus'}}" size="24" tone="white" />
+        <line-icon name="{{itemId ? 'system-edit' : 'system-add'}}" size="24" tone="white" />
         <text>{{itemId ? '保存修改' : '添加到库存'}}</text>
       </button>
     </view>

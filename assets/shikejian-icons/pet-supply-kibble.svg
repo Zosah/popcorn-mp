@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="pet-supply-kibble">
+  <title>pet-supply-kibble</title>
+  <g id="pet-supply-kibble" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.6 6.4h12.8l1.2 13.4a1.4 1.4 0 0 1-1.4 1.5H5.8a1.4 1.4 0 0 1-1.4-1.5Z"/><path d="M5.6 6.4 8.0 3.4h8.0l2.4 3.0"/><circle cx="9.4" cy="12.8" r="0.8"/><circle cx="14.6" cy="12.8" r="0.8"/><circle cx="12.0" cy="16.6" r="0.8"/></g>
+  </g>
+</svg>

@@ -5,18 +5,18 @@
       <view class="pet-form-hero__title">把新伙伴写进这个家</view>
       <view class="pet-form-hero__sub">先留下名字和生日，其他照护记录可以慢慢补。</view>
     </view>
-    <view class="pet-form-hero__mark"><line-icon name="paw-print" size="34" tone="green" /></view>
+    <view class="pet-form-hero__mark"><line-icon name="pet-tab-profile" size="34" tone="green" /></view>
   </view>
 
   <view class="pet-form-avatar-card">
     <view class="pet-form-avatar" bindtap="onAvatarTap">
       <image wx:if="{{avatar}}" src="{{avatar.src}}" mode="aspectFill" />
       <view wx:elif="{{avatarUploading}}" class="pet-form-avatar__placeholder pet-form-avatar__placeholder--loading">
-        <line-icon name="image" size="35" tone="green" />
+        <line-icon name="system-image" size="35" tone="green" />
         <text>正在上传</text>
       </view>
       <view wx:else class="pet-form-avatar__placeholder">
-        <line-icon name="camera" size="34" tone="green" />
+        <line-icon name="system-camera" size="34" tone="green" />
         <text>添加照片</text>
       </view>
     </view>
@@ -90,10 +90,10 @@
     </view>
   </view>
 
-  <view wx:if="{{errorText}}" class="pet-form-error"><line-icon name="circle-alert" size="20" tone="danger" /><text>{{errorText}}</text></view>
+  <view wx:if="{{errorText}}" class="pet-form-error"><line-icon name="system-alert" size="20" tone="danger" /><text>{{errorText}}</text></view>
 
   <button class="primary-button pet-form-save" loading="{{saving}}" disabled="{{saving || avatarUploading}}" bindtap="onSave">
-    <line-icon name="heart" size="22" tone="white" />
+    <line-icon name="pet-supply-custom" size="22" tone="white" />
     <text>{{saving ? '正在加入这个家' : '加入这个家'}}</text>
   </button>
   <view class="pet-form-back" bindtap="onBack">先不添加，返回宠物页</view>

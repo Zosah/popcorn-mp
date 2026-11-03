@@ -8,7 +8,7 @@
       <view class="inv-top__sub">{{spaceName}} · {{summary.total}} 件在库</view>
     </view>
     <view class="inv-add" bindtap="onAddItem">
-      <line-icon name="plus" size="25" tone="white" />
+      <line-icon name="system-add" size="25" tone="white" />
       <text>添加</text>
     </view>
   </view>
@@ -38,7 +38,7 @@
   </view>
 
   <view class="inv-search {{searchFocused ? 'inv-search--focused' : ''}}">
-    <line-icon name="search" size="25" tone="muted" />
+    <line-icon name="system-search" size="25" tone="muted" />
     <input class="inv-search__input" value="{{query}}" placeholder="搜索物品" placeholder-class="inv-search__placeholder" bindinput="onSearchInput" bindfocus="onSearchFocus" bindblur="onSearchBlur" />
     <text wx:if="{{query}}" class="inv-search__clear" bindtap="onClearSearch">清除</text>
   </view>
@@ -54,13 +54,13 @@
   </scroll-view>
 
   <view wx:if="{{loading && !hasLoaded}}" class="inv-state">
-    <view class="inv-state__icon inv-state__icon--orange"><line-icon name="book-open" size="34" tone="orange" /></view>
+    <view class="inv-state__icon inv-state__icon--orange"><line-icon name="inventory-category-other" size="34" tone="orange" /></view>
     <view class="inv-state__title">正在翻家里的清单</view>
     <view class="inv-state__copy">库存和有效期正在一起核对。</view>
   </view>
 
   <view wx:elif="{{errorMessage && !hasResults}}" class="inv-state">
-    <view class="inv-state__icon inv-state__icon--red"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="inv-state__icon inv-state__icon--red"><line-icon name="system-alert" size="34" tone="danger" /></view>
     <view class="inv-state__title">库存暂时没连上</view>
     <view class="inv-state__copy">{{errorMessage}}</view>
     <view class="inv-state__action" bindtap="onRetry">重新加载</view>
@@ -68,7 +68,7 @@
 
   <block wx:else>
     <view wx:if="{{errorMessage}}" class="inv-banner">
-      <line-icon name="circle-alert" size="23" tone="danger" />
+      <line-icon name="system-alert" size="23" tone="danger" />
       <view class="inv-banner__body">
         <text>这次没有刷新完整</text>
         <text>先保留上次的清单，之后再试一次。</text>
@@ -92,7 +92,7 @@
     </block>
 
     <view wx:else class="inv-state">
-      <view class="inv-state__icon inv-state__icon--orange"><line-icon name="package" size="36" tone="orange" /></view>
+      <view class="inv-state__icon inv-state__icon--orange"><line-icon name="inventory-category-other" size="36" tone="orange" /></view>
       <view class="inv-state__title">{{viewMode === 'history' ? '还没有历史记录' : '这里没有找到东西'}}</view>
       <view class="inv-state__copy">{{viewMode === 'history' ? '用完、丢弃或归档的物品会出现在这里。' : '换个条件，或者把家里第一件物品记下来。'}}</view>
       <view wx:if="{{viewMode === 'active'}}" class="inv-state__action" bindtap="onAddItem">添加物品</view>

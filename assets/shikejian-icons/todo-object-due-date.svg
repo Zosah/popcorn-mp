@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="todo-object-due-date">
+  <title>todo-object-due-date</title>
+  <g id="todo-object-due-date" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="4.6" width="12.0" height="11.6" rx="2.0"/><path d="M2.8 8.8h12.0"/><path d="M6.0 2.8v3.2M11.4 2.8v3.2"/><circle cx="17.4" cy="16.0" r="4.2"/><path d="M17.4 13.8v2.4l1.8 1.2"/></g>
+  </g>
+</svg>

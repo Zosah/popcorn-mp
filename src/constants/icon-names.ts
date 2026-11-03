@@ -13,38 +13,38 @@ export const INVENTORY_CATEGORY_ICON_NAMES: Record<
   InventoryCategory,
   string
 > = {
-  food: 'utensils',
-  drink: 'droplet',
-  frozen: 'flame',
-  seasoning: 'soup',
-  daily: 'package',
-  medicine: 'circle-alert',
-  pet: 'paw-print',
-  other: 'folder',
+  food: 'inventory-category-food',
+  drink: 'inventory-category-drink',
+  frozen: 'inventory-category-frozen',
+  seasoning: 'inventory-category-seasoning',
+  daily: 'inventory-category-daily',
+  medicine: 'inventory-category-medicine',
+  pet: 'inventory-category-pet',
+  other: 'inventory-category-other',
 }
 
 export const INVENTORY_LOCATION_ICON_NAMES: Record<
   InventoryLocation,
   string
 > = {
-  fridge: 'droplets',
-  freezer: 'flame',
-  kitchen: 'utensils',
-  'living-room': 'house',
-  bathroom: 'droplets',
-  storage: 'package',
-  other: 'folder',
+  fridge: 'inventory-location-fridge',
+  freezer: 'inventory-location-freezer',
+  kitchen: 'inventory-location-kitchen',
+  'living-room': 'inventory-location-living-room',
+  bathroom: 'inventory-location-bathroom',
+  storage: 'inventory-location-storage',
+  other: 'inventory-location-other',
 }
 
 export const PET_EVENT_ICON_NAMES: Record<PetEventType, string> = {
-  vaccine: 'droplet',
-  neuter: 'heart-pulse',
-  grooming: 'droplets',
-  illness: 'circle-alert',
-  visit: 'heart-pulse',
-  outing: 'paw-print',
-  'internal-deworm': 'circle-alert',
-  'external-deworm': 'circle-alert',
+  vaccine: 'pet-care-vaccine',
+  neuter: 'pet-care-neuter',
+  grooming: 'pet-care-grooming',
+  illness: 'pet-care-illness',
+  visit: 'pet-care-visit',
+  outing: 'pet-care-outing',
+  'internal-deworm': 'pet-care-internal-deworm',
+  'external-deworm': 'pet-care-external-deworm',
 }
 
 export const PET_TIMELINE_ICON_NAMES: Record<
@@ -52,24 +52,24 @@ export const PET_TIMELINE_ICON_NAMES: Record<
   string
 > = {
   ...PET_EVENT_ICON_NAMES,
-  birthday: 'ticket',
-  home: 'house',
+  birthday: 'pet-care-birthday',
+  home: 'pet-care-homecoming',
 }
 
 export const PET_DAILY_ICON_NAMES: Record<PetDailyLogType, string> = {
-  meal: 'utensils',
-  water: 'droplets',
-  stool: 'toilet',
-  urine: 'droplet',
-  'litter-change': 'package',
-  'water-change': 'droplets',
+  meal: 'pet-daily-meal',
+  water: 'pet-daily-water',
+  stool: 'pet-daily-stool',
+  urine: 'pet-daily-urine',
+  'litter-change': 'pet-daily-litter-change',
+  'water-change': 'pet-daily-water-change',
 }
 
 export const PET_SUPPLY_ICON_NAMES: Record<PetSupplyCategory, string> = {
-  kibble: 'soup',
-  can: 'soup',
-  'freeze-dried': 'soup',
-  soup: 'soup',
-  litter: 'package',
-  custom: 'folder',
+  kibble: 'pet-supply-kibble',
+  can: 'pet-supply-can',
+  'freeze-dried': 'pet-supply-freeze-dried',
+  soup: 'pet-supply-soup',
+  litter: 'pet-supply-litter',
+  custom: 'pet-supply-custom',
 }

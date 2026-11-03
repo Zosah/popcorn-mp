@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="pet-care-grooming">
+  <title>pet-care-grooming</title>
+  <g id="pet-care-grooming" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.4 9.0V3.6"/><path d="M4.4 9.0h10.0a5.0 5.0 0 0 1-5.0 5.0A5.0 5.0 0 0 1 4.4 9.0Z"/><path d="M7.0 11.8v1.8M9.4 11.8v1.8M11.8 11.8v1.8"/><circle cx="17.2" cy="7.2" r="1.8"/><circle cx="18.4" cy="13.2" r="1.2"/></g>
+  </g>
+</svg>

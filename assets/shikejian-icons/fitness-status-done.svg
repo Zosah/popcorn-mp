@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="fitness-status-done">
+  <title>fitness-status-done</title>
+  <g id="fitness-status-done" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 12.0L12.2 12.0"/><rect x="4.8" y="7.8" width="2.6" height="8.4" rx="1.3"/><rect x="12.2" y="7.8" width="2.6" height="8.4" rx="1.3"/><path d="M16.6 15.6l1.8 1.8 3.4-3.6"/></g>
+  </g>
+</svg>

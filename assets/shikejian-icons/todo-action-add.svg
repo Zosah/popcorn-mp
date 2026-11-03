@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="todo-action-add">
+  <title>todo-action-add</title>
+  <g id="todo-action-add" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="6.2" width="5.2" height="5.2" rx="1.5"/><path d="M4.7 8.8l1.4 1.4 2.3-2.7"/><path d="M11.8 8.8L18.0 8.8"/><path d="M18.0 14.0v7.2M14.4 17.6h7.2"/></g>
+  </g>
+</svg>

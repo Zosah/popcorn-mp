@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-expense">
+  <title>feature-expense-active</title>
+  <g id="feature-expense-active" fill="none">
+    <path d="M2.9 9.4h18.2v2.4H2.9Z" fill="#E2EEE9" stroke="none"/>
+    <path d="M17.5 11.7a1.45 1.45 0 0 1 0 2.9Z" fill="#E2EEE9" stroke="none"/>
+    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><rect x="2.9" y="6.3" width="18.2" height="12.2" rx="2.8"/><path d="M21.1 10.4h-3.9a2.5 2.5 0 0 0 0 5.0h3.9"/><circle cx="18.6" cy="12.9" r="0.85"/></g>
+  </g>
+</svg>

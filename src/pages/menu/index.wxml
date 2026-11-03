@@ -11,7 +11,7 @@
     <view class="menu-hero__mark" aria-hidden="true">
       <view class="menu-hero__steam menu-hero__steam--one"></view>
       <view class="menu-hero__steam menu-hero__steam--two"></view>
-      <view class="menu-hero__bowl"><line-icon name="soup" size="44" tone="gold" /></view>
+      <view class="menu-hero__bowl"><line-icon name="menu-category-soup" size="44" tone="gold" /></view>
     </view>
   </view>
 
@@ -23,7 +23,7 @@
   </view>
 
   <view wx:elif="{{loadError}}" class="menu-empty menu-empty--error">
-    <view class="menu-empty__icon"><line-icon name="circle-alert" size="34" tone="orange" /></view>
+    <view class="menu-empty__icon"><line-icon name="system-alert" size="34" tone="orange" /></view>
     <view class="menu-empty__title">菜单没加载出来</view>
     <view class="menu-empty__copy">{{loadError}}</view>
     <view class="menu-empty__action" bindtap="onRetryLoad">再试一次</view>
@@ -32,12 +32,12 @@
   <block wx:else>
     <view class="menu-tabs" role="tablist">
       <view class="menu-tab {{activeTab === 'eat' ? 'menu-tab--active' : ''}}" data-value="eat" bindtap="onSwitchTab">
-        <line-icon name="utensils" size="22" tone="accent" />
+        <line-icon name="menu-tab-eat" size="22" tone="accent" />
         <text>吃啥</text>
         <view wx:if="{{activeOrders.length}}" class="menu-tab__count">{{activeOrders.length}}</view>
       </view>
       <view class="menu-tab {{activeTab === 'recipes' ? 'menu-tab--active' : ''}}" data-value="recipes" bindtap="onSwitchTab">
-        <line-icon name="book-open" size="22" tone="accent" />
+        <line-icon name="menu-tab-recipes" size="22" tone="accent" />
         <text>菜谱本</text>
         <view class="menu-tab__count">{{allRecipes.length}}</view>
       </view>
@@ -76,7 +76,7 @@
             <view class="menu-order__dish-head">
               <view class="menu-order__dish-cover">
                 <image wx:if="{{dish.imageSrc}}" src="{{dish.imageSrc}}" mode="aspectFill" />
-                <view wx:else class="menu-order__dish-cover-empty"><line-icon name="bowl" size="24" tone="muted" /></view>
+                <view wx:else class="menu-order__dish-cover-empty"><line-icon name="menu-object-ingredient" size="24" tone="muted" /></view>
                 <text class="menu-order__dish-index">{{dish.numberLabel}}</text>
               </view>
               <view class="menu-order__dish-title-row">
@@ -86,7 +86,7 @@
               <view class="menu-order__dish-actions">
                 <view wx:if="{{dish.readyCount === dish.ingredients.length}}" class="menu-order__dish-action" data-order-id="{{item.id}}" data-dish-id="{{dish.id}}" bindtap="onToggleDishIngredients">{{dish.expanded ? '收起' : '食材'}}</view>
                 <view class="menu-order__dish-action menu-order__dish-action--steps" data-order-id="{{item.id}}" data-dish-id="{{dish.id}}" bindtap="onOpenRecipeSteps">
-                  <line-icon name="book-open" size="17" tone="accent" />
+                  <line-icon name="menu-tab-recipes" size="17" tone="accent" />
                   <text>看看怎么做</text>
                 </view>
               </view>
@@ -143,7 +143,7 @@
         </view>
         <view class="menu-eat-empty__action" data-value="recipes" bindtap="onSwitchTab">
           <text>去菜谱本点菜</text>
-          <line-icon name="plus" size="20" tone="white" />
+          <line-icon name="system-add" size="20" tone="white" />
         </view>
       </view>
 
@@ -175,7 +175,7 @@
           </view>
         </view>
         <view wx:else class="menu-history__empty">
-          <view class="menu-history__empty-icon"><line-icon name="clock-3" size="26" tone="muted" /></view>
+          <view class="menu-history__empty-icon"><line-icon name="system-clock" size="26" tone="muted" /></view>
           <view class="menu-history__empty-copy">
             <text>还没有吃过的这一桌</text>
             <text>完成一次点单后，会在这里留下记录</text>
@@ -209,7 +209,7 @@
           </view>
           <view class="menu-recipes__actions">
             <view class="menu-add" bindtap="onCreate">
-              <line-icon name="plus" size="20" tone="white" />
+              <line-icon name="system-add" size="20" tone="white" />
               <text>新菜谱</text>
             </view>
           </view>
@@ -225,13 +225,13 @@
               </view>
               <view class="menu-recipe__media">
                 <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFit" />
-                <line-icon wx:else name="soup" size="34" tone="gold" />
+                <line-icon wx:else name="menu-category-soup" size="34" tone="gold" />
               </view>
             </view>
             <view class="menu-recipe__foot">
               <text class="menu-recipe__hint">点进菜单可以编辑</text>
               <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart" aria-label="添加{{item.title}}">
-                <line-icon name="plus" size="20" tone="white" />
+                <line-icon name="system-add" size="20" tone="white" />
                 <text>吃它</text>
               </view>
             </view>
@@ -239,7 +239,7 @@
         </view>
 
         <view wx:else class="menu-empty menu-empty--book">
-          <view class="menu-empty__icon"><line-icon name="book-open" size="34" tone="orange" /></view>
+          <view class="menu-empty__icon"><line-icon name="menu-tab-recipes" size="34" tone="orange" /></view>
           <view class="menu-empty__title">{{allRecipes.length ? '这里还没有菜谱' : '菜谱本还是空的'}}</view>
           <view class="menu-empty__copy">{{allRecipes.length ? '换一个分类看看，或者把这道菜放进这里。' : '把常做的菜和拿手菜谱记下来，点菜时会更容易。'}}</view>
           <view class="menu-empty__action" bindtap="onCreate">{{allRecipes.length ? '新建菜谱' : '新建第一道菜谱'}}</view>
@@ -250,7 +250,7 @@
     <view wx:if="{{cartCount}}" class="menu-cart-bar" bindtap="onOpenCart">
       <view class="menu-cart-bar__left">
         <view class="menu-cart-bar__bag">
-          <line-icon name="bowl" size="27" tone="white" />
+          <line-icon name="menu-object-ingredient" size="27" tone="white" />
           <view class="menu-cart-bar__badge">{{cartCount}}</view>
         </view>
         <view class="menu-cart-bar__copy">
@@ -260,7 +260,7 @@
       </view>
       <view class="menu-cart-bar__action">
         <text>选好了</text>
-        <line-icon name="check" size="19" tone="white" />
+        <line-icon name="system-check" size="19" tone="white" />
       </view>
     </view>
   </block>
@@ -345,7 +345,7 @@
             <view class="menu-order-detail__dish-head">
               <view class="menu-order-detail__dish-cover">
                 <image wx:if="{{dish.imageSrc}}" src="{{dish.imageSrc}}" mode="aspectFill" />
-                <view wx:else class="menu-order-detail__dish-cover-empty"><line-icon name="bowl" size="23" tone="muted" /></view>
+                <view wx:else class="menu-order-detail__dish-cover-empty"><line-icon name="menu-object-ingredient" size="23" tone="muted" /></view>
                 <text class="menu-order-detail__dish-index">{{dish.numberLabel}}</text>
               </view>
               <view class="menu-order-detail__dish-title-row">
@@ -355,7 +355,7 @@
               <view class="menu-order-detail__dish-actions">
                 <view wx:if="{{dish.readyCount === dish.ingredients.length}}" class="menu-order-detail__dish-action" data-order-id="{{historyDetailOrder.id}}" data-dish-id="{{dish.id}}" bindtap="onToggleDishIngredients">{{dish.expanded ? '收起' : '食材'}}</view>
                 <view class="menu-order-detail__dish-action menu-order-detail__dish-action--steps" data-order-id="{{historyDetailOrder.id}}" data-dish-id="{{dish.id}}" bindtap="onOpenRecipeSteps">
-                  <line-icon name="book-open" size="16" tone="accent" />
+                  <line-icon name="menu-tab-recipes" size="16" tone="accent" />
                   <text>看看怎么做</text>
                 </view>
               </view>
@@ -383,7 +383,7 @@
       <view class="menu-recipe-steps__head">
         <view class="menu-recipe-steps__cover">
           <image wx:if="{{recipeStepDish.imageSrc}}" src="{{recipeStepDish.imageSrc}}" mode="aspectFill" />
-          <view wx:else class="menu-recipe-steps__cover-empty"><line-icon name="bowl" size="31" tone="muted" /></view>
+          <view wx:else class="menu-recipe-steps__cover-empty"><line-icon name="menu-object-ingredient" size="31" tone="muted" /></view>
         </view>
         <view class="menu-recipe-steps__title">
           <text>做法</text>

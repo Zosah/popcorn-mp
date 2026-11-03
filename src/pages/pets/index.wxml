@@ -9,11 +9,11 @@
 
       <view class="pet-hero__topbar">
         <view class="pet-glass-button" bindtap="onOpenCalendar" aria-label="打开照护月历">
-          <line-icon name="calendar-days" size="22" tone="ink" />
+          <line-icon name="system-calendar" size="22" tone="ink" />
         </view>
         <view class="pet-hero__actions">
           <view class="pet-glass-button" bindtap="onAddPet" aria-label="添加宠物">
-            <line-icon name="plus" size="22" tone="ink" />
+            <line-icon name="system-add" size="22" tone="ink" />
           </view>
         </view>
       </view>
@@ -23,12 +23,12 @@
           <text class="pet-eyebrow">我们的伙伴</text>
           <view class="pet-hero__name-row" bindtap="onChoosePet">
             <text class="pet-hero__name">{{profile.name}}</text>
-            <view class="pet-hero__switch"><line-icon name="chevron-down" size="22" tone="ink" /></view>
+            <view class="pet-hero__switch"><line-icon name="system-expand" size="22" tone="ink" /></view>
           </view>
           <view class="pet-hero__sub">{{profile.breed}} · {{ageLabel}}</view>
           <view class="pet-hero__status">{{profile.status || '今天也在一起'}}</view>
           <view class="pet-theme-entry" catchtap="onOpenBackgroundPicker">
-            <line-icon name="image" size="15" tone="ink" />
+            <line-icon name="system-image" size="15" tone="ink" />
             <text>换个背景</text>
           </view>
         </view>
@@ -125,7 +125,7 @@
               <view wx:else class="care-row__elapsed">还没有记录</view>
               <view wx:if="{{item.nextOn}}" class="care-row__plan">下次 {{item.nextOn}}</view>
             </view>
-            <button class="care-row__action" data-type="{{item.type}}" bindtap="onRecordCare"><line-icon name="plus" size="16" tone="pink" /><text>记一下</text></button>
+            <button class="care-row__action" data-type="{{item.type}}" bindtap="onRecordCare"><line-icon name="system-add" size="16" tone="pink" /><text>记一下</text></button>
           </view>
         </view>
         <view class="pet-section-head pet-section-head--plain">
@@ -237,7 +237,7 @@
         <view class="pet-sheet__handle"></view>
         <view class="pet-sheet__head"><view><text class="pet-eyebrow">宠物背景</text><text class="pet-sheet__title">给{{profile.name}}换个心情</text></view><view bindtap="onCloseBackgroundPicker">关闭</view></view>
         <view class="background-options">
-          <view wx:for="{{backgroundOptions}}" wx:key="key" class="background-option background-option--{{item.key}} {{item.selected ? 'background-option--selected' : ''}}" data-key="{{item.key}}" bindtap="onSelectBackgroundTheme"><view class="background-option__swatch"></view><text>{{item.label}}</text><line-icon wx:if="{{item.selected}}" name="check" size="15" tone="green" /></view>
+          <view wx:for="{{backgroundOptions}}" wx:key="key" class="background-option background-option--{{item.key}} {{item.selected ? 'background-option--selected' : ''}}" data-key="{{item.key}}" bindtap="onSelectBackgroundTheme"><view class="background-option__swatch"></view><text>{{item.label}}</text><line-icon wx:if="{{item.selected}}" name="system-check" size="15" tone="green" /></view>
         </view>
         <button class="pet-sheet__primary" bindtap="onChooseBackground">{{uploadingBackground ? '正在上传…' : '上传自己的背景图'}}</button>
         <view class="pet-sheet__hint">支持 JPG、PNG、WebP，原图会保留在 COS。</view>
@@ -255,7 +255,7 @@
           <view class="supply-field"><text>品牌</text><input value="{{supplyDraft.brand}}" maxlength="40" placeholder="选填" data-field="brand" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
           <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view></view>
           <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-editor-section"><text class="supply-editor-label">图片</text><view wx:if="{{supplyDraft.mediaUrl}}" class="supply-editor-image"><image src="{{supplyDraft.mediaUrl}}" mode="aspectFill" /><view bindtap="onRemoveSupplyImage">移除</view></view><view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view></view>
+          <view class="supply-editor-section"><text class="supply-editor-label">图片</text><view wx:if="{{supplyDraft.mediaUrl}}" class="supply-editor-image"><image src="{{supplyDraft.mediaUrl}}" mode="aspectFill" /><view bindtap="onRemoveSupplyImage">移除</view></view><view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="system-camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view></view>
           <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">保存用品</button>
         </scroll-view>
       </view>
@@ -263,7 +263,7 @@
   </block>
 
   <view wx:else class="pet-empty-state">
-    <view class="pet-empty-state__art"><view class="pet-empty-state__ear pet-empty-state__ear--left"></view><view class="pet-empty-state__ear pet-empty-state__ear--right"></view><view class="pet-empty-state__face"><line-icon name="heart" size="34" tone="green" /></view></view>
+    <view class="pet-empty-state__art"><view class="pet-empty-state__ear pet-empty-state__ear--left"></view><view class="pet-empty-state__ear pet-empty-state__ear--right"></view><view class="pet-empty-state__face"><line-icon name="pet-supply-custom" size="34" tone="green" /></view></view>
     <text class="pet-eyebrow">毛孩子的家</text>
     <view class="pet-empty-state__title">{{loading ? '正在同步宠物照护…' : '还没有宠物档案'}}</view>
     <view wx:if="{{errorText}}" class="pet-empty-state__copy">{{errorText}}</view>

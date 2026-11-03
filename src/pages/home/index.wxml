@@ -9,7 +9,7 @@
     <view class="home-header__space" hover-class="tap-dim" bindtap="onOpenSpaceSwitcher" aria-label="切换空间">
       <view class="home-header__name-row">
         <text class="home-header__name">{{spaceName}}</text>
-        <view class="home-header__switch"><line-icon name="chevron-down" size="22" tone="muted" /></view>
+        <view class="home-header__switch"><line-icon name="system-expand" size="22" tone="muted" /></view>
       </view>
       <text class="home-header__date">{{snapshot.dateLabel}} · {{snapshot.weekdayLabel}}</text>
     </view>
@@ -47,7 +47,7 @@
       bindtap="onOpenHomeShortcut"
     >
       <view class="function-icon function-icon--{{item.tone}}">
-        <line-icon name="{{item.icon}}" size="38" tone="{{item.tone}}" />
+        <line-icon name="{{item.icon}}" size="38" tone="{{item.tone}}" active="{{true}}" />
       </view>
       <text class="function-item__label">{{item.shortLabel}}</text>
     </view>
@@ -76,7 +76,7 @@
   </view>
 
   <view wx:if="{{inventoryError}}" class="home-error">
-    <line-icon name="circle-alert" size="32" tone="danger" />
+    <line-icon name="system-alert" size="32" tone="danger" />
     <view class="home-error__body">
       <text class="home-error__title">{{hasLoadedInventory ? '库存刷新没完成' : '家庭库存暂时没连上'}}</text>
       <text class="home-error__copy">{{hasLoadedInventory ? '先保留上次的内容，稍后再试。' : inventoryError}}</text>
@@ -88,7 +88,7 @@
     <view class="scene-card__orb scene-card__orb--one"></view>
     <view class="scene-card__orb scene-card__orb--two"></view>
     <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="check" size="44" tone="ink" /></view>
+      <view class="scene-icon"><line-icon name="system-check" size="44" tone="ink" /></view>
       <view class="scene-count">{{todoCompletedCount}} / {{todoTotalCount}}</view>
     </view>
     <view class="scene-copy">
@@ -97,7 +97,7 @@
       <text class="scene-note">{{todoPendingCount ? '已经完成 ' + todoCompletedCount + ' 件，给今天留一点松弛感' : '把今天轻轻收好，剩下的时间留给自己'}}</text>
     </view>
     <view class="scene-preview">
-      <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="check" size="26" tone="white" /></view>
+      <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="system-check" size="26" tone="white" /></view>
       <view class="scene-preview__body">
         <text class="scene-preview__title">{{todoSummary}}</text>
         <text class="scene-preview__meta">待办 · 想到就记下</text>
@@ -114,7 +114,7 @@
     <view class="scene-card__orb scene-card__orb--one"></view>
     <view class="scene-card__orb scene-card__orb--two"></view>
     <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="package" size="44" tone="green" /></view>
+      <view class="scene-icon"><line-icon name="inventory-category-other" size="44" tone="green" /></view>
       <view class="scene-count">{{snapshot.inventoryItemCount}} 件</view>
     </view>
     <view class="scene-copy">
@@ -123,7 +123,7 @@
       <text class="scene-note">{{menuSummary}}</text>
     </view>
     <view class="scene-preview">
-      <view class="scene-preview__icon"><line-icon name="clock-3" size="26" tone="gold" /></view>
+      <view class="scene-preview__icon"><line-icon name="system-clock" size="26" tone="gold" /></view>
       <view class="scene-preview__body">
         <text class="scene-preview__title">下厨</text>
         <text class="scene-preview__meta">{{menuCount}} 道收藏 · 去挑一道今天的菜</text>
@@ -140,7 +140,7 @@
     <view class="scene-card__orb scene-card__orb--one"></view>
     <view class="scene-card__orb scene-card__orb--two"></view>
     <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="paw-print" size="44" tone="pink" /></view>
+      <view class="scene-icon"><line-icon name="pet-tab-profile" size="44" tone="pink" /></view>
       <view class="scene-count">{{petSnapshot.weight}} kg</view>
     </view>
     <view class="scene-copy">
@@ -149,7 +149,7 @@
       <text class="scene-note">{{petSnapshot.name}}今天状态：{{petSnapshot.status}}。吃喝拉撒、体重和照护都收在这里</text>
     </view>
     <view class="scene-preview">
-      <view class="scene-preview__icon"><line-icon name="paw-print" size="26" tone="pink" /></view>
+      <view class="scene-preview__icon"><line-icon name="pet-tab-profile" size="26" tone="pink" /></view>
       <view class="scene-preview__body">
         <text class="scene-preview__title">{{petActivities.length ? petActivities[0].title : '还没有宠物动态'}}</text>
         <text class="scene-preview__meta">{{petActivities.length ? petActivities[0].copy : '记一次体重、洗护或今天的照护'}}</text>
@@ -177,7 +177,7 @@
           data-id="{{item.id}}"
           bindtap="onSwitchHomeSpace"
         >
-          <view class="space-sheet__mark"><line-icon name="house" size="27" tone="{{item.isActive ? 'ink' : 'green'}}" /></view>
+          <view class="space-sheet__mark"><line-icon name="system-space" size="27" tone="{{item.isActive ? 'ink' : 'green'}}" /></view>
           <view class="space-sheet__body">
             <text class="space-sheet__name">{{item.name}}</text>
             <text class="space-sheet__meta">{{item.roleLabel}}</text>

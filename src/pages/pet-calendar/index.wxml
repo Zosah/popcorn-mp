@@ -1,6 +1,6 @@
 <view class="page-shell pet-calendar-page">
   <view class="calendar-hero">
-    <view class="calendar-hero__mark"><line-icon name="calendar-days" size="30" tone="pink" /></view>
+    <view class="calendar-hero__mark"><line-icon name="system-calendar" size="30" tone="pink" /></view>
     <view class="calendar-hero__body">
       <view class="eyebrow">DAILY · CARE</view>
       <view class="calendar-hero__title">{{petName}}的月历</view>
@@ -28,7 +28,7 @@
 
   <view class="calendar-events-head">
     <view><text>{{selectedDateLabel}}</text><text>{{selectedEvents.length ? selectedEvents.length + ' 条记录' : '这天还没有记录'}}</text></view>
-    <view class="calendar-events-head__add" bindtap="onAddEvent"><line-icon name="plus" size="19" tone="white" /><text>记护理</text></view>
+    <view class="calendar-events-head__add" bindtap="onAddEvent"><line-icon name="system-add" size="19" tone="white" /><text>记护理</text></view>
   </view>
 
   <view wx:if="{{selectedEvents.length}}" class="calendar-events paper-card">

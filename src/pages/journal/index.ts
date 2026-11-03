@@ -16,10 +16,10 @@ import { createRequestGate } from '../../utils/request-control'
 
 const NOTE_CATEGORY_ORDER: DemoNoteCategory[] = ['home', 'health', 'pet', 'other']
 const NOTE_CATEGORY_ICONS: Record<DemoNoteCategory, string> = {
-  home: 'house',
-  health: 'heart-pulse',
-  pet: 'paw-print',
-  other: 'file-text',
+  home: 'journal-note-home',
+  health: 'journal-note-health',
+  pet: 'journal-note-pet',
+  other: 'journal-note-other',
 }
 
 const journalRequestGate = createRequestGate()

@@ -2,7 +2,7 @@
   <view class="todo-item {{done ? 'todo-item--done' : ''}}" data-id="{{id}}" bindlongpress="onLongPressItem">
     <view class="todo-item__main" data-id="{{id}}" bindtap="onEditItem">
       <view class="todo-check {{done ? 'todo-check--done' : ''}}" data-id="{{id}}" catchtap="onToggleItem">
-        <line-icon wx:if="{{done}}" name="check" size="15" tone="white" />
+        <line-icon wx:if="{{done}}" name="system-check" size="15" tone="white" />
       </view>
       <view class="todo-item__body">
         <view class="todo-item__title-row">
@@ -29,7 +29,7 @@
       <text class="todo-head__sub">{{pageCopy}}</text>
     </view>
     <view class="todo-create" hover-class="todo-create--pressed" bindtap="onCreate">
-      <line-icon name="plus" size="19" tone="ink" />
+      <line-icon name="system-add" size="19" tone="ink" />
       <text>新建</text>
     </view>
   </view>
@@ -60,7 +60,7 @@
           <text wx:if="{{item.count}}" class="todo-tag__count">{{item.count}}</text>
         </view>
         <view class="todo-tag todo-tag--create" bindtap="onCreateTag">
-          <line-icon name="plus" size="15" tone="muted" />
+          <line-icon name="system-add" size="15" tone="muted" />
           <text>新标签</text>
         </view>
       </view>
@@ -77,19 +77,19 @@
   </view>
 
   <view wx:if="{{loadError && allItems.length}}" class="todo-banner">
-    <line-icon name="circle-alert" size="20" tone="danger" />
+    <line-icon name="system-alert" size="20" tone="danger" />
     <text class="todo-banner__copy">这次没有刷新完整，先显示上次的内容。</text>
     <text class="todo-banner__action" bindtap="onRetryLoad">重试</text>
   </view>
 
   <view wx:if="{{loading && !allItems.length}}" class="todo-state">
-    <view class="todo-state__mark"><line-icon name="notebook-tabs" size="34" tone="green" /></view>
+    <view class="todo-state__mark"><line-icon name="todo-status-pending" size="34" tone="green" /></view>
     <text class="todo-state__title">正在整理待办</text>
     <text class="todo-state__copy">稍等一下，马上就好。</text>
   </view>
 
   <view wx:elif="{{loadError && !allItems.length}}" class="todo-state">
-    <view class="todo-state__mark todo-state__mark--error"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="todo-state__mark todo-state__mark--error"><line-icon name="system-alert" size="34" tone="danger" /></view>
     <text class="todo-state__title">暂时没有连上</text>
     <text class="todo-state__copy">{{loadError}}</text>
     <view class="todo-state__action" bindtap="onRetryLoad">重新加载</view>
@@ -113,7 +113,7 @@
   </view>
 
   <view wx:else class="todo-state">
-    <view class="todo-state__mark"><line-icon name="list-todo" size="34" tone="green" /></view>
+    <view class="todo-state__mark"><line-icon name="todo-status-pending" size="34" tone="green" /></view>
     <text class="todo-state__title">{{emptyTitle}}</text>
     <text class="todo-state__copy">{{emptyCopy}}</text>
     <view class="todo-state__action" bindtap="onCreate">记下第一件事</view>

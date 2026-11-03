@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-journal">
+  <title>feature-journal-active</title>
+  <g id="feature-journal-active" fill="none">
+    <path d="M12.6 8.0c2.2-1.1 4.7-1.2 6.6-.3v10.5c-1.9-1.0-4.4-.9-6.6.2Z" fill="#E2EEE9" stroke="none"/>
+    <path d="M13.9 6.5h1.6v4.5l-.8-.6-.8.6Z" fill="#E2EEE9" stroke="none"/>
+    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.2v11.9"/><path d="M12 7.2C9.5 5.8 6.4 5.7 4.1 7.0v11.9c2.3-1.3 5.4-1.2 7.9.2"/><path d="M12 7.2c2.5-1.4 5.6-1.5 7.9-.2v11.9c-2.3-1.3-5.4-1.2-7.9.2"/><path d="M15.4 6.6v5.6l1.8-1.3 1.8 1.3V6.2"/></g>
+  </g>
+</svg>

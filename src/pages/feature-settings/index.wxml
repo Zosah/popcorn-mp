@@ -10,20 +10,20 @@
       <text class="config-head__description">把常用功能放到顺手的位置</text>
     </view>
     <view class="config-head__reset" hover-class="config-head__reset--pressed" bindtap="onResetDefault">
-      <line-icon name="rotate-ccw" size="16" tone="muted" />
+      <line-icon name="system-refresh" size="16" tone="muted" />
       <text>恢复</text>
     </view>
   </view>
 
   <view wx:if="{{saveError}}" class="config-error">
-    <line-icon name="circle-alert" size="22" tone="danger" />
+    <line-icon name="system-alert" size="22" tone="danger" />
     <text class="config-error__copy">{{saveError}}</text>
     <text wx:if="{{versionConflict}}" class="config-error__action" bindtap="onReloadSettings">载入最新</text>
   </view>
 
   <view class="config-guide">
     <view class="config-guide__icon">
-      <line-icon name="settings" size="24" tone="green" />
+      <line-icon name="system-settings" size="24" tone="green" />
     </view>
     <view class="config-guide__copy">
       <text class="config-guide__title">安排常用入口</text>
@@ -65,7 +65,7 @@
         catchtouchcancel="onDragTouchCancel"
       >
         <view class="feature-tile__icon feature-tile__icon--{{feature.tone}}">
-          <line-icon name="{{feature.icon}}" size="28" tone="{{feature.tone}}" />
+          <line-icon name="{{feature.icon}}" size="28" tone="{{feature.tone}}" active="{{true}}" />
         </view>
         <view class="feature-tile__copy">
           <text class="feature-tile__label">{{feature.shortLabel}}</text>
@@ -112,7 +112,7 @@
       >
         <text class="drop-slot__order">{{slotItem.order}}</text>
         <view class="drop-slot__icon feature-tile__icon--{{slotItem.tone}}">
-          <line-icon name="{{slotItem.icon}}" size="27" tone="{{slotItem.tone}}" />
+          <line-icon name="{{slotItem.icon}}" size="27" tone="{{slotItem.tone}}" active="{{true}}" />
         </view>
         <text class="drop-slot__title">{{slotItem.shortLabel}}</text>
       </view>
@@ -127,7 +127,7 @@
     </view>
     <view class="tab-drop-preview">
       <view class="tab-fixed-item">
-        <line-icon name="house" size="21" tone="muted" />
+        <line-icon name="system-space" size="21" tone="muted" />
         <text>家</text>
       </view>
 
@@ -148,12 +148,12 @@
         catchtouchend="onDragTouchEnd"
         catchtouchcancel="onDragTouchCancel"
       >
-        <line-icon name="{{slotItem.icon}}" size="22" tone="{{slotItem.tone}}" />
+        <line-icon name="{{slotItem.icon}}" size="22" tone="{{slotItem.tone}}" active="{{true}}" />
         <text class="drop-slot__tab-label">{{slotItem.shortLabel}}</text>
       </view>
 
       <view class="tab-fixed-item">
-        <line-icon name="user-round" size="21" tone="muted" />
+        <line-icon name="system-user" size="21" tone="muted" />
         <text>我的</text>
       </view>
     </view>
@@ -180,7 +180,7 @@
     class="drag-ghost drag-ghost--{{dragTone}}"
     style="left: {{dragX}}px; top: {{dragY}}px;"
   >
-    <line-icon name="{{dragIcon}}" size="26" tone="{{dragTone}}" />
+    <line-icon name="{{dragIcon}}" size="26" tone="{{dragTone}}" active="{{true}}" />
     <text>{{dragLabel}}</text>
   </view>
 </view>

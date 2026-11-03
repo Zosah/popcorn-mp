@@ -247,7 +247,7 @@ Page({
     dailyEditor: {
       type: 'urine' as PetDailyLogType,
       title: '尿尿',
-      iconName: 'droplet',
+      iconName: 'pet-daily-urine',
       choiceLabel: '情况',
       detailLabel: '次数或尿团',
       detailPlaceholder: '例如 2 个尿团',

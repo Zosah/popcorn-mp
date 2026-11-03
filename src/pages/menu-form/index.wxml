@@ -1,6 +1,6 @@
 <view class="page-shell menu-form-page">
   <view class="recipe-head">
-    <view class="recipe-head__mark"><line-icon name="soup" size="30" tone="gold" /></view>
+    <view class="recipe-head__mark"><line-icon name="menu-category-soup" size="30" tone="gold" /></view>
     <view class="recipe-head__body">
       <view class="eyebrow">RECIPE NOTE</view>
       <view class="recipe-head__title">{{pageTitle}}</view>
@@ -8,12 +8,12 @@
   </view>
 
   <view wx:if="{{loading}}" class="recipe-state paper-card">
-    <view class="recipe-state__mark"><line-icon name="soup" size="34" tone="gold" /></view>
+    <view class="recipe-state__mark"><line-icon name="menu-category-soup" size="34" tone="gold" /></view>
     <view class="recipe-state__title">正在翻菜谱本</view>
   </view>
 
   <view wx:elif="{{loadError}}" class="recipe-state recipe-state--error paper-card">
-    <view class="recipe-state__mark"><line-icon name="circle-alert" size="34" tone="danger" /></view>
+    <view class="recipe-state__mark"><line-icon name="system-alert" size="34" tone="danger" /></view>
     <view class="recipe-state__title">这份菜谱暂时没打开</view>
     <view class="recipe-state__copy">{{loadError}}</view>
     <view class="recipe-state__action" bindtap="onRetryLoad">重新加载</view>
@@ -40,11 +40,11 @@
             <view class="recipe-cover__remove" catchtap="onRemoveImage">移除</view>
           </view>
           <view wx:elif="{{imageUploading}}" class="recipe-cover__empty recipe-cover__empty--busy">
-            <line-icon name="image" size="30" tone="blue" />
+            <line-icon name="system-image" size="30" tone="blue" />
             <text>上传中</text>
           </view>
           <view wx:else class="recipe-cover__empty" bindtap="onChooseImage">
-            <line-icon name="image" size="32" tone="blue" />
+            <line-icon name="system-image" size="32" tone="blue" />
             <text>添加成品图</text>
           </view>
         </view>
@@ -56,7 +56,7 @@
           <picker class="recipe-category-picker" mode="selector" range="{{categoryOptions}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategoryChange">
             <view class="recipe-category-value">
               <text>{{categoryOptions[categoryIndex].name || '未分类'}}</text>
-              <view class="recipe-category-chevron"><line-icon name="chevron-down" size="22" tone="muted" /></view>
+              <view class="recipe-category-chevron"><line-icon name="system-expand" size="22" tone="muted" /></view>
             </view>
           </picker>
           <view class="recipe-category-add" bindtap="onCreateCategory">+ 新分类</view>
@@ -76,12 +76,12 @@
         <picker class="ingredient-unit-picker" mode="selector" range="{{unitOptions}}" value="{{item.unitIndex}}" data-index="{{index}}" bindchange="onIngredientUnitChange">
           <view class="ingredient-unit">
             <text>{{item.unit || '个'}}</text>
-            <line-icon name="chevron-down" size="18" tone="muted" />
+            <line-icon name="system-expand" size="18" tone="muted" />
           </view>
         </picker>
         <view class="row-remove" data-index="{{index}}" bindtap="onRemoveIngredient">删除</view>
       </view>
-      <view class="add-row" bindtap="onAddIngredient"><line-icon name="plus" size="22" tone="gold" /><text>再加一样</text></view>
+      <view class="add-row" bindtap="onAddIngredient"><line-icon name="system-add" size="22" tone="gold" /><text>再加一样</text></view>
     </view>
 
     <view class="recipe-section-head"><text>做法</text><text>一行一步</text></view>
@@ -104,13 +104,13 @@
         <view class="note-image-remove" data-index="{{index}}" catchtap="onRemoveNoteImage">×</view>
       </view>
       <view wx:if="{{noteImages.length < 9}}" class="note-image-add" bindtap="onChooseNoteImages">
-        <line-icon name="plus" size="28" tone="faint" />
+        <line-icon name="system-add" size="28" tone="faint" />
         <text>{{noteImageUploading ? '上传中' : '添加'}}</text>
       </view>
     </view>
 
     <button class="primary-button recipe-save" loading="{{saving || imageUploading || noteImageUploading}}" disabled="{{saving || imageUploading || noteImageUploading}}" bindtap="onSave">
-      <line-icon name="utensils" size="24" tone="white" />
+      <line-icon name="menu-tab-eat" size="24" tone="white" />
       <text>{{saveText}}</text>
     </button>
   </block>

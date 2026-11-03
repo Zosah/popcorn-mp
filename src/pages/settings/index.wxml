@@ -6,7 +6,7 @@
 
   <view class="settings-hero">
     <view class="settings-hero__icon">
-      <line-icon name="settings" size="38" tone="ink" />
+      <line-icon name="system-settings" size="38" tone="ink" />
     </view>
     <view class="settings-hero__copy">
       <text class="settings-hero__title">让时刻见更适合你们</text>
@@ -17,7 +17,7 @@
   <view class="settings-card">
     <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenProfile">
       <view class="settings-row__icon settings-row__icon--blue">
-        <line-icon name="user-round" size="30" tone="blue" />
+        <line-icon name="system-user" size="30" tone="blue" />
       </view>
       <view class="settings-row__body">
         <text class="settings-row__title">账号与管理</text>
@@ -28,7 +28,7 @@
 
     <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenSpace">
       <view class="settings-row__icon settings-row__icon--green">
-        <line-icon name="house" size="30" tone="green" />
+        <line-icon name="system-space" size="30" tone="green" />
       </view>
       <view class="settings-row__body">
         <text class="settings-row__title">共同空间</text>
@@ -39,7 +39,7 @@
 
     <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenFeatureSettings">
       <view class="settings-row__icon settings-row__icon--gold">
-        <line-icon name="list-todo" size="30" tone="gold" />
+        <line-icon name="todo-status-pending" size="30" tone="gold" />
       </view>
       <view class="settings-row__body">
         <text class="settings-row__title">功能配置</text>

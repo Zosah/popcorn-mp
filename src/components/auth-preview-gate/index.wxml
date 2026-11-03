@@ -1,7 +1,7 @@
 <view wx:if="{{visible}}" class="auth-gate" catchtouchmove="noop" catchtap="noop">
   <view class="auth-gate__card" catchtap="noop">
     <view class="auth-gate__top">
-      <view class="auth-gate__mark"><line-icon name="user-round" size="30" tone="blue" /></view>
+      <view class="auth-gate__mark"><line-icon name="system-user" size="30" tone="blue" /></view>
       <view class="auth-gate__close" hover-class="auth-gate__close--pressed" bindtap="dismiss" aria-label="关闭登录提示">
         <text>×</text>
       </view>
@@ -10,7 +10,7 @@
     <text class="auth-gate__title">{{force ? '登录后才能保存这次修改' : '登录后，把生活一起收进来'}}</text>
     <text class="auth-gate__copy">{{force ? '这次操作不会写入空间。登录后可以继续编辑、上传图片并和家人一起维护。' : '你可以先预览页面；需要新增、编辑或上传图片时，再登录也不迟。'}}</text>
     <button class="auth-gate__login" bindtap="goLogin">
-      <line-icon name="user-round" size="24" tone="white" />
+      <line-icon name="system-user" size="24" tone="white" />
       <text>微信一键登录</text>
     </button>
     <view class="auth-gate__preview" bindtap="dismiss">先预览，稍后再登录</view>

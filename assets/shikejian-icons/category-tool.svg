@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="category-tool">
+  <title>category-tool</title>
+  <g id="category-tool" fill="none">
+    <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.0" y="8.4" width="18.0" height="11.2" rx="2.2"/><path d="M8.6 8.4V7.4a1.2 1.2 0 0 1 1.2-1.2h4.4a1.2 1.2 0 0 1 1.2 1.2v1.0"/><path d="M3.0 13.0L21.0 13.0"/><rect x="10.0" y="11.6" width="4.0" height="2.9" rx="1.0"/></g>
+  </g>
+</svg>

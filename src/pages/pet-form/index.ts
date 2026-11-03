@@ -18,9 +18,9 @@ const SPECIES_OPTIONS: Array<{
   icon: string
   hint: string
 }> = [
-  { value: 'cat', label: '猫咪', icon: 'paw-print', hint: '安静或活泼的小猫' },
-  { value: 'dog', label: '狗狗', icon: 'paw-print', hint: '每天想出门的伙伴' },
-  { value: 'other', label: '其他', icon: 'heart', hint: '兔子、仓鼠或其他伙伴' },
+  { value: 'cat', label: '猫咪', icon: 'pet-tab-profile', hint: '安静或活泼的小猫' },
+  { value: 'dog', label: '狗狗', icon: 'pet-tab-profile', hint: '每天想出门的伙伴' },
+  { value: 'other', label: '其他', icon: 'pet-supply-custom', hint: '兔子、仓鼠或其他伙伴' },
 ]
 
 const today = getShanghaiDateOnly(Date.now())

@@ -1,6 +1,7 @@
 <image
+  wx:if="{{src}}"
   class="line-icon"
-  src="/images/icons/{{name}}-{{tone}}.png"
+  src="{{src}}"
   mode="aspectFit"
   style="width: {{size}}rpx; height: {{size}}rpx;"
 />

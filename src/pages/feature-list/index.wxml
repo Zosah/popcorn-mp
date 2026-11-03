@@ -5,7 +5,7 @@
       <text class="feature-list-head__description">按分类找到你的日常功能。</text>
     </view>
     <view class="feature-list-head__config" hover-class="feature-list-head__config--pressed" bindtap="onOpenConfig">
-      <line-icon name="settings" size="19" tone="muted" />
+      <line-icon name="system-settings" size="19" tone="muted" />
       <text>配置</text>
     </view>
   </view>
@@ -39,7 +39,7 @@
       >
         <view class="feature-tile__top">
           <view class="feature-tile__icon">
-            <line-icon name="{{feature.icon}}" size="32" tone="{{feature.tone}}" />
+            <line-icon name="{{feature.icon}}" size="32" tone="{{feature.tone}}" active="{{true}}" />
           </view>
           <text class="feature-tile__arrow">›</text>
         </view>

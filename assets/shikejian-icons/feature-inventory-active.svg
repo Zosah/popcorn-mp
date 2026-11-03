@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-inventory">
+  <title>feature-inventory-active</title>
+  <g id="feature-inventory-active" fill="none">
+    <path d="M3.0 6.5a1.5 1.5 0 0 1 1.5-1.5h15a1.5 1.5 0 0 1 1.5 1.5v1.4a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3.0 7.9Z" fill="#E2EEE9" stroke="none"/>
+    <path d="M13.4 12.5h1.2a1.0 1.0 0 0 1 1.0 1.0v1.2a1.0 1.0 0 0 1-1.0 1.0h-1.2Z" fill="#E2EEE9" stroke="none"/>
+    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><rect x="3.0" y="5.0" width="18.0" height="4.4" rx="1.5"/><path d="M4.6 9.4v9.0a2.0 2.0 0 0 0 2.0 2.0h10.8a2.0 2.0 0 0 0 2.0-2.0v-9.0"/><rect x="9.3" y="12.4" width="5.4" height="3.4" rx="1.1"/></g>
+  </g>
+</svg>

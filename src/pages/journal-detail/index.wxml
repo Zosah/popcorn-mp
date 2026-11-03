@@ -1,12 +1,12 @@
 <view class="page-shell journal-detail-page">
   <view wx:if="{{loading && !entry}}" class="journal-state paper-card">
-    <view class="journal-state__mark"><line-icon name="notebook-tabs" size="36" tone="blue" /></view>
+    <view class="journal-state__mark"><line-icon name="journal-tab-all" size="36" tone="blue" /></view>
     <view class="journal-state__title">正在翻开这段记录</view>
     <view class="journal-state__copy">稍等一下，马上就好。</view>
   </view>
 
   <view wx:elif="{{loadError && !entry}}" class="journal-state journal-state--error paper-card">
-    <view class="journal-state__mark"><line-icon name="circle-alert" size="36" tone="danger" /></view>
+    <view class="journal-state__mark"><line-icon name="system-alert" size="36" tone="danger" /></view>
     <view class="journal-state__title">这条记录暂时没打开</view>
     <view class="journal-state__copy">{{loadError}}</view>
     <view class="journal-state__action" bindtap="onRetryLoad">重新加载</view>
@@ -14,13 +14,13 @@
 
   <block wx:elif="{{entry}}">
     <view class="journal-head">
-      <view class="journal-head__mark"><line-icon name="{{entry.kind === 'note' ? 'file-text' : 'pen-line'}}" size="30" tone="blue" /></view>
+      <view class="journal-head__mark"><line-icon name="{{entry.kind === 'note' ? 'journal-tab-notes' : 'system-edit'}}" size="30" tone="blue" /></view>
       <view class="journal-head__body">
         <view class="eyebrow">A MOMENT TO KEEP</view>
         <view class="journal-head__meta">{{entry.authorName}} {{entry.kind === 'note' ? '归档于' : '写于'}} {{entry.dateLabel}} {{entry.timeLabel}}</view>
         <view class="journal-head__title">{{entry.title}}</view>
         <view class="journal-head__footer">
-          <view class="journal-head__visibility"><line-icon name="{{entry.visibility === 'private' ? 'lock' : 'users'}}" size="20" tone="muted" /><text>{{entry.visibilityLabel}}</text></view>
+          <view class="journal-head__visibility"><line-icon name="{{entry.visibility === 'private' ? 'system-lock' : 'system-members'}}" size="20" tone="muted" /><text>{{entry.visibilityLabel}}</text></view>
           <text class="journal-head__kind">{{entry.kindLabel}}</text>
         </view>
       </view>
@@ -31,7 +31,7 @@
         <view class="journal-photo-grid journal-photo-grid--count{{entry.images.length}}">
           <view wx:for="{{entry.images}}" wx:key="mediaId" class="journal-photo-grid__item" data-index="{{index}}" catchtap="onPreviewImage">
             <image wx:if="{{item.src || item.thumbSrc}}" class="journal-photo-grid__image" src="{{item.src || item.thumbSrc}}" mode="aspectFill" lazy-load />
-            <view wx:else class="journal-photo-grid__placeholder"><line-icon name="image" size="24" tone="muted" /></view>
+            <view wx:else class="journal-photo-grid__placeholder"><line-icon name="system-image" size="24" tone="muted" /></view>
           </view>
         </view>
         <view wx:if="{{entry.image.caption}}" class="journal-caption">{{entry.image.caption}}</view>
@@ -48,8 +48,8 @@
     </view>
 
     <view class="journal-actions">
-      <button class="primary-button" disabled="{{deleting}}" bindtap="onEdit"><line-icon name="pen-line" size="23" tone="white" /><text>编辑记录</text></button>
-      <button class="danger-button journal-delete" loading="{{deleting}}" disabled="{{deleting}}" bindtap="onDelete"><line-icon name="circle-alert" size="22" tone="danger" /><text>删除记录</text></button>
+      <button class="primary-button" disabled="{{deleting}}" bindtap="onEdit"><line-icon name="system-edit" size="23" tone="white" /><text>编辑记录</text></button>
+      <button class="danger-button journal-delete" loading="{{deleting}}" disabled="{{deleting}}" bindtap="onDelete"><line-icon name="system-alert" size="22" tone="danger" /><text>删除记录</text></button>
     </view>
 
     <view class="journal-sync"><sync-badge state="{{syncState}}" text="{{syncText}}" /></view>

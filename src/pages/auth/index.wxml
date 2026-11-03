@@ -4,14 +4,14 @@
   <block wx:if="{{mode === 'login'}}">
     <view class="auth-login">
       <view class="auth-intro">
-        <view class="auth-intro__mark"><line-icon name="user-round" size="48" tone="blue" /></view>
+        <view class="auth-intro__mark"><line-icon name="system-user" size="48" tone="blue" /></view>
         <view class="auth-intro__title">登录时刻见</view>
         <view class="auth-intro__copy">和重要的人，一起记录日常。</view>
       </view>
 
       <view class="auth-panel">
         <view wx:if="{{loginNotice}}" class="auth-notice">
-          <line-icon name="circle-alert" size="24" tone="gold" />
+          <line-icon name="system-alert" size="24" tone="gold" />
           <text>{{loginNotice}}</text>
         </view>
 
@@ -24,18 +24,18 @@
             <text class="known-account__label">上次登录</text>
             <text class="known-account__name">{{accountNickname}}</text>
           </view>
-          <view class="known-account__mark"><line-icon name="check" size="24" tone="blue" /></view>
+          <view class="known-account__mark"><line-icon name="system-check" size="24" tone="blue" /></view>
         </view>
 
         <button class="primary-button auth-primary" bindtap="onWechatLogin">
-          <line-icon name="user-round" size="28" tone="white" />
+          <line-icon name="system-user" size="28" tone="white" />
           <text>{{hasAccount ? '继续登录' : '微信一键登录'}}</text>
         </button>
         <view class="auth-secondary" bindtap="onBack">先看看，不登录</view>
       </view>
 
       <view class="auth-footnote">
-        <line-icon name="lock" size="24" tone="muted" />
+        <line-icon name="system-lock" size="24" tone="muted" />
         <text>{{loginFootnote}}</text>
       </view>
     </view>
@@ -44,7 +44,7 @@
   <block wx:elif="{{mode === 'register'}}">
     <view class="auth-form-page">
       <view class="form-heading">
-        <view class="form-heading__mark"><line-icon name="pen-line" size="34" tone="pink" /></view>
+        <view class="form-heading__mark"><line-icon name="system-edit" size="34" tone="pink" /></view>
         <view class="form-heading__body">
           <view class="form-heading__title">{{isEditing ? '编辑资料' : '完善资料'}}</view>
           <view class="form-heading__copy">{{isEditing ? registerCopy : '设置头像和昵称，方便朋友认出你。'}}</view>
@@ -65,7 +65,7 @@
             </view>
             <view class="avatar-editor__actions">
               <button class="avatar-editor__action" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-                <line-icon name="image" size="24" tone="blue" />
+                <line-icon name="system-image" size="24" tone="blue" />
                 <text>{{avatarMediaId ? '更换微信头像' : '选择微信头像'}}</text>
               </button>
               <view wx:if="{{avatarMediaId && !avatarUploading}}" class="avatar-editor__remove" bindtap="onRemoveAvatar">移除头像</view>
@@ -82,7 +82,7 @@
       </view>
 
       <button class="primary-button auth-primary" bindtap="onSubmitProfile">
-        <line-icon name="check" size="28" tone="white" />
+        <line-icon name="system-check" size="28" tone="white" />
         <text>{{isEditing ? '保存资料' : '完成并进入空间'}}</text>
       </button>
       <view wx:if="{{!isEditing}}" class="auth-secondary" bindtap="onBack">先预览，稍后再完善</view>
@@ -107,22 +107,22 @@
 
       <view class="paper-card account-info">
         <view class="account-row" bindtap="onOpenSpace">
-          <view class="account-row__icon"><line-icon name="house" size="26" tone="blue" /></view>
+          <view class="account-row__icon"><line-icon name="system-space" size="26" tone="blue" /></view>
           <view class="account-row__body"><text>当前空间</text><text>{{spaceName}}</text></view>
           <view class="account-row__chevron"></view>
         </view>
         <view class="account-row">
-          <view class="account-row__icon"><line-icon name="calendar-days" size="26" tone="green" /></view>
+          <view class="account-row__icon"><line-icon name="system-calendar" size="26" tone="green" /></view>
           <view class="account-row__body"><text>加入时间</text><text>{{accountCreatedAt}}</text></view>
         </view>
       </view>
 
       <button class="secondary-button account-action" bindtap="onEditAccount">
-        <line-icon name="pen-line" size="28" tone="ink" />
+        <line-icon name="system-edit" size="28" tone="ink" />
         <text>编辑昵称与头像</text>
       </button>
       <button class="danger-button account-action" bindtap="onLogout">
-        <line-icon name="rotate-ccw" size="28" tone="danger" />
+        <line-icon name="system-refresh" size="28" tone="danger" />
         <text>退出登录</text>
       </button>
     </view>
