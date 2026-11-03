@@ -47,7 +47,7 @@
       bindtap="onOpenHomeShortcut"
     >
       <view class="function-icon function-icon--{{item.tone}}">
-        <line-icon name="{{item.icon}}" size="88" tone="{{item.tone}}" active="{{true}}" />
+        <line-icon name="{{item.icon}}" size="64" tone="{{item.tone}}" active="{{true}}" />
       </view>
       <text class="function-item__label">{{item.shortLabel}}</text>
     </view>

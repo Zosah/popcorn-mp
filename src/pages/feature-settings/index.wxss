@@ -273,7 +273,7 @@
 .feature-tile__icon,
 .drop-slot__icon {display: flex; align-items: center; justify-content: center; flex: 0 0 auto;}
 
-.feature-tile__icon {width: 86rpx; height: 86rpx;}
+.feature-tile__icon {width: 68rpx; height: 68rpx;}
 
 .feature-tile--occupied .feature-tile__icon {opacity: 0.9;}
 
@@ -448,7 +448,7 @@
   top: 3rpx;
 }
 
-.drop-slot__icon {width: 74rpx; height: 74rpx;}
+.drop-slot__icon {width: 58rpx; height: 58rpx;}
 
 .drop-slot__title {
   overflow: hidden;

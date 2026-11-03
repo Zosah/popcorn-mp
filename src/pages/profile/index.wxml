@@ -88,7 +88,7 @@
         bindtap="onOpenFeature"
       >
         <view class="profile-feature-card__icon">
-          <line-icon name="{{item.icon}}" size="88" tone="{{item.tone}}" active="{{true}}" />
+          <line-icon name="{{item.icon}}" size="64" tone="{{item.tone}}" active="{{true}}" />
         </view>
         <view class="profile-feature-card__copy">
           <text class="profile-feature-card__title">{{item.title}}</text>
@@ -118,7 +118,7 @@
       >
         <view class="profile-plan-card__top">
           <view class="profile-plan-card__icon">
-            <line-icon name="{{item.icon}}" size="88" tone="{{item.tone}}" active="{{true}}" />
+            <line-icon name="{{item.icon}}" size="64" tone="{{item.tone}}" active="{{true}}" />
           </view>
           <view class="profile-plan-card__arrow">›</view>
         </view>

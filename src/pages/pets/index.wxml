@@ -59,19 +59,19 @@
 
     <view class="pet-nav">
       <view class="pet-nav__item {{activeSection === 'daily' ? 'pet-nav__item--active' : ''}}" data-value="daily" bindtap="onSwitchSection">
-        <line-icon name="pet-tab-daily" size="44" tone="{{activeSection === 'daily' ? 'pink' : 'muted'}}" />
+        <line-icon name="pet-tab-daily" size="34" tone="{{activeSection === 'daily' ? 'pink' : 'muted'}}" />
         <text>日常</text>
       </view>
       <view class="pet-nav__item {{activeSection === 'supplies' ? 'pet-nav__item--active' : ''}}" data-value="supplies" bindtap="onSwitchSection">
-        <line-icon name="pet-tab-supplies" size="44" tone="{{activeSection === 'supplies' ? 'gold' : 'muted'}}" />
+        <line-icon name="pet-tab-supplies" size="34" tone="{{activeSection === 'supplies' ? 'gold' : 'muted'}}" />
         <text>用品</text>
       </view>
       <view class="pet-nav__item {{activeSection === 'care' ? 'pet-nav__item--active' : ''}}" data-value="care" bindtap="onSwitchSection">
-        <line-icon name="pet-tab-care" size="44" tone="{{activeSection === 'care' ? 'pink' : 'muted'}}" />
+        <line-icon name="pet-tab-care" size="34" tone="{{activeSection === 'care' ? 'pink' : 'muted'}}" />
         <text>护理</text>
       </view>
       <view class="pet-nav__item {{activeSection === 'profile' ? 'pet-nav__item--active' : ''}}" data-value="profile" bindtap="onSwitchSection">
-        <line-icon name="pet-tab-profile" size="44" tone="{{activeSection === 'profile' ? 'green' : 'muted'}}" />
+        <line-icon name="pet-tab-profile" size="34" tone="{{activeSection === 'profile' ? 'green' : 'muted'}}" />
         <text>档案</text>
       </view>
     </view>
@@ -83,19 +83,19 @@
         </view>
         <view class="profile-facts-card">
           <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-birthday" size="48" tone="pink" /></view><text class="profile-fact__label">出生日期</text></view>
+            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-birthday" size="36" tone="pink" /></view><text class="profile-fact__label">出生日期</text></view>
             <text class="profile-fact__value">{{birthdayLabel}}</text>
           </view>
           <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-homecoming" size="48" tone="green" /></view><text class="profile-fact__label">到家时间</text></view>
+            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-homecoming" size="36" tone="green" /></view><text class="profile-fact__label">到家时间</text></view>
             <text class="profile-fact__value">{{homeOnLabel}}</text>
           </view>
           <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-vaccine" size="48" tone="gold" /></view><text class="profile-fact__label">最近疫苗</text></view>
+            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-vaccine" size="36" tone="gold" /></view><text class="profile-fact__label">最近疫苗</text></view>
             <text class="profile-fact__value">{{latestVaccineLabel}}</text><text class="profile-fact__hint">{{vaccineNextLabel}}</text>
           </view>
           <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-neuter" size="48" tone="pink" /></view><text class="profile-fact__label">绝育</text></view>
+            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-neuter" size="36" tone="pink" /></view><text class="profile-fact__label">绝育</text></view>
             <text class="profile-fact__value">{{profile.neuteredOn ? neuteredOnLabel : '未绝育'}}</text>
           </view>
         </view>
@@ -124,7 +124,7 @@
         </view>
         <view class="pet-timeline">
           <view wx:for="{{timelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="60" tone="pink" /></view><view class="timeline-row__line"></view></view>
+            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="38" tone="pink" /></view><view class="timeline-row__line"></view></view>
             <view class="timeline-row__body">
               <view class="timeline-row__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text></view>
               <view class="timeline-row__title">{{item.title}}</view>
@@ -143,7 +143,7 @@
         </view>
         <view class="care-list">
           <view wx:for="{{careCards}}" wx:key="type" class="care-row care-row--{{item.status}}">
-            <view class="care-row__icon"><line-icon name="{{item.iconName}}" size="60" tone="pink" /></view>
+            <view class="care-row__icon"><line-icon name="{{item.iconName}}" size="38" tone="pink" /></view>
             <view class="care-row__body">
               <view class="care-row__title">{{item.title}}</view>
               <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOn}} · 已过 <text>{{item.elapsedLabel}}</text></view>
@@ -159,7 +159,7 @@
         </view>
         <view class="pet-timeline">
           <view wx:for="{{careTimelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="60" tone="pink" /></view><view class="timeline-row__line"></view></view>
+            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="38" tone="pink" /></view><view class="timeline-row__line"></view></view>
             <view class="timeline-row__body">
               <view class="timeline-row__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text></view>
               <view class="timeline-row__title">{{item.title}}</view>
@@ -176,7 +176,7 @@
         </view>
         <view class="daily-grid">
           <view wx:for="{{dailySummary}}" wx:key="type" class="daily-card" data-type="{{item.type}}" bindtap="onAddDailyLog">
-            <view class="daily-card__visual"><line-icon name="{{item.iconName}}" size="60" tone="pink" /></view>
+            <view class="daily-card__visual"><line-icon name="{{item.iconName}}" size="38" tone="pink" /></view>
             <view class="daily-card__body"><text class="daily-card__title">{{item.label}}</text><text class="daily-card__status">{{item.metaLabel}}</text></view>
             <text class="daily-card__add">＋</text>
           </view>
@@ -186,7 +186,7 @@
           <view class="daily-timeline">
             <view wx:for="{{dailyHistoryVisible}}" wx:key="id" class="daily-timeline__row">
               <view class="daily-timeline__rail">
-                <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="44" tone="pink" /></view>
+                <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="pink" /></view>
                 <view class="daily-timeline__line"></view>
               </view>
               <view class="daily-timeline__body">
@@ -210,7 +210,7 @@
         <view class="supply-list">
           <view wx:for="{{supplies}}" wx:key="id" class="supply-row">
             <image wx:if="{{item.mediaUrl}}" class="supply-row__image" src="{{item.mediaUrl}}" mode="aspectFill" />
-            <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="56" tone="gold" /></view>
+            <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="44" tone="gold" /></view>
             <view class="supply-row__body"><view class="supply-row__title">{{item.name}}</view><text>{{item.brand || '未记品牌'}} · {{item.categoryLabel}}</text><text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text></view>
             <view class="supply-preference supply-preference--{{item.preference}}" data-id="{{item.id}}" catchtap="onChangeSupplyStatus"><text class="supply-preference__hearts">{{item.preferenceHearts}}</text><text>{{item.preferenceLabel}}</text></view>
           </view>
@@ -224,7 +224,7 @@
         <view class="pet-sheet__handle"></view>
         <view class="pet-sheet__head daily-editor__head">
           <view class="daily-editor__heading">
-            <view class="daily-editor__icon"><line-icon name="{{dailyEditor.iconName}}" size="52" tone="pink" /></view>
+            <view class="daily-editor__icon"><line-icon name="{{dailyEditor.iconName}}" size="40" tone="pink" /></view>
             <text class="pet-sheet__title">{{dailyEditor.title}}</text>
           </view>
           <view bindtap="onCloseDailyEditor" aria-label="关闭">关闭</view>
@@ -288,7 +288,7 @@
   </block>
 
   <view wx:else class="pet-empty-state">
-    <view class="pet-empty-state__art"><view class="pet-empty-state__ear pet-empty-state__ear--left"></view><view class="pet-empty-state__ear pet-empty-state__ear--right"></view><view class="pet-empty-state__face"><line-icon name="pet-supply-custom" size="42" tone="green" /></view></view>
+    <view class="pet-empty-state__art"><view class="pet-empty-state__ear pet-empty-state__ear--left"></view><view class="pet-empty-state__ear pet-empty-state__ear--right"></view><view class="pet-empty-state__face"><line-icon name="pet-supply-custom" size="36" tone="green" /></view></view>
     <text class="pet-eyebrow">毛孩子的家</text>
     <view class="pet-empty-state__title">{{loading ? '正在同步宠物照护…' : '还没有宠物档案'}}</view>
     <view wx:if="{{errorText}}" class="pet-empty-state__copy">{{errorText}}</view>

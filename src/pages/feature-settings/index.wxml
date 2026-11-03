@@ -65,7 +65,7 @@
         catchtouchcancel="onDragTouchCancel"
       >
         <view class="feature-tile__icon feature-tile__icon--{{feature.tone}}">
-          <line-icon name="{{feature.icon}}" size="60" tone="{{feature.tone}}" active="{{true}}" />
+          <line-icon name="{{feature.icon}}" size="48" tone="{{feature.tone}}" active="{{true}}" />
         </view>
         <view class="feature-tile__copy">
           <text class="feature-tile__label">{{feature.shortLabel}}</text>
@@ -112,7 +112,7 @@
       >
         <text class="drop-slot__order">{{slotItem.order}}</text>
         <view class="drop-slot__icon feature-tile__icon--{{slotItem.tone}}">
-          <line-icon name="{{slotItem.icon}}" size="60" tone="{{slotItem.tone}}" active="{{true}}" />
+          <line-icon name="{{slotItem.icon}}" size="48" tone="{{slotItem.tone}}" active="{{true}}" />
         </view>
         <text class="drop-slot__title">{{slotItem.shortLabel}}</text>
       </view>
