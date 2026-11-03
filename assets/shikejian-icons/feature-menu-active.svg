@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-menu">
   <title>feature-menu-active</title>
   <g id="feature-menu-active" fill="none">
-    <path d="M6.6 13.7h10.8v1.6a4.0 4.0 0 0 1-4.0 4.0H8.2a4.0 4.0 0 0 1-1.6-1.9Z" fill="#E2EEE9" stroke="none"/>
-    <path d="M5.2 10.1h13.6a1.1 1.1 0 0 1 0 1.9H5.2Z" fill="#E2EEE9" stroke="none"/>
-    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 11.2h15.6v4.0a4.0 4.0 0 0 1-4.0 4.0H8.2a4.0 4.0 0 0 1-4.0-4.0Z"/><path d="M4.2 11.2c0-.9.7-1.5 1.6-1.5h12.4c.9 0 1.6.6 1.6 1.5"/><path d="M1.9 11.9h2.3M19.8 11.9h2.3"/><path d="M9.4 7.2c.8-.7.8-1.5 0-2.2"/><path d="M14.0 7.2c.8-.7.8-1.5 0-2.2"/></g>
+    <path d="M6.0 14.2h12.0v1.4a4.0 4.0 0 0 1-4.0 4.0H8.2a4.0 4.0 0 0 1-2.2-1.4Z" fill="#F3D9D6" stroke="none"/>
+    <path d="M6.0 12.4h12.0v1.8H6.0Z" fill="#7E9A55" stroke="none"/>
+    <g fill="none" stroke="#9C4744" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 11.2h15.6v4.0a4.0 4.0 0 0 1-4.0 4.0H8.2a4.0 4.0 0 0 1-4.0-4.0Z"/><path d="M4.2 11.2c0-.9.7-1.5 1.6-1.5h12.4c.9 0 1.6.6 1.6 1.5"/><path d="M1.9 11.9h2.3M19.8 11.9h2.3"/><path d="M9.4 7.2c.8-.7.8-1.5 0-2.2"/><path d="M14.0 7.2c.8-.7.8-1.5 0-2.2"/></g>
   </g>
 </svg>

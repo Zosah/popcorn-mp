@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="nav-profile">
   <title>nav-profile-active</title>
   <g id="nav-profile-active" fill="none">
-    <path d="M12 5.1a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8Z" fill="#E2EEE9" stroke="none"/>
-    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.1 20.2c0-3.5 3.1-5.6 6.9-5.6s6.9 2.1 6.9 5.6"/></g>
+    <path d="M12 5.1a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8Z" fill="#F0E5ED" stroke="none"/>
+    <path d="M7.2 19.4c.5-2.1 2.5-3.5 4.8-3.5s4.3 1.4 4.8 3.5Z" fill="#C99A6B" stroke="none"/>
+    <g fill="none" stroke="#8C6584" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.1 20.2c0-3.5 3.1-5.6 6.9-5.6s6.9 2.1 6.9 5.6"/></g>
   </g>
 </svg>

@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-fitness">
   <title>feature-fitness-active</title>
   <g id="feature-fitness-active" fill="none">
-    <path d="M6.7 7.8h1.4a1.1 1.1 0 0 1 1.1 1.1v6.2a1.1 1.1 0 0 1-1.1 1.1H6.7a1.1 1.1 0 0 1-1.1-1.1V8.9a1.1 1.1 0 0 1 1.1-1.1Z" fill="#E2EEE9" stroke="none"/>
-    <path d="M16.6 7.8h.8a1.1 1.1 0 0 1 1.1 1.1v6.2a1.1 1.1 0 0 1-1.1 1.1h-.8a1.1 1.1 0 0 1-1.1-1.1V8.9a1.1 1.1 0 0 1 1.1-1.1Z" fill="#E2EEE9" stroke="none"/>
-    <path d="M9.2 11.2h5.6v1.6H9.2Z" fill="#E2EEE9" stroke="none"/>
-    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 12.0L15.4 12.0"/><rect x="5.4" y="6.9" width="3.2" height="10.2" rx="1.6"/><rect x="15.4" y="6.9" width="3.2" height="10.2" rx="1.6"/><rect x="2.7" y="9.5" width="1.9" height="5.0" rx="0.95"/><rect x="19.4" y="9.5" width="1.9" height="5.0" rx="0.95"/></g>
+    <path d="M6.0 8.6h2.0v6.8H6.0Z" fill="#DFEEE2" stroke="none"/>
+    <path d="M16.0 8.6h2.0v6.8h-2.0Z" fill="#C97B4A" stroke="none"/>
+    <g fill="none" stroke="#4A7A55" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 12.0L15.4 12.0"/><rect x="5.4" y="6.9" width="3.2" height="10.2" rx="1.6"/><rect x="15.4" y="6.9" width="3.2" height="10.2" rx="1.6"/><rect x="2.7" y="9.5" width="1.9" height="5.0" rx="0.95"/><rect x="19.4" y="9.5" width="1.9" height="5.0" rx="0.95"/></g>
   </g>
 </svg>

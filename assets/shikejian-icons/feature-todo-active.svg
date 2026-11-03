@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="feature-todo">
   <title>feature-todo-active</title>
   <g id="feature-todo-active" fill="none">
-    <path d="M4.8 6.2h2.2a1.6 1.6 0 0 1 1.6 1.6v2.2a1.6 1.6 0 0 1-1.6 1.6H4.8a1.6 1.6 0 0 1-1.6-1.6V7.8A1.6 1.6 0 0 1 4.8 6.2Z" fill="#E2EEE9" stroke="none"/>
-    <g fill="none" stroke="#3D5C4A" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="6.2" width="5.4" height="5.4" rx="1.6"/><path d="M4.6 9.0l1.4 1.4 2.2-2.6"/><rect x="3.2" y="13.0" width="5.4" height="5.4" rx="1.6"/><path d="M12.0 8.9L20.6 8.9"/><path d="M12.0 15.7L20.6 15.7"/></g>
+    <path d="M12.2 7.7h8.2v2.4H12.2Z" fill="#DDF0EE" stroke="none"/>
+    <path d="M12.2 14.5h8.2v2.4H12.2Z" fill="#DDF0EE" stroke="none"/>
+    <path d="M3.8 6.8h4.2v4.2H3.8Z" fill="#D9A93C" stroke="none"/>
+    <path d="M3.8 13.6h4.2v4.2H3.8Z" fill="#D9A93C" stroke="none"/>
+    <g fill="none" stroke="#2F7D79" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="6.2" width="5.4" height="5.4" rx="1.6"/><path d="M4.6 9.0l1.4 1.4 2.2-2.6"/><rect x="3.2" y="13.0" width="5.4" height="5.4" rx="1.6"/><path d="M12.0 8.9L20.6 8.9"/><path d="M12.0 15.7L20.6 15.7"/></g>
   </g>
 </svg>
