@@ -32,8 +32,8 @@
     <view class="days-together">
       <view class="days-together__dot"></view>
       <text class="days-together__label">OUR DAYS</text>
-      <text class="days-together__number">{{journalTotal}}</text>
-      <text class="days-together__caption">篇共同记录</text>
+      <text class="days-together__number">{{togetherDays}}</text>
+      <text class="days-together__caption">天 · 共同生活</text>
     </view>
   </view>
 
@@ -47,7 +47,7 @@
       bindtap="onOpenHomeShortcut"
     >
       <view class="function-icon function-icon--{{item.tone}}">
-        <line-icon name="{{item.icon}}" size="64" tone="{{item.tone}}" active="{{true}}" />
+        <line-icon name="{{item.icon}}" size="52" tone="{{item.tone}}" active="{{true}}" />
       </view>
       <text class="function-item__label">{{item.shortLabel}}</text>
     </view>

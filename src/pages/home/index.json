@@ -2,7 +2,8 @@
   "navigationBarTitleText": "时刻见",
   "navigationBarBackgroundColor": "#fbfaf6",
   "navigationBarTextStyle": "black",
-  "backgroundColor": "#fbfaf6",
+  "backgroundColor": "#f3e2db",
+  "backgroundTextStyle": "dark",
   "enablePullDownRefresh": true,
   "usingComponents": {
     "line-icon": "/components/line-icon/index",

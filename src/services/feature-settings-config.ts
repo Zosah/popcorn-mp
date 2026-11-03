@@ -16,14 +16,15 @@ export interface FeatureSettingsSnapshot extends FeatureSettingsConfig {
 }
 
 export const DEFAULT_FEATURE_SETTINGS: FeatureSettingsConfig = {
-  homeSlots: ['journal', 'inventory', 'todo', 'pets'],
+  homeSlots: ['journal', 'inventory', 'todo', 'pets', 'travel'],
   tabSlots: ['menu', 'expense', 'fitness'],
 }
 
 const STORAGE_PREFIX = 'popcorn_feature_settings_v2'
 const LEGACY_STORAGE_PREFIX = 'popcorn_app_tab_config_v1'
-const HOME_SLOT_COUNT = 4
+const HOME_SLOT_COUNT = 5
 const TAB_SLOT_COUNT = 3
+export const FEATURE_SETTINGS_SLOT_COUNT = HOME_SLOT_COUNT + TAB_SLOT_COUNT
 const settingsListeners = new Set<() => void>()
 
 export function subscribeFeatureSettings(listener: () => void): () => void {

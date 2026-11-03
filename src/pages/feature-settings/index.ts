@@ -16,6 +16,7 @@ import {
 import { hydrateAuthState } from '../../services/auth'
 import {
   buildFeatureSettingsOwnerId,
+  FEATURE_SETTINGS_SLOT_COUNT,
   getFeatureSettingsSnapshot,
   normalizeFeatureSettings,
   type FeatureSettingsConfig,
@@ -223,7 +224,9 @@ Page({
       featureGroups: buildFeatureGroups(initial),
       featurePool: buildFeaturePool(initial),
       featureCount: initial.homeSlots.length + initial.tabSlots.length,
-      featureProgress: Math.round(((initial.homeSlots.length + initial.tabSlots.length) / 7) * 100),
+      featureProgress: Math.round(
+        ((initial.homeSlots.length + initial.tabSlots.length) / FEATURE_SETTINGS_SLOT_COUNT) * 100,
+      ),
     })
     void this.loadSettings()
   },
@@ -296,7 +299,9 @@ Page({
       featureGroups: buildFeatureGroups(normalized),
       featurePool: buildFeaturePool(normalized),
       featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
-      featureProgress: Math.round(((normalized.homeSlots.length + normalized.tabSlots.length) / 7) * 100),
+      featureProgress: Math.round(
+        ((normalized.homeSlots.length + normalized.tabSlots.length) / FEATURE_SETTINGS_SLOT_COUNT) * 100,
+      ),
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, saved),
@@ -312,7 +317,9 @@ Page({
       featureGroups: buildFeatureGroups(normalized),
       featurePool: buildFeaturePool(normalized),
       featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
-      featureProgress: Math.round(((normalized.homeSlots.length + normalized.tabSlots.length) / 7) * 100),
+      featureProgress: Math.round(
+        ((normalized.homeSlots.length + normalized.tabSlots.length) / FEATURE_SETTINGS_SLOT_COUNT) * 100,
+      ),
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, this.data.savedConfig),

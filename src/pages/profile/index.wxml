@@ -28,8 +28,8 @@
       class="profile-space-card__main"
       hover-class="profile-space-card__main--pressed"
       aria-role="button"
-      aria-label="查看共同空间"
-      bindtap="onOpenSpace"
+      aria-label="打开账号与登录"
+      bindtap="onOpenAuth"
     >
       <view class="profile-space-mark profile-space-mark--{{avatarTone}}">
         <image wx:if="{{avatarUrl}}" class="profile-space-mark__image" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />

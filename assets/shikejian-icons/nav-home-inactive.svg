@@ -1,6 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="nav-home">
   <title>nav-home-inactive</title>
   <g id="nav-home-inactive" fill="none">
-    <g fill="none" stroke="#68706A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.8 10.7 12 4.1l8.2 6.6"/><path d="M5.9 9.4v9.5a1.2 1.2 0 0 0 1.2 1.2h9.8a1.2 1.2 0 0 0 1.2-1.2V9.4"/><path d="M9.8 20.1v-4.3a2.2 2.2 0 0 1 4.4 0v4.3"/></g>
+    <path d="M5.1 10.1h13.8v9.1a2.2 2.2 0 0 1-2.2 2.2H7.3a2.2 2.2 0 0 1-2.2-2.2Z" fill="#F2F2EF"/>
+    <path d="M3.2 10.7 11.1 4.2a1.4 1.4 0 0 1 1.8 0l7.9 6.5-1.6 1.9H4.8Z" fill="#E3E5E1"/>
+    <path d="M15.5 5.2h2.4v4.3l-2.4-2Z" fill="#D5D8D3"/>
+    <path d="M9.6 15.2a2.4 2.4 0 0 1 4.8 0v6.2H9.6Z" fill="#CDD1CC"/>
+    <circle cx="16.1" cy="14.2" r="1.6" fill="#E8EAE6"/>
+    <g fill="none" stroke="#68706A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3.2 10.7 11.1 4.2a1.4 1.4 0 0 1 1.8 0l7.9 6.5"/>
+      <path d="M5.1 10.1v9.1a2.2 2.2 0 0 0 2.2 2.2h9.4a2.2 2.2 0 0 0 2.2-2.2v-9.1"/>
+      <path d="M15.5 5.2h2.4v4.3"/>
+      <path d="M9.6 21.4v-6.2a2.4 2.4 0 0 1 4.8 0v6.2"/>
+      <circle cx="16.1" cy="14.2" r="1.6"/>
+    </g>
   </g>
 </svg>

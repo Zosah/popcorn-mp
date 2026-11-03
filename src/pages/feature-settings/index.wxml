@@ -27,12 +27,12 @@
     </view>
     <view class="config-guide__copy">
       <text class="config-guide__title">安排常用入口</text>
-      <text class="config-guide__description">首页 4 格，底栏 3 格</text>
+      <text class="config-guide__description">首页 5 格，底栏 3 格</text>
     </view>
     <view class="config-guide__progress">
       <view class="config-guide__count">
         <text class="config-guide__count-value">{{featureCount}}</text>
-        <text class="config-guide__count-total">/ 7</text>
+        <text class="config-guide__count-total">/ 8</text>
       </view>
       <view class="config-guide__track">
         <view class="config-guide__track-fill" style="width: {{featureProgress}}%;"></view>
@@ -90,7 +90,7 @@
         <text class="preview-caption__index">01</text>
         <text class="preview-caption__label">首页快捷</text>
       </view>
-      <text class="preview-caption__meta">4 个入口</text>
+      <text class="preview-caption__meta">5 个入口</text>
     </view>
     <view class="home-drop-grid">
       <view

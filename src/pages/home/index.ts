@@ -44,6 +44,7 @@ import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
+import { getActiveSpaceCreatedAt, getTogetherDays } from '../../utils/space-days'
 import {
   buildFeatureSettingsOwnerId,
   getFeatureSettingsConfig,
@@ -87,7 +88,7 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
 }
 
 const homeRequestGate = createRequestGate()
-const HOME_PAGE_CACHE_KEY = 'home:overview'
+const HOME_PAGE_CACHE_KEY = 'home:overview:v2'
 let unsubscribeHomeFeatureSettings: (() => void) | undefined
 
 function buildHomeFeatureShortcuts(): HomeFeatureShortcut[] {
@@ -160,7 +161,7 @@ Page({
     latestEntry: null as JournalItem | null,
     latestEntryIsToday: false,
     recentEntries: [] as JournalItem[],
-    journalTotal: 0,
+    togetherDays: 0,
     todoTotalCount: 0,
     todoCompletedCount: 0,
     homeTab: 'today' as 'today' | 'home' | 'pet',
@@ -284,6 +285,7 @@ Page({
         spaceName: auth.spaceName,
         spaceMemberCopy: '登录后加入空间',
         greetingName: '你',
+        togetherDays: 0,
       })
       if (fromPullDown) wx.stopPullDownRefresh()
       promptAuthGateIfNeeded()
@@ -405,6 +407,7 @@ Page({
     const [, monthValue, dayValue] = today.split('-').map(Number)
     const month = monthValue || 1
     const day = dayValue || 1
+    const togetherDays = getTogetherDays(getActiveSpaceCreatedAt(auth), today) ?? 0
 
     if (firstLoad) await waitForMinimumLoading(startedAt)
     if (!homeRequestGate.isCurrent(sequence)) {
@@ -420,7 +423,7 @@ Page({
       latestEntry,
       latestEntryIsToday: isCreatedToday(latestEntry, today),
       recentEntries: moments.slice(0, 3),
-      journalTotal: moments.length,
+      togetherDays,
       todoTotalCount: todoSummary?.total ?? this.data.todoTotalCount,
       todoCompletedCount: todoSummary?.completed ?? this.data.todoCompletedCount,
       greetingName: auth.user?.nickname?.slice(0, 4) || '你',

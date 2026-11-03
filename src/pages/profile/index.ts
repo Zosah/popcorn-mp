@@ -27,6 +27,7 @@ import { openAppRoot } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
+import { getActiveSpaceCreatedAt, getTogetherDays } from '../../utils/space-days'
 
 type ProfileCardTone = 'coral' | 'gold' | 'sage' | 'lilac' | 'blue'
 
@@ -170,21 +171,6 @@ function getMonday(today: string): string {
   const date = new Date(Date.UTC(year, month - 1, day))
   date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7))
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
-}
-
-function getTogetherDays(createdAt: string, today: string): number | null {
-  if (!createdAt) return null
-  const timestamp = Date.parse(createdAt)
-  if (Number.isNaN(timestamp)) return null
-  const createdDate = getShanghaiDateOnly(timestamp)
-  const start = Date.parse(`${createdDate}T00:00:00+08:00`)
-  const end = Date.parse(`${today}T00:00:00+08:00`)
-  if (Number.isNaN(start) || Number.isNaN(end) || end < start) return null
-  return Math.floor((end - start) / 86400000) + 1
-}
-
-function getActiveSpaceCreatedAt(auth: AuthState): string {
-  return auth.spaces.find((space) => space.id === auth.activeSpaceId)?.createdAt ?? ''
 }
 
 function getTodoActivityDate(item: TodoItem): string {

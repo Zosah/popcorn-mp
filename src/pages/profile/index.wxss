@@ -54,7 +54,7 @@
   height: 64rpx;
   align-items: center;
   justify-content: center;
-  margin-top: 0;
+  margin-top: 38rpx;
   padding: 0 19rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.94);
   border-radius: 999rpx;

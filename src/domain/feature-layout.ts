@@ -54,7 +54,7 @@ export function moveFeatureWithinSlots(
   return next
 }
 
-/** 跨区域拖动时交换两个槽位，确保七个入口始终全局唯一。 */
+/** 跨区域拖动时交换两个槽位，确保八个入口始终全局唯一。 */
 export function swapFeatureAcrossSlots(
   sourceSlots: readonly FeatureId[],
   sourceIndex: number,

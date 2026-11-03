@@ -22,7 +22,7 @@ beforeEach(() => {
 })
 
 describe('统一功能配置', () => {
-  it('没有缓存时返回首页 4 项和底栏中间 3 项默认值', () => {
+  it('没有缓存时返回首页 5 项和底栏中间 3 项默认值', () => {
     expect(getFeatureSettingsSnapshot('s_1234567890:u_1234567890')).toEqual({
       ...DEFAULT_FEATURE_SETTINGS,
       version: 1,
@@ -30,12 +30,12 @@ describe('统一功能配置', () => {
     })
   })
 
-  it('拒绝未知项、跨区域重复和不合法位置，并补齐七个唯一入口', () => {
+  it('拒绝未知项、跨区域重复和不合法位置，并补齐八个唯一入口', () => {
     expect(normalizeFeatureSettings({
-      homeSlots: ['todo', 'todo', 'unknown', 'reminders'],
+      homeSlots: ['todo', 'todo', 'unknown', 'travel', 'pets'],
       tabSlots: ['menu', 'menu', 'journal', 'expense'],
     })).toEqual({
-      homeSlots: ['todo', 'inventory', 'journal', 'pets'],
+      homeSlots: ['todo', 'inventory', 'journal', 'travel', 'pets'],
       tabSlots: ['menu', 'expense', 'fitness'],
     })
   })
@@ -63,12 +63,12 @@ describe('统一功能配置', () => {
     const ownerB = 's_1234567890:u_0987654321'
 
     saveFeatureSettingsConfig({
-      homeSlots: ['menu', 'todo', 'journal', 'pets'],
+      homeSlots: ['menu', 'todo', 'journal', 'pets', 'travel'],
       tabSlots: ['expense', 'fitness', 'inventory'],
     }, ownerA)
 
     expect(getFeatureSettingsConfig(ownerA)).toEqual({
-      homeSlots: ['menu', 'todo', 'journal', 'pets'],
+      homeSlots: ['menu', 'todo', 'journal', 'pets', 'travel'],
       tabSlots: ['expense', 'fitness', 'inventory'],
     })
     expect(getFeatureSettingsConfig(ownerB)).toEqual(DEFAULT_FEATURE_SETTINGS)

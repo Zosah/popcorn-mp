@@ -35,13 +35,13 @@ describe('底部导航配置', () => {
     ).toEqual(['家', '下厨', '账单', '健身', '我的'])
   })
 
-  it('按账号分别保存自定义入口', () => {
+  it('拒绝把已占用在首页的功能重复放进底栏', () => {
     saveAppTabConfig({ slot2: 'travel', slot3: 'menu', slot4: 'expense' }, 'user-a')
 
     expect(getAppTabConfig('user-a')).toEqual({
-      slot2: 'travel',
-      slot3: 'menu',
-      slot4: 'expense',
+      slot2: 'menu',
+      slot3: 'expense',
+      slot4: 'fitness',
     })
     expect(getAppTabConfig('user-b')).toEqual({
       slot2: 'menu',
