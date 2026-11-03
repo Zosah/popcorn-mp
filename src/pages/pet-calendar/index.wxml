@@ -33,7 +33,7 @@
 
   <view wx:if="{{selectedEvents.length}}" class="calendar-events paper-card">
     <view wx:for="{{selectedEvents}}" wx:key="id" class="calendar-event-row calendar-event-row--{{item.source}}" data-id="{{item.eventId}}" bindtap="onOpenEvent">
-      <view class="calendar-event-row__mark"><line-icon name="{{item.iconName}}" size="23" tone="pink" /></view>
+      <view class="calendar-event-row__mark"><line-icon name="{{item.iconName}}" size="23" tone="color" /></view>
       <view class="calendar-event-row__body"><text>{{item.title}}</text><text>{{item.kindLabel}}{{item.note ? ' · ' + item.note : ''}}</text></view>
       <view wx:if="{{item.eventId}}" class="calendar-event-row__arrow">›</view>
     </view>

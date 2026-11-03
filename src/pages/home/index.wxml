@@ -140,7 +140,7 @@
     <view class="scene-card__orb scene-card__orb--one"></view>
     <view class="scene-card__orb scene-card__orb--two"></view>
     <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="pet-tab-profile" size="44" tone="pink" /></view>
+      <view class="scene-icon"><line-icon name="pet-tab-profile" size="44" tone="color" /></view>
       <view class="scene-count">{{petSnapshot.weight}} kg</view>
     </view>
     <view class="scene-copy">
@@ -149,7 +149,7 @@
       <text class="scene-note">{{petSnapshot.name}}今天状态：{{petSnapshot.status}}。吃喝拉撒、体重和照护都收在这里</text>
     </view>
     <view class="scene-preview">
-      <view class="scene-preview__icon"><line-icon name="pet-tab-profile" size="26" tone="pink" /></view>
+      <view class="scene-preview__icon"><line-icon name="pet-tab-profile" size="26" tone="color" /></view>
       <view class="scene-preview__body">
         <text class="scene-preview__title">{{petActivities.length ? petActivities[0].title : '还没有宠物动态'}}</text>
         <text class="scene-preview__meta">{{petActivities.length ? petActivities[0].copy : '记一次体重、洗护或今天的照护'}}</text>

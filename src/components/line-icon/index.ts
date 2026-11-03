@@ -66,6 +66,7 @@ const TONE_ALIASES: Record<string, string> = {
   danger: 'danger',
   pink: 'danger',
   white: 'white',
+  color: 'color',
 }
 
 function resolveIconAsset(name: string, tone: string, active: boolean): string {

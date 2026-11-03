@@ -167,7 +167,7 @@
 
     <view wx:if="{{spaceRole === 'member'}}" class="leave-panel">
       <view class="leave-panel__mark">
-        <line-icon name="pet-tab-care" size="29" tone="pink" />
+        <line-icon name="pet-tab-care" size="29" tone="color" />
       </view>
       <view class="leave-panel__body">
         <text class="leave-panel__title">关于离开</text>

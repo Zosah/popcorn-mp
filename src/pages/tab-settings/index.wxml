@@ -7,7 +7,7 @@
     </view>
     <view class="tab-settings-hero__art">
       <view class="tab-settings-hero__sun"></view>
-      <view class="tab-settings-hero__paw"><line-icon name="pet-tab-profile" size="44" tone="pink" /></view>
+      <view class="tab-settings-hero__paw"><line-icon name="pet-tab-profile" size="44" tone="color" /></view>
       <view class="tab-settings-hero__house"><line-icon name="system-space" size="36" tone="blue" /></view>
     </view>
   </view>

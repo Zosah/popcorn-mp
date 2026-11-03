@@ -56,7 +56,7 @@
 
       <view class="reminder-row">
         <view class="reminder-row__icon reminder-row__icon--pink">
-          <line-icon name="pet-tab-care" size="29" tone="pink" />
+          <line-icon name="pet-tab-care" size="29" tone="color" />
         </view>
         <view class="reminder-row__body">
           <text>宠物照护提醒</text>

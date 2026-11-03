@@ -12,7 +12,7 @@
 
   <block wx:else>
   <view wx:if="{{event}}" class="event-hero">
-    <view class="event-hero__mark"><line-icon name="{{iconName}}" size="32" tone="pink" /></view>
+    <view class="event-hero__mark"><line-icon name="{{iconName}}" size="32" tone="color" /></view>
     <view class="event-hero__body">
       <view class="eyebrow">{{typeLabel}}</view>
       <view class="event-hero__title">{{event.title}}</view>

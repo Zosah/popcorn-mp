@@ -12,7 +12,7 @@
 
   <block wx:else>
   <view class="event-hero">
-    <view class="event-hero__mark"><line-icon name="pet-tab-care" size="30" tone="pink" /></view>
+    <view class="event-hero__mark"><line-icon name="pet-tab-care" size="30" tone="color" /></view>
     <view class="event-hero__body">
       <view class="eyebrow">记录一件事</view>
       <view class="event-hero__title">{{pageTitle}}</view>
@@ -26,7 +26,7 @@
         <text class="event-label">事件类型</text>
         <picker range="{{eventTypeLabels}}" value="{{eventTypeIndex}}" bindchange="onTypeChange">
           <view class="event-picker">
-            <view class="event-picker__value"><line-icon name="{{eventTypeIconNames[eventTypeIndex]}}" size="21" tone="pink" /><text>{{eventTypeLabels[eventTypeIndex]}}</text></view>
+            <view class="event-picker__value"><line-icon name="{{eventTypeIconNames[eventTypeIndex]}}" size="21" tone="color" /><text>{{eventTypeLabels[eventTypeIndex]}}</text></view>
             <text class="event-picker__arrow">›</text>
           </view>
         </picker>

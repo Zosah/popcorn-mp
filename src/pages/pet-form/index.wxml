@@ -5,7 +5,7 @@
       <view class="pet-form-hero__title">把新伙伴写进这个家</view>
       <view class="pet-form-hero__sub">先留下名字和生日，其他照护记录可以慢慢补。</view>
     </view>
-    <view class="pet-form-hero__mark"><line-icon name="pet-tab-profile" size="34" tone="green" /></view>
+    <view class="pet-form-hero__mark"><line-icon name="pet-tab-profile" size="34" tone="color" /></view>
   </view>
 
   <view class="pet-form-avatar-card">
@@ -41,7 +41,7 @@
       <text class="pet-form-label">它是</text>
       <view class="pet-form-options pet-form-options--species">
         <view wx:for="{{speciesOptions}}" wx:key="value" class="pet-form-option {{form.species === item.value ? 'pet-form-option--active' : ''}}" data-value="{{item.value}}" bindtap="onSpeciesSelect">
-          <view class="pet-form-option__icon"><line-icon name="{{item.icon}}" size="24" tone="{{form.species === item.value ? 'ink' : 'green'}}" /></view>
+          <view class="pet-form-option__icon"><line-icon name="{{item.icon}}" size="24" tone="{{form.species === item.value ? 'color' : 'muted'}}" /></view>
           <view class="pet-form-option__copy"><text>{{item.label}}</text><text>{{item.hint}}</text></view>
         </view>
       </view>
