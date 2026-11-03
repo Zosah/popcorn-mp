@@ -1,27 +1,22 @@
 .auth-page {
-  --auth-deep: var(--c-primary, #252b27);
-  --auth-blue-soft: var(--c-sage-soft, #e2eee9);
   --auth-ink: var(--c-text, #252b27);
   --auth-ink-2: var(--c-text-2, #5f5a53);
   --auth-ink-3: var(--c-muted, #837f76);
-  --auth-line: var(--c-line, #e9e6e1);
-  padding: 28rpx 36rpx calc(72rpx + env(safe-area-inset-bottom));
-  background: var(--c-paper, #f8f7f4);
+  --auth-line: rgba(105, 94, 83, 0.12);
+  --auth-pink: #b86757;
+  --auth-pink-deep: #a9584a;
+  padding: 34rpx 38rpx calc(72rpx + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 104% -4%, rgba(249, 220, 209, 0.78), transparent 29%),
+    radial-gradient(circle at -10% 56%, rgba(222, 235, 226, 0.58), transparent 27%),
+    linear-gradient(180deg, #fffaf5 0%, #faf7f1 52%, #f8f6f2 100%);
   color: var(--auth-ink);
 }
 
-.paper-card {
-  box-sizing: border-box;
-  border: 1rpx solid var(--auth-line);
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 16rpx 36rpx -30rpx rgba(42, 62, 50, 0.16);
-}
-
-/* 登录：一个身份锚点、一个主操作，不再重复解释登录能力。 */
+/* 登录：保留一个明确动作，其余信息只做身份确认。 */
 .auth-login {
   display: flex;
-  min-height: calc(100vh - 190rpx);
+  min-height: calc(100vh - 180rpx);
   box-sizing: border-box;
   flex-direction: column;
 }
@@ -29,42 +24,104 @@
 .auth-intro {
   display: flex;
   align-items: center;
-  padding: 96rpx 0 58rpx;
+  padding: 64rpx 12rpx 46rpx;
   flex-direction: column;
   text-align: center;
 }
 
-.auth-intro__mark {display: flex; width: 104rpx; height: 104rpx; align-items: center; justify-content: center;}
+.auth-intro__illustration {
+  position: relative;
+  display: flex;
+  width: 258rpx;
+  height: 214rpx;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-intro__halo {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1rpx);
+}
+
+.auth-intro__halo--peach {
+  width: 184rpx;
+  height: 184rpx;
+  background: radial-gradient(circle at 38% 32%, #fff8f1 0%, #f3d5ca 55%, rgba(243, 213, 202, 0) 72%);
+  left: 12rpx;
+  top: 4rpx;
+}
+
+.auth-intro__halo--sage {
+  width: 166rpx;
+  height: 166rpx;
+  background: radial-gradient(circle at 56% 42%, #f8fbf7 0%, #dcebe2 58%, rgba(220, 235, 226, 0) 73%);
+  right: 2rpx;
+  bottom: 0;
+}
+
+.auth-intro__mark {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 130rpx;
+  height: 130rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(255, 255, 255, 0.95);
+  border-radius: 44rpx;
+  background: rgba(255, 252, 248, 0.78);
+  box-shadow:
+    0 28rpx 56rpx -40rpx rgba(86, 64, 52, 0.58),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.95);
+  transform: rotate(-3deg);
+  backdrop-filter: blur(18rpx);
+  -webkit-backdrop-filter: blur(18rpx);
+}
+
+.auth-intro__spark {
+  position: absolute;
+  z-index: 3;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #c9a764;
+}
+
+.auth-intro__spark--one { left: 34rpx; top: 54rpx; }
+.auth-intro__spark--two { width: 7rpx; height: 7rpx; right: 34rpx; bottom: 42rpx; background: #9db9a8; }
 
 .auth-intro__title {
-  margin-top: 28rpx;
+  margin-top: 20rpx;
   color: var(--auth-ink);
   font-family: var(--font-serif);
-  font-size: 50rpx;
-  font-weight: 700;
-  letter-spacing: -1.4rpx;
-  line-height: 1.3;
+  font-size: 52rpx;
+  font-weight: 760;
+  letter-spacing: -1.2rpx;
+  line-height: 1.25;
 }
 
 .auth-intro__copy {
-  margin-top: 12rpx;
+  max-width: 520rpx;
+  margin-top: 14rpx;
   color: var(--auth-ink-2);
   font-size: 27rpx;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 .auth-panel {
   width: 100%;
+  margin-top: auto;
 }
 
 .auth-notice {
   display: flex;
   align-items: center;
-  margin-bottom: 16rpx;
-  padding: 18rpx 20rpx;
-  border: 1rpx solid rgba(201, 167, 100, 0.22);
+  margin-bottom: 18rpx;
+  padding: 17rpx 20rpx;
+  border: 1rpx solid rgba(201, 167, 100, 0.2);
   border-radius: 22rpx;
-  background: rgba(242, 232, 204, 0.62);
+  background: rgba(255, 250, 235, 0.82);
   color: #7e693e;
   gap: 10rpx;
 }
@@ -78,12 +135,15 @@
 .known-account {
   display: flex;
   align-items: center;
-  margin-bottom: 18rpx;
+  margin-bottom: 20rpx;
   padding: 18rpx 20rpx;
-  border: 1rpx solid var(--auth-line);
-  border-radius: 26rpx;
-  background: rgba(255, 255, 255, 0.78);
-  gap: 14rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 18rpx 44rpx -38rpx rgba(83, 66, 53, 0.45);
+  gap: 15rpx;
+  backdrop-filter: blur(18rpx);
+  -webkit-backdrop-filter: blur(18rpx);
 }
 
 .user-avatar {
@@ -91,17 +151,17 @@
   overflow: hidden;
   align-items: center;
   justify-content: center;
-  border: 2rpx solid rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.75);
+  border: 3rpx solid rgba(255, 255, 255, 0.94);
   color: var(--auth-ink);
-  font-family: "Songti SC", "STSong", serif;
-  font-weight: 600;
+  font-family: var(--font-serif);
+  font-weight: 650;
+  box-shadow: 0 12rpx 28rpx -24rpx rgba(65, 54, 46, 0.62);
 }
 
 .user-avatar--lavender { background: #d7e2e8; }
-.user-avatar--mint { background: var(--c-sage-soft, #e2eee9); }
-.user-avatar--peach { background: #e8cbc6; }
-.user-avatar--sun { background: var(--c-butter-soft, #f2e8cc); }
+.user-avatar--mint { background: #dfece5; }
+.user-avatar--peach { background: #efd7d0; }
+.user-avatar--sun { background: #f2e8cc; }
 
 .user-avatar__image {
   display: block;
@@ -110,15 +170,16 @@
 }
 
 .known-account__avatar {
-  width: 68rpx;
-  height: 68rpx;
-  border-radius: 22rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 24rpx;
   flex-shrink: 0;
-  font-size: 28rpx;
+  font-size: 29rpx;
 }
 
 .known-account__body {
   display: flex;
+  overflow: hidden;
   min-width: 0;
   flex: 1;
   flex-direction: column;
@@ -126,35 +187,63 @@
 
 .known-account__label {
   color: var(--auth-ink-3);
-  font-size: 23rpx;
+  font-size: 22rpx;
   line-height: 1.35;
 }
 
 .known-account__name {
-  margin-top: 2rpx;
   overflow: hidden;
+  margin-top: 2rpx;
   color: var(--auth-ink);
-  font-size: 28rpx;
+  font-size: 29rpx;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.known-account__mark {display: flex; width: 44rpx; height: 44rpx; align-items: center; justify-content: center; flex-shrink: 0;}
+.known-account__mark { display: flex; width: 44rpx; height: 44rpx; align-items: center; justify-content: center; flex-shrink: 0; }
 
 .auth-primary {
+  display: flex;
   width: 100%;
-  margin-top: 0;
+  height: 96rpx;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border: 0;
+  border-radius: 31rpx;
+  background: linear-gradient(135deg, #cc8878 0%, #b86757 62%, #ae5f51 100%);
+  box-shadow:
+    0 22rpx 42rpx -26rpx rgba(166, 82, 68, 0.72),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.24);
+  color: #ffffff;
   gap: 10rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  letter-spacing: 0.3rpx;
+  line-height: 1;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.auth-primary::after { border: 0; }
+.auth-primary--pressed { opacity: 0.9; transform: scale(0.988); }
+
+.auth-primary-note {
+  display: block;
+  margin-top: 15rpx;
+  color: var(--auth-ink-3);
+  font-size: 23rpx;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .auth-secondary {
   display: flex;
-  min-height: 78rpx;
+  min-height: 76rpx;
   align-items: center;
   justify-content: center;
-  margin-top: 8rpx;
+  margin-top: 6rpx;
   color: var(--auth-ink-2);
   font-size: 25rpx;
   text-align: center;
@@ -164,138 +253,115 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: auto;
-  padding-top: 34rpx;
+  margin-top: 40rpx;
   color: var(--auth-ink-3);
   gap: 8rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   line-height: 1.5;
   text-align: center;
 }
 
-/* 资料确认：去掉重复预览，头像与昵称各只出现一次。 */
+/* 资料页：头像与名字是唯一主角，不增加步骤条和解释性装饰。 */
 .auth-form-page {
-  padding-top: 6rpx;
+  padding-top: 12rpx;
 }
 
 .form-heading {
   display: flex;
-  align-items: center;
-  margin-bottom: 28rpx;
-  gap: 18rpx;
+  padding: 24rpx 8rpx 8rpx;
+  flex-direction: column;
 }
 
-.form-heading__mark {display: flex; width: 76rpx; height: 76rpx; align-items: center; justify-content: center; flex-shrink: 0;}
-
-.form-heading__body {
-  min-width: 0;
-  flex: 1;
+.form-heading__label {
+  color: var(--auth-pink);
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
 }
 
 .form-heading__title {
+  margin-top: 9rpx;
   color: var(--auth-ink);
   font-family: var(--font-serif);
-  font-size: 40rpx;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: 52rpx;
+  font-weight: 760;
+  letter-spacing: -1.2rpx;
+  line-height: 1.25;
 }
 
 .form-heading__copy {
-  margin-top: 5rpx;
+  margin-top: 10rpx;
   color: var(--auth-ink-2);
-  font-size: 25rpx;
-  line-height: 1.55;
+  font-size: 26rpx;
+  line-height: 1.6;
 }
 
-.profile-form {
-  padding: 0 24rpx;
-}
-
-.profile-form__group {
-  padding: 26rpx 0;
-  border-bottom: 1rpx solid var(--auth-line);
-}
-
-.profile-form__group:last-child {
-  border-bottom: 0;
-}
-
-.profile-form__heading {
+.identity-editor {
+  position: relative;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16rpx;
-}
-
-.profile-form__label {
-  color: var(--auth-ink);
-  font-size: 27rpx;
-  font-weight: 700;
-}
-
-.profile-form__hint {
-  color: var(--auth-ink-3);
-  font-size: 23rpx;
-}
-
-.avatar-editor {
-  display: flex;
+  overflow: hidden;
   align-items: center;
-  margin-top: 18rpx;
-  gap: 20rpx;
+  margin-top: 32rpx;
+  padding: 45rpx 28rpx 36rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.94);
+  border-radius: 42rpx;
+  background:
+    radial-gradient(circle at 18% 0, rgba(247, 221, 210, 0.78), transparent 34%),
+    radial-gradient(circle at 100% 100%, rgba(221, 235, 226, 0.68), transparent 34%),
+    rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 28rpx 64rpx -50rpx rgba(70, 55, 45, 0.56),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.96);
+  box-sizing: border-box;
+  flex-direction: column;
+  backdrop-filter: blur(22rpx);
+  -webkit-backdrop-filter: blur(22rpx);
+}
+
+.avatar-stage {
+  position: relative;
+  display: flex;
+  width: 202rpx;
+  height: 202rpx;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-stage__ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.avatar-stage__ring--outer {
+  width: 202rpx;
+  height: 202rpx;
+  border: 1rpx dashed rgba(184, 103, 87, 0.25);
+}
+
+.avatar-stage__ring--inner {
+  width: 178rpx;
+  height: 178rpx;
+  background: rgba(255, 255, 255, 0.32);
 }
 
 .avatar-editor__preview {
   position: relative;
+  z-index: 1;
   display: flex;
-  width: 96rpx;
-  height: 96rpx;
+  width: 154rpx;
+  height: 154rpx;
   overflow: hidden;
   align-items: center;
   justify-content: center;
-  border: 3rpx solid rgba(255, 255, 255, 0.92);
-  border-radius: 30rpx;
-  flex-shrink: 0;
+  border: 5rpx solid rgba(255, 255, 255, 0.96);
+  border-radius: 52rpx;
   color: var(--auth-ink);
-  font-size: 38rpx;
+  font-family: var(--font-serif);
+  font-size: 56rpx;
   font-weight: 700;
-  box-shadow: 0 12rpx 24rpx -18rpx rgba(71, 64, 57, 0.5);
-}
-
-.avatar-editor__actions {
-  display: flex;
-  min-width: 0;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.avatar-editor__action {
-  display: flex;
-  width: auto;
-  min-height: 0;
-  align-items: center;
-  margin: 0;
-  padding: 10rpx 14rpx;
-  border-radius: 16rpx;
-  background: var(--c-paper-2, #f1ede7);
-  gap: 7rpx;
-  line-height: 1.2;
-}
-
-.avatar-editor__action::after {
-  border: 0;
-}
-
-.avatar-editor__action text {
-  color: var(--auth-ink-2);
-  font-size: 23rpx;
-}
-
-.avatar-editor__remove {
-  padding: 2rpx 4rpx;
-  color: var(--auth-ink-3);
-  font-size: 22rpx;
+  box-shadow: 0 18rpx 38rpx -26rpx rgba(71, 58, 49, 0.7);
+  transform: rotate(-1.5deg);
 }
 
 .avatar-editor__loading {
@@ -304,67 +370,201 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(41, 45, 42, 0.52);
-  color: #fff;
-  font-size: 18rpx;
-  font-weight: 500;
+  background: rgba(41, 45, 42, 0.54);
+  color: #ffffff;
+  flex-direction: column;
+  gap: 7rpx;
+  font-size: 19rpx;
 }
 
-.profile-form__group--nickname .profile-form__label {
-  display: block;
-  margin-bottom: 12rpx;
+.avatar-editor__spinner {
+  width: 28rpx;
+  height: 28rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.36);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: avatar-spin 720ms linear infinite;
 }
 
-.profile-form__input {
-  width: 100%;
-  height: 82rpx;
-  padding: 0 16rpx;
-  border-radius: 20rpx;
-  background: var(--c-paper-2, #f1ede7);
-  box-sizing: border-box;
-  color: var(--auth-ink);
-  font-size: 30rpx;
-  font-weight: 600;
+@keyframes avatar-spin { to { transform: rotate(360deg); } }
+
+.avatar-picker {
+  display: flex;
+  width: auto;
+  min-height: 0;
+  align-items: center;
+  margin: 24rpx 0 0;
+  padding: 15rpx 22rpx;
+  border: 1rpx solid rgba(184, 103, 87, 0.18);
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--auth-pink);
+  gap: 8rpx;
+  line-height: 1.2;
 }
 
-.profile-form__placeholder {
-  color: var(--c-muted, #837f76);
-  font-size: 25rpx;
-  font-weight: 400;
-}
+.avatar-picker::after { border: 0; }
+.avatar-picker text { font-size: 24rpx; font-weight: 650; }
 
 .profile-form__error {
   margin-top: 10rpx;
-  color: var(--c-primary-link, #b86757);
+  color: var(--auth-pink);
   font-size: 23rpx;
+  line-height: 1.5;
 }
 
-.auth-form-page .auth-primary {
-  margin-top: 24rpx;
+.profile-form__error--center { text-align: center; }
+
+.name-field {
+  margin-top: 26rpx;
+  padding: 27rpx 28rpx 24rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 18rpx 44rpx -40rpx rgba(76, 59, 47, 0.44);
+  backdrop-filter: blur(18rpx);
+  -webkit-backdrop-filter: blur(18rpx);
 }
 
-/* 已登录：账号信息只出现一次，保留真正需要的空间与时间信息。 */
+.name-field__label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.name-field__label {
+  color: var(--auth-ink);
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.name-field__hint {
+  color: var(--auth-ink-3);
+  font-size: 21rpx;
+}
+
+.name-field__input {
+  width: 100%;
+  height: 82rpx;
+  margin-top: 9rpx;
+  padding: 0;
+  color: var(--auth-ink);
+  font-family: var(--font-serif);
+  font-size: 38rpx;
+  font-weight: 650;
+  line-height: 82rpx;
+}
+
+.name-field__placeholder {
+  color: #aaa299;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  font-size: 29rpx;
+  font-weight: 400;
+}
+
+.auth-primary--profile {
+  margin-top: 26rpx;
+}
+
+/* 账号页：头像、名字和当前空间形成完整身份卡。 */
 .account-page {
-  padding-top: 8rpx;
+  padding-top: 20rpx;
 }
 
-.account-summary {
+.account-identity {
+  position: relative;
+  overflow: hidden;
+  padding: 30rpx 30rpx 28rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.95);
+  border-radius: 44rpx;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(231, 217, 238, 0.72), transparent 31%),
+    radial-gradient(circle at 8% 94%, rgba(244, 214, 204, 0.76), transparent 36%),
+    linear-gradient(145deg, #fffaf7 0%, #f7eee8 55%, #eef4ef 100%);
+  box-shadow:
+    0 30rpx 68rpx -54rpx rgba(74, 56, 44, 0.58),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.98);
+  box-sizing: border-box;
+}
+
+.account-identity__wash {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.account-identity__wash--one {
+  width: 210rpx;
+  height: 210rpx;
+  border: 28rpx solid rgba(255, 255, 255, 0.24);
+  right: -100rpx;
+  top: -100rpx;
+}
+
+.account-identity__wash--two {
+  width: 92rpx;
+  height: 92rpx;
+  background: rgba(255, 255, 255, 0.2);
+  left: -30rpx;
+  bottom: 42rpx;
+}
+
+.account-identity__top {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  padding: 24rpx 22rpx;
-  gap: 18rpx;
+  justify-content: space-between;
+}
+
+.account-identity__label {
+  color: #746d65;
+  font-size: 22rpx;
+  font-weight: 650;
+  letter-spacing: 1rpx;
+}
+
+.account-identity__online {
+  display: flex;
+  align-items: center;
+  padding: 7rpx 13rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.72);
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.52);
+  color: #6f7f74;
+  gap: 7rpx;
+  font-size: 20rpx;
+}
+
+.account-identity__dot {
+  width: 9rpx;
+  height: 9rpx;
+  border-radius: 50%;
+  background: #6f927f;
+  box-shadow: 0 0 0 5rpx rgba(111, 146, 127, 0.12);
+}
+
+.account-identity__person {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  margin-top: 38rpx;
+  gap: 25rpx;
 }
 
 .account-summary__avatar {
-  width: 92rpx;
-  height: 92rpx;
-  border-radius: 30rpx;
+  width: 142rpx;
+  height: 142rpx;
+  border-radius: 47rpx;
   flex-shrink: 0;
-  font-size: 38rpx;
+  font-size: 52rpx;
 }
 
 .account-summary__body {
   display: flex;
+  overflow: hidden;
   min-width: 0;
   flex: 1;
   flex-direction: column;
@@ -372,49 +572,128 @@
 
 .account-summary__name {
   overflow: hidden;
-  color: var(--auth-ink);
+  color: #292c28;
   font-family: var(--font-serif);
-  font-size: 36rpx;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: 48rpx;
+  font-weight: 760;
+  letter-spacing: -1rpx;
+  line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.account-summary__meta {
-  display: flex;
-  margin-top: 9rpx;
-  flex-wrap: wrap;
-  gap: 7rpx;
+.account-summary__caption {
+  overflow: hidden;
+  margin-top: 10rpx;
+  color: #716961;
+  font-size: 24rpx;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.account-summary__meta text {
-  padding: 5rpx 11rpx;
+.account-identity__meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  margin-top: 34rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(96, 82, 70, 0.12);
+  gap: 10rpx;
+}
+
+.account-identity__meta text {
+  padding: 6rpx 12rpx;
   border-radius: 999rpx;
-  background: var(--c-paper-2, #f1ede7);
-  color: var(--auth-ink-2);
+  background: rgba(255, 255, 255, 0.54);
+  color: #7c746c;
+  font-size: 20rpx;
+  line-height: 1.35;
+}
+
+.account-edit {
+  display: flex;
+  width: 100%;
+  min-height: 104rpx;
+  align-items: center;
+  margin: 22rpx 0 0;
+  padding: 18rpx 22rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 31rpx;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 18rpx 44rpx -40rpx rgba(67, 54, 44, 0.44);
+  box-sizing: border-box;
+  color: var(--auth-ink);
+  gap: 15rpx;
+  text-align: left;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.account-edit::after { border: 0; }
+.account-edit--pressed { opacity: 0.74; transform: scale(0.99); }
+
+.account-edit__icon {
+  display: flex;
+  width: 56rpx;
+  height: 56rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx;
+  background: rgba(247, 231, 226, 0.84);
+  flex-shrink: 0;
+}
+
+.account-edit__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.account-edit__body text:first-child {
+  color: var(--auth-ink);
+  font-size: 27rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.account-edit__body text:last-child {
+  margin-top: 3rpx;
+  color: var(--auth-ink-3);
   font-size: 22rpx;
-  line-height: 1.25;
+  line-height: 1.4;
 }
 
 .account-info {
-  margin-top: 18rpx;
+  margin-top: 22rpx;
   padding: 0 22rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.88);
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 18rpx 44rpx -42rpx rgba(68, 54, 44, 0.36);
 }
 
 .account-row {
   display: flex;
-  min-height: 104rpx;
+  min-height: 102rpx;
   align-items: center;
   border-bottom: 1rpx solid var(--auth-line);
   gap: 14rpx;
+  transition: opacity 120ms ease;
 }
 
-.account-row:last-child {
-  border-bottom: 0;
-}
+.account-row:last-child { border-bottom: 0; }
+.account-row--pressed { opacity: 0.62; }
 
-.account-row__icon {display: flex; width: 52rpx; height: 52rpx; align-items: center; justify-content: center; flex-shrink: 0;}
+.account-row__icon {
+  display: flex;
+  width: 48rpx;
+  height: 48rpx;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
 .account-row__body {
   display: flex;
@@ -425,25 +704,38 @@
 
 .account-row__body text:first-child {
   color: var(--auth-ink);
-  font-size: 26rpx;
-  font-weight: 600;
+  font-size: 25rpx;
+  font-weight: 650;
 }
 
 .account-row__body text:last-child {
-  margin-top: 3rpx;
+  overflow: hidden;
+  margin-top: 4rpx;
   color: var(--auth-ink-3);
-  font-size: 23rpx;
+  font-size: 22rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.account-row__chevron {
-  width: 10rpx;
-  height: 10rpx;
-  border-top: 1rpx solid #bdb4aa;
-  border-right: 1rpx solid #bdb4aa;
-  transform: rotate(45deg);
-}
-
-.account-action {
+.account-logout {
+  display: flex;
   width: 100%;
-  margin-top: 16rpx;
+  height: 82rpx;
+  align-items: center;
+  justify-content: center;
+  margin: 24rpx 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9d746c;
+  font-size: 24rpx;
+  line-height: 1;
 }
+
+.account-logout::after { border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-editor__spinner { animation: none; }
+}
+
+.auth-arrow-forward { transform: rotate(180deg); }

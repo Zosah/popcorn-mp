@@ -1,54 +1,85 @@
 <view class="page-shell invite-page">
-  <view class="invite-head">
-    <view class="invite-head__mark"><line-icon name="system-invite" size="29" tone="pink" /></view>
-    <view class="invite-head__body">
-      <view class="eyebrow">WELCOME TOGETHER</view>
-      <view class="invite-head__title">{{statusTitle}}</view>
-      <view class="invite-head__copy">{{statusCopy}}</view>
+  <view class="invite-hero">
+    <view class="invite-hero__mesh invite-hero__mesh--one"></view>
+    <view class="invite-hero__mesh invite-hero__mesh--two"></view>
+    <view class="invite-hero__eyebrow">INVITATION</view>
+    <view class="invite-hero__title">{{statusTitle}}</view>
+    <view class="invite-hero__copy">{{statusCopy}}</view>
+    <view class="invite-hero__marks">
+      <view class="invite-hero__mark"><line-icon name="feature-journal" size="48" active="{{true}}" /></view>
+      <view class="invite-hero__mark invite-hero__mark--small"><line-icon name="feature-pets" size="34" active="{{true}}" /></view>
     </view>
   </view>
 
-  <view wx:if="{{status === 'available' || status === 'accepted'}}" class="home-ticket">
-    <view class="home-ticket__top">
-      <view class="home-ticket__mark"><line-icon name="system-space" size="22" tone="ink" /></view>
-      <view class="home-ticket__number">共同空间 · 邀请函</view>
+  <view wx:if="{{status === 'available' || status === 'accepted'}}" class="invite-ticket">
+    <view class="invite-ticket__top">
+      <text class="invite-ticket__label">共同空间邀请</text>
+      <view class="invite-ticket__seal"><line-icon name="system-space" size="24" tone="pink" /></view>
     </view>
-    <view class="home-ticket__label">你将加入</view>
-    <view class="home-ticket__name">{{spaceName}}</view>
-    <view class="home-ticket__inviter">
-      <image wx:if="{{inviterAvatarUrl}}" class="home-ticket__avatar home-ticket__avatar--image" src="{{inviterAvatarUrl}}" mode="aspectFill" binderror="onInviterAvatarError" />
-      <view wx:else class="home-ticket__avatar home-ticket__avatar--{{inviterAvatarTone}}">{{inviterAvatar}}</view>
-      <view class="home-ticket__inviter-body"><text>{{inviterName}}</text><text>邀请你共同记录家里的小事</text></view>
+
+    <view class="invite-ticket__space">{{spaceName}}</view>
+
+    <view class="invite-ticket__inviter">
+      <image wx:if="{{inviterAvatarUrl}}" class="invite-ticket__avatar invite-ticket__avatar--image" src="{{inviterAvatarUrl}}" mode="aspectFill" binderror="onInviterAvatarError" />
+      <view wx:else class="invite-ticket__avatar invite-ticket__avatar--{{inviterAvatarTone}}">{{inviterAvatar}}</view>
+      <view class="invite-ticket__inviter-copy">
+        <text>{{inviterName}}</text>
+        <text>邀请你一起记录生活</text>
+      </view>
     </view>
-    <view class="home-ticket__code"><line-icon name="system-invite" size="18" tone="muted" /><text>邀请码 · {{code}}<text wx:if="{{expiresLabel}}"> · {{expiresLabel}}</text></text></view>
+
+    <view class="invite-ticket__divider"></view>
+    <view class="invite-ticket__foot">
+      <text class="invite-ticket__code">{{code}}</text>
+      <text wx:if="{{expiresLabel}}" class="invite-ticket__expiry">{{expiresLabel}}</text>
+    </view>
   </view>
 
-  <view class="paper-card code-card">
-    <view class="code-card__label"><view class="code-card__mark"><line-icon name="system-invite" size="21" tone="pink" /></view><view><text>输入邀请码</text><text>10 位字母或数字</text></view></view>
-    <view class="code-card__input-row">
-      <input value="{{codeInput}}" maxlength="10" placeholder="例如 7K3M9Q2XAB" placeholder-class="code-card__placeholder" bindinput="onCodeInput" />
-      <view bindtap="onValidate">确认</view>
+  <view wx:if="{{canAccept}}" class="join-readiness">
+    <view wx:if="{{!isLoggedIn}}" class="join-readiness__icon"><line-icon name="system-user" size="26" tone="pink" /></view>
+    <view wx:elif="{{onboardingRequired}}" class="join-readiness__icon"><line-icon name="system-edit" size="26" tone="pink" /></view>
+    <view wx:else class="join-readiness__icon"><line-icon name="system-check" size="26" tone="green" /></view>
+    <view class="join-readiness__copy">
+      <text wx:if="{{!isLoggedIn}}">先登录，再加入</text>
+      <text wx:elif="{{onboardingRequired}}">还差一步</text>
+      <text wx:else>准备好了</text>
+      <text wx:if="{{!isLoggedIn}}">登录后设置头像和名字，再回来确认加入。</text>
+      <text wx:elif="{{onboardingRequired}}">设置头像和名字后，就能回到这里加入。</text>
+      <text wx:else>确认后，你们会一起共享这个空间里的记录。</text>
     </view>
-    <view wx:if="{{status === 'invalid'}}" class="code-card__error">请检查邀请码是否完整，真实邀请码为 10 位字符。</view>
   </view>
 
-  <view wx:if="{{status === 'empty' || status === 'invalid'}}" class="invite-vignette paper-card">
-    <image class="invite-vignette__image" src="../../images/ink-letter.png" mode="aspectFit" />
-    <view class="invite-vignette__copy">
+  <view wx:if="{{!code || status === 'invalid'}}" class="invite-code-card">
+    <view class="invite-code-card__head">
+      <view class="invite-code-card__icon"><line-icon name="system-invite" size="24" tone="pink" /></view>
+      <view>
+        <text>输入邀请码</text>
+        <text>10 位字母或数字</text>
+      </view>
+    </view>
+    <view class="invite-code-card__row">
+      <input value="{{codeInput}}" maxlength="10" placeholder="例如 7K3M9Q2XAB" placeholder-class="invite-code-card__placeholder" bindinput="onCodeInput" />
+      <button class="invite-code-card__submit" bindtap="onValidate">查看</button>
+    </view>
+    <text wx:if="{{status === 'invalid'}}" class="invite-code-card__error">请检查邀请码是否完整。</text>
+  </view>
+
+  <view wx:if="{{status === 'empty' || status === 'invalid'}}" class="invite-story">
+    <image class="invite-story__image" src="../../images/ink-letter.png" mode="aspectFit" />
+    <view class="invite-story__copy">
       <text>一封邀请，写给一起生活的人。</text>
       <text>把日常里的细枝末节，收进同一个地方。</text>
-      <view class="invite-vignette__tag">共同空间</view>
     </view>
   </view>
 
-  <button wx:if="{{canAccept}}" class="primary-button invite-action" loading="{{isSubmitting}}" bindtap="onAccept"><line-icon name="system-add" size="23" tone="white" /><text>加入 {{spaceName}}</text></button>
-  <button wx:elif="{{status === 'accepted'}}" class="secondary-button invite-action" loading="{{isEntering}}" disabled="{{isEntering}}" bindtap="onGoHome"><line-icon name="system-space" size="23" tone="ink" /><text>进入这个空间</text></button>
+  <button wx:if="{{canAccept}}" class="invite-primary" hover-class="invite-primary--pressed" loading="{{isSubmitting}}" bindtap="onAccept">
+    <text>加入 {{spaceName}}</text>
+    <text class="invite-primary__arrow">→</text>
+  </button>
+  <button wx:elif="{{status === 'accepted'}}" class="invite-secondary" loading="{{isEntering}}" disabled="{{isEntering}}" bindtap="onGoHome">
+    <line-icon name="system-space" size="23" tone="pink" />
+    <text>进入这个空间</text>
+  </button>
 
-  <view class="invite-note">
-    <view class="invite-note__mark"><line-icon name="system-lock" size="21" tone="muted" /></view>
-    <view class="invite-note__body">
-      <text>{{isDemoMode ? '这次加入只保存在当前设备' : '邀请由服务端校验'}}</text>
-      <text>{{isDemoMode ? '真实版本会由服务端校验 7 天有效期、单次使用状态和空间成员权限。' : '服务端会在事务中校验 7 天有效期、单次使用状态和空间成员权限。'}}</text>
-    </view>
-  </view>
+  <view wx:if="{{canAccept}}" class="invite-footnote">加入后，这里会成为你们共同生活的一部分。</view>
 </view>

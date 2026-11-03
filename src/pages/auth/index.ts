@@ -15,6 +15,7 @@ import {
   saveAuthProfile,
 } from '../../services/auth'
 import { syncFeatureSettings } from '../../services/feature-settings'
+import { readPendingInvite } from '../../services/pending-invite'
 import { mediaGateway } from '../../services/media'
 import { getMediaErrorMessage } from '../../services/media-gateway'
 import { resolveAvatarUrl } from '../../utils/avatar'
@@ -35,6 +36,7 @@ interface AuthPageData {
   avatarPreviewUrl: string
   avatarUploading: boolean
   avatarUploadError: string
+  avatarError: string
   accountNickname: string
   accountAvatarText: string
   accountAvatarTone: DemoAvatarTone
@@ -44,10 +46,12 @@ interface AuthPageData {
   spaceName: string
   backLabel: string
   loginNotice: string
-  loginFootnote: string
   loginSubmitting: boolean
-  registerCopy: string
   accountTypeLabel: string
+  returnToInvite: boolean
+  profileTitle: string
+  profileCopy: string
+  profileSubmitLabel: string
 }
 
 function formatAccountDate(isoDate: string): string {
@@ -73,6 +77,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     avatarPreviewUrl: '',
     avatarUploading: false,
     avatarUploadError: '',
+    avatarError: '',
     accountNickname: '',
     accountAvatarText: '时',
     accountAvatarTone: 'lavender',
@@ -82,14 +87,12 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     spaceName: '我们的家',
     backLabel: '← 返回我的',
     loginNotice: '',
-    loginFootnote: appConfig.demoMode
-      ? '本地体验不会连接微信'
-      : '仅使用微信身份完成登录。',
     loginSubmitting: false,
-    registerCopy: appConfig.demoMode
-      ? '修改只会更新当前设备上的资料。'
-      : '修改后会同步到当前空间。',
-    accountTypeLabel: appConfig.demoMode ? '本机体验账号' : '微信账号',
+    accountTypeLabel: appConfig.demoMode ? '本机体验账号' : '个人账号',
+    returnToInvite: false,
+    profileTitle: '完善个人资料',
+    profileCopy: '设置头像和名字，让朋友认出你。',
+    profileSubmitLabel: '保存并继续',
   },
 
   onLoad(options: Record<string, string | undefined>) {
@@ -98,6 +101,8 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
         loginNotice: '登录已过期，请重新登录',
       })
     }
+    const returnToInvite = options.returnTo === 'invite'
+    this.setData({ returnToInvite })
     void this.bootstrap(options.mode)
   },
 
@@ -154,8 +159,24 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       avatarPreviewUrl: '',
       avatarUploading: false,
       avatarUploadError: '',
+      avatarError: '',
       spaceName: state.spaceName,
-      backLabel: isEditing ? '← 返回账号' : '← 返回预览',
+      backLabel: isEditing ? '← 返回账号' : '← 返回邀请',
+      profileTitle: isEditing
+        ? '编辑个人资料'
+        : this.data.returnToInvite
+          ? '先认识一下'
+          : '完善个人资料',
+      profileCopy: isEditing
+        ? registerCopyForEditing()
+        : this.data.returnToInvite
+          ? '完成后会回到邀请，由你确认是否加入。'
+          : '设置头像和名字，让朋友认出你。',
+      profileSubmitLabel: isEditing
+        ? '保存资料'
+        : this.data.returnToInvite
+          ? '保存并返回邀请'
+          : '保存并继续',
     })
     if (avatarMediaId) void this.loadProfileAvatar(avatarMediaId)
   },
@@ -199,17 +220,34 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
           return
         }
       }
-      navigateBackOrTab('/pages/profile/index')
+      this.finishAuthFlow()
       return
     }
     navigateBackOrTab('/pages/profile/index')
+  },
+
+  finishAuthFlow() {
+    if (!this.data.returnToInvite) {
+      navigateBackOrTab('/pages/profile/index')
+      return
+    }
+    const code = readPendingInvite()
+    if (getCurrentPages().length > 1) {
+      wx.navigateBack({ delta: 1 })
+      return
+    }
+    wx.redirectTo({
+      url: code
+        ? `/pages/invite/index?code=${encodeURIComponent(code)}`
+        : '/pages/invite/index',
+    })
   },
 
   async onWechatLogin() {
     if (this.data.loginSubmitting) return
     this.setData({ loginSubmitting: true, loginNotice: '' })
     wx.showLoading({
-      title: this.data.hasAccount ? '正在登录' : '正在连接微信',
+      title: '正在登录',
       mask: true,
     })
     const result = await loginAuth()
@@ -235,8 +273,8 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     this.setData({ loginSubmitting: false })
     this.showAccount(result.state.user)
     void syncFeatureSettings().catch(() => undefined)
-    wx.showToast({ title: '欢迎回来', icon: 'success' })
-    setTimeout(() => navigateBackOrTab('/pages/profile/index'), 420)
+    wx.showToast({ title: '登录成功', icon: 'success' })
+    setTimeout(() => this.finishAuthFlow(), 420)
   },
 
   onNicknameInput(event: { detail: { value: string } }) {
@@ -260,7 +298,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
         if (result.size > 10 * 1024 * 1024) {
           this.setData({
             avatarPreviewUrl: '',
-            avatarUploadError: '头像图片不能超过 10 MiB',
+            avatarUploadError: '图片有点大，请换一张试试',
           })
           return
         }
@@ -282,8 +320,9 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       this.setData({
         avatarMediaId: asset.id,
         avatarPreviewUrl: asset.thumb.url || asset.display.url,
+        avatarError: '',
       })
-      wx.showToast({ title: '头像已准备好', icon: 'success' })
+      wx.showToast({ title: '头像已设置', icon: 'success' })
     } catch (error) {
       if (sequence !== avatarUploadSequence) return
       const message = getMediaErrorMessage(error, '头像上传没有完成')
@@ -303,16 +342,6 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     wx.previewImage({ current: src, urls: [src] })
   },
 
-  onRemoveAvatar() {
-    if (this.data.avatarUploading) return
-    avatarUploadSequence += 1
-    this.setData({
-      avatarMediaId: '',
-      avatarPreviewUrl: '',
-      avatarUploadError: '',
-    })
-  },
-
   onAvatarImageError() {
     this.setData({ avatarPreviewUrl: '' })
   },
@@ -324,6 +353,11 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   async onSubmitProfile() {
     if (this.data.avatarUploading) {
       wx.showToast({ title: '头像还在上传，请稍等一下', icon: 'none' })
+      return
+    }
+    if (!this.data.avatarMediaId) {
+      this.setData({ avatarError: '请先获取微信头像' })
+      wx.showToast({ title: '请先获取微信头像', icon: 'none' })
       return
     }
     const nicknameMessage = validateDemoNickname(this.data.nicknameInput)
@@ -353,8 +387,8 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
 
     this.showAccount(result.state.user)
     void syncFeatureSettings().catch(() => undefined)
-    wx.showToast({ title: '欢迎回家', icon: 'success' })
-    setTimeout(() => navigateBackOrTab('/pages/profile/index'), 420)
+    wx.showToast({ title: '资料已保存', icon: 'success' })
+    setTimeout(() => this.finishAuthFlow(), 420)
   },
 
   onEditAccount() {
@@ -370,7 +404,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
       title: '退出登录？',
       content: appConfig.demoMode
         ? '本机账号会保留，下次仍然可以一键回来。'
-        : '当前会话会立即失效，资料仍保留在服务端。',
+        : '下次登录还能回到这里，资料会继续保留。',
       confirmText: '退出',
       success: (result) => {
         if (!result.confirm) return
@@ -388,3 +422,9 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
   },
 
 })
+
+function registerCopyForEditing(): string {
+  return appConfig.demoMode
+    ? '修改只会更新当前设备上的资料。'
+    : '修改后会同步到当前空间。'
+}

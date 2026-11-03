@@ -10,6 +10,10 @@ import {
 } from '../../services/demo-invite'
 import { hydrateAuthState } from '../../services/auth'
 import {
+  clearPendingInvite,
+  savePendingInvite,
+} from '../../services/pending-invite'
+import {
   acceptApiInvite,
   resolveApiInvite,
   setDefaultApiSpace,
@@ -35,8 +39,8 @@ const STATUS_COPY: Record<
     copy: '请检查是否复制完整，再重新试一次。',
   },
   available: {
-    title: '有人邀请你一起生活',
-    copy: '确认后即可加入这个共同空间。',
+    title: '一起记录生活',
+    copy: '看看是谁邀请你，再决定是否加入。',
   },
   accepted: {
     title: '已经回到家啦',
@@ -60,6 +64,7 @@ Page({
   data: {
     isDemoMode: appConfig.demoMode,
     isLoggedIn: false,
+    onboardingRequired: false,
     isSubmitting: false,
     isEntering: false,
     acceptedSpaceId: '',
@@ -82,13 +87,22 @@ Page({
     void this.loadInvite(options)
   },
 
+  onShow() {
+    void this.refreshSession()
+  },
+
   async loadInvite(options: Record<string, string | undefined>) {
+    await this.refreshSession()
+    if (options.code) await this.applyCode(options.code)
+  },
+
+  async refreshSession() {
     const auth = await hydrateAuthState()
     this.setData({
       isDemoMode: appConfig.demoMode,
       isLoggedIn: auth.isLoggedIn,
+      onboardingRequired: auth.onboardingRequired,
     })
-    if (options.code) await this.applyCode(options.code)
   },
 
   onBack() {
@@ -107,20 +121,14 @@ Page({
 
   async onAccept() {
     if (!this.data.canAccept || this.data.isSubmitting) return
-    if (!this.data.isLoggedIn) {
-      wx.showModal({
-        title: '先登录再加入',
-        content: '登录后会建立你的空间身份，再回到这里接受邀请。',
-        confirmText: '去登录',
-        success: (result) => {
-          if (result.confirm) wx.navigateTo({ url: '/pages/auth/index' })
-        },
-      })
+    if (!this.data.isLoggedIn || this.data.onboardingRequired) {
+      this.openAuthForInvite()
       return
     }
 
     if (appConfig.demoMode) {
       const invite = acceptDemoInviteCode(this.data.code)
+      clearPendingInvite()
       this.applyStatus(invite.code, invite.status)
       this.setData({ acceptedSpaceId: 'demo-space' })
       wx.showToast({ title: '欢迎回家', icon: 'success' })
@@ -131,9 +139,15 @@ Page({
     const result = await acceptApiInvite(this.data.code)
     this.setData({ isSubmitting: false })
     if (!result.ok || !result.data) {
+      if (result.code === 'PROFILE_REQUIRED' || result.code === 'UNAUTHENTICATED') {
+        await this.refreshSession()
+        this.openAuthForInvite()
+        return
+      }
       this.applyGatewayFailure(result)
       return
     }
+    clearPendingInvite()
     const switchResult = await setDefaultApiSpace(result.data.id)
     await hydrateAuthState()
     if (!switchResult.ok) {
@@ -157,6 +171,13 @@ Page({
       acceptedSpaceId: result.data.id,
     })
     wx.showToast({ title: '欢迎回家', icon: 'success' })
+  },
+
+  openAuthForInvite() {
+    savePendingInvite(this.data.code || this.data.codeInput)
+    wx.navigateTo({
+      url: '/pages/auth/index?returnTo=invite',
+    })
   },
 
   async onGoHome() {

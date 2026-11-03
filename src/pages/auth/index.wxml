@@ -1,12 +1,18 @@
 <view class="page-shell auth-page">
-  <view class="subpage-back" bindtap="onBack">{{backLabel}}</view>
-
   <block wx:if="{{mode === 'login'}}">
     <view class="auth-login">
       <view class="auth-intro">
-        <view class="auth-intro__mark"><line-icon name="system-user" size="48" tone="blue" /></view>
-        <view class="auth-intro__title">登录时刻见</view>
-        <view class="auth-intro__copy">和重要的人，一起记录日常。</view>
+        <view class="auth-intro__illustration">
+          <view class="auth-intro__halo auth-intro__halo--peach"></view>
+          <view class="auth-intro__halo auth-intro__halo--sage"></view>
+          <view class="auth-intro__mark">
+            <line-icon name="feature-journal" size="104" active="{{true}}" />
+          </view>
+          <view class="auth-intro__spark auth-intro__spark--one"></view>
+          <view class="auth-intro__spark auth-intro__spark--two"></view>
+        </view>
+        <text class="auth-intro__title">把日子，放在一起</text>
+        <text class="auth-intro__copy">和重要的人共享日常，也保留彼此的片刻。</text>
       </view>
 
       <view class="auth-panel">
@@ -24,24 +30,26 @@
             <text class="known-account__label">上次登录</text>
             <text class="known-account__name">{{accountNickname}}</text>
           </view>
-          <view class="known-account__mark"><line-icon name="system-check" size="24" tone="blue" /></view>
+          <view class="known-account__mark"><line-icon name="system-check" size="24" tone="green" /></view>
         </view>
 
         <button
-          class="primary-button auth-primary"
+          class="auth-primary"
+          hover-class="auth-primary--pressed"
           bindtap="onWechatLogin"
           loading="{{loginSubmitting}}"
           disabled="{{loginSubmitting}}"
         >
-          <line-icon name="system-user" size="32" tone="white" />
-          <text>微信一键登录</text>
+          <text>{{loginSubmitting ? '正在登录' : '登录并继续'}}</text>
+          <line-icon wx:if="{{!loginSubmitting}}" class="auth-arrow-forward" name="system-back" size="24" tone="white" />
         </button>
-        <view class="auth-secondary" bindtap="onBack">先看看，不登录</view>
+        <text class="auth-primary-note">登录后设置头像和名字，让空间成员认出你</text>
+        <view class="auth-secondary" bindtap="onBack">{{returnToInvite ? '返回邀请' : '稍后再说'}}</view>
       </view>
 
       <view class="auth-footnote">
-        <line-icon name="system-lock" size="24" tone="muted" />
-        <text>{{loginFootnote}}</text>
+        <line-icon name="system-lock" size="22" tone="muted" />
+        <text>你的记录只对共同空间成员可见</text>
       </view>
     </view>
   </block>
@@ -49,87 +57,110 @@
   <block wx:elif="{{mode === 'register'}}">
     <view class="auth-form-page">
       <view class="form-heading">
-        <view class="form-heading__mark"><line-icon name="system-edit" size="34" tone="pink" /></view>
-        <view class="form-heading__body">
-          <view class="form-heading__title">{{isEditing ? '编辑资料' : '完善资料'}}</view>
-          <view class="form-heading__copy">{{isEditing ? registerCopy : '设置头像和昵称，方便朋友认出你。'}}</view>
-        </view>
+        <text class="form-heading__label">个人资料</text>
+        <text class="form-heading__title">{{profileTitle}}</text>
+        <text class="form-heading__copy">{{profileCopy}}</text>
       </view>
 
-      <view class="paper-card profile-form">
-        <view class="profile-form__group profile-form__group--avatar">
-          <view class="profile-form__heading">
-            <text class="profile-form__label">头像</text>
-            <text class="profile-form__hint">使用微信官方头像选择器</text>
-          </view>
-          <view class="avatar-editor">
-            <view class="avatar-editor__preview user-avatar--{{selectedTone}}" bindtap="onPreviewAvatar">
-              <image wx:if="{{avatarPreviewUrl}}" class="user-avatar__image" src="{{avatarPreviewUrl}}" mode="aspectFill" binderror="onAvatarImageError" />
-              <text wx:else>{{nicknamePreview}}</text>
-              <view wx:if="{{avatarUploading}}" class="avatar-editor__loading">上传中</view>
-            </view>
-            <view class="avatar-editor__actions">
-              <button class="avatar-editor__action" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-                <line-icon name="system-image" size="24" tone="blue" />
-                <text>{{avatarMediaId ? '更换微信头像' : '选择微信头像'}}</text>
-              </button>
-              <view wx:if="{{avatarMediaId && !avatarUploading}}" class="avatar-editor__remove" bindtap="onRemoveAvatar">移除头像</view>
+      <view class="identity-editor">
+        <view class="avatar-stage">
+          <view class="avatar-stage__ring avatar-stage__ring--outer"></view>
+          <view class="avatar-stage__ring avatar-stage__ring--inner"></view>
+          <view class="avatar-editor__preview user-avatar--{{selectedTone}}" bindtap="onPreviewAvatar">
+            <image wx:if="{{avatarPreviewUrl}}" class="user-avatar__image" src="{{avatarPreviewUrl}}" mode="aspectFill" binderror="onAvatarImageError" />
+            <text wx:else>{{nicknamePreview}}</text>
+            <view wx:if="{{avatarUploading}}" class="avatar-editor__loading">
+              <view class="avatar-editor__spinner"></view>
+              <text>正在处理</text>
             </view>
           </view>
-          <view wx:if="{{avatarUploadError}}" class="profile-form__error">{{avatarUploadError}}</view>
         </view>
 
-        <view class="profile-form__group profile-form__group--nickname">
-          <text class="profile-form__label">昵称</text>
-          <input class="profile-form__input" type="nickname" maxlength="16" value="{{nicknameInput}}" placeholder="你的微信昵称" placeholder-class="profile-form__placeholder" bindinput="onNicknameInput" />
-          <view wx:if="{{nicknameError}}" class="profile-form__error">{{nicknameError}}</view>
-        </view>
+        <button class="avatar-picker" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <line-icon name="system-image" size="25" tone="pink" />
+          <text>{{avatarMediaId ? '获取新的微信头像' : '获取微信头像'}}</text>
+        </button>
+        <text wx:if="{{avatarError}}" class="profile-form__error profile-form__error--center">{{avatarError}}</text>
+        <text wx:if="{{avatarUploadError}}" class="profile-form__error profile-form__error--center">{{avatarUploadError}}</text>
       </view>
 
-      <button class="primary-button auth-primary" bindtap="onSubmitProfile">
-        <line-icon name="system-check" size="28" tone="white" />
-        <text>{{isEditing ? '保存资料' : '完成并进入空间'}}</text>
+      <view class="name-field">
+        <view class="name-field__label-row">
+          <text class="name-field__label">名字</text>
+          <text class="name-field__hint">最多 16 个字</text>
+        </view>
+        <input
+          class="name-field__input"
+          type="nickname"
+          maxlength="16"
+          value="{{nicknameInput}}"
+          placeholder="填写你的名字"
+          placeholder-class="name-field__placeholder"
+          confirm-type="done"
+          bindinput="onNicknameInput"
+        />
+        <view wx:if="{{nicknameError}}" class="profile-form__error">{{nicknameError}}</view>
+      </view>
+
+      <button class="auth-primary auth-primary--profile" hover-class="auth-primary--pressed" bindtap="onSubmitProfile">
+        <text>{{profileSubmitLabel}}</text>
+        <line-icon class="auth-arrow-forward" name="system-back" size="24" tone="white" />
       </button>
-      <view wx:if="{{!isEditing}}" class="auth-secondary" bindtap="onBack">先预览，稍后再完善</view>
     </view>
   </block>
 
   <block wx:else>
     <view class="account-page">
-      <view class="paper-card account-summary">
-        <view class="user-avatar account-summary__avatar user-avatar--{{accountAvatarTone}}">
-          <image wx:if="{{accountAvatarUrl}}" class="user-avatar__image" src="{{accountAvatarUrl}}" mode="aspectFill" binderror="onAccountAvatarError" />
-          <text wx:else>{{accountAvatarText}}</text>
-        </view>
-        <view class="account-summary__body">
-          <text class="account-summary__name">{{accountNickname}}</text>
-          <view class="account-summary__meta">
-            <text>{{accountTypeLabel}}</text>
+      <view class="account-identity">
+        <view class="account-identity__wash account-identity__wash--one"></view>
+        <view class="account-identity__wash account-identity__wash--two"></view>
+        <view class="account-identity__top">
+          <text class="account-identity__label">我的账号</text>
+          <view class="account-identity__online">
+            <view class="account-identity__dot"></view>
             <text>已登录</text>
           </view>
         </view>
+
+        <view class="account-identity__person">
+          <view class="user-avatar account-summary__avatar user-avatar--{{accountAvatarTone}}">
+            <image wx:if="{{accountAvatarUrl}}" class="user-avatar__image" src="{{accountAvatarUrl}}" mode="aspectFill" binderror="onAccountAvatarError" />
+            <text wx:else>{{accountAvatarText}}</text>
+          </view>
+          <view class="account-summary__body">
+            <text class="account-summary__name">{{accountNickname}}</text>
+            <text class="account-summary__caption">在 {{spaceName}} 一起生活</text>
+          </view>
+        </view>
+
+        <view class="account-identity__meta">
+          <text>加入于 {{accountCreatedAt}}</text>
+          <text>{{accountTypeLabel}}</text>
+        </view>
       </view>
 
-      <view class="paper-card account-info">
-        <view class="account-row" bindtap="onOpenSpace">
-          <view class="account-row__icon"><line-icon name="system-space" size="26" tone="blue" /></view>
-          <view class="account-row__body"><text>当前空间</text><text>{{spaceName}}</text></view>
-          <view class="account-row__chevron"></view>
+      <button class="account-edit" hover-class="account-edit--pressed" bindtap="onEditAccount">
+        <view class="account-edit__icon"><line-icon name="system-edit" size="26" tone="pink" /></view>
+        <view class="account-edit__body">
+          <text>修改头像与名字</text>
+          <text>让朋友更容易认出你</text>
+        </view>
+        <line-icon class="auth-arrow-forward" name="system-back" size="21" tone="muted" />
+      </button>
+
+      <view class="account-info">
+        <view class="account-row" hover-class="account-row--pressed" bindtap="onOpenSpace">
+          <view class="account-row__icon"><line-icon name="system-space" size="26" tone="green" /></view>
+          <view class="account-row__body"><text>共同空间</text><text>{{spaceName}}</text></view>
+          <line-icon class="auth-arrow-forward" name="system-back" size="20" tone="muted" />
         </view>
         <view class="account-row">
-          <view class="account-row__icon"><line-icon name="system-calendar" size="26" tone="green" /></view>
+          <view class="account-row__icon"><line-icon name="system-calendar" size="26" tone="blue" /></view>
           <view class="account-row__body"><text>加入时间</text><text>{{accountCreatedAt}}</text></view>
         </view>
       </view>
 
-      <button class="secondary-button account-action" bindtap="onEditAccount">
-        <line-icon name="system-edit" size="28" tone="ink" />
-        <text>编辑昵称与头像</text>
-      </button>
-      <button class="danger-button account-action" bindtap="onLogout">
-        <line-icon name="system-refresh" size="28" tone="danger" />
-        <text>退出登录</text>
-      </button>
+      <button class="account-logout" bindtap="onLogout">退出登录</button>
     </view>
   </block>
 </view>

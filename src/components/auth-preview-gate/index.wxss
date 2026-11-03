@@ -117,15 +117,15 @@
   justify-content: center;
   margin-top: 32rpx;
   border-radius: 32rpx;
-  background: linear-gradient(145deg, #2c332f 0%, #202521 100%);
+  background: linear-gradient(135deg, #cf8b7c 0%, #b86757 58%, #ad5f51 100%);
   color: #fff;
   font-size: 30rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
   line-height: 1;
   box-shadow:
-    0 20rpx 42rpx -25rpx rgba(31, 36, 33, 0.72),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.1);
+    0 20rpx 42rpx -25rpx rgba(166, 82, 68, 0.7),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.24);
 }
 
 .auth-gate__login::after {
