@@ -298,7 +298,14 @@ export interface ApiJournalWriteRequest {
   images: ApiJournalImage[]
 }
 
-export type ApiMediaPurpose = 'journal' | 'avatar' | 'inventory' | 'menu' | 'pet' | 'other'
+export type ApiMediaPurpose =
+  | 'journal'
+  | 'avatar'
+  | 'user_avatar'
+  | 'inventory'
+  | 'menu'
+  | 'pet'
+  | 'other'
 
 export interface ApiSignedObject {
   url: string

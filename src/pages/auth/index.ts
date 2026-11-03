@@ -84,7 +84,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     loginNotice: '',
     loginFootnote: appConfig.demoMode
       ? '本地体验不会连接微信'
-      : '仅使用微信登录身份，不读取手机号。',
+      : '仅使用微信身份完成登录。',
     loginSubmitting: false,
     registerCopy: appConfig.demoMode
       ? '修改只会更新当前设备上的资料。'
@@ -277,7 +277,7 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     const previousMediaId = this.data.avatarMediaId
     this.setData({ avatarUploading: true, avatarUploadError: '' })
     try {
-      const asset = await mediaGateway.upload(filePath, 'avatar', fileSize)
+      const asset = await mediaGateway.upload(filePath, 'user_avatar', fileSize)
       if (sequence !== avatarUploadSequence) return
       this.setData({
         avatarMediaId: asset.id,

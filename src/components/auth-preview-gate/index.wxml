@@ -18,7 +18,7 @@
       <text class="auth-gate__copy">{{force ? '这一步需要登录后才能保存。' : '先看看也可以，想保存时再登录。'}}</text>
       <view class="auth-gate__privacy">
         <line-icon name="system-lock" size="26" tone="muted" />
-        <text>仅使用微信身份，不读取手机号</text>
+        <text>仅使用微信身份登录</text>
       </view>
     </view>
 

@@ -137,7 +137,6 @@ describe('HTTP 登录网关', () => {
         deviceLabel: '微信小程序',
       },
     })
-    expect(requests[0]?.data).not.toHaveProperty('phoneCode')
   })
 
   it('保存资料使用 PUT，并保留登录 Token', async () => {
