@@ -350,7 +350,7 @@
             </view>
             <text>{{historyDetailOrder.createdByName}} 发起</text>
           </view>
-          <view wx:if="{{historyDetailOrder.updatedBy}}" class="menu-order-detail__person">
+          <view wx:if="{{historyDetailOrder.updatedBy && historyDetailOrder.updatedBy !== historyDetailOrder.createdBy}}" class="menu-order-detail__person">
             <view class="menu-order-detail__person-avatar">
               <image wx:if="{{historyDetailOrder.updaterAvatarUrl}}" class="menu-order__avatar-image" src="{{historyDetailOrder.updaterAvatarUrl}}" mode="aspectFill" data-id="{{historyDetailOrder.id}}" data-role="updater" binderror="onOrderAvatarError" />
               <text wx:else>{{historyDetailOrder.updaterInitial}}</text>
