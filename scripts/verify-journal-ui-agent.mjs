@@ -124,7 +124,11 @@ async function checkAvatar(mp, entries, apiList) {
     return { fieldPresent: false, rendered: 0 }
   }
 
-  const expected = (apiList.items || []).filter((item) => item.authorAvatarMediaId).length
+  // 只统计当前列表实际展示的条目（生活点滴），避免把重要记录也算进分母。
+  const entryIds = new Set(entries.map((entry) => entry.id))
+  const expected = (apiList.items || []).filter(
+    (item) => entryIds.has(item.id) && item.authorAvatarMediaId,
+  ).length
   const rendered = entries.filter((entry) => Boolean(entry.authorAvatarUrl)).length
   record('真实头像签名地址已解析', expected === 0 || rendered > 0, `${rendered}/${expected}`)
 
