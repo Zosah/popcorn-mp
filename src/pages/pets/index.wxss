@@ -1058,6 +1058,7 @@
   white-space: nowrap;
 }
 .profile-fact__value--empty { color: #b5a6a1; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-size: 21rpx; font-weight: 500; }
+.profile-fact__elapsed { display: block; width: 100%; color: #ae7a84; font-size: 17rpx; font-weight: 500; line-height: 1.25; text-align: center; white-space: nowrap; }
 .pet-inline-action { display: flex; align-items: center; justify-content: center; margin: 13rpx 0 28rpx; padding: 15rpx; border: 1rpx dashed #cbd5c7; border-radius: 20rpx; color: var(--pet-green); font-size: 21rpx; gap: 6rpx; }
 .daily-grid--overview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .daily-grid--overview .daily-card { padding-top: 18rpx; padding-bottom: 17rpx; }

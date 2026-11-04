@@ -308,6 +308,12 @@ function weightUnitLabel(unit: PetWeightUnit): string {
   return unit === 'jin' ? '斤' : 'kg'
 }
 
+function compactProfileElapsed(from: string, today: string): string {
+  const elapsed = formatPetElapsed(from, today)
+  if (elapsed === '还没有记录') return ''
+  return elapsed === '今天' ? '0天' : elapsed.replace(/\s+/g, '')
+}
+
 function weightInUnit(kgValue: string | number, unit: PetWeightUnit): number {
   const kg = Number(kgValue)
   return unit === 'jin' ? kg * 2 : kg
@@ -422,8 +428,11 @@ Page({
     ageLabel: '',
     todayDate: getShanghaiDateOnly(Date.now()),
     birthdayLabel: '',
+    birthdayElapsedLabel: '',
     homeOnLabel: '',
+    homeOnElapsedLabel: '',
     neuteredOnLabel: '',
+    neuteredOnElapsedLabel: '',
     latestWeight: '—',
     latestWeightKg: '',
     weightUnit: 'jin' as PetWeightUnit,
@@ -896,8 +905,11 @@ Page({
       ageLabel: formatPetAge(state.profile.birthday, today),
       todayDate: today,
       birthdayLabel: formatFullDate(state.profile.birthday),
+      birthdayElapsedLabel: compactProfileElapsed(state.profile.birthday, today),
       homeOnLabel: formatFullDate(state.profile.homeOn),
+      homeOnElapsedLabel: compactProfileElapsed(state.profile.homeOn, today),
       neuteredOnLabel: formatFullDate(state.profile.neuteredOn),
+      neuteredOnElapsedLabel: compactProfileElapsed(state.profile.neuteredOn ?? '', today),
       latestWeight: latestValue ? formatWeightInUnit(latestValue.value, this.data.weightUnit) : '—',
       latestWeightKg: latestValue?.value ?? '',
       weightUnitLabel: weightUnitLabel(this.data.weightUnit),
