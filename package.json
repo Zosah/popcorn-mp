@@ -32,7 +32,8 @@
     "release:experience": "node scripts/release-experience.mjs",
     "release:preview": "node scripts/release-experience.mjs --preview-only",
     "release:watch": "node scripts/release-experience.mjs --watch --with-preview --build-suffix --ui-check",
-    "verify:journal-ui:agent": "node scripts/verify-journal-ui-agent.mjs"
+    "verify:journal-ui:agent": "node scripts/verify-journal-ui-agent.mjs",
+    "notify:wecom": "node scripts/notify-wecom.mjs"
   },
   "repository": {
     "type": "git",

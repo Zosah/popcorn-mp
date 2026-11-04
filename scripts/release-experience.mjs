@@ -36,6 +36,8 @@ import {
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { notifyWeCom } from './notify-wecom.mjs'
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DEBUG = process.env.RELEASE_DEBUG === '1'
 const PREVIEW_DIR = join(ROOT, '.preview')
@@ -288,6 +290,7 @@ async function releaseOnce(reason) {
     upload: options.previewOnly ? 'skipped' : 'pending',
     preview: '',
     uiCheck: options.uiCheck ? 'pending' : 'skipped',
+    wecom: options.previewOnly ? 'skipped' : 'pending',
     ok: false,
     durationMs: 0,
   }
@@ -315,6 +318,13 @@ async function releaseOnce(reason) {
 
     if (options.uiCheck) {
       record.uiCheck = await runUiCheck()
+    }
+
+    if (!options.previewOnly) {
+      const notice = await notifyWeCom(
+        `时刻见 ${version} 已上传。${desc}。测试 ${record.tests}，UI ${record.uiCheck}。预览码 .preview/experience-latest.png`,
+      )
+      record.wecom = notice.ok ? 'sent' : 'failed'
     }
 
     record.ok = true

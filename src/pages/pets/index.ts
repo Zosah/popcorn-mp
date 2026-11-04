@@ -487,9 +487,11 @@ Page({
     selectedSupplyCategory: 'all' as SupplyFilter,
     currentSupplies: [] as Array<{
       id: string
+      category: PetSupplyCategory
       categoryLabel: string
       name: string
       note: string
+      preference: PetSupplyPreference
       preferenceLabel: string
       preferenceHearts: string
     }>,
@@ -867,10 +869,12 @@ Page({
     )
     const currentSupplies = getCurrentPetSupplies(state.supplies).map((item) => ({
       id: item.id,
+      category: item.category,
       categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
       iconName: PET_SUPPLY_ICON_NAMES[item.category],
       name: item.name,
       note: item.note,
+      preference: item.preference,
       preferenceLabel: getPetSupplyPreferenceLabel(item.preference),
       preferenceHearts: getPetSupplyPreferenceHearts(item.preference),
     }))

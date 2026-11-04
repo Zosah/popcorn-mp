@@ -212,7 +212,22 @@
       <block wx:else>
         <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
         <view wx:if="{{currentSupplies.length}}" class="current-supplies-wrap">
-          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply" data-id="{{item.id}}" bindtap="onEditSupply"><text class="current-supply__label current-supply__label--{{item.preference}}">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__title-line"><text class="supply-category-label supply-category-label--{{item.category}}">{{item.categoryLabel}}</text><view class="current-supply__name">{{item.name}}</view></view><view class="current-supply__note">{{item.note || '用着不错'}}</view></view></view></scroll-view>
+          <view class="current-supplies__head">
+            <text>最近在用</text>
+            <text>{{currentSupplies.length}} 件 · 左右滑动</text>
+          </view>
+          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}">
+            <view class="current-supplies__row">
+              <view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply" data-id="{{item.id}}" bindtap="onEditSupply">
+                <view class="current-supply__top">
+                  <text class="supply-category-label supply-category-label--{{item.category}}">{{item.categoryLabel}}</text>
+                  <text class="current-supply__pref current-supply__pref--{{item.preference}}">{{item.preferenceHearts}}</text>
+                </view>
+                <view class="current-supply__name">{{item.name}}</view>
+                <view class="current-supply__note">{{item.note || '用着不错'}}</view>
+              </view>
+            </view>
+          </scroll-view>
         </view>
         <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}"><view class="supply-filter__row"><view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view></view></scroll-view>
         <view class="supply-list">
@@ -224,8 +239,8 @@
               <view class="supply-row__title-line">
                 <text class="supply-category-label supply-category-label--{{item.category}}">{{item.categoryLabel}}</text>
                 <text class="supply-row__brand">{{item.brand || '未记品牌'}}</text>
-                <text class="supply-row__title">{{item.name}}</text>
               </view>
+              <text class="supply-row__title">{{item.name}}</text>
               <text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text>
             </view>
             <view class="supply-preference supply-preference--{{item.preference}}">

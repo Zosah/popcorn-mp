@@ -2376,3 +2376,118 @@
   -webkit-line-clamp: 2;
   line-height: 1.35;
 }
+
+/* ================= 用品上方“最近在用”与名称层级 ================= */
+.current-supplies__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 4rpx 12rpx;
+}
+
+.current-supplies__head text:first-child {
+  color: var(--pet-ink);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.current-supplies__head text:last-child {
+  color: var(--pet-ink-3);
+  font-size: 19rpx;
+}
+
+.current-supply {
+  width: 248rpx;
+  min-height: 178rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.current-supply__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rpx;
+}
+
+.current-supply__pref {
+  flex: 0 0 auto;
+  font-size: 19rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+
+.current-supply__pref--loved { color: #a83e5a; }
+.current-supply__pref--neutral { color: #8a6a2f; }
+.current-supply__pref--dropped { color: #5f756d; }
+
+.current-supply__name {
+  margin-top: 12rpx;
+  color: var(--pet-ink);
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.current-supply__note {
+  overflow: hidden;
+  margin-top: 8rpx;
+  color: var(--pet-ink-3);
+  font-size: 20rpx;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.supply-row {
+  min-height: 138rpx;
+  align-items: center;
+  padding: 18rpx 16rpx;
+}
+
+.supply-row__body {
+  gap: 3rpx;
+}
+
+.supply-row__title-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.supply-row__brand {
+  color: var(--pet-ink-3);
+  font-size: 21rpx;
+}
+
+.supply-row__title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #1d1a17;
+  font-size: 31rpx;
+  font-weight: 800;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.supply-row__body > .supply-row__note {
+  margin-top: 3rpx;
+  color: var(--pet-ink-3);
+  font-size: 20rpx;
+  line-height: 1.4;
+}
+
+.supply-row__body > .supply-row__title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #1d1a17;
+  font-size: 31rpx;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
