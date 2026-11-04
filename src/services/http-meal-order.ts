@@ -6,6 +6,7 @@ import type {
   ApiMealOrderWriteRequest,
 } from '../types/api'
 import { requestApiResponse } from './http'
+import { resolveAvatarUrl } from '../utils/avatar'
 import {
   MealOrderGatewayError,
   type MealOrder,
@@ -36,7 +37,7 @@ export class HttpMealOrderGateway implements MealOrderGateway {
           { token: context.token },
         ))
         items.push(...response.data.items)
-        if (!response.data.nextCursor) return items.map(toMealOrder)
+        if (!response.data.nextCursor) return Promise.all(items.map(toMealOrder))
         cursor = response.data.nextCursor
       }
       throw new MealOrderGatewayError('TOO_MANY_PAGES', '点菜记录过多，请稍后重试')
@@ -57,7 +58,7 @@ export class HttpMealOrderGateway implements MealOrderGateway {
           headers: { 'Idempotency-Key': createIdempotencyKey('create') },
         },
       ))
-      return toMealOrder(response.data)
+      return await toMealOrder(response.data)
     } catch (error) {
       throw toGatewayError(error)
     }
@@ -83,7 +84,7 @@ export class HttpMealOrderGateway implements MealOrderGateway {
           },
         },
       ))
-      return toMealOrder(response.data)
+      return await toMealOrder(response.data)
     } catch (error) {
       throw toGatewayError(error)
     }
@@ -108,7 +109,26 @@ export class HttpMealOrderGateway implements MealOrderGateway {
           },
         },
       ))
-      return toMealOrder(response.data)
+      return await toMealOrder(response.data)
+    } catch (error) {
+      throw toGatewayError(error)
+    }
+  }
+
+  async remove(id: string, currentVersion: number): Promise<void> {
+    const context = mealOrderContext()
+    try {
+      await retryNetwork(() => requestApiResponse<void>(
+        `/spaces/${encodeURIComponent(context.spaceId)}/meal-orders/${encodeURIComponent(id)}`,
+        {
+          method: 'DELETE',
+          token: context.token,
+          headers: {
+            'If-Match': ifMatch(currentVersion),
+            'Idempotency-Key': createIdempotencyKey('meal-order-delete'),
+          },
+        },
+      ))
     } catch (error) {
       throw toGatewayError(error)
     }
@@ -139,7 +159,11 @@ function mealOrderListPath(
   return `/spaces/${encodeURIComponent(spaceId)}/meal-orders?${params.join('&')}`
 }
 
-function toMealOrder(item: ApiMealOrder): MealOrder {
+async function toMealOrder(item: ApiMealOrder): Promise<MealOrder> {
+  const [createdByAvatarUrl, updatedByAvatarUrl] = await Promise.all([
+    resolveAvatarUrl(item.createdByAvatarMediaId),
+    resolveAvatarUrl(item.updatedByAvatarMediaId),
+  ])
   return {
     id: item.id,
     spaceId: item.spaceId,
@@ -150,6 +174,12 @@ function toMealOrder(item: ApiMealOrder): MealOrder {
     version: item.version,
     createdBy: item.createdBy,
     createdByName: item.createdByName || '空间成员',
+    createdByAvatarMediaId: item.createdByAvatarMediaId ?? '',
+    createdByAvatarUrl,
+    updatedBy: item.updatedBy ?? '',
+    updatedByName: item.updatedByName ?? '',
+    updatedByAvatarMediaId: item.updatedByAvatarMediaId ?? '',
+    updatedByAvatarUrl,
     items: item.items.map((entry) => ({
       id: entry.id,
       recipeId: entry.recipeId,

@@ -60,6 +60,9 @@ interface OrderView extends Omit<MealOrder, 'items'> {
   timeLabel: string
   itemSummary: string
   creatorInitial: string
+  creatorAvatarUrl: string
+  updaterInitial: string
+  updaterAvatarUrl: string
   items: OrderDishView[]
 }
 
@@ -486,6 +489,63 @@ Page({
     this.setData({ historyDetailOrder: null })
   },
 
+  onOrderAvatarError(event: {
+    currentTarget: { dataset: { id?: string; role?: 'creator' | 'updater' } }
+  }) {
+    const id = event.currentTarget.dataset.id
+    const role = event.currentTarget.dataset.role
+    if (!id) return
+    const key = role === 'updater' ? 'updaterAvatarUrl' : 'creatorAvatarUrl'
+    const patch = (order: OrderView): OrderView => (
+      order.id === id ? { ...order, [key]: '' } : order
+    )
+    const historyDetailOrder = this.data.historyDetailOrder
+    this.setData({
+      activeOrders: this.data.activeOrders.map(patch),
+      historyOrders: this.data.historyOrders.map(patch),
+      ...(historyDetailOrder && historyDetailOrder.id === id
+        ? { historyDetailOrder: patch(historyDetailOrder) }
+        : {}),
+    })
+  },
+
+  onDeleteOrder(event: { currentTarget: { dataset: { id?: string; version?: string | number } } }) {
+    const id = event.currentTarget.dataset.id
+    const version = Number(event.currentTarget.dataset.version)
+    if (!id || !Number.isInteger(version) || version <= 0) return
+    wx.showModal({
+      title: '删除这张点菜单？',
+      content: '删除后点菜记录和备菜清单都会消失，无法恢复。',
+      confirmText: '删除',
+      confirmColor: '#a8564e',
+      cancelText: '再想想',
+      success: (result) => {
+        if (result.confirm) void this.deleteOrder(id, version)
+      },
+    })
+  },
+
+  async deleteOrder(id: string, version: number) {
+    if (this.data.orderActionId) return
+    this.setData({ orderActionId: id })
+    try {
+      await mealOrderGateway.remove(id, version)
+      if (this.data.historyDetailOrder?.id === id) {
+        this.setData({ historyDetailOrder: null })
+      }
+      await this.refreshOrders()
+      wx.showToast({ title: '点菜单已删除', icon: 'success' })
+    } catch (error) {
+      if (isMealOrderVersionConflict(error)) await this.refreshOrders()
+      wx.showToast({
+        title: getMealOrderErrorMessage(error, '删除没有完成'),
+        icon: 'none',
+      })
+    } finally {
+      this.setData({ orderActionId: '' })
+    }
+  },
+
   onToggleDishIngredients(event: {
     currentTarget: { dataset: { orderId?: string; dishId?: string } }
   }) {
@@ -644,6 +704,9 @@ function toOrderView(order: MealOrder, recipes: MenuRecipe[]): OrderView {
     timeLabel: formatTime(order.createdAt),
     itemSummary: order.items.map((item) => item.recipeTitle).join('、'),
     creatorInitial: Array.from(order.createdByName || '家')[0] || '家',
+    creatorAvatarUrl: order.createdByAvatarUrl || '',
+    updaterInitial: Array.from(order.updatedByName || order.createdByName || '家')[0] || '家',
+    updaterAvatarUrl: order.updatedByAvatarUrl || '',
   }
 }
 

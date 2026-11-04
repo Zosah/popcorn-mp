@@ -456,6 +456,10 @@ export interface ApiMealOrder {
   version: number
   createdBy: string
   createdByName: string
+  createdByAvatarMediaId?: string
+  updatedBy?: string
+  updatedByName?: string
+  updatedByAvatarMediaId?: string
   items: ApiMealOrderItem[]
   completedAt: string | null
   createdAt: string

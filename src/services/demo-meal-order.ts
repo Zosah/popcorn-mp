@@ -51,6 +51,8 @@ export class DemoMealOrderGateway implements MealOrderGateway {
       }
     })
     const session = readStoredApiSession()
+    const createdAt = now.toISOString()
+    const creatorName = session?.session.user.nickname || '我'
     const order: MealOrder = {
       id: `h_demo_${timestamp}`,
       spaceId: session?.session.activeSpaceId || 'demo-space',
@@ -60,11 +62,17 @@ export class DemoMealOrderGateway implements MealOrderGateway {
       note: input.note.trim(),
       version: 1,
       createdBy: session?.session.user.id || 'demo-user',
-      createdByName: session?.session.user.nickname || '我',
+      createdByName: creatorName,
+      createdByAvatarMediaId: session?.session.user.avatarMediaId || '',
+      createdByAvatarUrl: '',
+      updatedBy: session?.session.user.id || 'demo-user',
+      updatedByName: creatorName,
+      updatedByAvatarMediaId: session?.session.user.avatarMediaId || '',
+      updatedByAvatarUrl: '',
       items,
       completedAt: null,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
+      createdAt,
+      updatedAt: createdAt,
     }
     writeOrders([order, ...readOrders()])
     return order
@@ -84,12 +92,26 @@ export class DemoMealOrderGateway implements MealOrderGateway {
       throw new MealOrderGatewayError('MEAL_ORDER_STATUS_INVALID', '当前状态下不能这样流转')
     }
     const now = new Date().toISOString()
+    const session = readStoredApiSession()
+    const actorID = session?.session.user.id || 'demo-user'
+    const actorName = session?.session.user.nickname || '我'
+    const finishPrep = status === 'ready' || status === 'done'
     const updated: MealOrder = {
       ...current,
       status,
       version: current.version + 1,
       updatedAt: now,
+      updatedBy: actorID,
+      updatedByName: actorName,
+      updatedByAvatarMediaId: session?.session.user.avatarMediaId || '',
+      updatedByAvatarUrl: '',
       completedAt: status === 'done' ? now : current.completedAt,
+      items: finishPrep
+        ? current.items.map((item) => ({
+            ...item,
+            ingredients: item.ingredients.map((ingredient) => ({ ...ingredient, ready: true })),
+          }))
+        : current.items,
     }
     orders[index] = updated
     writeOrders(orders)
@@ -111,10 +133,15 @@ export class DemoMealOrderGateway implements MealOrderGateway {
       throw new MealOrderGatewayError('MEAL_ORDER_STATUS_INVALID', '这张点菜单已经结束')
     }
     let found = false
+    const session = readStoredApiSession()
     const updated: MealOrder = {
       ...current,
       version: current.version + 1,
       updatedAt: new Date().toISOString(),
+      updatedBy: session?.session.user.id || 'demo-user',
+      updatedByName: session?.session.user.nickname || '我',
+      updatedByAvatarMediaId: session?.session.user.avatarMediaId || '',
+      updatedByAvatarUrl: '',
       items: current.items.map((item) => ({
         ...item,
         ingredients: item.ingredients.map((ingredient) => {
@@ -130,6 +157,14 @@ export class DemoMealOrderGateway implements MealOrderGateway {
     orders[index] = updated
     writeOrders(orders)
     return updated
+  }
+
+  async remove(id: string, currentVersion: number): Promise<void> {
+    const orders = readOrders()
+    const current = orders.find((order) => order.id === id)
+    if (!current) throw new MealOrderGatewayError('MEAL_ORDER_NOT_FOUND', '这张点菜单已经不存在')
+    assertVersion(current, currentVersion)
+    writeOrders(orders.filter((order) => order.id !== id))
   }
 }
 

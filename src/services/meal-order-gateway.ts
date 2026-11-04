@@ -33,6 +33,12 @@ export interface MealOrder {
   version: number
   createdBy: string
   createdByName: string
+  createdByAvatarMediaId?: string
+  createdByAvatarUrl?: string
+  updatedBy?: string
+  updatedByName?: string
+  updatedByAvatarMediaId?: string
+  updatedByAvatarUrl?: string
   items: MealOrderItem[]
   completedAt: string | null
   createdAt: string
@@ -70,6 +76,7 @@ export interface MealOrderGateway {
     ready: boolean,
     currentVersion: number,
   ): Promise<MealOrder>
+  remove(id: string, currentVersion: number): Promise<void>
 }
 
 export class MealOrderGatewayError extends Error {

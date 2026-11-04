@@ -55,13 +55,26 @@
       <view wx:for="{{activeOrders}}" wx:key="id" class="menu-order menu-order--{{item.status}}">
         <view class="menu-order__head">
           <view class="menu-order__who">
-            <view class="menu-order__avatar">{{item.creatorInitial}}</view>
+            <view class="menu-order__avatar">
+              <image wx:if="{{item.creatorAvatarUrl}}" class="menu-order__avatar-image" src="{{item.creatorAvatarUrl}}" mode="aspectFill" data-id="{{item.id}}" data-role="creator" binderror="onOrderAvatarError" />
+              <text wx:else>{{item.creatorInitial}}</text>
+            </view>
             <view class="menu-order__meta">
               <text>{{item.dateLabel}} {{item.mealLabel}} · {{item.timeLabel}}</text>
               <text>{{item.createdByName}} 点的菜</text>
             </view>
           </view>
-          <view class="menu-order__status">{{item.statusLabel}}</view>
+          <view class="menu-order__head-actions">
+            <view class="menu-order__status">{{item.statusLabel}}</view>
+            <text class="menu-order__delete" data-id="{{item.id}}" data-version="{{item.version}}" catchtap="onDeleteOrder">删除</text>
+          </view>
+        </view>
+        <view wx:if="{{item.updatedBy && item.updatedBy !== item.createdBy}}" class="menu-order__updater">
+          <view class="menu-order__updater-avatar">
+            <image wx:if="{{item.updaterAvatarUrl}}" class="menu-order__avatar-image" src="{{item.updaterAvatarUrl}}" mode="aspectFill" data-id="{{item.id}}" data-role="updater" binderror="onOrderAvatarError" />
+            <text wx:else>{{item.updaterInitial}}</text>
+          </view>
+          <text>{{item.updatedByName}} 更新</text>
         </view>
 
         <view class="menu-order__dishes">{{item.itemSummary}}</view>
@@ -329,10 +342,24 @@
           <view class="menu-order-detail__status menu-order-detail__status--{{historyDetailOrder.status}}">{{historyDetailOrder.statusLabel}}</view>
         </view>
 
-        <view class="menu-order-detail__meta">
-          <text>{{historyDetailOrder.createdByName}} 发起</text>
-          <text>{{historyDetailOrder.timeLabel}}</text>
+        <view class="menu-order-detail__people">
+          <view class="menu-order-detail__person">
+            <view class="menu-order-detail__person-avatar">
+              <image wx:if="{{historyDetailOrder.creatorAvatarUrl}}" class="menu-order__avatar-image" src="{{historyDetailOrder.creatorAvatarUrl}}" mode="aspectFill" data-id="{{historyDetailOrder.id}}" data-role="creator" binderror="onOrderAvatarError" />
+              <text wx:else>{{historyDetailOrder.creatorInitial}}</text>
+            </view>
+            <text>{{historyDetailOrder.createdByName}} 发起</text>
+          </view>
+          <view wx:if="{{historyDetailOrder.updatedBy}}" class="menu-order-detail__person">
+            <view class="menu-order-detail__person-avatar">
+              <image wx:if="{{historyDetailOrder.updaterAvatarUrl}}" class="menu-order__avatar-image" src="{{historyDetailOrder.updaterAvatarUrl}}" mode="aspectFill" data-id="{{historyDetailOrder.id}}" data-role="updater" binderror="onOrderAvatarError" />
+              <text wx:else>{{historyDetailOrder.updaterInitial}}</text>
+            </view>
+            <text>{{historyDetailOrder.updatedByName}} 更新</text>
+          </view>
+          <text class="menu-order-detail__time">{{historyDetailOrder.timeLabel}}</text>
         </view>
+        <view class="menu-order-detail__delete" data-id="{{historyDetailOrder.id}}" data-version="{{historyDetailOrder.version}}" catchtap="onDeleteOrder">删除这张点菜单</view>
 
         <view wx:if="{{historyDetailOrder.note}}" class="menu-order-detail__note">“{{historyDetailOrder.note}}”</view>
 
