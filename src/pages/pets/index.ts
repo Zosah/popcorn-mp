@@ -56,6 +56,8 @@ type PetSection = 'profile' | 'care' | 'daily' | 'supplies'
 
 type SupplyFilter = PetSupplyCategory | 'all'
 type PetWeightUnit = 'jin' | 'kg'
+type GrowthFilter = 'all' | 'vaccine' | 'weight' | 'visit' | 'checkup'
+type CareFilter = 'all' | PetCareType
 
 type DailyTimelineView = ReturnType<typeof buildPetDailyTimeline>[number] & {
   iconName: string
@@ -76,12 +78,55 @@ type CareTimelineView = ReturnType<typeof buildPetCareTimeline>[number] & {
   elapsedLabel: string
 }
 
+type CareCardView = ReturnType<typeof buildPetCareCards>[number] & {
+  iconName: string
+  lastOnLabel: string
+}
+
+const GROWTH_FILTER_OPTIONS: Array<{ value: GrowthFilter; label: string }> = [
+  { value: 'all', label: '全部' },
+  { value: 'vaccine', label: '疫苗' },
+  { value: 'weight', label: '体重' },
+  { value: 'visit', label: '就诊' },
+  { value: 'checkup', label: '体检' },
+]
+
+const CARE_FILTER_OPTIONS: Array<{ value: CareFilter; label: string }> = [
+  { value: 'all', label: '全部' },
+  { value: 'grooming', label: '洗澡' },
+  { value: 'internal-deworm', label: '内驱' },
+  { value: 'external-deworm', label: '外驱' },
+]
+
+function filterGrowthTimeline(
+  items: readonly GrowthTimelineView[],
+  filter: GrowthFilter,
+): GrowthTimelineView[] {
+  if (filter === 'all') return [...items]
+  if (filter === 'visit') {
+    return items.filter((item) => item.type === 'visit' || item.type === 'illness')
+  }
+  return items.filter((item) => item.type === filter)
+}
+
+function filterCareTimeline(
+  items: readonly CareTimelineView[],
+  filter: CareFilter,
+): CareTimelineView[] {
+  return filter === 'all'
+    ? [...items]
+    : items.filter((item) => item.type === filter)
+}
+
 const GROWTH_ICON_NAMES: Record<PetGrowthItemType, string> = {
   birthday: 'pet-care-birthday',
   home: 'pet-care-homecoming',
   neuter: 'pet-care-neuter',
   vaccine: 'pet-care-vaccine',
   weight: 'pet-metric-weight',
+  visit: 'pet-care-visit',
+  illness: 'pet-care-visit',
+  checkup: 'pet-care-visit',
 }
 
 const EMPTY_PROFILE: DemoPetProfile = {
@@ -257,7 +302,7 @@ function composeDailyLogSummary(
   return extra ? `${extra} · ${choice}` : choice
 }
 
-const PET_PAGE_CACHE_KEY = 'pets:overview:v6'
+const PET_PAGE_CACHE_KEY = 'pets:overview:v7'
 
 function weightUnitLabel(unit: PetWeightUnit): string {
   return unit === 'jin' ? '斤' : 'kg'
@@ -407,13 +452,17 @@ Page({
       active: boolean
     }>,
     weightTrendLabel: '',
+    growthFilters: GROWTH_FILTER_OPTIONS,
+    growthFilter: 'all' as GrowthFilter,
     growthTimeline: [] as GrowthTimelineView[],
+    growthTimelineFiltered: [] as GrowthTimelineView[],
     growthTimelineVisible: [] as GrowthTimelineView[],
     growthTimelineExpanded: false,
-    careCards: [] as Array<
-      ReturnType<typeof buildPetCareCards>[number] & { iconName: string }
-    >,
+    careFilters: CARE_FILTER_OPTIONS,
+    careFilter: 'all' as CareFilter,
+    careCards: [] as CareCardView[],
     careTimeline: [] as CareTimelineView[],
+    careTimelineFiltered: [] as CareTimelineView[],
     careTimelineVisible: [] as CareTimelineView[],
     careTimelineExpanded: false,
     dailySummary: [] as Array<
@@ -686,8 +735,24 @@ Page({
     this.setData({
       growthTimelineExpanded,
       growthTimelineVisible: growthTimelineExpanded
-        ? this.data.growthTimeline
-        : this.data.growthTimeline.slice(0, 5),
+        ? this.data.growthTimelineFiltered
+        : this.data.growthTimelineFiltered.slice(0, 5),
+    })
+  },
+
+  onSelectGrowthFilter(event: {
+    currentTarget: { dataset: { value: GrowthFilter } }
+  }) {
+    const growthFilter = event.currentTarget.dataset.value
+    const growthTimelineFiltered = filterGrowthTimeline(
+      this.data.growthTimeline,
+      growthFilter,
+    )
+    this.setData({
+      growthFilter,
+      growthTimelineExpanded: false,
+      growthTimelineFiltered,
+      growthTimelineVisible: growthTimelineFiltered.slice(0, 5),
     })
   },
 
@@ -696,8 +761,21 @@ Page({
     this.setData({
       careTimelineExpanded,
       careTimelineVisible: careTimelineExpanded
-        ? this.data.careTimeline
-        : this.data.careTimeline.slice(0, 5),
+        ? this.data.careTimelineFiltered
+        : this.data.careTimelineFiltered.slice(0, 5),
+    })
+  },
+
+  onSelectCareFilter(event: {
+    currentTarget: { dataset: { value: CareFilter } }
+  }) {
+    const careFilter = event.currentTarget.dataset.value
+    const careTimelineFiltered = filterCareTimeline(this.data.careTimeline, careFilter)
+    this.setData({
+      careFilter,
+      careTimelineExpanded: false,
+      careTimelineFiltered,
+      careTimelineVisible: careTimelineFiltered.slice(0, 5),
     })
   },
 
@@ -755,9 +833,10 @@ Page({
       iconName: PET_DAILY_ICON_NAMES[item.type],
       metaLabel: item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`,
     }))
-    const careCards = buildPetCareCards(state.events, today).map((item) => ({
+    const careCards: CareCardView[] = buildPetCareCards(state.events, today).map((item) => ({
       ...item,
       iconName: PET_EVENT_ICON_NAMES[item.type],
+      lastOnLabel: item.lastOn ? item.lastOn.replace(/-/g, '.') : '',
     }))
     const careTimeline: CareTimelineView[] = buildPetCareTimeline(state.events).map((item) => {
       const [, month = '', day = ''] = item.occurredOn.split('-')
@@ -769,6 +848,14 @@ Page({
         elapsedLabel: formatPetElapsed(item.occurredOn, today),
       }
     })
+    const growthTimelineFiltered = filterGrowthTimeline(
+      growthTimeline,
+      this.data.growthFilter,
+    )
+    const careTimelineFiltered = filterCareTimeline(
+      careTimeline,
+      this.data.careFilter,
+    )
     const currentSupplies = getCurrentPetSupplies(state.supplies).map((item) => ({
       id: item.id,
       categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
@@ -819,14 +906,16 @@ Page({
       weightPoints,
       weightTrendLabel,
       growthTimeline,
+      growthTimelineFiltered,
       growthTimelineVisible: this.data.growthTimelineExpanded
-        ? growthTimeline
-        : growthTimeline.slice(0, 5),
+        ? growthTimelineFiltered
+        : growthTimelineFiltered.slice(0, 5),
       careCards,
       careTimeline,
+      careTimelineFiltered,
       careTimelineVisible: this.data.careTimelineExpanded
-        ? careTimeline
-        : careTimeline.slice(0, 5),
+        ? careTimelineFiltered
+        : careTimelineFiltered.slice(0, 5),
       dailySummary: dailySummary.map((item) => ({
         ...item,
         metaLabel: item.elapsedLabel === '还没有记录'
@@ -1681,7 +1770,7 @@ Page({
   onAddGrowthRecord() {
     if (!requireAuthForWrite()) return
     wx.showActionSheet({
-      itemList: ['记录疫苗', '记录体重'],
+      itemList: ['记录疫苗', '记录体重', '记录就诊', '记录体检'],
       success: (result) => {
         if (result.tapIndex === 0) {
           wx.navigateTo({
@@ -1689,7 +1778,14 @@ Page({
           })
           return
         }
-        if (result.tapIndex === 1) this.onRecordWeight()
+        if (result.tapIndex === 1) {
+          this.onRecordWeight()
+          return
+        }
+        const type = result.tapIndex === 2 ? 'visit' : 'checkup'
+        wx.navigateTo({
+          url: `/pages/pet-event-form/index?type=${type}&date=${getShanghaiDateOnly(Date.now())}`,
+        })
       },
     })
   },

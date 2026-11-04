@@ -11,10 +11,28 @@ import {
 } from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
-const EVENT_TYPES = Object.entries(PET_EVENT_LABELS).map(([value, label]) => ({
-  value: value as PetEventType,
-  label,
-}))
+interface EventTypeOption {
+  value: PetEventType
+  label: string
+}
+
+const EVENT_TYPES: EventTypeOption[] = Object.entries(PET_EVENT_LABELS)
+  .filter(([value]) => value !== 'illness')
+  .map(([value, label]) => ({
+    value: value as PetEventType,
+    label,
+  }))
+
+const LEGACY_ILLNESS_EVENT_TYPE: EventTypeOption = {
+  value: 'illness',
+  label: PET_EVENT_LABELS.illness,
+}
+
+function eventTypesFor(type?: string): EventTypeOption[] {
+  return type === 'illness'
+    ? [...EVENT_TYPES, LEGACY_ILLNESS_EVENT_TYPE]
+    : EVENT_TYPES
+}
 
 Page({
   data: {
@@ -31,6 +49,7 @@ Page({
     errorText: '',
     pageTitle: '记录一件事',
     saveText: '保存到时间线',
+    eventTypes: EVENT_TYPES,
     eventTypeIndex: 0,
     eventTypeLabels: EVENT_TYPES.map((item) => item.label),
     eventTypeIconNames: EVENT_TYPES.map(
@@ -73,11 +92,12 @@ Page({
       if (!pet) throw new Error('还没有宠物档案')
       const editingEvent = match?.event ?? null
       const selectedType = editingEvent?.type ?? requestedType
+      const eventTypes = eventTypesFor(selectedType)
       const eventTypeIndex = Math.max(
         0,
-        EVENT_TYPES.findIndex((item) => item.value === selectedType),
+        eventTypes.findIndex((item) => item.value === selectedType),
       )
-      const eventType = EVENT_TYPES[eventTypeIndex] ?? EVENT_TYPES[0]!
+      const eventType = eventTypes[eventTypeIndex] ?? eventTypes[0]!
       const occurredOn = editingEvent?.occurredOn ?? requestedDate
       this.setData({
         petName: pet.profile.name,
@@ -86,7 +106,12 @@ Page({
         editingEventVersion: editingEvent?.version ?? 0,
         pageTitle: editingEvent ? '编辑这件事' : '记录一件事',
         saveText: editingEvent ? '保存修改' : '保存到时间线',
+        eventTypes,
         eventTypeIndex,
+        eventTypeLabels: eventTypes.map((item) => item.label),
+        eventTypeIconNames: eventTypes.map(
+          (item) => PET_EVENT_ICON_NAMES[item.value],
+        ),
         hasNextDate: Boolean(editingEvent?.nextOn),
         form: {
           ...this.data.form,
@@ -122,7 +147,7 @@ Page({
 
   onTypeChange(event: { detail: { value: string } }) {
     const index = Number(event.detail.value)
-    const option = EVENT_TYPES[index]
+    const option = this.data.eventTypes[index]
     if (!option) return
     this.setData({
       eventTypeIndex: index,

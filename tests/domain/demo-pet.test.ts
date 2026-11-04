@@ -16,6 +16,7 @@ import {
   getCurrentPetSupplies,
   getPetSupplyPreferenceHearts,
   getPetSupplyPreferenceLabel,
+  PET_EVENT_LABELS,
   shiftPetCalendarMonth,
 } from '../../src/domain/demo-pet'
 import { createDemoPetState } from '../../src/mocks/pet-fixtures'
@@ -48,15 +49,33 @@ describe('宠物档案领域逻辑', () => {
 })
 
 describe('成长记录', () => {
-  it('只展示出生、到家、绝育、疫苗和体重', () => {
+  it('展示成长事实，并把就诊、生病和体检收进档案时间线', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    state.events.push({
+      id: 'event-checkup',
+      type: 'checkup',
+      occurredOn: '2026-08-01',
+      title: '年度体检',
+      note: '',
+      createdAt: '2026-08-01T00:00:00.000Z',
+    })
     const growth = buildPetGrowthTimeline(state)
 
     expect(new Set(growth.map((item) => item.type))).toEqual(
-      new Set(['birthday', 'home', 'neuter', 'vaccine', 'weight']),
+      new Set([
+        'birthday',
+        'home',
+        'neuter',
+        'vaccine',
+        'weight',
+        'visit',
+        'illness',
+        'checkup',
+      ]),
     )
     expect(growth.some((item) => String(item.type) === 'grooming')).toBe(false)
-    expect(growth.some((item) => String(item.type) === 'visit')).toBe(false)
+    expect(growth.find((item) => item.type === 'illness')?.label).toBe('就诊')
+    expect(growth.find((item) => item.type === 'checkup')?.label).toBe('体检')
     expect(growth.filter((item) => item.type === 'weight')).toHaveLength(
       state.weights.length,
     )
@@ -88,7 +107,7 @@ describe('首页宠物动态', () => {
 })
 
 describe('护理记录', () => {
-  it('照护页覆盖洗护、内外驱、就诊、生病和体检，未明确安排时不自动推算下次日期', () => {
+  it('护理页只保留洗护、内驱和外驱，未明确安排时不自动推算下次日期', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const cards = buildPetCareCards(state.events, '2026-08-27')
 
@@ -96,10 +115,8 @@ describe('护理记录', () => {
       'grooming',
       'internal-deworm',
       'external-deworm',
-      'visit',
-      'illness',
-      'checkup',
     ])
+    expect(cards.map((item) => item.title)).toEqual(['洗澡', '内驱', '外驱'])
     expect(cards.find((item) => item.type === 'internal-deworm')).toMatchObject({
       type: 'internal-deworm',
       nextOn: null,
@@ -142,7 +159,7 @@ describe('护理记录', () => {
     })
   })
 
-  it('护理历史只保留驱虫、洗护、生病、就诊和体检，不混入疫苗与成长事实', () => {
+  it('护理历史只保留洗护与驱虫，不混入档案中的医疗和成长事实', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const careTimeline = buildPetCareTimeline(state.events)
 
@@ -150,11 +167,14 @@ describe('护理记录', () => {
       'grooming',
       'external-deworm',
       'internal-deworm',
-      'visit',
-      'illness',
     ])
+    expect(careTimeline.map((item) => item.label)).toEqual(['洗澡', '外驱', '内驱'])
     expect(careTimeline.some((item) => String(item.type) === 'vaccine')).toBe(false)
+    expect(careTimeline.some((item) => String(item.type) === 'visit')).toBe(false)
     expect(careTimeline.every((item) => item.eventId)).toBe(true)
+    expect(PET_EVENT_LABELS.illness).toBe('就诊')
+    expect(PET_EVENT_LABELS['internal-deworm']).toBe('内驱')
+    expect(PET_EVENT_LABELS['external-deworm']).toBe('外驱')
   })
 
   it('护理间隔超过十二个月时增加年维度', () => {

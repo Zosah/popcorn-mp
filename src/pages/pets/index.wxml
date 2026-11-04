@@ -84,15 +84,15 @@
       <block wx:if="{{profileSectionActive}}">
         <view class="profile-facts-card">
           <picker class="profile-fact" mode="date" value="{{profile.birthday}}" end="{{todayDate}}" data-field="birthday" bindchange="onProfileDateChange">
-            <text class="profile-fact__label">出生日期</text>
+            <view class="profile-fact__label-line"><line-icon name="pet-care-birthday" size="25" tone="color" /><text class="profile-fact__label">出生</text></view>
             <text class="profile-fact__value">{{birthdayLabel}}</text>
           </picker>
           <picker class="profile-fact" mode="date" value="{{profile.homeOn}}" end="{{todayDate}}" data-field="homeOn" bindchange="onProfileDateChange">
-            <text class="profile-fact__label">到家时间</text>
+            <view class="profile-fact__label-line"><line-icon name="pet-care-homecoming" size="25" tone="color" /><text class="profile-fact__label">到家</text></view>
             <text class="profile-fact__value">{{homeOnLabel}}</text>
           </picker>
           <picker class="profile-fact" mode="date" value="{{profile.neuteredOn}}" end="{{todayDate}}" data-field="neuteredOn" bindchange="onProfileDateChange">
-            <text class="profile-fact__label">绝育时间</text>
+            <view class="profile-fact__label-line"><line-icon name="pet-care-neuter" size="25" tone="color" /><text class="profile-fact__label">绝育</text></view>
             <text class="profile-fact__value {{profile.neuteredOn ? '' : 'profile-fact__value--empty'}}">{{neuteredOnLabel}}</text>
           </picker>
         </view>
@@ -113,7 +113,10 @@
           <view><text class="pet-section-head__title">成长记录</text></view>
           <view bindtap="onAddGrowthRecord">新增</view>
         </view>
-        <view wx:if="{{growthTimelineVisible.length}}" class="daily-timeline growth-timeline">
+        <view class="pet-filter-bar">
+          <view wx:for="{{growthFilters}}" wx:key="value" class="pet-filter-chip {{growthFilter === item.value ? 'pet-filter-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectGrowthFilter">{{item.label}}</view>
+        </view>
+        <view wx:if="{{growthTimelineFiltered.length}}" class="daily-timeline growth-timeline">
           <view wx:for="{{growthTimelineVisible}}" wx:key="id" class="daily-timeline__row" data-id="{{item.id}}" data-type="{{item.type}}" data-event-id="{{item.eventId}}" data-weight-id="{{item.weightId}}" bindtap="onOpenGrowthRecord">
             <view class="daily-timeline__rail">
               <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
@@ -126,8 +129,8 @@
             </view>
           </view>
         </view>
-        <view wx:if="{{growthTimeline.length > 5}}" class="timeline-more" bindtap="onToggleGrowthTimeline">{{growthTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{growthTimelineExpanded ? '↑' : '↓'}}</text></view>
-        <view wx:if="{{!growthTimeline.length}}" class="pet-empty-line">还没有成长记录</view>
+        <view wx:if="{{growthTimelineFiltered.length > 5}}" class="timeline-more" bindtap="onToggleGrowthTimeline">{{growthTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{growthTimelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{!growthTimelineFiltered.length}}" class="pet-empty-line">这一类还没有记录</view>
 
         <view class="profile-danger-zone"><view><text>删除档案</text><text>档案、照护和用品记录会一起移除</text></view><button bindtap="onDeletePet">删除</button></view>
       </block>
@@ -141,7 +144,7 @@
             <view class="care-row__icon"><line-icon name="{{item.iconName}}" size="38" tone="color" /></view>
             <view class="care-row__body">
               <view class="care-row__title">{{item.title}}</view>
-              <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOn}} · 已过 <text>{{item.elapsedLabel}}</text></view>
+              <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOnLabel}} · 已过 <text>{{item.elapsedLabel}}</text></view>
               <view wx:else class="care-row__elapsed">还没有记录</view>
               <view wx:if="{{item.nextOn}}" class="care-row__plan">下次 {{item.nextOn}}</view>
             </view>
@@ -152,7 +155,10 @@
           <view><text class="pet-section-head__title">护理记录</text></view>
           <view bindtap="onAddCareEvent">新增</view>
         </view>
-        <view wx:if="{{careTimelineVisible.length}}" class="daily-timeline care-timeline">
+        <view class="pet-filter-bar pet-filter-bar--care">
+          <view wx:for="{{careFilters}}" wx:key="value" class="pet-filter-chip {{careFilter === item.value ? 'pet-filter-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectCareFilter">{{item.label}}</view>
+        </view>
+        <view wx:if="{{careTimelineFiltered.length}}" class="daily-timeline care-timeline">
           <view wx:for="{{careTimelineVisible}}" wx:key="id" class="daily-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
             <view class="daily-timeline__rail">
               <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
@@ -165,8 +171,8 @@
             </view>
           </view>
         </view>
-        <view wx:if="{{careTimeline.length > 5}}" class="timeline-more" bindtap="onToggleCareTimeline">{{careTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{careTimelineExpanded ? '↑' : '↓'}}</text></view>
-        <view wx:if="{{!careTimeline.length}}" class="pet-empty-line">还没有护理记录，点右上角记下第一条</view>
+        <view wx:if="{{careTimelineFiltered.length > 5}}" class="timeline-more" bindtap="onToggleCareTimeline">{{careTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{careTimelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{!careTimelineFiltered.length}}" class="pet-empty-line">这一类还没有护理记录</view>
       </block>
 
       <block wx:elif="{{activeSection === 'daily'}}">

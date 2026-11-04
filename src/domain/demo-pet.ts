@@ -15,9 +15,6 @@ export type PetCareType =
   | 'grooming'
   | 'internal-deworm'
   | 'external-deworm'
-  | 'visit'
-  | 'illness'
-  | 'checkup'
 
 export type PetDailyLogType =
   | 'meal'
@@ -152,6 +149,9 @@ export type PetGrowthItemType =
   | 'neuter'
   | 'vaccine'
   | 'weight'
+  | 'visit'
+  | 'illness'
+  | 'checkup'
 
 export interface PetGrowthTimelineItem {
   id: string
@@ -232,12 +232,12 @@ export const PET_EVENT_LABELS: Record<PetEventType, string> = {
   vaccine: '疫苗',
   neuter: '绝育',
   grooming: '洗澡',
-  illness: '生病',
+  illness: '就诊',
   visit: '就诊',
   checkup: '体检',
   outing: '外出',
-  'internal-deworm': '体内驱虫',
-  'external-deworm': '体外驱虫',
+  'internal-deworm': '内驱',
+  'external-deworm': '外驱',
 }
 
 export const PET_SUPPLY_CATEGORY_LABELS: Record<PetSupplyCategory, string> = {
@@ -302,9 +302,6 @@ export const PET_CARE_TYPES: readonly PetCareType[] = [
   'grooming',
   'internal-deworm',
   'external-deworm',
-  'visit',
-  'illness',
-  'checkup',
 ]
 
 export function isPetCareType(type: PetEventType): type is PetCareType {
@@ -448,14 +445,22 @@ export function buildPetGrowthTimeline(
   }
 
   state.events
-    .filter((event) => event.type === 'vaccine')
+    .filter(
+      (event) =>
+        event.type === 'vaccine'
+        || event.type === 'visit'
+        || event.type === 'illness'
+        || event.type === 'checkup',
+    )
     .forEach((event) => {
+      const label =
+        event.type === 'illness' ? PET_EVENT_LABELS.visit : PET_EVENT_LABELS[event.type]
       items.push({
         id: `growth-${event.id}`,
-        type: 'vaccine',
+        type: event.type as PetGrowthItemType,
         occurredOn: event.occurredOn,
-        label: PET_EVENT_LABELS.vaccine,
-        content: event.title || PET_EVENT_LABELS.vaccine,
+        label,
+        content: event.title || label,
         note: [event.note, event.provider].filter(Boolean).join(' · '),
         eventId: event.id,
       })
