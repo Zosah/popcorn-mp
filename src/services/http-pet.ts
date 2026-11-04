@@ -634,7 +634,7 @@ function toSpecies(value: string): PetSpecies {
 
 function toEventType(value: string): PetEventType {
   const types: PetEventType[] = [
-    'vaccine', 'neuter', 'grooming', 'illness', 'visit', 'outing',
+    'vaccine', 'neuter', 'grooming', 'illness', 'visit', 'checkup', 'outing',
     'internal-deworm', 'external-deworm',
   ]
   return types.includes(value as PetEventType) ? value as PetEventType : 'outing'

@@ -42,6 +42,7 @@ export const PET_EVENT_ICON_NAMES: Record<PetEventType, string> = {
   grooming: 'pet-care-grooming',
   illness: 'pet-care-illness',
   visit: 'pet-care-visit',
+  checkup: 'pet-care-visit',
   outing: 'pet-care-outing',
   'internal-deworm': 'pet-care-internal-deworm',
   'external-deworm': 'pet-care-external-deworm',

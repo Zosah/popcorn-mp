@@ -6,15 +6,18 @@ export type PetEventType =
   | 'grooming'
   | 'illness'
   | 'visit'
+  | 'checkup'
   | 'outing'
   | 'internal-deworm'
   | 'external-deworm'
 
 export type PetCareType =
-  | 'vaccine'
   | 'grooming'
   | 'internal-deworm'
   | 'external-deworm'
+  | 'visit'
+  | 'illness'
+  | 'checkup'
 
 export type PetDailyLogType =
   | 'meal'
@@ -143,6 +146,34 @@ export interface PetTimelineItem {
   typeLabel: string
 }
 
+export type PetGrowthItemType =
+  | 'birthday'
+  | 'home'
+  | 'neuter'
+  | 'vaccine'
+  | 'weight'
+
+export interface PetGrowthTimelineItem {
+  id: string
+  type: PetGrowthItemType
+  occurredOn: string
+  label: string
+  content: string
+  note: string
+  eventId?: string
+  weightId?: string
+}
+
+export interface PetCareTimelineItem {
+  id: string
+  type: PetCareType
+  occurredOn: string
+  label: string
+  content: string
+  note: string
+  eventId: string
+}
+
 export interface PetCareCard {
   type: PetCareType
   title: string
@@ -203,6 +234,7 @@ export const PET_EVENT_LABELS: Record<PetEventType, string> = {
   grooming: '洗澡',
   illness: '生病',
   visit: '就诊',
+  checkup: '体检',
   outing: '外出',
   'internal-deworm': '体内驱虫',
   'external-deworm': '体外驱虫',
@@ -270,6 +302,9 @@ export const PET_CARE_TYPES: readonly PetCareType[] = [
   'grooming',
   'internal-deworm',
   'external-deworm',
+  'visit',
+  'illness',
+  'checkup',
 ]
 
 export function isPetCareType(type: PetEventType): type is PetCareType {
@@ -320,10 +355,17 @@ export function formatPetElapsed(from: string, to: string): string {
   if (days === 0) return '今天'
   const months = wholeMonthsBetween(from, to)
   if (months <= 0) return `${days} 天`
+
+  const years = Math.floor(months / 12)
+  const remainingMonths = months % 12
   const anchor = new Date(`${from}T00:00:00.000Z`)
   anchor.setUTCMonth(anchor.getUTCMonth() + months)
   const remainder = Math.max(0, Math.floor((toMs - anchor.getTime()) / 86400000))
-  return remainder > 0 ? `${months} 个月 ${remainder} 天` : `${months} 个月`
+  const parts: string[] = []
+  if (years > 0) parts.push(`${years} 年`)
+  if (remainingMonths > 0) parts.push(`${remainingMonths} 个月`)
+  if (remainder > 0) parts.push(`${remainder} 天`)
+  return parts.join(' ')
 }
 
 export function formatPetElapsedHours(from: string, nowMs = Date.now()): string {
@@ -367,6 +409,98 @@ export function buildPetTimeline(state: DemoPetState): PetTimelineItem[] {
       right.occurredOn.localeCompare(left.occurredOn) ||
       right.id.localeCompare(left.id),
   )
+}
+
+export function buildPetGrowthTimeline(
+  state: DemoPetState,
+): PetGrowthTimelineItem[] {
+  const items: PetGrowthTimelineItem[] = []
+
+  if (state.profile.birthday) {
+    items.push({
+      id: 'growth-birthday',
+      type: 'birthday',
+      occurredOn: state.profile.birthday,
+      label: '出生',
+      content: `${state.profile.name}出生`,
+      note: '',
+    })
+  }
+  if (state.profile.homeOn) {
+    items.push({
+      id: 'growth-home',
+      type: 'home',
+      occurredOn: state.profile.homeOn,
+      label: '到家',
+      content: '来到我们家',
+      note: '',
+    })
+  }
+  if (state.profile.neuteredOn) {
+    items.push({
+      id: 'growth-neuter',
+      type: 'neuter',
+      occurredOn: state.profile.neuteredOn,
+      label: '绝育',
+      content: '完成绝育',
+      note: '',
+    })
+  }
+
+  state.events
+    .filter((event) => event.type === 'vaccine')
+    .forEach((event) => {
+      items.push({
+        id: `growth-${event.id}`,
+        type: 'vaccine',
+        occurredOn: event.occurredOn,
+        label: PET_EVENT_LABELS.vaccine,
+        content: event.title || PET_EVENT_LABELS.vaccine,
+        note: [event.note, event.provider].filter(Boolean).join(' · '),
+        eventId: event.id,
+      })
+    })
+
+  state.weights.forEach((weight) => {
+    items.push({
+      id: `growth-${weight.id}`,
+      type: 'weight',
+      occurredOn: weight.recordedOn,
+      label: '体重',
+      content: `${formatPetWeight(weight.value)} kg`,
+      note: '',
+      weightId: weight.id,
+    })
+  })
+
+  return items.sort(
+    (left, right) =>
+      right.occurredOn.localeCompare(left.occurredOn)
+      || right.id.localeCompare(left.id),
+  )
+}
+
+export function buildPetCareTimeline(
+  events: readonly DemoPetEvent[],
+): PetCareTimelineItem[] {
+  return events
+    .filter((event): event is DemoPetEvent & { type: PetCareType } =>
+      PET_CARE_TYPES.includes(event.type as PetCareType),
+    )
+    .map((event) => ({
+      id: event.id,
+      type: event.type,
+      occurredOn: event.occurredOn,
+      label: PET_EVENT_LABELS[event.type],
+      content: event.title || PET_EVENT_LABELS[event.type],
+      note: [event.note, event.provider].filter(Boolean).join(' · '),
+      eventId: event.id,
+    }))
+    .sort(
+      (left, right) =>
+        right.occurredOn.localeCompare(left.occurredOn)
+        || right.id.localeCompare(left.id),
+    )
 }
 
 export function buildPetHomeActivities(

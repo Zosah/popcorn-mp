@@ -57,7 +57,7 @@
       <view class="pet-stats">
         <view bindtap="onToggleWeightUnit"><view class="pet-stats__value">{{latestWeight}}<text>{{weightUnitLabel}}</text></view><view class="pet-stats__label">当前体重 · 点击切换</view></view>
         <view><view class="pet-stats__value">{{companionDays}}</view><view class="pet-stats__label">天陪伴日</view></view>
-        <view><view class="pet-stats__value">{{timeline.length}}</view><view class="pet-stats__label">条成长记录</view></view>
+        <view><view class="pet-stats__value">{{growthTimeline.length}}</view><view class="pet-stats__label">条成长记录</view></view>
       </view>
     </view>
 
@@ -81,34 +81,20 @@
     </view>
 
     <view class="pet-content">
-      <block wx:if="{{activeSection === 'profile'}}">
-        <view class="pet-toolbar">
-          <view bindtap="onToggleProfileEditor">{{editingProfile ? '取消' : '编辑'}}</view>
-        </view>
+      <block wx:if="{{profileSectionActive}}">
         <view class="profile-facts-card">
-          <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-birthday" size="36" tone="color" /></view><text class="profile-fact__label">出生日期</text></view>
+          <picker class="profile-fact" mode="date" value="{{profile.birthday}}" end="{{todayDate}}" data-field="birthday" bindchange="onProfileDateChange">
+            <text class="profile-fact__label">出生日期</text>
             <text class="profile-fact__value">{{birthdayLabel}}</text>
-          </view>
-          <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-homecoming" size="36" tone="color" /></view><text class="profile-fact__label">到家时间</text></view>
+          </picker>
+          <picker class="profile-fact" mode="date" value="{{profile.homeOn}}" end="{{todayDate}}" data-field="homeOn" bindchange="onProfileDateChange">
+            <text class="profile-fact__label">到家时间</text>
             <text class="profile-fact__value">{{homeOnLabel}}</text>
-          </view>
-          <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-vaccine" size="36" tone="color" /></view><text class="profile-fact__label">最近疫苗</text></view>
-            <text class="profile-fact__value">{{latestVaccineLabel}}</text><text class="profile-fact__hint">{{vaccineNextLabel}}</text>
-          </view>
-          <view class="profile-fact">
-            <view class="profile-fact__head"><view class="profile-fact__icon"><line-icon name="pet-care-neuter" size="36" tone="color" /></view><text class="profile-fact__label">绝育</text></view>
-            <text class="profile-fact__value">{{profile.neuteredOn ? neuteredOnLabel : '未绝育'}}</text>
-          </view>
-        </view>
-        <view wx:if="{{editingProfile}}" class="profile-editor">
-          <view class="profile-field"><text>出生日期</text><picker mode="date" value="{{profileDraft.birthday}}" bindchange="onBirthdayChange"><view>{{profileDraft.birthday || '选择日期'}} ›</view></picker></view>
-          <view class="profile-field"><text>到家日期</text><picker mode="date" value="{{profileDraft.homeOn}}" bindchange="onHomeDateChange"><view>{{profileDraft.homeOn || '选择日期'}} ›</view></picker></view>
-          <view class="profile-field"><text>是否绝育</text><switch checked="{{profileDraft.neuteredOn}}" color="#5f7d70" bindchange="onNeuteredToggle" /></view>
-          <view wx:if="{{profileDraft.neuteredOn}}" class="profile-field"><text>绝育日期</text><picker mode="date" value="{{profileDraft.neuteredOn}}" bindchange="onNeuteredDateChange"><view>{{profileDraft.neuteredOn}} ›</view></picker></view>
-          <button class="profile-editor__save" bindtap="onSaveProfile">保存档案</button>
+          </picker>
+          <picker class="profile-fact" mode="date" value="{{profile.neuteredOn}}" end="{{todayDate}}" data-field="neuteredOn" bindchange="onProfileDateChange">
+            <text class="profile-fact__label">绝育时间</text>
+            <text class="profile-fact__value {{profile.neuteredOn ? '' : 'profile-fact__value--empty'}}">{{neuteredOnLabel}}</text>
+          </picker>
         </view>
 
         <view class="pet-section-head pet-section-head--plain">
@@ -125,19 +111,23 @@
 
         <view class="pet-section-head pet-section-head--plain">
           <view><text class="pet-section-head__title">成长记录</text></view>
-          <view bindtap="onAddEvent">新增</view>
+          <view bindtap="onAddGrowthRecord">新增</view>
         </view>
-        <view class="pet-timeline">
-          <view wx:for="{{timelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="38" tone="color" /></view><view class="timeline-row__line"></view></view>
-            <view class="timeline-row__body">
-              <view class="timeline-row__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text></view>
-              <view class="timeline-row__title">{{item.title}}</view>
-              <text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text>
+        <view wx:if="{{growthTimelineVisible.length}}" class="daily-timeline growth-timeline">
+          <view wx:for="{{growthTimelineVisible}}" wx:key="id" class="daily-timeline__row" data-id="{{item.id}}" data-type="{{item.type}}" data-event-id="{{item.eventId}}" data-weight-id="{{item.weightId}}" bindtap="onOpenGrowthRecord">
+            <view class="daily-timeline__rail">
+              <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
+              <view class="daily-timeline__line"></view>
+            </view>
+            <view class="daily-timeline__body">
+              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view>
+              <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
+              <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
         </view>
-        <view wx:if="{{timeline.length > 5}}" class="timeline-more" bindtap="onToggleTimeline">{{timelineExpanded ? '收起' : '查看更早记录'}}<text>{{timelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{growthTimeline.length > 5}}" class="timeline-more" bindtap="onToggleGrowthTimeline">{{growthTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{growthTimelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{!growthTimeline.length}}" class="pet-empty-line">还没有成长记录</view>
 
         <view class="profile-danger-zone"><view><text>删除档案</text><text>档案、照护和用品记录会一起移除</text></view><button bindtap="onDeletePet">删除</button></view>
       </block>
@@ -159,20 +149,24 @@
           </view>
         </view>
         <view class="pet-section-head pet-section-head--plain">
-          <view><text class="pet-section-head__title">记录</text></view>
-          <view bindtap="onAddEvent">新增</view>
+          <view><text class="pet-section-head__title">护理记录</text></view>
+          <view bindtap="onAddCareEvent">新增</view>
         </view>
-        <view class="pet-timeline">
-          <view wx:for="{{careTimelineVisible}}" wx:key="id" class="timeline-row" data-id="{{item.id}}" bindtap="onOpenEvent">
-            <view class="timeline-row__rail"><view class="timeline-row__dot"><line-icon name="{{item.iconName}}" size="38" tone="color" /></view><view class="timeline-row__line"></view></view>
-            <view class="timeline-row__body">
-              <view class="timeline-row__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text></view>
-              <view class="timeline-row__title">{{item.title}}</view>
-              <text class="timeline-row__copy">{{item.detailText || item.typeLabel}}</text>
+        <view wx:if="{{careTimelineVisible.length}}" class="daily-timeline care-timeline">
+          <view wx:for="{{careTimelineVisible}}" wx:key="id" class="daily-timeline__row" data-id="{{item.id}}" bindtap="onOpenEvent">
+            <view class="daily-timeline__rail">
+              <view class="daily-timeline__dot"><line-icon name="{{item.iconName}}" size="32" tone="color" /></view>
+              <view class="daily-timeline__line"></view>
+            </view>
+            <view class="daily-timeline__body">
+              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view>
+              <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
+              <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
         </view>
         <view wx:if="{{careTimeline.length > 5}}" class="timeline-more" bindtap="onToggleCareTimeline">{{careTimelineExpanded ? '收起' : '查看更早记录'}}<text>{{careTimelineExpanded ? '↑' : '↓'}}</text></view>
+        <view wx:if="{{!careTimeline.length}}" class="pet-empty-line">还没有护理记录，点右上角记下第一条</view>
       </block>
 
       <block wx:elif="{{activeSection === 'daily'}}">

@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildPetCareCards,
+  buildPetCareTimeline,
   buildPetCalendar,
   buildPetDailyTimeline,
   buildPetDailySummary,
+  buildPetGrowthTimeline,
   buildPetHomeActivities,
   buildPetTimeline,
   filterPetSupplies,
   formatPetAge,
+  formatPetElapsed,
   formatPetWeight,
   getCurrentPetSupplies,
   getPetSupplyPreferenceHearts,
@@ -44,6 +47,22 @@ describe('宠物档案领域逻辑', () => {
   })
 })
 
+describe('成长记录', () => {
+  it('只展示出生、到家、绝育、疫苗和体重', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const growth = buildPetGrowthTimeline(state)
+
+    expect(new Set(growth.map((item) => item.type))).toEqual(
+      new Set(['birthday', 'home', 'neuter', 'vaccine', 'weight']),
+    )
+    expect(growth.some((item) => String(item.type) === 'grooming')).toBe(false)
+    expect(growth.some((item) => String(item.type) === 'visit')).toBe(false)
+    expect(growth.filter((item) => item.type === 'weight')).toHaveLength(
+      state.weights.length,
+    )
+  })
+})
+
 describe('首页宠物动态', () => {
   it('把今日照护、最近体重和照护事件整理成倒序动态', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
@@ -69,7 +88,7 @@ describe('首页宠物动态', () => {
 })
 
 describe('护理记录', () => {
-  it('照护页覆盖洗护和内外驱，未明确安排时不自动推算下次日期', () => {
+  it('照护页覆盖洗护、内外驱、就诊、生病和体检，未明确安排时不自动推算下次日期', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const cards = buildPetCareCards(state.events, '2026-08-27')
 
@@ -77,6 +96,9 @@ describe('护理记录', () => {
       'grooming',
       'internal-deworm',
       'external-deworm',
+      'visit',
+      'illness',
+      'checkup',
     ])
     expect(cards.find((item) => item.type === 'internal-deworm')).toMatchObject({
       type: 'internal-deworm',
@@ -118,6 +140,27 @@ describe('护理记录', () => {
       status: 'overdue',
       statusLabel: '计划日已过 11 天',
     })
+  })
+
+  it('护理历史只保留驱虫、洗护、生病、就诊和体检，不混入疫苗与成长事实', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const careTimeline = buildPetCareTimeline(state.events)
+
+    expect(careTimeline.map((item) => item.type)).toEqual([
+      'grooming',
+      'external-deworm',
+      'internal-deworm',
+      'visit',
+      'illness',
+    ])
+    expect(careTimeline.some((item) => String(item.type) === 'vaccine')).toBe(false)
+    expect(careTimeline.every((item) => item.eventId)).toBe(true)
+  })
+
+  it('护理间隔超过十二个月时增加年维度', () => {
+    expect(formatPetElapsed('2024-10-01', '2026-11-04')).toBe('2 年 1 个月 3 天')
+    expect(formatPetElapsed('2025-10-01', '2026-11-04')).toBe('1 年 1 个月 3 天')
+    expect(formatPetElapsed('2025-11-04', '2026-11-04')).toBe('1 年')
   })
 
   it('没有护理记录时显示未记录状态', () => {

@@ -5,20 +5,22 @@ import {
   PET_DAILY_ICON_NAMES,
   PET_EVENT_ICON_NAMES,
   PET_SUPPLY_ICON_NAMES,
-  PET_TIMELINE_ICON_NAMES,
 } from '../../constants/icon-names'
 import {
   buildPetCareCards,
+  buildPetCareTimeline,
   buildPetDailySummary,
   buildPetDailyTimeline,
-  buildPetTimeline,
+  buildPetGrowthTimeline,
   filterPetSupplies,
   formatPetAge,
+  formatPetElapsed,
   formatPetWeight,
   getCurrentPetSupplies,
   getPetSupplyPreferenceHearts,
   getPetSupplyPreferenceLabel,
   PET_BACKGROUND_LABELS,
+  PET_CARE_TYPES,
   PET_DAILY_LOG_LABELS,
   PET_EVENT_LABELS,
   PET_SUPPLY_CATEGORY_LABELS,
@@ -27,6 +29,7 @@ import {
   type PetCareType,
   type PetBackgroundKey,
   type PetDailyLogType,
+  type PetGrowthItemType,
   type PetSpecies,
   type PetSupplyCategory,
   type PetSupplyPreference,
@@ -57,6 +60,28 @@ type PetWeightUnit = 'jin' | 'kg'
 type DailyTimelineView = ReturnType<typeof buildPetDailyTimeline>[number] & {
   iconName: string
   metaLabel: string
+}
+
+type GrowthTimelineView = ReturnType<typeof buildPetGrowthTimeline>[number] & {
+  iconName: string
+  yearLabel: string
+  dateLabel: string
+  elapsedLabel: string
+}
+
+type CareTimelineView = ReturnType<typeof buildPetCareTimeline>[number] & {
+  iconName: string
+  yearLabel: string
+  dateLabel: string
+  elapsedLabel: string
+}
+
+const GROWTH_ICON_NAMES: Record<PetGrowthItemType, string> = {
+  birthday: 'pet-care-birthday',
+  home: 'pet-care-homecoming',
+  neuter: 'pet-care-neuter',
+  vaccine: 'pet-care-vaccine',
+  weight: 'pet-metric-weight',
 }
 
 const EMPTY_PROFILE: DemoPetProfile = {
@@ -232,7 +257,7 @@ function composeDailyLogSummary(
   return extra ? `${extra} · ${choice}` : choice
 }
 
-const PET_PAGE_CACHE_KEY = 'pets:overview:v5'
+const PET_PAGE_CACHE_KEY = 'pets:overview:v6'
 
 function weightUnitLabel(unit: PetWeightUnit): string {
   return unit === 'jin' ? '斤' : 'kg'
@@ -261,6 +286,12 @@ function formatShortDate(value: string | null): string {
   return month && day ? `${month}.${day}` : value
 }
 
+function formatFullDate(value: string | null): string {
+  if (!value) return '设置日期'
+  const [year, month, day] = value.split('-')
+  return year && month && day ? `${year}.${month}.${day}` : value
+}
+
 function formatBackgroundUsedAt(value: string): string {
   const timestamp = Date.parse(value)
   if (!Number.isFinite(timestamp)) return '用过的照片'
@@ -271,6 +302,7 @@ function formatBackgroundUsedAt(value: string): string {
 Page({
   data: {
     activeSection: 'daily' as PetSection,
+    profileSectionActive: false,
     hasActivePet: false,
     loading: true,
     hasLoaded: false,
@@ -342,14 +374,11 @@ Page({
       avatarUrl: string
       selected: boolean
     }>,
-    profileDraft: EMPTY_PROFILE,
-    editingProfile: false,
     ageLabel: '',
+    todayDate: getShanghaiDateOnly(Date.now()),
     birthdayLabel: '',
     homeOnLabel: '',
     neuteredOnLabel: '',
-    latestVaccineLabel: '还没有记录',
-    vaccineNextLabel: '',
     latestWeight: '—',
     latestWeightKg: '',
     weightUnit: 'jin' as PetWeightUnit,
@@ -378,40 +407,14 @@ Page({
       active: boolean
     }>,
     weightTrendLabel: '',
-    timeline: [] as Array<
-      ReturnType<typeof buildPetTimeline>[number] & {
-        iconName: string
-        detailText: string
-        yearLabel: string
-        dateLabel: string
-      }
+    growthTimeline: [] as GrowthTimelineView[],
+    growthTimelineVisible: [] as GrowthTimelineView[],
+    growthTimelineExpanded: false,
+    careCards: [] as Array<
+      ReturnType<typeof buildPetCareCards>[number] & { iconName: string }
     >,
-    timelineVisible: [] as Array<
-      ReturnType<typeof buildPetTimeline>[number] & {
-        iconName: string
-        detailText: string
-        yearLabel: string
-        dateLabel: string
-      }
-    >,
-    timelineExpanded: false,
-    careCards: [] as Array<ReturnType<typeof buildPetCareCards>[number]>,
-    careTimeline: [] as Array<
-      ReturnType<typeof buildPetTimeline>[number] & {
-        iconName: string
-        detailText: string
-        yearLabel: string
-        dateLabel: string
-      }
-    >,
-    careTimelineVisible: [] as Array<
-      ReturnType<typeof buildPetTimeline>[number] & {
-        iconName: string
-        detailText: string
-        yearLabel: string
-        dateLabel: string
-      }
-    >,
+    careTimeline: [] as CareTimelineView[],
+    careTimelineVisible: [] as CareTimelineView[],
     careTimelineExpanded: false,
     dailySummary: [] as Array<
       ReturnType<typeof buildPetDailySummary>[number] & {
@@ -455,7 +458,6 @@ Page({
     this.setData({ weightUnit, weightUnitLabel: weightUnitLabel(weightUnit) })
     const cached = readPageCache<Record<string, unknown>>(PET_PAGE_CACHE_KEY)
     if (cached) {
-      const cachedProfile = cached.value.profile as DemoPetProfile | undefined
       this.setData({
         ...cached.value,
         loading: false,
@@ -464,8 +466,7 @@ Page({
         cacheFresh: cached.fresh,
         hasShown: false,
         activeSection: 'daily' as PetSection,
-        editingProfile: false,
-        profileDraft: cachedProfile ?? EMPTY_PROFILE,
+        profileSectionActive: false,
         uploadingAvatar: false,
         statusManagerOpen: false,
         statusSaving: false,
@@ -489,7 +490,10 @@ Page({
       section === 'daily' ||
       section === 'supplies'
     ) {
-      this.setData({ activeSection: section })
+      this.setData({
+        activeSection: section,
+        profileSectionActive: section === 'profile',
+      })
     }
   },
 
@@ -527,9 +531,7 @@ Page({
           petTabs: [],
           petState: EMPTY_PET_STATE,
           profile: EMPTY_PROFILE,
-          profileDraft: EMPTY_PROFILE,
           profileInitial: '',
-          editingProfile: false,
           loading: false,
           hasLoaded: true,
           cacheFresh: false,
@@ -576,9 +578,7 @@ Page({
         hasActivePet: false,
         petState: EMPTY_PET_STATE,
         profile: EMPTY_PROFILE,
-        profileDraft: EMPTY_PROFILE,
         profileInitial: '',
-        editingProfile: false,
         petTabs: [],
       })
       this.loadPetTabs(collection)
@@ -642,8 +642,6 @@ Page({
       dailyEditorOpen: false,
       dailyEditorEditingId: '',
       dailySaving: false,
-      editingProfile: false,
-      profileDraft: this.data.profile,
     })
   },
 
@@ -676,16 +674,20 @@ Page({
   onSwitchSection(event: {
     currentTarget: { dataset: { value: PetSection } }
   }) {
-    this.setData({ activeSection: event.currentTarget.dataset.value })
+    const activeSection = event.currentTarget.dataset.value
+    this.setData({
+      activeSection,
+      profileSectionActive: activeSection === 'profile',
+    })
   },
 
-  onToggleTimeline() {
-    const timelineExpanded = !this.data.timelineExpanded
+  onToggleGrowthTimeline() {
+    const growthTimelineExpanded = !this.data.growthTimelineExpanded
     this.setData({
-      timelineExpanded,
-      timelineVisible: timelineExpanded
-        ? this.data.timeline
-        : this.data.timeline.slice(0, 5),
+      growthTimelineExpanded,
+      growthTimelineVisible: growthTimelineExpanded
+        ? this.data.growthTimeline
+        : this.data.growthTimeline.slice(0, 5),
     })
   },
 
@@ -711,21 +713,14 @@ Page({
 
   loadState(state: DemoPetState) {
     const today = getShanghaiDateOnly(Date.now())
-    const timeline = buildPetTimeline(state).map((item) => {
-      const event = state.events.find((candidate) => candidate.id === item.id)
+    const growthTimeline: GrowthTimelineView[] = buildPetGrowthTimeline(state).map((item) => {
       const [, month = '', day = ''] = item.occurredOn.split('-')
       return {
         ...item,
-        iconName: PET_TIMELINE_ICON_NAMES[item.type],
-        detailText: [
-          item.note,
-          event?.provider,
-          event?.cost ? `¥${event.cost}` : '',
-        ]
-          .filter(Boolean)
-          .join(' · '),
+        iconName: GROWTH_ICON_NAMES[item.type],
         yearLabel: item.occurredOn.slice(0, 4) || '日期',
         dateLabel: month && day ? `${Number(month)}月${Number(day)}日` : item.occurredOn,
+        elapsedLabel: formatPetElapsed(item.occurredOn, today),
       }
     })
     const weights = state.weights.slice(-6)
@@ -760,20 +755,20 @@ Page({
       iconName: PET_DAILY_ICON_NAMES[item.type],
       metaLabel: item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`,
     }))
-    const vaccineEvents = state.events
-      .filter((item) => item.type === 'vaccine')
-      .sort((left, right) => right.occurredOn.localeCompare(left.occurredOn))
-    const latestVaccine = vaccineEvents[0]
-    const vaccineNextLabel = latestVaccine?.nextOn
-      ? `下次 ${formatShortDate(latestVaccine.nextOn)}`
-      : ''
     const careCards = buildPetCareCards(state.events, today).map((item) => ({
       ...item,
       iconName: PET_EVENT_ICON_NAMES[item.type],
     }))
-    const careTimeline = timeline.filter((item) =>
-      ['vaccine', 'grooming', 'internal-deworm', 'external-deworm', 'visit', 'illness'].includes(item.type),
-    )
+    const careTimeline: CareTimelineView[] = buildPetCareTimeline(state.events).map((item) => {
+      const [, month = '', day = ''] = item.occurredOn.split('-')
+      return {
+        ...item,
+        iconName: PET_EVENT_ICON_NAMES[item.type],
+        yearLabel: item.occurredOn.slice(0, 4) || '日期',
+        dateLabel: month && day ? `${Number(month)}月${Number(day)}日` : item.occurredOn,
+        elapsedLabel: formatPetElapsed(item.occurredOn, today),
+      }
+    })
     const currentSupplies = getCurrentPetSupplies(state.supplies).map((item) => ({
       id: item.id,
       categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
@@ -808,16 +803,14 @@ Page({
       petState: state,
       profile: state.profile,
       profileInitial: state.profile.name.slice(0, 1),
-      profileDraft: { ...state.profile },
       avatarPreviewUrl: '',
       backgroundOptions,
       backgroundHistoryOptions,
       ageLabel: formatPetAge(state.profile.birthday, today),
-      birthdayLabel: formatShortDate(state.profile.birthday),
-      homeOnLabel: formatShortDate(state.profile.homeOn),
-      neuteredOnLabel: formatShortDate(state.profile.neuteredOn),
-      latestVaccineLabel: latestVaccine ? formatShortDate(latestVaccine.occurredOn) : '还没有记录',
-      vaccineNextLabel,
+      todayDate: today,
+      birthdayLabel: formatFullDate(state.profile.birthday),
+      homeOnLabel: formatFullDate(state.profile.homeOn),
+      neuteredOnLabel: formatFullDate(state.profile.neuteredOn),
       latestWeight: latestValue ? formatWeightInUnit(latestValue.value, this.data.weightUnit) : '—',
       latestWeightKg: latestValue?.value ?? '',
       weightUnitLabel: weightUnitLabel(this.data.weightUnit),
@@ -825,8 +818,10 @@ Page({
       featuredSupply: currentSupplies[0] ?? null,
       weightPoints,
       weightTrendLabel,
-      timeline,
-      timelineVisible: this.data.timelineExpanded ? timeline : timeline.slice(0, 5),
+      growthTimeline,
+      growthTimelineVisible: this.data.growthTimelineExpanded
+        ? growthTimeline
+        : growthTimeline.slice(0, 5),
       careCards,
       careTimeline,
       careTimelineVisible: this.data.careTimelineExpanded
@@ -901,7 +896,7 @@ Page({
     const id = event.currentTarget.dataset.id
     if (!id || id === this.data.petState.profile.id) return
     if (!requireAuthForWrite()) return
-    this.setData({ editingProfile: false, selectedSupplyCategory: 'all', syncing: true })
+    this.setData({ selectedSupplyCategory: 'all', syncing: true })
     try {
       const collection = await petGateway.setActivePet(id)
       this.applyCollection(collection)
@@ -943,14 +938,6 @@ Page({
       success: (result) => {
         if (result.confirm) wx.navigateTo({ url: '/pages/pet-form/index' })
       },
-    })
-  },
-
-  onToggleProfileEditor() {
-    if (!requireAuthForWrite()) return
-    this.setData({
-      editingProfile: !this.data.editingProfile,
-      profileDraft: { ...this.data.profile },
     })
   },
 
@@ -1057,7 +1044,11 @@ Page({
   },
 
   onOpenLatestDailyRecord() {
-    this.setData({ statusManagerOpen: false, activeSection: 'daily' }, () => {
+    this.setData({
+      statusManagerOpen: false,
+      activeSection: 'daily',
+      profileSectionActive: false,
+    }, () => {
       setTimeout(() => {
         wx.pageScrollTo({ selector: '#daily-history', duration: 260 })
       }, 40)
@@ -1482,52 +1473,47 @@ Page({
     })
   },
 
-  onBirthdayChange(event: { detail: { value: string } }) {
-    this.setData({ 'profileDraft.birthday': event.detail.value })
-  },
-
-  onHomeDateChange(event: { detail: { value: string } }) {
-    this.setData({ 'profileDraft.homeOn': event.detail.value })
-  },
-
-  onNeuteredToggle(event: { detail: { value: boolean } }) {
-    this.setData({
-      'profileDraft.neuteredOn': event.detail.value
-        ? this.data.profileDraft.neuteredOn ?? getShanghaiDateOnly(Date.now())
-        : null,
-    })
-  },
-
-  onNeuteredDateChange(event: { detail: { value: string } }) {
-    this.setData({ 'profileDraft.neuteredOn': event.detail.value })
-  },
-
-  async onSaveProfile() {
+  async onProfileDateChange(event: {
+    detail: { value: string }
+    currentTarget: { dataset: { field?: string } }
+  }) {
     if (!requireAuthForWrite()) return
-    const draft = this.data.profileDraft
+    const field = event.currentTarget.dataset.field
+    const value = event.detail.value
+    if (
+      field !== 'birthday'
+      && field !== 'homeOn'
+      && field !== 'neuteredOn'
+    ) return
+
+    const profile = this.data.profile
     const today = getShanghaiDateOnly(Date.now())
-    if (!draft.birthday || draft.birthday > today) {
-      wx.showToast({ title: '请填写正确的出生日期', icon: 'none' })
+    if (!value || value > today) {
+      wx.showToast({ title: '请选择正确的日期', icon: 'none' })
       return
     }
-    if (!draft.homeOn || draft.homeOn < draft.birthday) {
+    if (field === 'homeOn' && (!profile.birthday || value < profile.birthday)) {
       wx.showToast({ title: '到家日期不能早于出生日期', icon: 'none' })
       return
     }
-    if (draft.neuteredOn && draft.neuteredOn < draft.birthday) {
+    if (field === 'birthday' && profile.homeOn && value > profile.homeOn) {
+      wx.showToast({ title: '出生日期不能晚于到家日期', icon: 'none' })
+      return
+    }
+    if (field === 'neuteredOn' && profile.birthday && value < profile.birthday) {
       wx.showToast({ title: '绝育日期不能早于出生日期', icon: 'none' })
       return
     }
 
+    const nextProfile: DemoPetProfile = { ...profile, [field]: value }
     await this.runPetMutation(
       () => petGateway.updateProfile(
-        draft.id,
-        toPetProfileInput(draft),
-        draft.version ?? 1,
+        profile.id,
+        toPetProfileInput(nextProfile),
+        profile.version ?? 1,
       ),
-      '档案已更新',
+      '档案日期已更新',
     )
-    this.setData({ editingProfile: false })
   },
 
   onDeletePet() {
@@ -1692,9 +1678,50 @@ Page({
     })
   },
 
-  onAddEvent() {
+  onAddGrowthRecord() {
     if (!requireAuthForWrite()) return
-    wx.navigateTo({ url: '/pages/pet-event-form/index' })
+    wx.showActionSheet({
+      itemList: ['记录疫苗', '记录体重'],
+      success: (result) => {
+        if (result.tapIndex === 0) {
+          wx.navigateTo({
+            url: `/pages/pet-event-form/index?type=vaccine&date=${getShanghaiDateOnly(Date.now())}`,
+          })
+          return
+        }
+        if (result.tapIndex === 1) this.onRecordWeight()
+      },
+    })
+  },
+
+  onAddCareEvent() {
+    if (!requireAuthForWrite()) return
+    wx.showActionSheet({
+      itemList: PET_CARE_TYPES.map((type) => PET_EVENT_LABELS[type]),
+      success: (result) => {
+        const type = PET_CARE_TYPES[result.tapIndex]
+        if (type) {
+          wx.navigateTo({
+            url: `/pages/pet-event-form/index?type=${type}&date=${getShanghaiDateOnly(Date.now())}`,
+          })
+        }
+      },
+    })
+  },
+
+  onOpenGrowthRecord(event: {
+    currentTarget: {
+      dataset: { eventId?: string; weightId?: string; type?: PetGrowthItemType }
+    }
+  }) {
+    const { eventId, weightId, type } = event.currentTarget.dataset
+    if (type === 'weight' && weightId) {
+      this.onOpenWeightRecord({ currentTarget: { dataset: { id: weightId } } })
+      return
+    }
+    if (eventId) {
+      this.onOpenEvent({ currentTarget: { dataset: { id: eventId } } })
+    }
   },
 
   onOpenEvent(event: { currentTarget: { dataset: { id: string } } }) {
