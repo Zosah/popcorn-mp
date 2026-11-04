@@ -16,7 +16,7 @@ export const DEMO_NOTE_CATEGORY_LABELS: Record<DemoNoteCategory, string> = {
   other: '其他资料',
 }
 
-export const MAX_JOURNAL_IMAGES = 9
+export const MAX_JOURNAL_IMAGES = 15
 
 export interface DemoJournalImage {
   mediaId?: string

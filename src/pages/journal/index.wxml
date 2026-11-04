@@ -14,11 +14,6 @@
   </view>
 
   <view class="journal-segmented">
-    <view class="journal-segmented__item {{activeSection === 'all' ? 'journal-segmented__item--active' : ''}}" data-value="all" bindtap="onSelectSection">
-      <line-icon name="journal-tab-all" size="30" tone="{{activeSection === 'all' ? 'green' : 'muted'}}" />
-      <text>全部</text>
-      <text>{{entries.length + notesCount}}</text>
-    </view>
     <view class="journal-segmented__item {{activeSection === 'moments' ? 'journal-segmented__item--active' : ''}}" data-value="moments" bindtap="onSelectSection">
       <line-icon name="journal-tab-moments" size="30" tone="{{activeSection === 'moments' ? 'green' : 'muted'}}" />
       <text>生活点滴</text>
@@ -72,12 +67,14 @@
             </view>
             <text class="journal-entry__title">{{item.title}}</text>
             <text wx:if="{{item.content}}" class="journal-entry__copy">{{item.content}}</text>
-            <view wx:if="{{item.images && item.images.length}}" class="journal-photo-grid journal-photo-grid--count{{item.images.length}}">
-              <view wx:for="{{item.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
-                <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" binderror="onEntryImageError" />
-                <view wx:else class="journal-photo-grid__placeholder"><line-icon name="system-image" size="24" tone="muted" /></view>
+            <scroll-view wx:if="{{item.images && item.images.length}}" class="journal-photo-row" scroll-x enhanced enable-flex show-scrollbar="{{false}}">
+              <view class="journal-photo-row__track">
+                <view wx:for="{{item.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-row__item" data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
+                  <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-row__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" binderror="onEntryImageError" />
+                  <view wx:else class="journal-photo-row__placeholder"><line-icon name="system-image" size="24" tone="muted" /></view>
+                </view>
               </view>
-            </view>
+            </scroll-view>
             <text wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</text>
             <view class="journal-entry__author">
               <view class="journal-entry__avatar">
@@ -98,27 +95,6 @@
       <view class="journal-state__action" bindtap="onCreate">记下第一笔</view>
     </view>
 
-    <view wx:if="{{activeSection === 'all' && noteGroups.length}}" class="journal-notes-preview">
-      <view class="journal-section-head">
-        <view>
-          <text class="journal-section-head__eyebrow">KEEP TOGETHER</text>
-          <text class="journal-section-head__title">重要记录</text>
-        </view>
-        <text class="journal-section-head__link" data-value="notes" bindtap="onSelectSection">查看全部</text>
-      </view>
-      <view class="journal-note-groups">
-        <view wx:for="{{noteGroups}}" wx:key="key" wx:for-item="group" class="journal-note-group" data-value="{{group.key}}" hover-class="tap-dim" bindtap="onSelectFilter">
-          <view class="journal-note-group__icon journal-note-group__icon--{{group.key}}">
-            <line-icon name="{{group.icon}}" size="28" tone="{{group.key === 'health' ? 'pink' : group.key === 'pet' ? 'gold' : 'green'}}" />
-          </view>
-          <view class="journal-note-group__body">
-            <text>{{group.label}}</text>
-            <text>{{group.entries.length}} 项资料</text>
-          </view>
-          <text class="journal-note-group__arrow">›</text>
-        </view>
-      </view>
-    </view>
   </block>
 
   <view wx:else class="journal-notes-view">

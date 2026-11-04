@@ -26,6 +26,17 @@ const NOTE_CATEGORY_OPTIONS = Object.entries(DEMO_NOTE_CATEGORY_LABELS).map(
   ([value, label]) => ({ value: value as DemoNoteCategory, label }),
 )
 
+interface DragRect {
+  left: number
+  top: number
+  right: number
+  bottom: number
+}
+
+/** 拖拽排序时记录的图片位置；松手后才真正重排，避免拖动过程中元素跳动。 */
+let dragRects: DragRect[] = []
+let lastDragEndAt = 0
+
 Page({
   data: {
     saving: false,
@@ -47,6 +58,9 @@ Page({
     categoryLabels: NOTE_CATEGORY_OPTIONS.map((item) => item.label),
     visibility: 'space' as DemoJournalVisibility,
     images: [] as DemoJournalImage[],
+    maxImages: MAX_JOURNAL_IMAGES,
+    draggingIndex: -1,
+    dragOverIndex: -1,
     form: {
       title: '',
       content: '',
@@ -154,7 +168,7 @@ Page({
     if (this.data.imageUploading) return
     const remaining = MAX_JOURNAL_IMAGES - this.data.images.length
     if (remaining <= 0) {
-      wx.showToast({ title: '最多添加 9 张图片', icon: 'none' })
+      wx.showToast({ title: `最多添加 ${MAX_JOURNAL_IMAGES} 张图片`, icon: 'none' })
       return
     }
     try {
@@ -178,7 +192,7 @@ Page({
       for (const [index, file] of files.entries()) {
         if (this.data.images.length >= MAX_JOURNAL_IMAGES) {
           // 极端情况下（并发选图或旧数据）也不会静默丢弃，明确提示已达上限。
-          wx.showToast({ title: '最多添加 9 张图片', icon: 'none' })
+          wx.showToast({ title: `最多添加 ${MAX_JOURNAL_IMAGES} 张图片`, icon: 'none' })
           break
         }
         this.setData({ uploadProgress: `正在上传 ${index + 1}/${files.length}` })
@@ -216,14 +230,61 @@ Page({
     this.setData({ images })
   },
 
+  onStartImageDrag(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    if (this.data.imageUploading || this.data.saving) return
+    const index = Number(event.currentTarget.dataset.index)
+    if (!Number.isInteger(index) || index < 0) return
+    wx.createSelectorQuery()
+      .in(this)
+      .selectAll('.journal-image-tile--photo')
+      .boundingClientRect((rects) => {
+        dragRects = (rects as unknown as DragRect[] | null) ?? []
+      })
+      .exec()
+    this.setData({ draggingIndex: index, dragOverIndex: index })
+    wx.vibrateShort({ type: 'light', fail: () => undefined })
+  },
+
+  onGridTouchMove(event: { touches?: Array<{ clientX: number; clientY: number }> }) {
+    const draggingIndex = this.data.draggingIndex
+    if (draggingIndex < 0 || !dragRects.length) return
+    const touch = event.touches?.[0]
+    if (!touch) return
+    const target = dragRects.findIndex((rect) => (
+      touch.clientX >= rect.left &&
+      touch.clientX <= rect.right &&
+      touch.clientY >= rect.top &&
+      touch.clientY <= rect.bottom
+    ))
+    if (target >= 0 && target !== this.data.dragOverIndex) {
+      this.setData({ dragOverIndex: target })
+    }
+  },
+
+  onEndImageDrag() {
+    if (this.data.draggingIndex < 0) return
+    const { draggingIndex, dragOverIndex } = this.data
+    dragRects = []
+    if (dragOverIndex >= 0 && dragOverIndex !== draggingIndex) {
+      const images = [...this.data.images]
+      const moved = images.splice(draggingIndex, 1)[0]
+      if (moved) images.splice(dragOverIndex, 0, moved)
+      this.setData({ images, draggingIndex: -1, dragOverIndex: -1 })
+      lastDragEndAt = Date.now()
+      return
+    }
+    this.setData({ draggingIndex: -1, dragOverIndex: -1 })
+  },
+
   onRemoveImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
-    if (this.data.imageUploading) return
+    if (this.data.imageUploading || this.data.draggingIndex >= 0) return
     const index = Number(event.currentTarget.dataset.index)
     if (!Number.isInteger(index) || index < 0) return
     this.setData({ images: this.data.images.filter((_, imageIndex) => imageIndex !== index) })
   },
 
   onPreviewImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    if (this.data.draggingIndex >= 0 || Date.now() - lastDragEndAt < 350) return
     const index = Number(event.currentTarget.dataset.index ?? 0)
     const images = this.data.images
     const urls = images.map((image) => image.src || image.thumbSrc || '').filter(Boolean)
@@ -245,7 +306,7 @@ Page({
   },
 
   async onEditImage(event: { currentTarget: { dataset: { index?: string | number } } }) {
-    if (this.data.imageUploading) return
+    if (this.data.imageUploading || this.data.draggingIndex >= 0) return
     const index = Number(event.currentTarget.dataset.index)
     const image = this.data.images[index]
     if (!image?.src) return
@@ -290,6 +351,7 @@ Page({
     if (
       this.data.saving ||
       this.data.imageUploading ||
+      this.data.draggingIndex >= 0 ||
       this.data.loading ||
       this.data.loadError
     ) return

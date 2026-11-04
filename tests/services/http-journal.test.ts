@@ -267,9 +267,9 @@ describe('HTTP 生活记录网关', () => {
     })
   })
 
-  it('创建时按顺序提交最多九张图片，并兼容第一张旧字段', async () => {
+  it('创建时按顺序提交最多十五张图片，并兼容第一张旧字段', async () => {
     const gateway = new HttpJournalGateway()
-    const images = Array.from({ length: 9 }, (_, index) => ({
+    const images = Array.from({ length: 15 }, (_, index) => ({
       mediaId: `media-${index + 1}`,
       src: `https://cdn.test/${index + 1}.jpg`,
       caption: index === 0 ? '封面说明' : '',
@@ -277,7 +277,7 @@ describe('HTTP 生活记录网关', () => {
 
     await gateway.create({
       kind: 'moment',
-      title: '九张照片',
+      title: '十五张照片',
       content: '把这一天完整留下',
       visibility: 'space',
       images,

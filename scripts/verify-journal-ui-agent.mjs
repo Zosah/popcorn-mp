@@ -112,6 +112,24 @@ async function checkList(mp) {
   const allHaveInitial = entries.every((entry) => Boolean(entry.authorInitial))
   record('作者昵称首字回退可用', entries.length === 0 || allHaveInitial)
 
+  const segments = await page.$$('.journal-segmented__item')
+  record('已移除「全部」入口', segments.length === 2, `${segments.length} 个分段`)
+
+  if ((entries[0]?.images?.length ?? 0) > 0) {
+    const rects = await mp.evaluate(() => new Promise((resolve) => {
+      const current = getCurrentPages().pop()
+      const query = wx.createSelectorQuery().in(current)
+      query.select('.journal-photo-row').boundingClientRect()
+      query.select('.journal-photo-row__item').boundingClientRect()
+      query.exec(([row, item]) => resolve({
+        rowWidth: row && row.width,
+        itemWidth: item && item.width,
+      }))
+    }))
+    const ratio = rects && rects.rowWidth ? rects.itemWidth / rects.rowWidth : 0
+    record('生活点滴图片按三分之一宽度横排', ratio > 0.28 && ratio < 0.38, ratio.toFixed(2))
+  }
+
   await capture(mp, 'list')
   return { page, data, entries }
 }
@@ -146,6 +164,39 @@ async function checkAvatar(mp, entries, apiList) {
   return { fieldPresent: true, rendered }
 }
 
+async function checkPhotoRow(mp, entries) {
+  const target = entries[0]
+  if (!target) return
+  await mp.evaluate(({ id }) => {
+    const page = getCurrentPages().pop()
+    const entry = (page.data.entries || []).find((item) => item.id === id)
+    if (!entry) return false
+    const images = Array.from({ length: 5 }, (_, index) => ({
+      mediaId: `row-${index + 1}`,
+      src: '/images/demo-flowers.jpg',
+      thumbSrc: '/images/demo-flowers.jpg',
+      caption: '',
+    }))
+    page.setData({
+      'entries[0].images': images,
+      'entries[0].image': images[0],
+    })
+    return true
+  }, { id: target.id })
+  await wait(700)
+  const scroll = await (await mp.currentPage()).$('.journal-photo-row')
+  if (scroll) {
+    const scrollWidth = Number(await scroll.scrollWidth())
+    const size = await scroll.size()
+    record(
+      '生活点滴图片行可横向滚动',
+      Number.isFinite(scrollWidth) && scrollWidth > Number(size.width),
+      `${scrollWidth}/${size.width}`,
+    )
+  }
+  await capture(mp, 'photo-row')
+}
+
 async function checkDetail(mp, entries, fieldPresent) {
   const target = entries.find((entry) => (fieldPresent ? entry.authorAvatarUrl : true))
   if (!target) {
@@ -174,11 +225,63 @@ async function checkDetail(mp, entries, fieldPresent) {
   await capture(mp, 'detail')
 }
 
-async function checkNineImageLimit(mp) {
+async function checkImageReorder(mp) {
   await mp.reLaunch('/pages/journal-form/index?kind=moment')
   await wait(1800)
   const page = await mp.currentPage()
-  const images = Array.from({ length: 9 }, (_, index) => ({
+  await page.setData({
+    images: ['drag-1', 'drag-2', 'drag-3'].map((mediaId, index) => ({
+      mediaId,
+      src: '/images/demo-flowers.jpg',
+      thumbSrc: '/images/demo-flowers.jpg',
+      caption: index === 0 ? '第一张' : '',
+    })),
+  })
+  await wait(700)
+  const tiles = await page.$$('.journal-image-tile--photo')
+  record('表单图片节点可长按', tiles.length === 3, `${tiles.length} 张`)
+  if (tiles.length === 3) {
+    // 优先走真实 longpress 事件；若自动化事件不带 dataset，再退回直接调页面处理函数。
+    await tiles[0].trigger('longpress')
+    await wait(300)
+    let dragIndex = (await page.data()).draggingIndex
+    if (dragIndex !== 0) {
+      await mp.evaluate(() => {
+        getCurrentPages().pop().onStartImageDrag({ currentTarget: { dataset: { index: 0 } } })
+        return true
+      })
+      await wait(500)
+      dragIndex = (await page.data()).draggingIndex
+    }
+    record('长按进入拖动状态', dragIndex === 0, String(dragIndex))
+    const target = await mp.evaluate(() => new Promise((resolve) => {
+      const query = wx.createSelectorQuery().in(getCurrentPages().pop())
+      query.selectAll('.journal-image-tile--photo').boundingClientRect()
+      query.exec(([rects]) => {
+        const rect = rects && rects[2]
+        resolve(rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : null)
+      })
+    }))
+    if (target) {
+      await mp.evaluate(({ x, y }) => {
+        const current = getCurrentPages().pop()
+        current.onGridTouchMove({ touches: [{ clientX: x, clientY: y }] })
+        current.onEndImageDrag()
+        return true
+      }, target)
+      await wait(400)
+      const order = ((await page.data()).images || []).map((image) => image.mediaId)
+      record('长按拖动后顺序更新', order.join(',') === 'drag-2,drag-3,drag-1', order.join(','))
+    }
+  }
+  await capture(mp, 'image-reorder')
+}
+
+async function checkImageLimit(mp) {
+  await mp.reLaunch('/pages/journal-form/index?kind=moment')
+  await wait(1800)
+  const page = await mp.currentPage()
+  const images = Array.from({ length: 15 }, (_, index) => ({
     mediaId: `agent-media-${index + 1}`,
     src: '/images/demo-flowers.jpg',
     thumbSrc: '/images/demo-flowers.jpg',
@@ -186,10 +289,10 @@ async function checkNineImageLimit(mp) {
   }))
   await page.setData({ images })
   await wait(900)
-  record('九张图计数为 9', (await page.data()).images.length === 9)
+  record('十五张图计数为 15', (await page.data()).images.length === 15)
   record('满额后隐藏添加入口', !(await page.$('.journal-image-tile--add')))
   record('满额后显示上限提示', Boolean(await page.$('.journal-image-limit')))
-  await capture(mp, '9-images')
+  await capture(mp, '15-images')
 
   await mp.evaluate(() => { getApp().__agentToast = null })
   await mp.mockWxMethod('showToast', function (options) {
@@ -199,7 +302,7 @@ async function checkNineImageLimit(mp) {
     await mp.evaluate(() => { getCurrentPages().pop().onChooseImage(); return true })
     await wait(600)
     const toast = await mp.evaluate(() => getApp().__agentToast)
-    record('第 10 张被明确拒绝', Boolean(toast && /9/.test(String(toast.title || ''))), toast && toast.title)
+    record('第 16 张被明确拒绝', Boolean(toast && /15/.test(String(toast.title || ''))), toast && toast.title)
   } finally {
     await mp.restoreWxMethod('showToast').catch(() => undefined)
   }
@@ -226,8 +329,10 @@ async function main() {
     const apiList = await fetchJournalApi(token, session.activeSpaceId)
     const { entries } = await checkList(mp)
     const avatar = await checkAvatar(mp, entries, apiList)
+    await checkPhotoRow(mp, entries)
     await checkDetail(mp, entries, avatar.fieldPresent)
-    await checkNineImageLimit(mp)
+    await checkImageReorder(mp)
+    await checkImageLimit(mp)
 
     report.ok = report.checks.every((check) => check.passed)
     // 自测会临时改表单数据，结束后回到首页，避免影响正在使用模拟器的人。

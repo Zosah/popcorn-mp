@@ -66,7 +66,7 @@ function removeEntryImageUrls(entry: JournalItem, index: number): JournalItem {
 Page({
   data: {
     activeView: 'moments',
-    activeSection: 'all' as 'all' | 'moments' | 'notes',
+    activeSection: 'moments' as 'moments' | 'notes',
     entries: [] as JournalItem[],
     noteGroups: [] as DemoNoteGroup[],
     visibleNoteGroups: [] as DemoNoteGroup[],
@@ -92,6 +92,10 @@ Page({
         cacheFresh: cached.fresh,
         hasShown: false,
       })
+      // 旧缓存里可能还留着已下线的「全部」，统一回落到生活点滴。
+      if ((cached.value as { activeSection?: unknown }).activeSection === 'all') {
+        this.setData({ activeSection: 'moments', activeView: 'moments' })
+      }
     }
   },
 
@@ -211,7 +215,7 @@ Page({
   },
 
   onSelectSection(event: {
-    currentTarget: { dataset: { value?: 'all' | 'moments' | 'notes' } }
+    currentTarget: { dataset: { value?: 'moments' | 'notes' } }
   }) {
     const value = event.currentTarget.dataset.value
     if (!value) return
@@ -224,7 +228,7 @@ Page({
       return
     }
     this.setData({
-      activeSection: value,
+      activeSection: 'moments',
       activeView: 'moments',
       activeFilter: 'moments',
       visibleNoteGroups: this.data.noteGroups,
@@ -238,7 +242,7 @@ Page({
     if (!value) return
     if (value === 'moments') {
       this.setData({
-        activeSection: 'all',
+        activeSection: 'moments',
         activeView: 'moments',
         activeFilter: value,
         visibleNoteGroups: this.data.noteGroups,

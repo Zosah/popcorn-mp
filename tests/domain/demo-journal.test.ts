@@ -49,13 +49,13 @@ describe('createDemoJournalEntry', () => {
     expect(entry.timeLabel).toBe('10:05')
   })
 
-  it('最多保留九张图片，并让第一张兼容旧字段', () => {
+  it('最多保留十五张图片，并让第一张兼容旧字段', () => {
     const entry = createDemoJournalEntry(
       {
-        title: '九宫格',
+        title: '十五宫格',
         content: '',
         visibility: 'space',
-        images: Array.from({ length: 10 }, (_, index) => ({
+        images: Array.from({ length: 16 }, (_, index) => ({
           mediaId: `media-${index + 1}`,
           src: `https://cdn.test/${index + 1}.jpg`,
           caption: index === 0 ? '  封面  ' : '',
@@ -66,8 +66,8 @@ describe('createDemoJournalEntry', () => {
       () => 'entry-images',
     )
 
-    expect(MAX_JOURNAL_IMAGES).toBe(9)
-    expect(entry.images).toHaveLength(9)
+    expect(MAX_JOURNAL_IMAGES).toBe(15)
+    expect(entry.images).toHaveLength(15)
     expect(entry.image).toMatchObject({ mediaId: 'media-1', caption: '封面' })
     expect(entry.imageCaption).toBe('封面')
   })
