@@ -86,17 +86,17 @@
           <picker class="profile-fact" mode="date" value="{{profile.birthday}}" end="{{todayDate}}" data-field="birthday" bindchange="onProfileDateChange">
             <view class="profile-fact__label-line"><line-icon name="pet-care-birthday" size="25" tone="color" /><text class="profile-fact__label">出生</text></view>
             <text class="profile-fact__value">{{birthdayLabel}}</text>
-            <text wx:if="{{birthdayElapsedLabel}}" class="profile-fact__elapsed">已过{{birthdayElapsedLabel}}</text>
+            <text wx:if="{{birthdayElapsedLabel}}" class="profile-fact__elapsed">{{birthdayElapsedLabel}}</text>
           </picker>
           <picker class="profile-fact" mode="date" value="{{profile.homeOn}}" end="{{todayDate}}" data-field="homeOn" bindchange="onProfileDateChange">
             <view class="profile-fact__label-line"><line-icon name="pet-care-homecoming" size="25" tone="color" /><text class="profile-fact__label">到家</text></view>
             <text class="profile-fact__value">{{homeOnLabel}}</text>
-            <text wx:if="{{homeOnElapsedLabel}}" class="profile-fact__elapsed">已过{{homeOnElapsedLabel}}</text>
+            <text wx:if="{{homeOnElapsedLabel}}" class="profile-fact__elapsed">{{homeOnElapsedLabel}}</text>
           </picker>
           <picker class="profile-fact" mode="date" value="{{profile.neuteredOn}}" end="{{todayDate}}" data-field="neuteredOn" bindchange="onProfileDateChange">
             <view class="profile-fact__label-line"><line-icon name="pet-care-neuter" size="25" tone="color" /><text class="profile-fact__label">绝育</text></view>
             <text class="profile-fact__value {{profile.neuteredOn ? '' : 'profile-fact__value--empty'}}">{{neuteredOnLabel}}</text>
-            <text wx:if="{{neuteredOnElapsedLabel}}" class="profile-fact__elapsed">已过{{neuteredOnElapsedLabel}}</text>
+            <text wx:if="{{neuteredOnElapsedLabel}}" class="profile-fact__elapsed">{{neuteredOnElapsedLabel}}</text>
           </picker>
         </view>
 

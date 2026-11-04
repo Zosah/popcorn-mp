@@ -1033,14 +1033,14 @@
 .profile-fact {
   display: flex;
   min-width: 0;
-  min-height: 132rpx;
+  min-height: 142rpx;
   align-items: center;
   justify-content: flex-start;
-  padding: 24rpx 8rpx 21rpx;
+  padding: 27rpx 8rpx 24rpx;
   border-right: 1rpx solid var(--pet-line);
   box-sizing: border-box;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 13rpx;
   text-align: center;
 }
 .profile-fact:last-child { border-right: 0; }
@@ -1051,14 +1051,14 @@
   width: 100%;
   color: var(--pet-ink);
   font-family: var(--font-serif);
-  font-size: 23rpx;
+  font-size: 24rpx;
   font-weight: 700;
   line-height: 1.35;
   text-align: center;
   white-space: nowrap;
 }
 .profile-fact__value--empty { color: #b5a6a1; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-size: 21rpx; font-weight: 500; }
-.profile-fact__elapsed { display: block; width: 100%; color: #ae7a84; font-size: 17rpx; font-weight: 500; line-height: 1.25; text-align: center; white-space: nowrap; }
+.profile-fact__elapsed { display: block; width: 100%; color: #ae7a84; font-size: 19rpx; font-weight: 550; line-height: 1.3; text-align: center; white-space: nowrap; }
 .pet-inline-action { display: flex; align-items: center; justify-content: center; margin: 13rpx 0 28rpx; padding: 15rpx; border: 1rpx dashed #cbd5c7; border-radius: 20rpx; color: var(--pet-green); font-size: 21rpx; gap: 6rpx; }
 .daily-grid--overview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .daily-grid--overview .daily-card { padding-top: 18rpx; padding-bottom: 17rpx; }
