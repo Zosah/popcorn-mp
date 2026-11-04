@@ -301,6 +301,8 @@ Pull Request
 
 小程序第一版使用微信开发者工具手工上传、体验、审核和发布。流程稳定后再接入 `miniprogram-ci`。
 
+前端另提供自动化发布入口：`npm run release:experience` 会先跑类型检查和全量单测，通过后调用本机开发者工具 CLI 上传开发版；加 `-- --with-preview` 会同时生成 `.preview/experience-latest.png` 预览码。`npm run release:watch` 会监听 `src/scripts/tests`，在改动静默后自动重复上述流程。微信未提供“设为体验版”的公开接口，自动上传后仍需在公众平台点一次“选为体验版”。
+
 ## 10. 数据库与 COS 备份
 
 - MySQL 只监听本机或内网地址，不直接暴露公网端口。

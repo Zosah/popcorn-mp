@@ -28,7 +28,11 @@
     "verify:http-reminders-configured": "EXPECT_SUBSCRIPTION_CONFIGURED=1 node scripts/verify-http-reminders.mjs",
     "verify:production-reminder-ui": "node scripts/verify-production-reminder-ui.mjs",
     "verify:production-avatar-ui": "node scripts/verify-production-avatar-ui.mjs",
-    "verify:http-feature-settings": "node scripts/verify-http-feature-settings.mjs"
+    "verify:http-feature-settings": "node scripts/verify-http-feature-settings.mjs",
+    "release:experience": "node scripts/release-experience.mjs",
+    "release:preview": "node scripts/release-experience.mjs --preview-only",
+    "release:watch": "node scripts/release-experience.mjs --watch --with-preview --build-suffix --ui-check",
+    "verify:journal-ui:agent": "node scripts/verify-journal-ui-agent.mjs"
   },
   "repository": {
     "type": "git",
