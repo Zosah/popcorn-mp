@@ -53,7 +53,7 @@
     <view class="paper-card journal-image-card">
       <view wx:if="{{images.length}}" class="journal-image-grid">
         <view wx:for="{{images}}" wx:key="mediaId" class="journal-image-tile" data-index="{{index}}" catchtap="onPreviewImage">
-          <image wx:if="{{item.thumbSrc || item.src}}" class="journal-image-tile__image" src="{{item.thumbSrc || item.src}}" mode="aspectFill" />
+          <image wx:if="{{item.thumbSrc || item.src}}" class="journal-image-tile__image" src="{{item.thumbSrc || item.src}}" mode="aspectFill" data-index="{{index}}" binderror="onImageError" />
           <view wx:else class="journal-image-tile__placeholder"><line-icon name="system-image" size="28" tone="muted" /></view>
           <view class="journal-image-tile__edit" data-index="{{index}}" catchtap="onEditImage">编辑</view>
           <view class="journal-image-tile__remove" data-index="{{index}}" catchtap="onRemoveImage" aria-label="移除图片">×</view>
@@ -63,7 +63,11 @@
           <text>{{imageUploading ? uploadProgress : '添加图片'}}</text>
         </view>
       </view>
-      <view wx:else class="journal-image-empty {{imageUploading ? 'journal-image-empty--loading' : ''}}" bindtap="onChooseImage">
+      <view wx:if="{{images.length >= 9}}" class="journal-image-limit">
+        <line-icon name="system-check" size="18" tone="muted" />
+        <text>已经放满 9 张，删掉一张才能继续添加</text>
+      </view>
+      <view wx:if="{{!images.length}}" class="journal-image-empty {{imageUploading ? 'journal-image-empty--loading' : ''}}" bindtap="onChooseImage">
         <view class="journal-image-empty__mark"><line-icon name="system-image" size="34" tone="blue" /></view>
         <text>{{imageUploading ? uploadProgress : '从相册选择，或现在拍'}}</text>
         <text>{{imageUploading ? '图片会依次上传' : '最多九张 · 每张 10 MiB 内'}}</text>

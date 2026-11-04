@@ -22,6 +22,8 @@ interface MediaContext {
 
 export class HttpMediaGateway implements MediaGateway {
   private readonly cache = new Map<string, ApiMediaAsset>()
+  /** 同一媒体的并发请求共享同一个 Promise，避免列表里同一作者头像被重复拉取。 */
+  private readonly pending = new Map<string, Promise<ApiMediaAsset>>()
 
   async upload(
     filePath: string,
@@ -92,7 +94,19 @@ export class HttpMediaGateway implements MediaGateway {
     if (!id) throw new MediaGatewayError('MEDIA_NOT_FOUND', '图片不存在')
     const cached = this.cache.get(id)
     if (cached && !isExpired(cached)) return cached
+    const pending = this.pending.get(id)
+    if (pending) return pending
 
+    const request = this.fetchAsset(id)
+    this.pending.set(id, request)
+    try {
+      return await request
+    } finally {
+      this.pending.delete(id)
+    }
+  }
+
+  private async fetchAsset(id: string): Promise<ApiMediaAsset> {
     const context = mediaContext()
     const path = `/spaces/${encodeURIComponent(context.spaceId)}/media/${encodeURIComponent(id)}`
     const requestId = createRequestId()

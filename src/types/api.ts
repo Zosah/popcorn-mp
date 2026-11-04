@@ -282,6 +282,8 @@ export interface ApiJournalItem {
   version: number
   createdBy: string
   authorName: string
+  /** 作者账号头像媒体 ID；旧后端可能不下发，前端按未设置头像处理。 */
+  authorAvatarMediaId?: string
   deletedAt: string | null
   createdAt: string
   updatedAt: string

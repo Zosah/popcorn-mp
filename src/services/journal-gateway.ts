@@ -17,6 +17,16 @@ export interface JournalListFilters {
 export interface JournalItem extends DemoJournalEntry {
   version: number
   createdBy: string
+  /** 作者真实头像的短时签名地址；为空时页面回退到昵称首字。 */
+  authorAvatarUrl?: string
+  /** 昵称首字，保证头像未设置或加载失败时仍有稳定回退。 */
+  authorInitial?: string
+}
+
+/** 头像回退文案：取昵称第一个字，空昵称回退为「见」。 */
+export function journalAuthorInitial(name: string | undefined): string {
+  const trimmed = (name ?? '').trim()
+  return Array.from(trimmed)[0] ?? '见'
 }
 
 export interface JournalSummary {

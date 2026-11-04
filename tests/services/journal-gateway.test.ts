@@ -3,7 +3,17 @@ import { describe, expect, it } from 'vitest'
 import {
   JournalGatewayError,
   getJournalErrorMessage,
+  journalAuthorInitial,
 } from '../../src/services/journal-gateway'
+
+describe('生活记录作者头像回退', () => {
+  it('取昵称首字，空昵称回退为「见」', () => {
+    expect(journalAuthorInitial('小满')).toBe('小')
+    expect(journalAuthorInitial(' 古志周 ')).toBe('古')
+    expect(journalAuthorInitial('   ')).toBe('见')
+    expect(journalAuthorInitial(undefined)).toBe('见')
+  })
+})
 
 describe('生活记录错误文案', () => {
   it('把网络失败映射为明确的可重试提示', () => {

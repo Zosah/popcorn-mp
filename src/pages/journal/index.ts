@@ -24,6 +24,8 @@ const NOTE_CATEGORY_ICONS: Record<DemoNoteCategory, string> = {
 
 const journalRequestGate = createRequestGate()
 const JOURNAL_PAGE_CACHE_KEY = 'journal:overview'
+/** 同一条记录在一次页面生命周期内只重新换取一次签名地址，避免失败循环。 */
+const retriedImageEntries = new Set<string>()
 
 interface DemoNoteGroup {
   key: DemoNoteCategory
@@ -50,6 +52,15 @@ function buildNoteGroups(entries: JournalItem[]): DemoNoteGroup[] {
     icon: NOTE_CATEGORY_ICONS[category],
     entries: entries.filter((entry) => (entry.category ?? 'other') === category),
   })).filter((group) => group.entries.length > 0)
+}
+
+/** 签名地址失效时清空该图地址，让列表回退到 system-image 占位而不是裂图。 */
+function removeEntryImageUrls(entry: JournalItem, index: number): JournalItem {
+  const images = [...(entry.images ?? [])]
+  const current = images[index]
+  if (!current) return entry
+  images[index] = { ...current, src: '', thumbSrc: '' }
+  return { ...entry, images, image: index === 0 ? images[0] : entry.image }
 }
 
 Page({
@@ -278,7 +289,50 @@ Page({
     wx.previewImage({ current, urls })
   },
 
+  onEntryAvatarError(event: { currentTarget: { dataset: { id?: string } } }) {
+    const id = event.currentTarget.dataset.id
+    if (!id) return
+    // 头像地址失效时回退到昵称首字，不留白色空白。
+    this.patchEntry(id, (entry) => ({ ...entry, authorAvatarUrl: '' }))
+  },
+
+  async onEntryImageError(event: {
+    currentTarget: { dataset: { entryId?: string; imageIndex?: string | number } }
+  }) {
+    const entryId = event.currentTarget.dataset.entryId
+    const imageIndex = Number(event.currentTarget.dataset.imageIndex ?? -1)
+    if (!entryId || !Number.isInteger(imageIndex) || imageIndex < 0) return
+    // 先按记录 ID 重新换取一次短时签名地址；仍失败则回退 system-image 占位。
+    if (!retriedImageEntries.has(entryId)) {
+      retriedImageEntries.add(entryId)
+      try {
+        const fresh = await journalGateway.get(entryId)
+        if (fresh) {
+          this.patchEntry(entryId, () => fresh)
+          return
+        }
+      } catch {
+        // 刷新失败不打断列表浏览，继续走占位回退。
+      }
+    }
+    this.patchEntry(entryId, (entry) => removeEntryImageUrls(entry, imageIndex))
+  },
+
+  patchEntry(entryId: string, patch: (entry: JournalItem) => JournalItem) {
+    const apply = (entry: JournalItem) => (entry.id === entryId ? patch(entry) : entry)
+    const patchGroup = (group: DemoNoteGroup) => ({
+      ...group,
+      entries: group.entries.map(apply),
+    })
+    this.setData({
+      entries: this.data.entries.map(apply),
+      noteGroups: this.data.noteGroups.map(patchGroup),
+      visibleNoteGroups: this.data.visibleNoteGroups.map(patchGroup),
+    })
+  },
+
   onUnload() {
     journalRequestGate.invalidate()
+    retriedImageEntries.clear()
   },
 })

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { appConfig } from '../../src/config/env'
 import { HttpJournalGateway } from '../../src/services/http-journal'
 import { mediaGateway } from '../../src/services/media'
+import { MediaGatewayError } from '../../src/services/media-gateway'
 import { clearApiSession, saveApiSession } from '../../src/stores/session'
 import type { ApiJournalItem, ApiMediaAsset, ApiSession } from '../../src/types/api'
 
@@ -100,9 +101,38 @@ describe('HTTP 生活记录网关', () => {
           return
         }
         if (url.includes('/journals?') && method === 'GET') {
+          const query = new URL(url).searchParams.get('query')
+          const avatarItem = query === '头像'
+            ? [{ ...apiJournal, id: 'journal-author', authorAvatarMediaId: 'm_avatar0001' }]
+            : query === '图片'
+              ? [{
+                  ...apiJournal,
+                  id: 'journal-list-images',
+                  images: [
+                    { mediaId: 'media-2', caption: '', sortOrder: 1 },
+                    { mediaId: 'media-1', caption: '', sortOrder: 0 },
+                  ],
+                }]
+              : [apiJournal]
           succeed(options, url.includes('cursor=next')
             ? { items: [], nextCursor: '' }
-            : { items: [apiJournal], nextCursor: 'next' })
+            : { items: avatarItem, nextCursor: 'next' })
+          return
+        }
+        if (url.endsWith('/journals/journal-author') && method === 'GET') {
+          succeed(options, {
+            ...apiJournal,
+            id: 'journal-author',
+            authorAvatarMediaId: 'm_avatar0001',
+          }, 200, { etag: '"3"' })
+          return
+        }
+        if (url.endsWith('/journals/journal-avatar-broken') && method === 'GET') {
+          succeed(options, {
+            ...apiJournal,
+            id: 'journal-avatar-broken',
+            authorAvatarMediaId: 'm_missing0001',
+          }, 200, { etag: '"3"' })
           return
         }
         if (url.endsWith('/journals/journal-1') && method === 'GET') {
@@ -279,6 +309,7 @@ describe('HTTP 生活记录网关', () => {
 
     const multi = await gateway.get('journal-images')
     const legacy = await gateway.get('journal-legacy')
+    const listed = await gateway.list({ query: '图片' })
 
     expect(multi?.images?.map((image) => image.mediaId)).toEqual(['media-1', 'media-2'])
     expect(multi?.images?.map((image) => image.src)).toEqual([
@@ -286,12 +317,65 @@ describe('HTTP 生活记录网关', () => {
       'https://cdn.test/media-2-display.jpg',
     ])
     expect(multi?.image?.caption).toBe('第一张')
+    // 列表保留缩略图供网格使用，同时保留展示图供点击预览，避免清晰度回退。
+    expect(listed[0]?.images?.map((image) => image.mediaId)).toEqual(['media-1', 'media-2'])
+    expect(listed[0]?.images?.[0]).toMatchObject({
+      src: 'https://cdn.test/media-1-display.jpg',
+      thumbSrc: 'https://cdn.test/media-1-thumb.jpg',
+    })
     expect(legacy?.image).toMatchObject({
       mediaId: 'media-legacy',
       src: 'https://cdn.test/media-legacy-display.jpg',
       caption: '旧版单图',
     })
-    expect(getMedia).toHaveBeenCalledTimes(3)
+    expect(getMedia).toHaveBeenCalledTimes(5)
+  })
+
+  it('作者头像使用缩略图签名地址，无头像或签名失败时保留昵称首字', async () => {
+    const getMedia = vi.spyOn(mediaGateway, 'get').mockImplementation(
+      async (mediaId): Promise<ApiMediaAsset> => {
+        if (mediaId === 'm_avatar0001') {
+          return {
+            id: mediaId,
+            spaceId: 'space-1',
+            purpose: 'user_avatar',
+            width: 200,
+            height: 200,
+            createdAt,
+            display: { url: 'https://cdn.test/avatar-display.jpg', expiresAt: updatedAt },
+            thumb: { url: 'https://cdn.test/avatar-thumb.jpg', expiresAt: updatedAt },
+          }
+        }
+        throw new MediaGatewayError('MEDIA_NOT_FOUND', '图片不存在')
+      },
+    )
+    const gateway = new HttpJournalGateway()
+
+    const list = await gateway.list({ query: '头像' })
+    const detail = await gateway.get('journal-author')
+    const broken = await gateway.get('journal-avatar-broken')
+    const plain = await gateway.get('journal-1')
+
+    expect(list[0]?.authorAvatarUrl).toBe('https://cdn.test/avatar-thumb.jpg')
+    expect(list[0]?.authorInitial).toBe('小')
+    expect(detail?.authorAvatarUrl).toBe('https://cdn.test/avatar-thumb.jpg')
+    expect(broken?.authorAvatarUrl).toBeUndefined()
+    expect(broken?.authorInitial).toBe('小')
+    expect(plain?.authorInitial).toBe('小')
+    expect(getMedia).toHaveBeenCalled()
+  })
+
+  it('图片签名失败时清空地址，页面回退 system-image 占位', async () => {
+    vi.spyOn(mediaGateway, 'get').mockRejectedValue(
+      new MediaGatewayError('MEDIA_NOT_FOUND', '图片不存在'),
+    )
+    const gateway = new HttpJournalGateway()
+
+    const item = await gateway.get('journal-images')
+
+    expect(item?.images).toHaveLength(2)
+    expect(item?.images?.[0]).toMatchObject({ mediaId: 'media-1', src: '' })
+    expect(item?.images?.[0]?.thumbSrc).toBeUndefined()
   })
 
   it('更新与删除都使用当前版本的 If-Match 和独立幂等键', async () => {

@@ -7,6 +7,9 @@ import {
 import { journalGateway } from '../../services/journal'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 
+/** 详情页每次进入只自动重取一次签名地址，避免加载失败时循环请求。 */
+let detailImageRetried = false
+
 Page({
   data: {
     id: '',
@@ -19,6 +22,7 @@ Page({
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    detailImageRetried = false
     this.setData({ id: options.id ?? '' })
   },
 
@@ -72,6 +76,38 @@ Page({
     const selected = images[index]
     const current = selected?.src || selected?.thumbSrc || urls[0]
     wx.previewImage({ current, urls })
+  },
+
+  onAvatarError() {
+    // 头像签名失效时回退到昵称首字，不留白色空白。
+    this.setData({ 'entry.authorAvatarUrl': '' })
+  },
+
+  async onImageError(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    const index = Number(event.currentTarget.dataset.index ?? -1)
+    if (!Number.isInteger(index) || index < 0) return
+    // 先重新拉取一次详情换取新的签名地址；仍失败则清空地址回退 system-image 占位。
+    if (!detailImageRetried) {
+      detailImageRetried = true
+      try {
+        const entry = await journalGateway.get(this.data.id)
+        if (entry) {
+          this.setData({ entry })
+          return
+        }
+      } catch {
+        // 刷新失败不打断详情浏览，继续走占位回退。
+      }
+    }
+    const entry = this.data.entry
+    if (!entry) return
+    const images = [...(entry.images ?? [])]
+    const current = images[index]
+    if (!current) return
+    images[index] = { ...current, src: '', thumbSrc: '' }
+    this.setData({
+      entry: { ...entry, images, image: index === 0 ? images[0] : entry.image },
+    })
   },
 
   onEdit() {

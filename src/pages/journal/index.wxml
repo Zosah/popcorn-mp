@@ -74,13 +74,16 @@
             <text wx:if="{{item.content}}" class="journal-entry__copy">{{item.content}}</text>
             <view wx:if="{{item.images && item.images.length}}" class="journal-photo-grid journal-photo-grid--count{{item.images.length}}">
               <view wx:for="{{item.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
-                <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load />
+                <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load data-entry-id="{{item.id}}" data-image-index="{{imageIndex}}" binderror="onEntryImageError" />
                 <view wx:else class="journal-photo-grid__placeholder"><line-icon name="system-image" size="24" tone="muted" /></view>
               </view>
             </view>
             <text wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</text>
             <view class="journal-entry__author">
-              <view class="journal-entry__avatar">{{item.authorName || '见'}}</view>
+              <view class="journal-entry__avatar">
+                <image wx:if="{{item.authorAvatarUrl}}" class="journal-entry__avatar-image" src="{{item.authorAvatarUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onEntryAvatarError" />
+                <text wx:else>{{item.authorInitial || '见'}}</text>
+              </view>
               <text>{{item.authorName}} · {{item.visibilityLabel}}</text>
             </view>
           </view>
@@ -160,7 +163,7 @@
               <text class="journal-note-row__copy">{{entry.content}}</text>
               <view wx:if="{{entry.images && entry.images.length}}" class="journal-photo-grid">
                 <view wx:for="{{entry.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
-                  <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load />
+                  <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" binderror="onEntryImageError" />
                   <view wx:else class="journal-photo-grid__placeholder"><line-icon name="system-image" size="22" tone="muted" /></view>
                 </view>
               </view>

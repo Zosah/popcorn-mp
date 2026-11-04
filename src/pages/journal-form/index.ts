@@ -176,6 +176,11 @@ Page({
     let firstError: unknown
     try {
       for (const [index, file] of files.entries()) {
+        if (this.data.images.length >= MAX_JOURNAL_IMAGES) {
+          // 极端情况下（并发选图或旧数据）也不会静默丢弃，明确提示已达上限。
+          wx.showToast({ title: '最多添加 9 张图片', icon: 'none' })
+          break
+        }
         this.setData({ uploadProgress: `正在上传 ${index + 1}/${files.length}` })
         try {
           const asset = await mediaGateway.upload(file.tempFilePath, 'journal', file.size)
@@ -185,7 +190,7 @@ Page({
               src: asset.display.url,
               thumbSrc: asset.thumb.url,
               caption: '',
-            }].slice(0, MAX_JOURNAL_IMAGES),
+            }],
           })
         } catch (error) {
           firstError ??= error
@@ -226,6 +231,17 @@ Page({
     const selected = images[index]
     const current = selected?.src || selected?.thumbSrc || urls[0]
     wx.previewImage({ current, urls })
+  },
+
+  onImageError(event: { currentTarget: { dataset: { index?: string | number } } }) {
+    const index = Number(event.currentTarget.dataset.index ?? -1)
+    if (!Number.isInteger(index) || index < 0) return
+    const images = [...this.data.images]
+    const current = images[index]
+    if (!current) return
+    // 签名地址失效时回退 system-image 占位；mediaId 仍保留，保存不会丢图。
+    images[index] = { ...current, src: '', thumbSrc: '' }
+    this.setData({ images })
   },
 
   async onEditImage(event: { currentTarget: { dataset: { index?: string | number } } }) {

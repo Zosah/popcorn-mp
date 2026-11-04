@@ -11,6 +11,7 @@ import {
 } from './demo-journal'
 import {
   JournalGatewayError,
+  journalAuthorInitial,
   type JournalGateway,
   type JournalItem,
   type JournalListFilters,
@@ -81,6 +82,7 @@ export class DemoJournalGateway implements JournalGateway {
       ...entry,
       version: this.versions.get(entry.id) ?? 1,
       createdBy: '',
+      authorInitial: journalAuthorInitial(entry.authorName),
     }
   }
 

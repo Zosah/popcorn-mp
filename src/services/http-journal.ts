@@ -17,11 +17,13 @@ import { requestApiResponse } from './http'
 import { mediaGateway } from './media'
 import {
   JournalGatewayError,
+  journalAuthorInitial,
   type JournalGateway,
   type JournalItem,
   type JournalListFilters,
   type JournalSummary,
 } from './journal-gateway'
+import { resolveAvatarUrl } from '../utils/avatar'
 import { TransportError, type TransportResponse } from './transport'
 
 const PAGE_LIMIT = 100
@@ -227,7 +229,10 @@ async function toJournalItem(
 ): Promise<JournalItem> {
   const kind = normalizeKind(item.kind)
   const category = kind === 'note' ? normalizeCategory(item.category) : undefined
-  const images = await resolveJournalImages(item, variant)
+  const [images, authorAvatarUrl] = await Promise.all([
+    resolveJournalImages(item, variant),
+    resolveAvatarUrl(item.authorAvatarMediaId),
+  ])
   const image = images[0]
   const formatted = formatDemoJournalEntry({
     id: item.id,
@@ -252,6 +257,8 @@ async function toJournalItem(
     ...formatted,
     version: item.version,
     createdBy: item.createdBy,
+    authorInitial: journalAuthorInitial(item.authorName),
+    ...(authorAvatarUrl ? { authorAvatarUrl } : {}),
   }
 }
 

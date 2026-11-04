@@ -382,6 +382,13 @@
   font-weight: 700;
 }
 
+.journal-entry__avatar-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
 /* ================= 重要记录预览 ================= */
 .journal-notes-preview {
   margin-top: 34rpx;
