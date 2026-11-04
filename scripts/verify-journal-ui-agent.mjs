@@ -197,6 +197,23 @@ async function checkPhotoRow(mp, entries) {
   await capture(mp, 'photo-row')
 }
 
+async function checkNoteRow(mp) {
+  await mp.evaluate(() => {
+    getCurrentPages().pop().onSelectSection({ currentTarget: { dataset: { value: 'notes' } } })
+    return true
+  })
+  await wait(900)
+  const page = await mp.currentPage()
+  const note = await page.$('.journal-note-row')
+  const row = note ? await note.$('.journal-photo-row') : null
+  record('重要记录图片也使用横排行', Boolean(row))
+  await mp.evaluate(() => {
+    getCurrentPages().pop().onSelectSection({ currentTarget: { dataset: { value: 'moments' } } })
+    return true
+  })
+  await wait(500)
+}
+
 async function checkDetail(mp, entries, fieldPresent) {
   const target = entries.find((entry) => (fieldPresent ? entry.authorAvatarUrl : true))
   if (!target) {
@@ -330,6 +347,7 @@ async function main() {
     const { entries } = await checkList(mp)
     const avatar = await checkAvatar(mp, entries, apiList)
     await checkPhotoRow(mp, entries)
+    await checkNoteRow(mp)
     await checkDetail(mp, entries, avatar.fieldPresent)
     await checkImageReorder(mp)
     await checkImageLimit(mp)

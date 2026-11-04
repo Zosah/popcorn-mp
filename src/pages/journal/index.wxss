@@ -342,6 +342,10 @@
   margin-top: 10rpx;
 }
 
+.journal-photo-row--note {
+  margin-top: 10rpx;
+}
+
 .journal-photo-row {
   display: block;
   width: 100%;

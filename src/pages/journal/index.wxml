@@ -137,12 +137,14 @@
             <view class="journal-note-row__body">
               <text class="journal-note-row__title">{{entry.title}}</text>
               <text class="journal-note-row__copy">{{entry.content}}</text>
-              <view wx:if="{{entry.images && entry.images.length}}" class="journal-photo-grid">
-                <view wx:for="{{entry.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-grid__item" data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
-                  <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-grid__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" binderror="onEntryImageError" />
-                  <view wx:else class="journal-photo-grid__placeholder"><line-icon name="system-image" size="22" tone="muted" /></view>
+              <scroll-view wx:if="{{entry.images && entry.images.length}}" class="journal-photo-row journal-photo-row--note" scroll-x enhanced enable-flex show-scrollbar="{{false}}">
+                <view class="journal-photo-row__track">
+                  <view wx:for="{{entry.images}}" wx:key="mediaId" wx:for-item="photo" wx:for-index="imageIndex" class="journal-photo-row__item" data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" catchtap="onPreviewEntryImage">
+                    <image wx:if="{{photo.thumbSrc || photo.src}}" class="journal-photo-row__image" src="{{photo.thumbSrc || photo.src}}" mode="aspectFill" lazy-load data-entry-id="{{entry.id}}" data-image-index="{{imageIndex}}" binderror="onEntryImageError" />
+                    <view wx:else class="journal-photo-row__placeholder"><line-icon name="system-image" size="22" tone="muted" /></view>
+                  </view>
                 </view>
-              </view>
+              </scroll-view>
               <text class="journal-note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
             </view>
             <text class="journal-note-row__arrow">›</text>
