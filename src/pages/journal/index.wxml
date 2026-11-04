@@ -75,6 +75,11 @@
                 </view>
               </view>
             </scroll-view>
+            <view wx:if="{{item.images && item.images.length > 3}}" class="journal-photo-more">
+              <text>共 {{item.images.length}} 张</text>
+              <text class="journal-photo-more__hint">· 左右滑动查看更多</text>
+              <text class="journal-photo-more__arrow">›</text>
+            </view>
             <text wx:if="{{item.image && item.image.caption}}" class="journal-entry__caption">{{item.image.caption}}</text>
             <view class="journal-entry__author">
               <view class="journal-entry__avatar">
@@ -145,6 +150,11 @@
                   </view>
                 </view>
               </scroll-view>
+              <view wx:if="{{entry.images && entry.images.length > 3}}" class="journal-photo-more">
+                <text>共 {{entry.images.length}} 张</text>
+                <text class="journal-photo-more__hint">· 左右滑动查看更多</text>
+                <text class="journal-photo-more__arrow">›</text>
+              </view>
               <text class="journal-note-row__meta">{{entry.dateLabel}} · {{entry.visibilityLabel}}{{entry.updatedAt ? ' · 已编辑' : ''}}</text>
             </view>
             <text class="journal-note-row__arrow">›</text>

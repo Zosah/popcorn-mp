@@ -184,6 +184,9 @@ async function checkPhotoRow(mp, entries) {
     return true
   }, { id: target.id })
   await wait(700)
+  const more = await (await mp.currentPage()).$('.journal-photo-more')
+  const moreText = more ? await more.text() : ''
+  record('图片数量与横滑提示', /5 张/.test(moreText) && /左右滑动/.test(moreText), moreText)
   const scroll = await (await mp.currentPage()).$('.journal-photo-row')
   if (scroll) {
     const scrollWidth = Number(await scroll.scrollWidth())
@@ -207,6 +210,9 @@ async function checkNoteRow(mp) {
   const note = await page.$('.journal-note-row')
   const row = note ? await note.$('.journal-photo-row') : null
   record('重要记录图片也使用横排行', Boolean(row))
+  const more = await page.$('.journal-photo-more')
+  const moreText = more ? await more.text() : ''
+  record('重要记录显示图片数量提示', /张/.test(moreText) && /左右滑动/.test(moreText), moreText)
   await mp.evaluate(() => {
     getCurrentPages().pop().onSelectSection({ currentTarget: { dataset: { value: 'moments' } } })
     return true

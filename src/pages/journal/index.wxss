@@ -390,6 +390,31 @@
   justify-content: center;
 }
 
+.journal-photo-more {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 7rpx;
+  padding-right: 4rpx;
+  color: var(--c-faint);
+  font-size: 20rpx;
+  line-height: 1.2;
+  gap: 6rpx;
+}
+
+.journal-photo-more__hint {
+  color: var(--c-faint);
+}
+
+.journal-photo-more__arrow {
+  display: flex;
+  height: 22rpx;
+  align-items: center;
+  font-size: 28rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
 .journal-entry__caption {
   display: block;
   margin-top: 8rpx;
@@ -523,9 +548,17 @@
 
 .journal-note-group__arrow,
 .journal-note-row__arrow {
+  display: flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin-left: 12rpx;
+  margin-right: 2rpx;
   color: var(--c-faint);
   font-size: 38rpx;
   font-weight: 300;
+  line-height: 1;
 }
 
 /* ================= 重要记录页 ================= */
