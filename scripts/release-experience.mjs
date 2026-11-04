@@ -200,7 +200,7 @@ function buildMetadata(pkg, workspace) {
     minute: '2-digit',
     hour12: false,
   }).format(new Date())
-  const defaultDesc = `${workspace.commit}${workspace.dirtyFiles ? ` +${workspace.dirtyFiles}个改动` : ''} ${stamp} 生活记录头像/图片/9图`
+  const defaultDesc = `${workspace.commit}${workspace.dirtyFiles ? ` +${workspace.dirtyFiles}个改动` : ''} ${stamp} 生活记录头像/图片/15图`
   const desc = ((process.env.RELEASE_DESC || '').trim() || defaultDesc).slice(0, 100)
   return { version, desc }
 }
