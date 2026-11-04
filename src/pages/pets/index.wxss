@@ -2238,3 +2238,141 @@
 .pet-filter-bar--care .pet-filter-chip {
   font-size: 21rpx;
 }
+
+/* ================= 记录区与用品清单细化 ================= */
+.daily-timeline__row {
+  min-height: 96rpx;
+  padding-bottom: 20rpx;
+}
+
+.daily-timeline__meta text:first-child {
+  font-size: 20rpx;
+}
+
+.daily-timeline__action {
+  padding: 6rpx 13rpx;
+  font-size: 21rpx;
+}
+
+.daily-timeline__status {
+  font-size: 27rpx;
+}
+
+.daily-head-actions {
+  font-size: 21rpx;
+}
+
+.daily-head-record {
+  height: 58rpx;
+  padding: 0 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  gap: 4rpx;
+}
+
+.daily-timeline__action--meal { background: #f8e4dc; color: #9c5a45; }
+.daily-timeline__action--water { background: #e3edf5; color: #4f6f8f; }
+.daily-timeline__action--stool { background: #f3e7d7; color: #8a6338; }
+.daily-timeline__action--urine { background: #f6efcf; color: #8a762a; }
+.daily-timeline__action--litter-change { background: #eee5f2; color: #745a86; }
+.daily-timeline__action--water-change { background: #e0f0ec; color: #3f7a6d; }
+.daily-timeline__action--record { background: #e6efe7; color: #4f7a63; }
+.daily-timeline__action--grooming { background: #efe8f5; color: #745a86; }
+.daily-timeline__action--internal-deworm { background: #f6e8dc; color: #9a603d; }
+.daily-timeline__action--external-deworm { background: #e3efe6; color: #4f7a63; }
+.daily-timeline__action--weight { background: #e3edf5; color: #4f6f8f; }
+
+.supply-row {
+  min-height: 128rpx;
+  align-items: center;
+  padding: 18rpx 16rpx;
+  gap: 12rpx;
+}
+
+.supply-row__index {
+  width: 30rpx;
+  color: var(--pet-ink-3);
+  flex: 0 0 30rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  text-align: center;
+}
+
+.supply-row__image,
+.supply-row__icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 22rpx;
+  flex: 0 0 96rpx;
+}
+
+.supply-row__body {
+  gap: 4rpx;
+}
+
+.supply-row__title-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.supply-row__brand {
+  color: var(--pet-ink-2);
+  font-size: 22rpx;
+}
+
+.supply-row__title {
+  color: var(--pet-ink);
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.supply-row__body > .supply-row__note {
+  margin-top: 4rpx;
+  color: var(--pet-ink-3);
+  font-size: 21rpx;
+  line-height: 1.45;
+}
+
+.supply-category-label {
+  height: 34rpx;
+  padding: 0 10rpx;
+  border-radius: 8rpx;
+  font-size: 19rpx;
+}
+
+.supply-category-label--kibble { background: #f6ead2; color: #8a6a2f; }
+.supply-category-label--can { background: #f6e3dc; color: #9c5a45; }
+.supply-category-label--freeze-dried { background: #e3efe6; color: #4f7a63; }
+.supply-category-label--soup { background: #e3edf5; color: #4f6f8f; }
+.supply-category-label--litter { background: #eee5f2; color: #745a86; }
+.supply-category-label--custom { background: #efe9e3; color: #7a6a63; }
+
+.current-supply__name {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.35;
+}
+
+.current-supply__label--loved { background: #f7dfe4; color: #a83e5a; }
+.current-supply__label--neutral { background: #f6ecd8; color: #8a6a2f; }
+.current-supply__label--dropped { background: #e6ece9; color: #5f756d; }
+
+.supply-preference--loved { background: #f7dfe4; color: #a83e5a; }
+.supply-preference--neutral { background: #f6ecd8; color: #8a6a2f; }
+.supply-preference--dropped { background: #e6ece9; color: #5f756d; }
+
+.current-supply__title-line .current-supply__name {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.35;
+}

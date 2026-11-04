@@ -127,7 +127,7 @@
             </view>
             <view class="daily-timeline__body">
               <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view>
-              <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
+              <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
               <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
@@ -169,7 +169,7 @@
             </view>
             <view class="daily-timeline__body">
               <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view>
-              <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
+              <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
               <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
@@ -199,7 +199,7 @@
               </view>
               <view class="daily-timeline__body">
                 <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
-                <view class="daily-timeline__badges"><text class="daily-timeline__action">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
+                <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
                 <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
               </view>
             </view>
@@ -212,18 +212,26 @@
       <block wx:else>
         <view class="pet-section-head pet-section-head--plain"><view><text class="pet-section-head__title">用品清单</text></view><view bindtap="onAddSupply">＋ 添加</view></view>
         <view wx:if="{{currentSupplies.length}}" class="current-supplies-wrap">
-          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply" data-id="{{item.id}}" bindtap="onEditSupply"><text class="current-supply__label">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__title-line"><text class="supply-category-label">{{item.categoryLabel}}</text><view class="current-supply__name">{{item.name}}</view></view><view class="current-supply__note">{{item.note || '用着不错'}}</view></view></view></scroll-view>
+          <scroll-view class="current-supplies" scroll-x enhanced show-scrollbar="{{false}}"><view class="current-supplies__row"><view wx:for="{{currentSupplies}}" wx:key="id" class="current-supply" data-id="{{item.id}}" bindtap="onEditSupply"><text class="current-supply__label current-supply__label--{{item.preference}}">{{item.preferenceHearts}} {{item.preferenceLabel}}</text><view class="current-supply__title-line"><text class="supply-category-label supply-category-label--{{item.category}}">{{item.categoryLabel}}</text><view class="current-supply__name">{{item.name}}</view></view><view class="current-supply__note">{{item.note || '用着不错'}}</view></view></view></scroll-view>
         </view>
         <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}"><view class="supply-filter__row"><view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view></view></scroll-view>
         <view class="supply-list">
-          <view wx:for="{{supplies}}" wx:key="id" class="supply-row">
+          <view wx:for="{{supplies}}" wx:key="id" class="supply-row" data-id="{{item.id}}" bindtap="onEditSupply">
+            <view class="supply-row__index">{{index + 1}}</view>
             <image wx:if="{{item.mediaThumbUrl || item.mediaUrl}}" class="supply-row__image" src="{{item.mediaThumbUrl || item.mediaUrl}}" mode="aspectFill" data-id="{{item.id}}" catchtap="onPreviewSupplyImage" />
-            <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="44" tone="color" /></view>
+            <view wx:else class="supply-row__icon"><line-icon name="{{item.iconName}}" size="52" tone="color" /></view>
             <view class="supply-row__body">
-              <view class="supply-row__title-line" data-id="{{item.id}}" bindtap="onEditSupply"><text class="supply-category-label">{{item.categoryLabel}}</text><text class="supply-row__title">{{item.name}}</text></view>
-              <text>{{item.brand || '未记品牌'}}</text><text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text>
+              <view class="supply-row__title-line">
+                <text class="supply-category-label supply-category-label--{{item.category}}">{{item.categoryLabel}}</text>
+                <text class="supply-row__brand">{{item.brand || '未记品牌'}}</text>
+                <text class="supply-row__title">{{item.name}}</text>
+              </view>
+              <text wx:if="{{item.note}}" class="supply-row__note">{{item.note}}</text>
             </view>
-            <view class="supply-preference supply-preference--{{item.preference}}" data-id="{{item.id}}" catchtap="onChangeSupplyStatus"><text class="supply-preference__hearts">{{item.preferenceHearts}}</text><text>{{item.preferenceLabel}}</text></view>
+            <view class="supply-preference supply-preference--{{item.preference}}">
+              <text class="supply-preference__hearts">{{item.preferenceHearts}}</text>
+              <text>{{item.preferenceLabel}}</text>
+            </view>
           </view>
         </view>
         <view wx:if="{{!supplies.length}}" class="pet-empty-line" bindtap="onAddSupply">还没有用品，先记一件家里正在用的东西</view>
