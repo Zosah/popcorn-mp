@@ -312,12 +312,13 @@ async function releaseOnce(reason) {
       record.upload = 'uploaded'
     }
 
-    if (options.withPreview) {
-      record.preview = await preview(cli)
-    }
-
+    // UI 自测要连接正在运行的模拟器；先生成预览码会弹出二维码窗口，容易让自测拿不到页面。
     if (options.uiCheck) {
       record.uiCheck = await runUiCheck()
+    }
+
+    if (options.withPreview) {
+      record.preview = await preview(cli)
     }
 
     if (!options.previewOnly) {
