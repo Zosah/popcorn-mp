@@ -3257,53 +3257,99 @@
   margin-top: 7rpx;
 }
 
-/* ================= 时间线：右侧时间/记录人独立列，不占左侧行高 ================= */
+/* ================= 时间线格式 v2 ================= */
+/* 日常 / 护理 / 档案三处时间线共用这一套：字号、行高、图标对齐、右侧列宽度。
+   改这里等于同时改三处；如只改一处，必须在本块内用 .growth-timeline / .care-timeline 前缀单列。 */
+.daily-timeline__row {
+  min-height: 116rpx;
+  padding-bottom: 30rpx;
+  column-gap: 16rpx;
+}
+
+.daily-timeline__row:last-child {
+  padding-bottom: 20rpx;
+}
+
+.daily-timeline__rail {
+  align-items: flex-start;
+}
+
+/* 图标中心对齐日期文字中线 */
+.daily-timeline__dot {
+  width: 48rpx;
+  height: 40rpx;
+  margin-top: -5rpx;
+}
+
+.daily-timeline__line,
+.growth-timeline .daily-timeline__line,
+.care-timeline .daily-timeline__line {
+  top: 35rpx;
+  bottom: -33rpx;
+  left: 23rpx;
+}
+
 .daily-timeline__body {
   position: relative;
+  padding-top: 0;
 }
 
 .daily-timeline__meta {
   display: block !important;
   min-height: 0 !important;
-  padding: 0 232rpx 0 0 !important;
+  padding: 0 266rpx 0 0 !important;
 }
 
 .daily-timeline__meta > text:first-child {
   display: block;
   overflow: hidden;
   max-width: 100%;
+  color: #9c626d;
+  font-size: 23rpx;
+  font-weight: 600;
+  line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .daily-timeline__meta-right {
   position: absolute !important;
-  top: -1rpx !important;
+  top: 0 !important;
   right: 0 !important;
   display: flex !important;
-  width: 216rpx !important;
-  max-width: 216rpx !important;
+  width: 250rpx !important;
+  max-width: 250rpx !important;
   align-items: flex-end;
   flex-direction: column;
-  gap: 3rpx;
+  gap: 6rpx;
   text-align: right;
 }
 
 .daily-timeline__meta-right > text {
   color: var(--pet-ink-3);
-  font-size: 17rpx;
+  font-size: 21rpx;
   line-height: 1.35;
   white-space: nowrap;
 }
 
 .timeline-author--right {
-  max-width: 216rpx !important;
+  max-width: 250rpx !important;
   margin-top: 0;
-  font-size: 17rpx;
+  align-items: center;
+  font-size: 21rpx;
+  gap: 8rpx;
+}
+
+.timeline-author--right .timeline-author__avatar,
+.timeline-author--right .timeline-author__initial {
+  width: 34rpx;
+  height: 34rpx;
+  flex-basis: 34rpx;
+  font-size: 18rpx;
 }
 
 .timeline-author--right text:last-child {
-  max-width: 168rpx;
+  max-width: 190rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
