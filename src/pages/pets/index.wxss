@@ -3242,3 +3242,17 @@
 .timeline-author--right text:last-child {
   max-width: 150rpx;
 }
+
+/* 右侧记录人列不再占用左侧高度：日期后立即接标签 */
+.daily-timeline__meta {
+  min-height: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.daily-timeline__meta-right {
+  top: -1rpx;
+}
+
+.daily-timeline__badges {
+  margin-top: 7rpx;
+}
