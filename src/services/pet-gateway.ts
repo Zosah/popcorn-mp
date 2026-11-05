@@ -49,6 +49,8 @@ export interface PetSupplyInput {
   name: string
   brand?: string
   preference: PetSupplyPreference
+  officialPrice?: string
+  finalPrice?: string
   note?: string
   mediaId?: string
 }

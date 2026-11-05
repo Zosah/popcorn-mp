@@ -234,7 +234,7 @@
               <view class="menu-recipe__body">
                 <view class="menu-recipe__title">{{item.title}}</view>
                 <view wx:if="{{item.description}}" class="menu-recipe__desc">{{item.description}}</view>
-                <view class="menu-recipe__meta"><text>{{item.ingredients.length}} 样食材</text></view>
+                <view wx:if="{{item.ingredients.length}}" class="menu-recipe__ingredients"><block wx:for="{{item.ingredients}}" wx:key="id" wx:for-item="ingredient"><text>{{ingredient.name}}</text><text wx:if="{{index < item.ingredients.length - 1}}" class="menu-recipe__sep">、</text></block></view>
               </view>
               <view class="menu-recipe__media">
                 <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFit" />
@@ -242,7 +242,7 @@
               </view>
             </view>
             <view class="menu-recipe__foot">
-              <text class="menu-recipe__hint">点进菜单可以编辑</text>
+              <text class="menu-recipe__hint">{{item.updatedLabel}}</text>
               <view class="menu-recipe__order" data-id="{{item.id}}" catchtap="onAddToCart" aria-label="添加{{item.title}}">
                 <line-icon name="system-add" size="20" tone="white" />
                 <text>吃它</text>
@@ -333,7 +333,7 @@
           <text class="menu-order-detail__eyebrow">这一餐</text>
           <text class="menu-order-detail__title">{{historyDetailOrder.dateLabel}} · {{historyDetailOrder.mealLabel}}</text>
         </view>
-        <view class="menu-cart-sheet__close" bindtap="onCloseOrderDetail">×</view>
+        <view class="menu-cart-sheet__close sheet-close-icon" bindtap="onCloseOrderDetail" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view>
       </view>
 
       <scroll-view class="menu-order-detail__scroll" scroll-y enhanced show-scrollbar="{{false}}">
@@ -416,7 +416,7 @@
           <text>做法</text>
           <text>{{recipeStepDish.title}}</text>
         </view>
-        <view class="menu-recipe-steps__close" bindtap="onCloseRecipeSteps">×</view>
+        <view class="menu-recipe-steps__close sheet-close-icon" bindtap="onCloseRecipeSteps" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view>
       </view>
       <scroll-view class="menu-recipe-steps__scroll" scroll-y enhanced show-scrollbar="{{false}}">
         <view wx:for="{{recipeStepDish.steps}}" wx:key="id" class="menu-recipe-step">

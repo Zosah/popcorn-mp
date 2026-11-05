@@ -75,6 +75,9 @@ export interface DemoPetProfile {
   backgroundMediaId?: string
   backgroundUrl?: string
   backgroundHistory?: DemoPetBackgroundMedia[]
+  createdByName?: string
+  createdByAvatarUrl?: string
+  createdByInitial?: string
 }
 
 export interface DemoPetStatusNote {
@@ -96,6 +99,9 @@ export interface DemoPetEvent {
   recurrenceDays?: number
   createdAt: string
   version?: number
+  createdByName?: string
+  createdByAvatarUrl?: string
+  createdByInitial?: string
 }
 
 export interface DemoPetSupply {
@@ -109,6 +115,8 @@ export interface DemoPetSupply {
   mediaId?: string
   mediaUrl?: string
   mediaThumbUrl?: string
+  officialPrice?: string
+  finalPrice?: string
   recordedOn: string
   version?: number
 }
@@ -126,6 +134,9 @@ export interface DemoPetDailyLog {
   note: string
   recordedAt: string
   deletedAt?: string | null
+  createdByName?: string
+  createdByAvatarUrl?: string
+  createdByInitial?: string
 }
 
 export interface DemoPetState {
@@ -164,6 +175,9 @@ export interface PetGrowthTimelineItem {
   note: string
   eventId?: string
   weightId?: string
+  createdByName?: string
+  createdByAvatarUrl?: string
+  createdByInitial?: string
 }
 
 export interface PetCareTimelineItem {
@@ -174,6 +188,9 @@ export interface PetCareTimelineItem {
   content: string
   note: string
   eventId: string
+  createdByName?: string
+  createdByAvatarUrl?: string
+  createdByInitial?: string
 }
 
 export interface PetCareCard {
@@ -209,6 +226,9 @@ export interface PetDailyTimelineItem {
   dateLabel: string
   timeLabel: string
   elapsedLabel: string
+  createdByName?: string
+  createdByAvatarUrl?: string
+  createdByInitial?: string
 }
 
 export interface PetCalendarCell {
@@ -465,6 +485,9 @@ export function buildPetGrowthTimeline(
         content: event.title || label,
         note: [event.note, event.provider].filter(Boolean).join(' · '),
         eventId: event.id,
+        createdByName: event.createdByName,
+        createdByAvatarUrl: event.createdByAvatarUrl,
+        createdByInitial: Array.from(event.createdByName || '')[0] ?? '',
       })
     })
 
@@ -502,6 +525,9 @@ export function buildPetCareTimeline(
       content: event.title || PET_EVENT_LABELS[event.type],
       note: [event.note, event.provider].filter(Boolean).join(' · '),
       eventId: event.id,
+      createdByName: event.createdByName,
+      createdByAvatarUrl: event.createdByAvatarUrl,
+      createdByInitial: Array.from(event.createdByName || '')[0] ?? '',
     }))
     .sort(
       (left, right) =>
@@ -741,6 +767,9 @@ export function buildPetDailyTimeline(
         dateLabel: month && day ? `${Number(month)}月${Number(day)}日` : '日期未知',
         timeLabel: formatShanghaiTime(timestamp),
         elapsedLabel: formatPetElapsedHours(log.recordedAt, nowMs),
+        createdByName: log.createdByName,
+        createdByAvatarUrl: log.createdByAvatarUrl,
+        createdByInitial: Array.from(log.createdByName || '')[0] ?? '',
       }
     })
 }

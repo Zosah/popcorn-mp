@@ -2145,3 +2145,26 @@
     animation: none;
   }
 }
+
+.menu-recipe__ingredients {
+  overflow: hidden;
+  margin-top: 6rpx;
+  color: var(--menu-ink-2);
+  font-size: 22rpx;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-recipe__sep {
+  color: var(--menu-ink-3);
+}
+
+.menu-history__date {
+  width: 126rpx !important;
+}
+
+.menu-history__date text:last-child {
+  font-size: 19rpx !important;
+  white-space: nowrap;
+}

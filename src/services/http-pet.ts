@@ -273,6 +273,8 @@ export class HttpPetGateway implements PetGateway {
       name: input.name.trim(),
       brand: input.brand?.trim() ?? '',
       preference: input.preference,
+      officialPrice: input.officialPrice?.trim() ?? '',
+      finalPrice: input.finalPrice?.trim() ?? '',
       note: input.note?.trim() ?? '',
       mediaId: input.mediaId?.trim() ?? '',
       recordedOn: getShanghaiDateOnly(Date.now()),
@@ -296,6 +298,8 @@ export class HttpPetGateway implements PetGateway {
       name: input.name.trim(),
       brand: input.brand?.trim() ?? '',
       preference: input.preference,
+      officialPrice: input.officialPrice?.trim() ?? '',
+      finalPrice: input.finalPrice?.trim() ?? '',
       note: input.note?.trim() ?? '',
       mediaId: input.mediaId?.trim() ?? '',
       recordedOn: existing?.recordedOn ?? getShanghaiDateOnly(Date.now()),
@@ -494,7 +498,7 @@ function clearActivePetIdIfMatches(spaceId: string, petId: string): void {
 }
 
 async function toPetState(item: ApiPet): Promise<DemoPetState> {
-  const [avatarUrl, backgroundUrl, backgroundHistory, supplyMedia] = await Promise.all([
+  const [avatarUrl, backgroundUrl, backgroundHistory, supplyMedia, profileCreatorAvatar, eventCreatorAvatars, logCreatorAvatars] = await Promise.all([
     resolveMedia(item.avatarMediaId, 'thumb'),
     resolveMedia(item.backgroundMediaId, 'display'),
     Promise.all((item.backgroundHistory ?? []).map(async (background) => ({
@@ -514,6 +518,9 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
         return { display: '', thumb: '' }
       }
     })),
+    resolveMedia(item.createdByAvatarMediaId, 'thumb'),
+    Promise.all(item.events.map((event) => resolveMedia(event.createdByAvatarMediaId, 'thumb'))),
+    Promise.all(item.dailyLogs.map((log) => resolveMedia(log.createdByAvatarMediaId, 'thumb'))),
   ])
   const profile: DemoPetProfile = {
     id: item.id,
@@ -538,10 +545,13 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
     backgroundMediaId: item.backgroundMediaId || '',
     backgroundUrl: backgroundUrl ?? '',
     backgroundHistory: backgroundHistory.filter((background) => Boolean(background.url)),
+    createdByName: item.createdByName || '',
+    createdByAvatarUrl: profileCreatorAvatar ?? '',
+    createdByInitial: Array.from(item.createdByName || '')[0] ?? '',
   }
   return {
     profile,
-    events: item.events.map((event): DemoPetEvent => ({
+    events: item.events.map((event, index): DemoPetEvent => ({
       id: event.id,
       type: toEventType(event.type),
       occurredOn: event.occurredOn,
@@ -553,6 +563,8 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       recurrenceDays: event.recurrenceDays || 0,
       createdAt: event.createdAt,
       version: event.version,
+      createdByName: event.createdByName || '',
+      createdByAvatarUrl: eventCreatorAvatars[index] ?? '',
     })),
     supplies: item.supplies.map((supply, index): DemoPetSupply => ({
       id: supply.id,
@@ -565,6 +577,8 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       mediaId: supply.mediaId || '',
       mediaUrl: supplyMedia[index]?.display ?? '',
       mediaThumbUrl: supplyMedia[index]?.thumb ?? '',
+      officialPrice: supply.officialPrice || '',
+      finalPrice: supply.finalPrice || '',
       recordedOn: supply.recordedOn,
       version: supply.version,
     })),
@@ -573,7 +587,7 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       value: weight.value,
       recordedOn: weight.recordedOn,
     })),
-    dailyLogs: item.dailyLogs.map((log): DemoPetDailyLog => ({
+    dailyLogs: item.dailyLogs.map((log, index): DemoPetDailyLog => ({
       id: log.id,
       type: toDailyLogType(log.type),
       summary: log.summary,
@@ -585,7 +599,7 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
 }
 
 async function resolveMedia(
-  mediaId: string,
+  mediaId: string | undefined,
   variant: 'display' | 'thumb',
 ): Promise<string | undefined> {
   if (!mediaId) return undefined

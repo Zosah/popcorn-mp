@@ -53,6 +53,8 @@ export interface MenuRecipe extends DemoMenuRecipe {
   categoryName: string
   noteImageMediaIds: string[]
   noteImages: MenuImage[]
+  /** 菜谱本列表展示用的更新时间文案。 */
+  updatedLabel?: string
 }
 
 export interface MenuGateway {

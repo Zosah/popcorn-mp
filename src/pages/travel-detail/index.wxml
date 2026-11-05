@@ -144,7 +144,7 @@
           <text class="td-sheet__eyebrow">少漏一件是一件</text>
           <text class="td-sheet__title">带入必备清单</text>
         </view>
-        <view class="td-sheet__close" bindtap="onCloseTemplates">关闭</view>
+        <view class="td-sheet__close sheet-close-icon" bindtap="onCloseTemplates" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view>
       </view>
 
       <view wx:if="{{templateLoading}}" class="td-sheet__loading">

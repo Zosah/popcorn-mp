@@ -209,18 +209,22 @@ Page({
     categories: MenuCategory[],
     orders: MealOrder[],
   ) {
-    const categoryTabs = buildCategoryTabs(recipes, categories)
+    const decoratedRecipes = recipes.map((recipe) => ({
+      ...recipe,
+      updatedLabel: recipeUpdatedLabel(recipe.updatedAt || recipe.createdAt),
+    }))
+    const categoryTabs = buildCategoryTabs(decoratedRecipes, categories)
     const selectedCategoryId = categoryTabs.some((item) => item.id === this.data.selectedCategoryId)
       ? this.data.selectedCategoryId
       : 'all'
-    const activeOrders = orders.filter(isActiveOrder).map((order) => toOrderView(order, recipes))
-    const historyOrders = orders.filter((order) => !isActiveOrder(order)).map((order) => toOrderView(order, recipes))
+    const activeOrders = orders.filter(isActiveOrder).map((order) => toOrderView(order, decoratedRecipes))
+    const historyOrders = orders.filter((order) => !isActiveOrder(order)).map((order) => toOrderView(order, decoratedRecipes))
     this.setData({
-      allRecipes: recipes,
+      allRecipes: decoratedRecipes,
       categories,
       categoryTabs,
       selectedCategoryId,
-      categoryRecipes: recipesForCategory(recipes, selectedCategoryId),
+      categoryRecipes: recipesForCategory(decoratedRecipes, selectedCategoryId),
       activeOrders,
       historyOrders,
       visibleHistoryOrders: historyOrders.slice(0, this.data.showAllHistory ? historyOrders.length : HISTORY_LIMIT),
@@ -752,6 +756,15 @@ function replaceOrPrepend<T extends { id: string }>(items: T[], next: T): T[] {
   return exists
     ? items.map((item) => (item.id === next.id ? next : item))
     : [next, ...items]
+}
+
+function recipeUpdatedLabel(value: string | undefined): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (!Number.isFinite(date.getTime())) return ''
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}.${month}.${day} 更新`
 }
 
 function dateLabel(value: string): string {

@@ -173,7 +173,7 @@
           <text class="template-sheet__eyebrow">{{templateDraft.id ? '整理清单' : '新清单'}}</text>
           <text class="template-sheet__title">{{templateDraft.id ? '改一改常用物品' : '以后出发，带上这些'}}</text>
         </view>
-        <view class="template-sheet__close" bindtap="onCloseTemplateEditor">关闭</view>
+        <view class="template-sheet__close sheet-close-icon" bindtap="onCloseTemplateEditor" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view>
       </view>
 
       <view class="template-sheet__body">

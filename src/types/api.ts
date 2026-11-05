@@ -500,6 +500,8 @@ export interface ApiPetEvent {
   recurrenceDays: number
   version: number
   createdBy: string
+  createdByName?: string
+  createdByAvatarMediaId?: string
   deletedAt: string | null
   createdAt: string
   updatedAt: string
@@ -522,6 +524,8 @@ export interface ApiPetDailyLog {
   note: string
   recordedAt: string
   createdBy: string
+  createdByName?: string
+  createdByAvatarMediaId?: string
   createdAt: string
   deletedAt?: string | null
 }
@@ -547,6 +551,8 @@ export interface ApiPetSupply {
   brand: string
   status: string
   preference: string
+  officialPrice?: string
+  finalPrice?: string
   note: string
   mediaId: string
   recordedOn: string
@@ -579,6 +585,8 @@ export interface ApiPet {
   backgroundHistory?: ApiPetBackgroundMedia[]
   version: number
   createdBy: string
+  createdByName?: string
+  createdByAvatarMediaId?: string
   deletedAt: string | null
   createdAt: string
   updatedAt: string
@@ -636,6 +644,8 @@ export interface ApiPetSupplyWriteRequest {
   name: string
   brand: string
   preference: string
+  officialPrice: string
+  finalPrice: string
   note: string
   mediaId: string
   recordedOn: string

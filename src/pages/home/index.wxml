@@ -167,7 +167,7 @@
       <view class="space-sheet__handle"></view>
       <view class="space-sheet__head">
         <text class="space-sheet__title">切换空间</text>
-        <view class="space-sheet__close" bindtap="onCloseSpaceSwitcher">关闭</view>
+        <view class="space-sheet__close sheet-close-icon" bindtap="onCloseSpaceSwitcher" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view>
       </view>
       <view class="space-sheet__list">
         <view

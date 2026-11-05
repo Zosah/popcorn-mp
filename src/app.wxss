@@ -411,3 +411,17 @@ textarea {
   font-weight: 400;
   line-height: 1.5;
 }
+
+/* 所有弹窗统一的图标关闭按钮，扩大点击热区。 */
+.sheet-close-icon {
+  display: flex !important;
+  width: 68rpx !important;
+  height: 68rpx !important;
+  min-width: 68rpx !important;
+  min-height: 68rpx !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(37, 43, 39, 0.05);
+  flex: 0 0 auto;
+}
