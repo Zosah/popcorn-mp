@@ -642,9 +642,13 @@ Page({
 })
 
 function recipesForCategory(recipes: MenuRecipe[], categoryId: string): MenuRecipe[] {
-  if (categoryId === 'all') return recipes
-  if (categoryId === 'uncategorized') return recipes.filter((item) => !item.categoryId)
-  return recipes.filter((item) => item.categoryId === categoryId)
+  const decorated = recipes.map((recipe) => ({
+    ...recipe,
+    updatedLabel: recipe.updatedLabel ?? recipeUpdatedLabel(recipe.updatedAt || recipe.createdAt),
+  }))
+  if (categoryId === 'all') return decorated
+  if (categoryId === 'uncategorized') return decorated.filter((item) => !item.categoryId)
+  return decorated.filter((item) => item.categoryId === categoryId)
 }
 
 function buildCategoryTabs(
