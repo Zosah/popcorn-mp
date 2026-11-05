@@ -131,8 +131,8 @@
               <view class="daily-timeline__line"></view>
             </view>
             <view class="daily-timeline__body">
-              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--right"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view></view>
-              <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
+              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view></view>
+              <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--inline"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view>
               <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
@@ -173,8 +173,8 @@
               <view class="daily-timeline__line"></view>
             </view>
             <view class="daily-timeline__body">
-              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--right"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view></view>
-              <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
+              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view></view>
+              <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--inline"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view>
               <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
@@ -203,8 +203,8 @@
                 <view class="daily-timeline__line"></view>
               </view>
               <view class="daily-timeline__body">
-                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--right"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view></view>
-                <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
+                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view></view>
+                <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--inline"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view>
                 <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
               </view>
             </view>

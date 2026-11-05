@@ -3297,7 +3297,7 @@
 .daily-timeline__meta {
   display: block !important;
   min-height: 0 !important;
-  padding: 0 266rpx 0 0 !important;
+  padding: 0 236rpx 0 0 !important;
 }
 
 .daily-timeline__meta > text:first-child {
@@ -3317,8 +3317,8 @@
   top: 0 !important;
   right: 0 !important;
   display: flex !important;
-  width: 250rpx !important;
-  max-width: 250rpx !important;
+  width: 220rpx !important;
+  max-width: 220rpx !important;
   align-items: flex-end;
   flex-direction: column;
   gap: 6rpx;
@@ -3332,24 +3332,39 @@
   white-space: nowrap;
 }
 
-.timeline-author--right {
-  max-width: 250rpx !important;
-  margin-top: 0;
+/* 内容行：标签 + 内容 +（右端）记录人，整行垂直居中 */
+.daily-timeline__badges {
   align-items: center;
-  font-size: 21rpx;
+  flex-wrap: nowrap;
+}
+
+.daily-timeline__status {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 记录人：与内容同一水平线，垂直居中，右端对齐 */
+.timeline-author--inline {
+  margin-top: 0;
+  margin-left: auto;
+  padding-left: 12rpx;
+  align-items: center;
+  flex: 0 0 auto;
+  font-size: 25rpx;
   gap: 8rpx;
 }
 
-.timeline-author--right .timeline-author__avatar,
-.timeline-author--right .timeline-author__initial {
-  width: 34rpx;
-  height: 34rpx;
-  flex-basis: 34rpx;
-  font-size: 18rpx;
+.timeline-author--inline .timeline-author__avatar,
+.timeline-author--inline .timeline-author__initial {
+  width: 38rpx;
+  height: 38rpx;
+  flex-basis: 38rpx;
+  font-size: 21rpx;
 }
 
-.timeline-author--right text:last-child {
-  max-width: 190rpx;
+.timeline-author--inline text:last-child {
+  max-width: 200rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
