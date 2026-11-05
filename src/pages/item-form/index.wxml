@@ -51,8 +51,8 @@
           <text class="form-hint">决定列表里的标签颜色</text>
         </view>
         <view class="chip-grid chip-grid--three">
-          <view wx:for="{{categoryOptions}}" wx:key="value" class="chip {{form.category === item.value ? 'chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectCategory">
-            <line-icon name="{{item.iconName}}" size="26" tone="{{form.category === item.value ? 'white' : 'color'}}" />
+          <view wx:for="{{categoryOptions}}" wx:key="value" class="chip chip--{{item.value}} {{form.category === item.value ? 'chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectCategory">
+            <line-icon name="{{item.iconName}}" size="26" tone="{{form.category === item.value ? 'gold' : 'muted'}}" />
             <text>{{item.label}}</text>
           </view>
         </view>
@@ -64,8 +64,8 @@
           <text class="form-hint">找不到就直接选其他</text>
         </view>
         <view class="chip-grid chip-grid--two">
-          <view wx:for="{{locationOptions}}" wx:key="value" class="chip {{form.location === item.value ? 'chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectLocation">
-            <line-icon name="{{item.iconName}}" size="26" tone="{{form.location === item.value ? 'white' : 'color'}}" />
+          <view wx:for="{{locationOptions}}" wx:key="value" class="chip chip--loc {{form.location === item.value ? 'chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectLocation">
+            <line-icon name="{{item.iconName}}" size="26" tone="{{form.location === item.value ? 'gold' : 'muted'}}" />
             <text>{{item.label}}</text>
           </view>
         </view>
@@ -111,7 +111,7 @@
         </view>
         <picker mode="date" value="{{form.expiresOn}}" bindchange="onExpiryChange">
           <view class="form-picker form-picker--date">
-            <text>{{form.expiresOn || '选择日期'}}</text>
+            <text>{{expiryDisplay || '选择日期'}}</text>
             <line-icon name="system-calendar" size="23" tone="blue" />
           </view>
         </picker>

@@ -6,6 +6,7 @@ import {
   INVENTORY_CATEGORY_ICON_NAMES,
   INVENTORY_LOCATION_ICON_NAMES,
 } from '../../constants/icon-names'
+import { formatChineseDate } from '../../domain/expiry'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { mediaGateway } from '../../services/media'
@@ -59,6 +60,7 @@ Page({
     saving: false,
     imageUploading: false,
     hasExpiry: false,
+    expiryDisplay: '',
     categoryIndex: 0,
     locationIndex: 0,
     categoryOptions: CATEGORY_OPTIONS.map((item) => ({
@@ -126,6 +128,7 @@ Page({
       this.setData({
         version: item.version,
         hasExpiry: item.expiresOn !== null,
+        expiryDisplay: formatChineseDate(item.expiresOn),
         categoryIndex: Math.max(
           0,
           CATEGORY_OPTIONS.findIndex((option) => option.value === item.category),
@@ -290,7 +293,12 @@ Page({
     const yyyy = target.getFullYear()
     const mm = String(target.getMonth() + 1).padStart(2, '0')
     const dd = String(target.getDate()).padStart(2, '0')
-    this.setData({ hasExpiry: true, 'form.expiresOn': `${yyyy}-${mm}-${dd}` })
+    const value = `${yyyy}-${mm}-${dd}`
+    this.setData({
+      hasExpiry: true,
+      'form.expiresOn': value,
+      expiryDisplay: formatChineseDate(value),
+    })
   },
 
   onCategoryChange(event: PickerEvent) {
@@ -311,14 +319,19 @@ Page({
 
   onExpiryToggle(event: SwitchEvent) {
     const hasExpiry = event.detail.value
+    const expiresOn = hasExpiry ? this.data.form.expiresOn ?? '' : null
     this.setData({
       hasExpiry,
-      'form.expiresOn': hasExpiry ? this.data.form.expiresOn ?? '' : null,
+      'form.expiresOn': expiresOn,
+      expiryDisplay: formatChineseDate(expiresOn),
     })
   },
 
   onExpiryChange(event: PickerEvent) {
-    this.setData({ 'form.expiresOn': event.detail.value })
+    this.setData({
+      'form.expiresOn': event.detail.value,
+      expiryDisplay: formatChineseDate(event.detail.value),
+    })
   },
 
   async onSave() {

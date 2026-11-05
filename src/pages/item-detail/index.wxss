@@ -8,7 +8,8 @@
   --detail-orange: #9a7250;
   --detail-red: var(--c-primary-link, #b86757);
   padding: 30rpx 36rpx calc(70rpx + env(safe-area-inset-bottom));
-  background: var(--detail-paper);
+  background: var(--c-paper-grad);
+  background-attachment: fixed;
   color: var(--detail-ink);
 }
 

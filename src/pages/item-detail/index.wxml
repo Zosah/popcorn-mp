@@ -45,7 +45,7 @@
       <view class="detail-info__row"><text>数量</text><text>{{item.quantity}}{{item.unit}}</text></view>
       <view class="detail-info__row"><text>分类</text><text>{{item.categoryLabel}}</text></view>
       <view class="detail-info__row"><text>存放位置</text><text>{{item.locationLabel}}</text></view>
-      <view class="detail-info__row"><text>有效期</text><text>{{item.expiresOn || '未设置'}}</text></view>
+      <view class="detail-info__row"><text>有效期</text><text>{{item.expiresOnLabel || '未设置'}}</text></view>
       <view class="detail-info__row"><text>当前状态</text><text>{{item.statusLabel}}</text></view>
     </view>
 
@@ -65,7 +65,7 @@
       <view class="detail-timeline__item">
         <view class="detail-timeline__dot detail-timeline__dot--green"></view>
         <view class="detail-timeline__date">有效期</view>
-        <view class="detail-timeline__title">{{item.expiresOn || '长期存放'}}</view>
+        <view class="detail-timeline__title">{{item.expiresOnLabel || '长期存放'}}</view>
         <view class="detail-timeline__copy">{{item.expiry.label}}</view>
       </view>
     </view>

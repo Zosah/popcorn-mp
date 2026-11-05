@@ -28,6 +28,16 @@
   background: transparent;
 }
 
+/* 没有图片时的默认底：按品类给一层柔和色，不再是空白方块 */
+.row__thumb--food { background: #f7ecdd; }
+.row__thumb--drink { background: #e7eff4; }
+.row__thumb--frozen { background: #e5eff1; }
+.row__thumb--seasoning { background: #f6e9db; }
+.row__thumb--daily { background: #eef1e7; }
+.row__thumb--medicine { background: #f8e7e3; }
+.row__thumb--pet { background: #e3efe9; }
+.row__thumb--other { background: #f1ede7; }
+
 .row__image {
   width: 100%;
   height: 100%;

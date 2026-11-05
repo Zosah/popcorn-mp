@@ -9,7 +9,8 @@
   --inv-gold: var(--c-warning, #a18448);
   --inv-red: var(--c-primary-link, #b86757);
   padding: 34rpx 36rpx calc(176rpx + env(safe-area-inset-bottom));
-  background: var(--inv-paper);
+  background: var(--c-paper-grad);
+  background-attachment: fixed;
   color: var(--inv-ink);
 }
 
@@ -40,7 +41,8 @@
   align-items: center;
   padding: 0 22rpx;
   border-radius: 999rpx;
-  background: var(--inv-deep);
+  background: linear-gradient(135deg, #d18d7c 0%, #bb6d5d 100%);
+  box-shadow: 0 12rpx 24rpx -14rpx rgba(184, 103, 87, 0.7);
   color: #fff;
   gap: 7rpx;
   font-size: 28rpx;
@@ -289,7 +291,8 @@
   margin-top: 22rpx;
   padding: 0 24rpx;
   border-radius: 999rpx;
-  background: var(--inv-deep);
+  background: linear-gradient(135deg, #d18d7c 0%, #bb6d5d 100%);
+  box-shadow: 0 12rpx 24rpx -16rpx rgba(184, 103, 87, 0.72);
   color: #fff;
   font-size: 26rpx;
   font-weight: 600;

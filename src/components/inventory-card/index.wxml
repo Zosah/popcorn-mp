@@ -1,7 +1,7 @@
 <view class="row" bindtap="onTap">
-  <view class="row__thumb {{item.imageSrc ? 'row__thumb--image' : ''}}">
+  <view class="row__thumb row__thumb--{{item.category}} {{item.imageSrc ? 'row__thumb--image' : ''}}">
     <image wx:if="{{item.imageSrc}}" class="row__image" src="{{item.imageSrc}}" mode="aspectFill" />
-    <line-icon wx:else name="{{item.iconName}}" size="46" tone="color" />
+    <line-icon wx:else name="{{item.iconName}}" size="46" tone="gold" />
   </view>
 
   <view class="row__main">

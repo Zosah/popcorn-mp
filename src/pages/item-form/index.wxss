@@ -6,7 +6,8 @@
   --form-line: var(--c-line, #e9e6e1);
   --form-deep: var(--c-primary, #252b27);
   padding: 28rpx 36rpx calc(188rpx + env(safe-area-inset-bottom));
-  background: var(--form-paper);
+  background: var(--c-paper-grad);
+  background-attachment: fixed;
   color: var(--form-ink);
 }
 
@@ -121,10 +122,30 @@
 }
 
 .chip--active {
-  border-color: transparent;
-  background: var(--form-deep);
-  color: #fff;
+  border-width: 2rpx;
+  border-style: solid;
+  font-weight: 700;
 }
+
+/* 选中态用各自品类的浅色，不再整片墨黑 */
+.chip--food { border-color: #efe1cd; background: #fbf4e9; color: #8b6238; }
+.chip--food.chip--active { border-color: #d8b184; background: #f7e8d3; color: #7f5628; }
+.chip--drink { border-color: #dbe7ef; background: #f2f8fb; color: #4f6f86; }
+.chip--drink.chip--active { border-color: #a8c3d4; background: #e4eff6; color: #3f6178; }
+.chip--frozen { border-color: #dbe9eb; background: #f2f9fa; color: #4c727a; }
+.chip--frozen.chip--active { border-color: #a3c6cc; background: #e3f1f4; color: #3f656d; }
+.chip--seasoning { border-color: #efe0cd; background: #fcf4e9; color: #90602d; }
+.chip--seasoning.chip--active { border-color: #d5ab7d; background: #f8e8d4; color: #7f5325; }
+.chip--daily { border-color: #e3e8d5; background: #f7faef; color: #63724e; }
+.chip--daily.chip--active { border-color: #bcc8a5; background: #edf2e2; color: #576646; }
+.chip--medicine { border-color: #f0dcd7; background: #fdf3f1; color: #99564a; }
+.chip--medicine.chip--active { border-color: #dcaea5; background: #fae7e2; color: #8f463a; }
+.chip--pet { border-color: #dcebe5; background: #f3faf7; color: #4f6f61; }
+.chip--pet.chip--active { border-color: #a3c6b6; background: #e6f3ee; color: #446356; }
+.chip--other { border-color: #e9e2d8; background: #faf7f2; color: #6f6a61; }
+.chip--other.chip--active { border-color: #cabfae; background: #f2ede6; color: #605b52; }
+.chip--loc { border-color: #e4e9dd; background: #f9faf4; color: #5f6a55; }
+.chip--loc.chip--active { border-color: #a9c9bb; background: #e9f4ef; color: #4d6f61; }
 
 .qty-row {
   display: flex;
@@ -194,9 +215,9 @@
 }
 
 .unit-chip--active {
-  border-color: transparent;
-  background: var(--c-primary-soft, #f7e7e2);
-  color: #9a5f58;
+  border-color: #e0b2a9;
+  background: #fbeae6;
+  color: #a85a4c;
   font-weight: 700;
 }
 
@@ -209,10 +230,10 @@
 
 .preset {
   padding: 10rpx 20rpx;
-  border: 1rpx solid var(--form-line);
+  border: 1rpx solid #ecd9cf;
   border-radius: 999rpx;
-  background: var(--c-paper-2, #f5f0e9);
-  color: var(--form-ink-2);
+  background: #fdf4f1;
+  color: #9a5f58;
   font-size: 23rpx;
   font-weight: 600;
 }
@@ -220,4 +241,11 @@
 .preset:active {
   background: var(--c-primary-soft, #f7e7e2);
   color: #9a5f58;
+}
+
+/* 主按钮：珊瑚渐变，不再用墨黑 */
+.form-submit {
+  border: 0;
+  background: linear-gradient(135deg, #d18d7c 0%, #bb6d5d 100%);
+  box-shadow: 0 18rpx 32rpx -20rpx rgba(184, 103, 87, 0.8);
 }

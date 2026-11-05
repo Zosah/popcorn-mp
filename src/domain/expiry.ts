@@ -36,6 +36,14 @@ function formatDateOnly(timestamp: number): string {
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`
 }
 
+/** 把 YYYY-MM-DD 显示成「2029年3月1日」；无法解析时原样返回。 */
+export function formatChineseDate(value: string | null | undefined): string {
+  if (!value) return ''
+  const matched = DATE_ONLY_PATTERN.exec(value)
+  if (!matched) return value
+  return `${Number(matched[1])}年${Number(matched[2])}月${Number(matched[3])}日`
+}
+
 export function getShanghaiDateOnly(nowMs: number): string {
   return formatDateOnly(nowMs + SHANGHAI_OFFSET_MS)
 }
@@ -45,7 +53,7 @@ export function formatShanghaiDateTime(value: string): string {
   if (Number.isNaN(timestamp)) return '时间未知'
 
   const date = new Date(timestamp + SHANGHAI_OFFSET_MS)
-  return `${date.getUTCMonth() + 1}月${date.getUTCDate()}日 ${pad(
+  return `${date.getUTCFullYear()}年${date.getUTCMonth() + 1}月${date.getUTCDate()}日 ${pad(
     date.getUTCHours(),
   )}:${pad(date.getUTCMinutes())}`
 }
@@ -91,10 +99,14 @@ export function resolveExpiry(
       label: `还剩 ${daysRemaining} 天`,
     }
   }
+  // 超过一年的有效期用「年月日」表达，比「还剩 847 天」更好读。
   return {
     status: 'normal',
     daysRemaining,
-    label: `还剩 ${daysRemaining} 天`,
+    label:
+      daysRemaining > 365
+        ? formatChineseDate(expiresOn)
+        : `还剩 ${daysRemaining} 天`,
   }
 }
 

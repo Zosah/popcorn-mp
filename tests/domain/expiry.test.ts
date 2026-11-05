@@ -19,6 +19,7 @@ describe('resolveExpiry', () => {
     ['2026-08-30', 'soon', 4, '还剩 4 天'],
     ['2026-09-02', 'soon', 7, '还剩 7 天'],
     ['2026-09-03', 'normal', 8, '还剩 8 天'],
+    ['2027-09-01', 'normal', 371, '2027年9月1日'],
   ] as const)('正确识别 %s 的到期状态', (expiresOn, status, days, label) => {
     expect(resolveExpiry(expiresOn, today)).toEqual({
       status,
@@ -54,7 +55,7 @@ describe('getShanghaiDateOnly', () => {
 describe('formatShanghaiDateTime', () => {
   it('把 ISO 时间转换为稳定的上海日期时间', () => {
     expect(formatShanghaiDateTime('2026-10-31T18:37:39.296Z')).toBe(
-      '11月1日 02:37',
+      '2026年11月1日 02:37',
     )
   })
 

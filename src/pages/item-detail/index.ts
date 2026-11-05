@@ -2,6 +2,7 @@ import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
 import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
 import { resolveInventoryLifecycleActions } from '../../domain/demo-interactions'
 import {
+  formatChineseDate,
   formatShanghaiDateTime,
   getShanghaiDateOnly,
   resolveExpiry,
@@ -33,6 +34,7 @@ interface ItemDetailView extends InventoryItem {
   expiry: ReturnType<typeof resolveExpiry>
   statusLabel: string
   updatedAtLabel: string
+  expiresOnLabel: string
   imageSrc: string
   actions: Array<{
     key: keyof typeof ACTION_LABELS
@@ -93,6 +95,7 @@ Page({
           expiry: resolveExpiry(item.expiresOn, today),
           statusLabel: LIFECYCLE_LABELS[item.status],
           updatedAtLabel: formatShanghaiDateTime(item.updatedAt),
+          expiresOnLabel: formatChineseDate(item.expiresOn),
           imageSrc,
           actions: resolveInventoryLifecycleActions(item.status).map((action) => ({
             ...action,
