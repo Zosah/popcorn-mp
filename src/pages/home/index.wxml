@@ -53,26 +53,23 @@
     </view>
   </view>
 
-  <view class="moment-strip" hover-class="moment-strip--pressed" bindtap="onOpenMoment">
-    <view class="moment-thumb {{latestEntry && latestEntry.image ? 'moment-thumb--photo' : ''}}">
-      <image wx:if="{{latestEntry && latestEntry.image && (latestEntry.image.thumbSrc || latestEntry.image.src)}}" class="moment-thumb__photo" src="{{latestEntry.image.thumbSrc || latestEntry.image.src}}" mode="aspectFill" lazy-load />
-      <block wx:else>
-        <view class="moment-thumb__sun"></view>
-        <view class="moment-thumb__hill"></view>
-      </block>
+  <view class="home-block">
+    <view class="home-block__head">
+      <text class="home-block__title">今天</text>
+      <view class="home-block__link" bindtap="onOpenTodo">全部待办<text class="home-block__arrow">›</text></view>
     </view>
-    <view class="moment-strip__body">
-      <text class="moment-strip__eyebrow">{{latestEntry ? (latestEntryIsToday ? '刚刚发生' : latestEntry.dateLabel) : '从今天开始'}}</text>
-      <text class="moment-strip__title">{{latestEntry ? latestEntry.title : '写下第一件小事'}}</text>
-      <text class="moment-strip__meta">{{latestEntry ? (latestEntry.authorName || '共同空间') + ' · ' + latestEntry.timeLabel : '生活记录会在这里出现'}}</text>
-    </view>
-    <text class="moment-strip__arrow">›</text>
-  </view>
 
-  <view class="scene-switch">
-    <view class="scene-switch__item {{homeTab === 'today' ? 'scene-switch__item--active' : ''}}" data-value="today" bindtap="onSelectHomeTab">今天</view>
-    <view class="scene-switch__item {{homeTab === 'home' ? 'scene-switch__item--active' : ''}}" data-value="home" bindtap="onSelectHomeTab">家里</view>
-    <view class="scene-switch__item {{homeTab === 'pet' ? 'scene-switch__item--active' : ''}}" data-value="pet" bindtap="onSelectHomeTab">{{petSnapshot.name}}</view>
+    <view class="today-card" hover-class="home-card--pressed" bindtap="onOpenTodo">
+      <view class="today-card__head">
+        <text class="today-card__kicker">TODAY</text>
+        <text class="today-card__ratio">{{todoCompletedCount}} / {{todoTotalCount}}</text>
+      </view>
+      <text class="today-card__title">{{todoPendingCount ? '还有 ' + todoPendingCount + ' 件小事' : '今天的小事都完成了'}}</text>
+      <text class="today-card__copy">{{todoSummary}}</text>
+      <view class="today-card__track">
+        <view class="today-card__fill" style="width: {{todoTotalCount ? (todoCompletedCount * 100 / todoTotalCount) : 0}}%"></view>
+      </view>
+    </view>
   </view>
 
   <view wx:if="{{inventoryError}}" class="home-error">
@@ -84,82 +81,83 @@
     <text class="home-error__action" bindtap="onRetryInventory">重试</text>
   </view>
 
-  <view wx:if="{{homeTab === 'today'}}" class="scene-card scene-card--today">
-    <view class="scene-card__orb scene-card__orb--one"></view>
-    <view class="scene-card__orb scene-card__orb--two"></view>
-    <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="system-check" size="44" tone="ink" /></view>
-      <view class="scene-count">{{todoCompletedCount}} / {{todoTotalCount}}</view>
+  <view class="home-block">
+    <view class="home-block__head">
+      <text class="home-block__title">家里</text>
     </view>
-    <view class="scene-copy">
-      <text class="scene-kicker">TODAY · 一起完成</text>
-      <text class="scene-title">{{todoPendingCount ? '今天还有 ' + todoPendingCount + ' 件小事' : '今天的小事都完成了'}}</text>
-      <text class="scene-note">{{todoPendingCount ? '已经完成 ' + todoCompletedCount + ' 件，给今天留一点松弛感' : '把今天轻轻收好，剩下的时间留给自己'}}</text>
-    </view>
-    <view class="scene-preview">
-      <view class="scene-preview__icon scene-preview__icon--done"><line-icon name="system-check" size="26" tone="green" /></view>
-      <view class="scene-preview__body">
-        <text class="scene-preview__title">{{todoSummary}}</text>
-        <text class="scene-preview__meta">待办 · 想到就记下</text>
+
+    <view class="home-list">
+      <view class="home-row" hover-class="home-row--pressed" data-target="inventory" bindtap="onOpenNearby">
+        <view class="home-row__icon home-row__icon--inventory">
+          <line-icon name="inventory-category-other" size="34" tone="gold" />
+        </view>
+        <view class="home-row__body">
+          <text class="home-row__title">家庭库存</text>
+          <text class="home-row__copy">{{snapshot.inventoryNotice}}</text>
+        </view>
+        <text class="home-row__value">{{snapshot.inventoryItemCount}} 件</text>
+        <view class="home-row__chevron"></view>
       </view>
-      <text class="scene-preview__time">今天</text>
-    </view>
-    <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenTodo">
-      <text>{{todoPendingCount ? '继续待办' : '看看全部待办'}}</text>
-      <text class="scene-action__arrow">›</text>
+
+      <view class="home-row" hover-class="home-row--pressed" data-target="pets" bindtap="onOpenNearby">
+        <view class="home-row__icon home-row__icon--pet">
+          <line-icon name="pet-tab-profile" size="34" tone="green" />
+        </view>
+        <view class="home-row__body">
+          <text class="home-row__title">{{petSnapshot.name}} 的照护</text>
+          <text class="home-row__copy">{{petSnapshot.careNotice}}</text>
+        </view>
+        <text class="home-row__value">{{petSnapshot.weight}} kg</text>
+        <view class="home-row__chevron"></view>
+      </view>
+
+      <view class="home-row" hover-class="home-row--pressed" data-target="menu" bindtap="onOpenNearby">
+        <view class="home-row__icon home-row__icon--menu">
+          <line-icon name="system-clock" size="34" tone="accent" />
+        </view>
+        <view class="home-row__body">
+          <text class="home-row__title">今晚吃什么</text>
+          <text class="home-row__copy">{{menuSummary}}</text>
+        </view>
+        <text class="home-row__value">{{menuCount}} 道</text>
+        <view class="home-row__chevron"></view>
+      </view>
     </view>
   </view>
 
-  <view wx:elif="{{homeTab === 'home'}}" class="scene-card scene-card--home">
-    <view class="scene-card__orb scene-card__orb--one"></view>
-    <view class="scene-card__orb scene-card__orb--two"></view>
-    <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="inventory-category-other" size="44" tone="green" /></view>
-      <view class="scene-count">{{snapshot.inventoryItemCount}} 件</view>
+  <view class="home-block">
+    <view class="home-block__head">
+      <text class="home-block__title">最近发生</text>
+      <view class="home-block__link" bindtap="onOpenJournal">生活记录<text class="home-block__arrow">›</text></view>
     </view>
-    <view class="scene-copy">
-      <text class="scene-kicker">AT HOME · 家的状态</text>
-      <text class="scene-title">{{snapshot.inventoryNotice}}</text>
-      <text class="scene-note">{{menuSummary}}</text>
-    </view>
-    <view class="scene-preview">
-      <view class="scene-preview__icon"><line-icon name="system-clock" size="26" tone="gold" /></view>
-      <view class="scene-preview__body">
-        <text class="scene-preview__title">下厨</text>
-        <text class="scene-preview__meta">{{menuCount}} 道收藏 · 去挑一道今天的菜</text>
-      </view>
-      <text class="scene-preview__time">去看</text>
-    </view>
-    <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenInventory">
-      <text>查看家庭库存</text>
-      <text class="scene-action__arrow">›</text>
-    </view>
-  </view>
 
-  <view wx:else class="scene-card scene-card--pet">
-    <view class="scene-card__orb scene-card__orb--one"></view>
-    <view class="scene-card__orb scene-card__orb--two"></view>
-    <view class="scene-card__top">
-      <view class="scene-icon"><line-icon name="pet-tab-profile" size="44" tone="color" /></view>
-      <view class="scene-count">{{petSnapshot.weight}} kg</view>
-    </view>
-    <view class="scene-copy">
-      <text class="scene-kicker">PET · {{petSnapshot.name}}</text>
-      <text class="scene-title">{{petSnapshot.careNotice}}</text>
-      <text class="scene-note">{{petSnapshot.name}}今天状态：{{petSnapshot.status}}。吃喝拉撒、体重和照护都收在这里</text>
-    </view>
-    <view class="scene-preview">
-      <view class="scene-preview__icon"><line-icon name="pet-tab-profile" size="26" tone="color" /></view>
-      <view class="scene-preview__body">
-        <text class="scene-preview__title">{{petActivities.length ? petActivities[0].title : '还没有宠物动态'}}</text>
-        <text class="scene-preview__meta">{{petActivities.length ? petActivities[0].copy : '记一次体重、洗护或今天的照护'}}</text>
+    <scroll-view class="moment-row" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="moment-row__inner">
+        <view
+          wx:for="{{recentEntries}}"
+          wx:key="id"
+          class="moment-card"
+          hover-class="home-card--pressed"
+          data-id="{{item.id}}"
+          bindtap="onOpenRecord"
+        >
+          <image wx:if="{{item.image && (item.image.thumbSrc || item.image.src)}}" class="moment-card__image" src="{{item.image.thumbSrc || item.image.src}}" mode="aspectFill" lazy-load />
+          <view wx:else class="moment-card__image moment-card__image--empty">
+            <line-icon name="system-image" size="30" tone="muted" />
+          </view>
+          <text class="moment-card__title">{{item.title}}</text>
+          <text class="moment-card__meta">{{item.dateLabel}} · {{item.timeLabel}}</text>
+        </view>
+
+        <view wx:if="{{!recentEntries.length}}" class="moment-card moment-card--empty" bindtap="onOpenJournal">
+          <view class="moment-card__image moment-card__image--empty">
+            <line-icon name="system-image" size="30" tone="muted" />
+          </view>
+          <text class="moment-card__title">写下第一件小事</text>
+          <text class="moment-card__meta">生活记录会出现在这里</text>
+        </view>
       </view>
-      <text class="scene-preview__time">{{petActivities.length ? petActivities[0].dateLabel : '去记录'}}</text>
-    </view>
-    <view class="scene-action" hover-class="scene-action--pressed" bindtap="onOpenPets">
-      <text>记录今日照护</text>
-      <text class="scene-action__arrow">›</text>
-    </view>
+    </scroll-view>
   </view>
 
   <view wx:if="{{spaceSwitcherOpen}}" class="space-sheet-mask" catchtap="onCloseSpaceSwitcher">
