@@ -3175,3 +3175,70 @@
 .daily-timeline__row {
   padding-bottom: 16rpx;
 }
+
+/* ================= 时间线：右侧独立列，不再撑高行 ================= */
+.daily-timeline__body {
+  position: relative;
+}
+
+.daily-timeline__meta {
+  display: block;
+  min-height: 42rpx;
+  padding-right: 156rpx;
+}
+
+.daily-timeline__meta > text:first-child {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-timeline__meta-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  width: auto;
+  max-width: 150rpx;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 2rpx;
+  text-align: right;
+}
+
+.daily-timeline__meta-right > text {
+  font-size: 17rpx;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.timeline-author--right {
+  max-width: 150rpx;
+  margin-top: 0;
+  font-size: 17rpx;
+}
+
+.timeline-author--right text:last-child {
+  max-width: 112rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-timeline__meta {
+  padding-right: 204rpx;
+}
+
+.daily-timeline__meta-right {
+  max-width: 196rpx;
+}
+
+.timeline-author--right {
+  max-width: 196rpx;
+}
+
+.timeline-author--right text:last-child {
+  max-width: 150rpx;
+}
