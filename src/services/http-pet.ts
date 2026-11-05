@@ -594,6 +594,9 @@ async function toPetState(item: ApiPet): Promise<DemoPetState> {
       note: log.note,
       recordedAt: log.recordedAt,
       deletedAt: log.deletedAt ?? null,
+      createdByName: log.createdByName || '',
+      createdByAvatarUrl: logCreatorAvatars[index] ?? '',
+      createdByInitial: Array.from(log.createdByName || '')[0] ?? '',
     })),
   }
 }

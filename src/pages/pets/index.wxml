@@ -131,13 +131,8 @@
               <view class="daily-timeline__line"></view>
             </view>
             <view class="daily-timeline__body">
-              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view>
+              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--right"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view></view>
               <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
-              <view wx:if="{{item.createdByName}}" class="timeline-author">
-                <image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" />
-                <view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view>
-                <text>{{item.createdByName}} 记录</text>
-              </view>
               <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
@@ -178,13 +173,8 @@
               <view class="daily-timeline__line"></view>
             </view>
             <view class="daily-timeline__body">
-              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text></view>
+              <view class="daily-timeline__meta"><text>{{item.yearLabel}}年{{item.dateLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '今天' ? '今天' : item.elapsedLabel + '前'}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--right"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view></view>
               <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.label}}</text><text class="daily-timeline__status">{{item.content}}</text></view>
-              <view wx:if="{{item.createdByName}}" class="timeline-author">
-                <image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" />
-                <view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view>
-                <text>{{item.createdByName}} 记录</text>
-              </view>
               <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
             </view>
           </view>
@@ -213,14 +203,9 @@
                 <view class="daily-timeline__line"></view>
               </view>
               <view class="daily-timeline__body">
-                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text></view>
+                <view class="daily-timeline__meta"><text>{{item.yearLabel}}{{item.dateLabel}} {{item.timeLabel}}</text><view class="daily-timeline__meta-right"><text>{{item.elapsedLabel === '刚刚' ? '刚刚' : item.elapsedLabel + '前'}}</text><view wx:if="{{item.createdByName}}" class="timeline-author timeline-author--right"><image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" /><view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view><text>{{item.createdByName}}</text></view></view></view>
                 <view class="daily-timeline__badges"><text class="daily-timeline__action daily-timeline__action--{{item.type}}">{{item.actionLabel}}</text><text class="daily-timeline__status">{{item.statusLabel}}</text></view>
-                <view wx:if="{{item.createdByName}}" class="timeline-author">
-                <image wx:if="{{item.createdByAvatarUrl}}" class="timeline-author__avatar" src="{{item.createdByAvatarUrl}}" mode="aspectFill" />
-                <view wx:else class="timeline-author__initial">{{item.createdByInitial}}</view>
-                <text>{{item.createdByName}} 记录</text>
-              </view>
-              <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
+                <text wx:if="{{item.note}}" class="daily-timeline__note">{{item.note}}</text>
               </view>
             </view>
           </view>
@@ -456,28 +441,51 @@
         <view class="pet-sheet__handle"></view>
         <view class="pet-sheet__head"><view><text class="pet-eyebrow">{{supplyEditorMode === 'edit' ? '编辑用品' : '新增用品'}}</text><text class="pet-sheet__title">{{supplyEditorMode === 'edit' ? '补充这件用品的信息' : '记下值得记住的体验'}}</text></view><view class="sheet-close-icon" bindtap="onCloseSupplyEditor" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view></view>
         <scroll-view class="supply-editor-scroll" scroll-y enhanced show-scrollbar="{{false}}">
-          <view class="supply-editor-section"><text class="supply-editor-label">类型</text><view class="choice-row"><view wx:for="{{supplyEditorCategories}}" wx:key="value" class="choice-chip {{supplyDraft.category === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyCategorySelect">{{item.label}}</view></view></view>
-          <view wx:if="{{supplyDraft.category === 'custom'}}" class="supply-field"><text>自定义类型</text><input value="{{supplyDraft.categoryLabel}}" maxlength="32" placeholder="例如：玩具、护理" data-field="categoryLabel" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-field"><text>名称</text><input value="{{supplyDraft.name}}" maxlength="60" placeholder="例如：鸡肉主食罐" data-field="name" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-field"><text>品牌</text><input value="{{supplyDraft.brand}}" maxlength="40" placeholder="选填" data-field="brand" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-field"><text>官方价</text><input type="digit" value="{{supplyDraft.officialPrice}}" maxlength="12" placeholder="选填，例如 199" data-field="officialPrice" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-field"><text>到手价</text><input type="digit" value="{{supplyDraft.finalPrice}}" maxlength="12" placeholder="选填，例如 129" data-field="finalPrice" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-editor-section"><text class="supply-editor-label">偏好</text><view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view></view>
-          <view class="supply-field"><text>备注</text><input value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
-          <view class="supply-editor-section">
-            <text class="supply-editor-label">图片</text>
-            <block wx:if="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}">
-              <view class="supply-editor-image"><image src="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}" mode="aspectFill" bindtap="onPreviewSupplyEditorImage" /></view>
-              <view class="supply-editor-image-actions">
+          <view class="supply-editor-hero">
+            <view class="supply-editor-hero__cover" bindtap="onChooseSupplyImage">
+              <image wx:if="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}" src="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}" mode="aspectFill" />
+              <view wx:else class="supply-editor-hero__empty"><line-icon name="system-camera" size="30" tone="green" /><text>添加实物图</text></view>
+              <view wx:if="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}" class="supply-editor-hero__badge">实物图</view>
+            </view>
+            <view class="supply-editor-hero__body">
+              <text class="pet-eyebrow">ITEM PROFILE</text>
+              <input class="supply-editor-hero__name" value="{{supplyDraft.name}}" maxlength="60" placeholder="用品名称" data-field="name" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" />
+              <input class="supply-editor-hero__brand" value="{{supplyDraft.brand}}" maxlength="40" placeholder="品牌（选填）" data-field="brand" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" />
+              <view wx:if="{{supplyDraft.mediaThumbUrl || supplyDraft.mediaUrl}}" class="supply-editor-hero__actions">
                 <text bindtap="onPreviewSupplyEditorImage">查看</text>
                 <text bindtap="onEditSupplyImage">编辑</text>
                 <text bindtap="onChooseSupplyImage">更换</text>
                 <text class="is-danger" bindtap="onRemoveSupplyImage">移除</text>
               </view>
-            </block>
-            <view wx:else class="supply-image-picker" bindtap="onChooseSupplyImage"><line-icon name="system-camera" size="22" tone="green" /><text>选填，上传一张实物图</text></view>
+              <text wx:else class="supply-editor-hero__hint">图片会出现在清单第一列</text>
+            </view>
           </view>
-          <button class="pet-sheet__primary" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">{{supplyEditorMode === 'edit' ? '保存修改' : '保存用品'}}</button>
+
+          <view class="supply-editor-block">
+            <view class="supply-editor-block__head"><text class="pet-eyebrow">分类</text><text class="supply-editor-block__hint">决定清单里的标签颜色</text></view>
+            <view class="choice-row"><view wx:for="{{supplyEditorCategories}}" wx:key="value" class="choice-chip {{supplyDraft.category === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyCategorySelect">{{item.label}}</view></view>
+            <view wx:if="{{supplyDraft.category === 'custom'}}" class="supply-field supply-field--inset"><text>自定义</text><input value="{{supplyDraft.categoryLabel}}" maxlength="32" placeholder="例如：零食、玩具" data-field="categoryLabel" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view>
+          </view>
+
+          <view class="supply-editor-block">
+            <view class="supply-editor-block__head"><text class="pet-eyebrow">价格</text><text class="supply-editor-block__hint">到手价优先展示</text></view>
+            <view class="supply-price-row">
+              <view class="supply-price-card"><text>官方价</text><view class="supply-price-input"><text>¥</text><input type="digit" value="{{supplyDraft.officialPrice}}" maxlength="12" placeholder="0.00" data-field="officialPrice" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view></view>
+              <view class="supply-price-card supply-price-card--accent"><text>到手价</text><view class="supply-price-input"><text>¥</text><input type="digit" value="{{supplyDraft.finalPrice}}" maxlength="12" placeholder="0.00" data-field="finalPrice" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder" /></view></view>
+            </view>
+          </view>
+
+          <view class="supply-editor-block">
+            <view class="supply-editor-block__head"><text class="pet-eyebrow">偏好</text><text class="supply-editor-block__hint">一眼看出爱不爱</text></view>
+            <view class="choice-row"><view wx:for="{{supplyPreferenceOptions}}" wx:key="value" class="choice-chip choice-chip--{{item.value}} {{supplyDraft.preference === item.value ? 'choice-chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSupplyPreferenceSelect">{{item.hearts}} {{item.label}}</view></view>
+          </view>
+
+          <view class="supply-editor-block">
+            <text class="pet-eyebrow">备注</text>
+            <textarea class="supply-note" value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder"></textarea>
+          </view>
+
+          <button class="pet-sheet__primary supply-editor-save" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">{{supplyEditorMode === 'edit' ? '保存修改' : '保存用品'}}</button>
         </scroll-view>
       </view>
     </view>
