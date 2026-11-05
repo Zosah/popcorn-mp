@@ -3029,3 +3029,78 @@
 .supply-editor-save {
   margin-top: 20rpx;
 }
+
+/* 记录人右对齐与档案日期防溢出 */
+.daily-timeline__meta {
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.daily-timeline__meta > text:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-timeline__meta-right {
+  min-width: 96rpx;
+  max-width: 48%;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.timeline-author--right {
+  max-width: 100%;
+}
+
+.timeline-author--right text:last-child {
+  overflow: hidden;
+  max-width: 100rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-fact {
+  overflow: hidden;
+}
+
+.profile-fact__value {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 21rpx;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.profile-fact__elapsed {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* 用品编辑：控制高度，保存按钮固定可见 */
+.pet-sheet--supply {
+  display: flex;
+  max-height: 88vh;
+  flex-direction: column;
+}
+
+.supply-editor-scroll {
+  min-height: 0;
+  max-height: none;
+  flex: 1;
+  padding-bottom: 12rpx;
+}
+
+.supply-editor-save {
+  margin: 12rpx 0 calc(8rpx + env(safe-area-inset-bottom));
+  flex: 0 0 auto;
+}
+
+.supply-note {
+  min-height: 96rpx;
+  height: 96rpx;
+}

@@ -485,8 +485,8 @@
             <textarea class="supply-note" value="{{supplyDraft.note}}" maxlength="200" placeholder="口味、使用感受，选填" data-field="note" bindinput="onSupplyFieldInput" placeholder-class="app-input-placeholder"></textarea>
           </view>
 
-          <button class="pet-sheet__primary supply-editor-save" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">{{supplyEditorMode === 'edit' ? '保存修改' : '保存用品'}}</button>
         </scroll-view>
+        <button class="pet-sheet__primary supply-editor-save" loading="{{supplySaving}}" disabled="{{supplySaving}}" bindtap="onSaveSupply">{{supplyEditorMode === 'edit' ? '保存修改' : '保存用品'}}</button>
       </view>
     </view>
   </block>
