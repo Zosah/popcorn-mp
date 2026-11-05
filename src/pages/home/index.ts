@@ -194,6 +194,7 @@ Page({
     // 自定义导航下，状态栏高度与胶囊按钮占位都要自己让，
     // 否则页眉的日期会压到刘海、黑猫会被右上角的「•••⊙」盖住。
     statusBarHeight: 20,
+    headerHeight: 0,
     navBarRight: 0,
     // 胶囊底部到屏幕顶部的距离，页眉从这里往下排，确保不出血
     navBarHeight: 44,
@@ -232,11 +233,26 @@ Page({
       // 页眉右边界要给胶囊让位：胶囊左边缘再往左留一点呼吸
       const navBarRight = windowInfo.windowWidth - menu.left + 20
       const navBarHeight = menu.bottom - statusBarHeight + 8
-      this.setData({ statusBarHeight, navBarRight, navBarHeight })
+      this.setData({ statusBarHeight, navBarRight, navBarHeight }, () => this.measureHeader())
     } catch {
       // 低版本基础库拿不到胶囊信息时，退回一组安全的默认值
       this.setData({ statusBarHeight: 20, navBarRight: 96, navBarHeight: 44 })
     }
+  },
+
+  onReady() {
+    this.measureHeader()
+  },
+
+  /** 首页头部固定后，用实测高度给内容留出占位，避免压到状态栏。 */
+  measureHeader() {
+    wx.createSelectorQuery()
+      .select('#home-header')
+      .boundingClientRect((rect) => {
+        const height = Array.isArray(rect) ? 0 : (rect?.height ?? 0)
+        if (height > 0) this.setData({ headerHeight: height })
+      })
+      .exec()
   },
 
   onShow() {

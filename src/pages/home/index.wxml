@@ -3,6 +3,7 @@
   <auth-preview-gate />
 
   <view
+    id="home-header"
     class="home-header"
     style="padding-top: {{statusBarHeight + 10}}px; padding-right: {{navBarRight}}px;"
   >
@@ -23,6 +24,8 @@
       </view>
     </view>
   </view>
+
+  <view class="home-header-spacer" style="height: {{headerHeight}}px"></view>
 
   <view class="home-hero">
     <view class="home-hero__copy">
@@ -62,7 +65,7 @@
     <view class="today-card" hover-class="home-card--pressed" bindtap="onOpenTodo">
       <view class="today-card__head">
         <text class="today-card__kicker">TODAY</text>
-        <text class="today-card__ratio">{{todoCompletedCount}} / {{todoTotalCount}}</text>
+        <text class="today-card__ratio">完成 {{todoCompletedCount}} / {{todoTotalCount}}</text>
       </view>
       <text class="today-card__title">{{todoPendingCount ? '还有 ' + todoPendingCount + ' 件小事' : '今天的小事都完成了'}}</text>
       <text class="today-card__copy">{{todoSummary}}</text>

@@ -7,7 +7,7 @@
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  padding: 0 0 calc(176rpx + env(safe-area-inset-bottom));
+  padding: 0 0 calc(248rpx + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at 104% 2%, rgba(250, 216, 202, 0.5), transparent 25%),
     radial-gradient(circle at -8% 35%, rgba(227, 239, 230, 0.7), transparent 25%),
@@ -16,14 +16,21 @@
 
 /* ================= Header ================= */
 .home-header {
-  position: relative;
-  z-index: 3;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 40;
+  background: rgba(252, 249, 244, 0.99);
+  border-bottom: 1rpx solid rgba(233, 230, 225, 0.85);
+  -webkit-backdrop-filter: saturate(140%) blur(18px);
+  backdrop-filter: saturate(140%) blur(18px);
   display: flex;
   min-height: 81rpx;
   align-items: flex-start;
   justify-content: space-between;
   box-sizing: border-box;
-  padding-bottom: 4rpx;
+  padding-bottom: 12rpx;
   padding-left: 40rpx;
 }
 
@@ -327,7 +334,7 @@
 
 /* ================= 首页下半区重构：今天 / 家里 / 最近发生 ================= */
 .home-block {
-  margin-top: 34rpx;
+  margin-top: 40rpx;
 }
 
 .home-block__head {
@@ -417,8 +424,8 @@
 
 .today-card__track {
   overflow: hidden;
-  height: 10rpx;
-  margin-top: 20rpx;
+  height: 8rpx;
+  margin-top: 18rpx;
   border-radius: 999rpx;
   background: var(--c-paper-2, #f1ede7);
 }
@@ -490,8 +497,8 @@
 .home-row__value {
   color: var(--c-text-2, #5f5a53);
   flex: 0 0 auto;
-  font-size: 24rpx;
-  font-weight: 700;
+  font-size: 23rpx;
+  font-weight: 600;
 }
 
 .home-row__chevron {
@@ -520,7 +527,7 @@
   display: flex;
   width: 264rpx;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 8rpx;
   white-space: normal;
 }
 
@@ -550,4 +557,9 @@
 .moment-card__meta {
   color: var(--c-muted, #837f76);
   font-size: 21rpx;
+  letter-spacing: 0.2rpx;
+}
+
+.home-header-spacer {
+  width: 100%;
 }
