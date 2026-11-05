@@ -40,7 +40,7 @@ import { readPageCache, writePageCache } from '../../services/page-cache'
 import { todoGateway } from '../../services/todo'
 import { getTodoErrorMessage } from '../../services/todo-gateway'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
-import { openAppRoot } from '../../utils/app-navigation'
+import { pushAppPage } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
@@ -561,19 +561,19 @@ Page({
   },
 
   onOpenInventory() {
-    openAppRoot('/pages/inventory/index')
+    pushAppPage('/pages/inventory/index')
   },
 
   onOpenJournal() {
-    openAppRoot('/pages/journal/index')
+    pushAppPage('/pages/journal/index')
   },
 
   onOpenTodo() {
-    openAppRoot('/pages/todo/index')
+    pushAppPage('/pages/todo/index')
   },
 
   onOpenProfile() {
-    openAppRoot('/pages/profile/index')
+    pushAppPage('/pages/profile/index')
   },
 
   async onOpenSpaceSwitcher() {
@@ -632,7 +632,7 @@ Page({
       return
     }
     const targetSection = section === 'daily' ? 'daily' : 'profile'
-    openAppRoot(`/pages/pets/index?section=${targetSection}`)
+    pushAppPage(`/pages/pets/index?section=${targetSection}`)
   },
 
   onOpenHomeShortcut(event: {
@@ -641,18 +641,18 @@ Page({
     const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
     if (!feature) return
     if (feature.launchMode === 'root') {
-      openAppRoot(feature.path)
+      pushAppPage(feature.path)
       return
     }
     wx.navigateTo({ url: feature.path })
   },
 
   onOpenPets() {
-    openAppRoot('/pages/pets/index')
+    pushAppPage('/pages/pets/index')
   },
 
   onOpenMenu() {
-    openAppRoot('/pages/menu/index')
+    pushAppPage('/pages/menu/index')
   },
 
   noop() {},

@@ -10,7 +10,7 @@ import {
   subscribeFeatureSettings,
 } from '../../services/feature-settings-config'
 import { getAuthState } from '../../services/auth'
-import { openAppRoot } from '../../utils/app-navigation'
+import { pushAppPage } from '../../utils/app-navigation'
 
 interface FeatureListItemView extends FeatureDefinition {
   placementLabel: string
@@ -90,7 +90,7 @@ Page({
     const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
     if (!feature) return
     if (feature.launchMode === 'root') {
-      openAppRoot(feature.path)
+      pushAppPage(feature.path)
       return
     }
     wx.navigateTo({ url: feature.path })

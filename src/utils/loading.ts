@@ -1,9 +1,10 @@
-/** 首屏没有缓存时，至少展示一小段 loading，避免一闪而过。 */
+/**
+ * 兼容旧调用点：不再强制展示固定时长的 loading。
+ * 页面有缓存时直接回显，真实网络加载时由页面自身的 loading 状态负责。
+ */
 export async function waitForMinimumLoading(
-  startedAt: number,
-  minimumMs = 500,
+  _startedAt: number,
+  _minimumMs = 0,
 ): Promise<void> {
-  const remaining = minimumMs - (Date.now() - startedAt)
-  if (remaining <= 0) return
-  await new Promise<void>((resolve) => setTimeout(resolve, remaining))
+  return
 }

@@ -23,7 +23,7 @@ import { activePetFrom } from '../../services/pet-gateway'
 import { travelGateway } from '../../services/travel'
 import type { TravelTrip } from '../../services/travel-gateway'
 import { readPageCache, writePageCache } from '../../services/page-cache'
-import { openAppRoot } from '../../utils/app-navigation'
+import { pushAppPage } from '../../utils/app-navigation'
 import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
@@ -554,7 +554,7 @@ Page({
     const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
     if (!feature) return
     if (feature.launchMode === 'root') {
-      openAppRoot(feature.path)
+      pushAppPage(feature.path)
       return
     }
     wx.navigateTo({ url: feature.path })

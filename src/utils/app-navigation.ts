@@ -78,3 +78,17 @@ export function openAppRoot(
     fail: () => onSettled?.(false),
   })
 }
+
+
+/** 从首页/功能清单进入根页面时压入页面栈，保证系统返回键可以逐级返回。 */
+export function pushAppPage(
+  url: string,
+  onSettled?: (ok: boolean) => void,
+): void {
+  const normalizedUrl = url.startsWith('/') ? url : `/${url}`
+  wx.navigateTo({
+    url: normalizedUrl,
+    success: () => onSettled?.(true),
+    fail: () => onSettled?.(false),
+  })
+}
