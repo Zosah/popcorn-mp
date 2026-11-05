@@ -262,7 +262,14 @@ Page({
   onSwitchTab(event: { currentTarget: { dataset: { value?: MenuTab } } }) {
     const value = event.currentTarget.dataset.value
     if (!value || value === this.data.activeTab) return
-    this.setData({ activeTab: value, cartPanelOpen: false, historyDetailOrder: null })
+    this.setData({
+      activeTab: value,
+      cartPanelOpen: false,
+      historyDetailOrder: null,
+      ...(value === 'recipes'
+        ? { categoryRecipes: recipesForCategory(this.data.allRecipes, this.data.selectedCategoryId) }
+        : {}),
+    })
     if (value === 'eat') void this.refreshOrders()
   },
 
