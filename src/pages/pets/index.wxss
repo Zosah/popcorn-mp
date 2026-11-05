@@ -2534,3 +2534,103 @@
   font-size: 24rpx;
   font-weight: 600;
 }
+
+/* ================= 用品筛选栏：固定标签管理 + 数量角标 ================= */
+.supply-filter-bar {
+  display: flex;
+  align-items: flex-start;
+  margin: 0 -36rpx;
+  padding-left: 36rpx;
+}
+
+.supply-filter {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+.supply-filter__row {
+  display: inline-flex;
+  padding: 12rpx 8rpx 5rpx 0;
+  gap: 10rpx;
+}
+
+.supply-filter__item {
+  position: relative;
+  overflow: visible;
+  margin-top: 2rpx;
+  padding: 0 20rpx 0 18rpx;
+}
+
+.supply-filter__count {
+  position: absolute;
+  top: -10rpx;
+  right: -8rpx;
+  display: flex;
+  min-width: 30rpx;
+  height: 30rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6rpx;
+  border: 2rpx solid #fff;
+  border-radius: 999rpx;
+  background: #f4e3e7;
+  box-sizing: border-box;
+  color: #9a5f6a;
+  font-size: 17rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.supply-filter__count--zero {
+  background: #f3efe9;
+  color: #b3aca3;
+}
+
+.supply-filter__item--active .supply-filter__count {
+  border-color: transparent;
+  background: #fff;
+  color: #6b4f55;
+}
+
+.supply-filter__manage {
+  display: flex;
+  height: 54rpx;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin: 2rpx 36rpx 5rpx 8rpx;
+  padding: 0 14rpx;
+  border-left: 1rpx solid var(--pet-line);
+  color: var(--pet-ink-3);
+  font-size: 20rpx;
+  gap: 4rpx;
+}
+
+.supply-filter-bar {
+  margin-top: 12rpx;
+}
+
+.supply-filter__row {
+  padding: 18rpx 8rpx 6rpx 0;
+  gap: 12rpx;
+}
+
+.supply-filter__item {
+  margin-top: 0;
+}
+
+.supply-filter__count {
+  top: -12rpx;
+  right: -7rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  font-size: 18rpx;
+  box-shadow: 0 2rpx 6rpx rgba(38, 32, 28, 0.08);
+}
+
+.supply-filter__manage {
+  margin-top: 18rpx;
+}

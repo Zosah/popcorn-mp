@@ -181,17 +181,25 @@ const SUPPLY_PREFERENCE_OPTIONS: Array<{
   { value: 'dropped', label: '不爱', hearts: '♥' },
 ]
 
-function buildSupplyCategories(supplies: readonly DemoPetSupply[]): Array<{ value: SupplyFilter; label: string }> {
+function buildSupplyCategories(supplies: readonly DemoPetSupply[]): Array<{ value: SupplyFilter; label: string; count: number }> {
   const customLabels = Array.from(new Set(
     supplies
       .filter((item) => item.category === 'custom')
       .map((item) => item.categoryLabel.trim() || '自定义'),
   )).sort((left, right) => left.localeCompare(right, 'zh-CN'))
+  const countOf = (predicate: (item: DemoPetSupply) => boolean) => supplies.filter(predicate).length
   return [
-    ...SUPPLY_CATEGORIES.filter((item) => item.value !== 'custom'),
+    ...SUPPLY_CATEGORIES.filter((item) => item.value !== 'custom').map((item) => ({
+      ...item,
+      count: item.value === 'all'
+        ? supplies.length
+        : countOf((supply) => supply.category === item.value),
+    })),
     ...customLabels.map((label) => ({
       value: `custom:${label}` as SupplyFilter,
       label,
+      count: countOf((supply) => supply.category === 'custom'
+        && (supply.categoryLabel.trim() || '自定义') === label),
     })),
   ]
 }
@@ -500,7 +508,7 @@ Page({
     dailyHistory: [] as DailyTimelineView[],
     dailyHistoryVisible: [] as DailyTimelineView[],
     dailyHistoryExpanded: false,
-    supplyCategories: SUPPLY_CATEGORIES,
+    supplyCategories: SUPPLY_CATEGORIES.map((item) => ({ ...item, count: 0 })),
     selectedSupplyCategory: 'all' as SupplyFilter,
     currentSupplies: [] as Array<{
       id: string
@@ -887,7 +895,9 @@ Page({
     const currentSupplies = getCurrentPetSupplies(state.supplies).map((item) => ({
       id: item.id,
       category: item.category,
-      categoryLabel: PET_SUPPLY_CATEGORY_LABELS[item.category],
+      categoryLabel: item.category === 'custom'
+        ? (item.categoryLabel.trim() || '自定义')
+        : PET_SUPPLY_CATEGORY_LABELS[item.category],
       iconName: PET_SUPPLY_ICON_NAMES[item.category],
       name: item.name,
       note: item.note,
