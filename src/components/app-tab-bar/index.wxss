@@ -2,7 +2,7 @@
 .app-tab-shell {
   position: fixed;
   right: 22rpx;
-  bottom: calc(14rpx + env(safe-area-inset-bottom));
+  bottom: calc(2rpx + env(safe-area-inset-bottom));
   left: 22rpx;
   z-index: 900;
   padding: 7rpx;
