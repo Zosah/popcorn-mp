@@ -43,7 +43,16 @@
 .form-picker__selection { display: flex; min-width: 0; align-items: center; gap: 9rpx; }
 .form-picker__selection text { overflow: hidden; font-size: 27rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .form-picker__arrow { color: var(--c-faint, #a29b91); font-size: 38rpx; }
-.form-picker--date { color: var(--form-deep); font-size: 28rpx; font-weight: 600; }
+.form-picker--date {
+  margin-top: 4rpx;
+  padding: 16rpx 20rpx;
+  border: 1rpx solid var(--form-line);
+  border-radius: 20rpx;
+  background: var(--c-paper-2, #f5f0e9);
+  color: var(--form-deep);
+  font-size: 28rpx;
+  font-weight: 700;
+}
 .form-switch-row { display: flex; min-height: 100rpx; align-items: center; justify-content: space-between; border-bottom: 1rpx solid var(--form-line); gap: 20rpx; }
 .form-switch-row__copy { flex: 1; }
 .form-hint { margin-top: 4rpx; color: var(--form-ink-3); font-size: 23rpx; }
@@ -57,3 +66,158 @@
 .form-state__title { margin-top: 16rpx; color: var(--form-ink); font-size: 29rpx; font-weight: 700; }
 .form-state__copy { max-width: 520rpx; margin-top: 7rpx; line-height: 1.6; }
 .form-state__action { margin-top: 18rpx; padding: 13rpx 22rpx; border-radius: 999rpx; background: var(--form-deep); color: #fff; font-size: 24rpx; font-weight: 600; }
+
+/* ===== 编辑体验 v2：分区卡片 + 芯片选择 + 数量步进 ===== */
+.form-block {
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid var(--form-line);
+}
+
+.form-block--last {
+  border-bottom: 0;
+}
+
+.form-block__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  gap: 16rpx;
+}
+
+.chip-grid {
+  display: grid;
+  gap: 12rpx;
+}
+
+.chip-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.chip-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chip {
+  display: flex;
+  height: 76rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10rpx;
+  border: 1rpx solid var(--form-line);
+  border-radius: 22rpx;
+  background: var(--c-paper-2, #f5f0e9);
+  color: var(--form-ink-2);
+  gap: 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.chip text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip--active {
+  border-color: transparent;
+  background: var(--form-deep);
+  color: #fff;
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.qty-unit-label {
+  color: var(--form-ink-3);
+  font-size: 23rpx;
+}
+
+.stepper {
+  display: flex;
+  height: 88rpx;
+  align-items: center;
+  overflow: hidden;
+  border: 1rpx solid var(--form-line);
+  border-radius: 24rpx;
+  background: var(--c-paper-2, #f5f0e9);
+  flex: 0 0 auto;
+}
+
+.stepper__btn {
+  display: flex;
+  width: 76rpx;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: var(--form-ink);
+  font-size: 38rpx;
+  font-weight: 600;
+}
+
+.stepper__btn:active {
+  background: rgba(37, 43, 39, 0.06);
+}
+
+.stepper__value {
+  width: 110rpx;
+  height: 100%;
+  border-right: 1rpx solid var(--form-line);
+  border-left: 1rpx solid var(--form-line);
+  background: #fff;
+  color: var(--form-ink);
+  font-size: 32rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.unit-row {
+  display: flex;
+  margin-top: 14rpx;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.unit-chip {
+  padding: 9rpx 18rpx;
+  border: 1rpx solid var(--form-line);
+  border-radius: 999rpx;
+  background: #fff;
+  color: var(--form-ink-2);
+  font-size: 23rpx;
+}
+
+.unit-chip--active {
+  border-color: transparent;
+  background: var(--c-primary-soft, #f7e7e2);
+  color: #9a5f58;
+  font-weight: 700;
+}
+
+.preset-row {
+  display: flex;
+  margin-bottom: 14rpx;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.preset {
+  padding: 10rpx 20rpx;
+  border: 1rpx solid var(--form-line);
+  border-radius: 999rpx;
+  background: var(--c-paper-2, #f5f0e9);
+  color: var(--form-ink-2);
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.preset:active {
+  background: var(--c-primary-soft, #f7e7e2);
+  color: #9a5f58;
+}

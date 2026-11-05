@@ -89,6 +89,8 @@
   font-size: 25rpx;
 }
 
+.inv-stat__value--zero { color: var(--c-faint, #a29b91) !important; }
+
 .inv-stat--danger .inv-stat__value { color: var(--inv-red); }
 .inv-stat--warm .inv-stat__value { color: var(--inv-gold); }
 .inv-stat--muted .inv-stat__value { color: var(--c-sage, #668478); }
@@ -215,7 +217,7 @@
 }
 
 .inv-group__title {
-  font-size: 32rpx;
+  font-size: 31rpx;
   font-weight: 700;
   letter-spacing: -0.5rpx;
 }
@@ -227,15 +229,23 @@
 .inv-group__title--discarded,
 .inv-group__title--archived { color: var(--inv-ink-2); }
 
-.inv-group__count,
+.inv-group__count {
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  background: var(--c-paper-2, #f1ede7);
+  color: var(--inv-ink-2);
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
 .inv-group__hint {
   color: var(--inv-ink-3);
-  font-size: 24rpx;
+  font-size: 23rpx;
 }
 
 .inv-group__list {
   overflow: hidden;
-  padding: 0 22rpx;
+  padding: 0 24rpx;
   border: 1rpx solid var(--inv-line);
   border-radius: 30rpx;
   background: #ffffff;

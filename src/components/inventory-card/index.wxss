@@ -1,17 +1,32 @@
+/* 库存行：与宠物用品清单同一套层级（缩略图 / 名称 / 标签 / 右侧状态） */
 .row {
   display: flex;
-  min-height: 112rpx;
+  min-height: 132rpx;
   align-items: center;
-  border-bottom: 1rpx solid #e2e7df;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid var(--c-line, #e9e6e1);
+  gap: 18rpx;
 }
 
 .row:last-child {
   border-bottom: 0;
 }
 
-.row__icon {display: flex; width: 62rpx; height: 62rpx; align-items: center; justify-content: center; flex-shrink: 0;}
+.row__thumb {
+  display: flex;
+  width: 96rpx;
+  height: 96rpx;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 24rpx;
+  background: var(--c-paper-2, #f1ede7);
+  flex: 0 0 96rpx;
+}
 
-.row__icon--image { border-radius: 20rpx;overflow: hidden; padding: 0;}
+.row__thumb--image {
+  background: transparent;
+}
 
 .row__image {
   width: 100%;
@@ -19,47 +34,78 @@
 }
 
 .row__main {
+  display: flex;
   min-width: 0;
-  margin-left: 16rpx;
   flex: 1;
-  padding: 18rpx 0;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .row__name {
   overflow: hidden;
-  color: var(--c-text, #232a24);
-  font-size: 31rpx;
-  font-weight: 700;
+  color: var(--c-text, #252b27);
+  font-size: 30rpx;
+  font-weight: 800;
+  letter-spacing: -0.3rpx;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.row__meta {
+.row__tags {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8rpx;
+}
+
+.row__tag {
   overflow: hidden;
-  margin-top: 5rpx;
-  color: var(--c-muted, #5b665d);
-  font-size: 23rpx;
+  max-width: 190rpx;
+  padding: 3rpx 12rpx;
+  border-radius: 999rpx;
+  background: var(--c-paper-2, #f1ede7);
+  color: var(--c-text-2, #5f5a53);
+  font-size: 21rpx;
+  line-height: 1.5;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.row__tag--qty {
+  background: var(--c-primary-soft, #f7e7e2);
+  color: #9a5f58;
+  font-weight: 700;
+}
+
+/* 分类标签：按品类分色，和宠物用品的 label 同一套语气 */
+.row__tag--food { background: #f6ecdf; color: #9a7250; }
+.row__tag--drink { background: #e6eef3; color: #5b7d94; }
+.row__tag--frozen { background: #e4eef0; color: #5b7f86; }
+.row__tag--seasoning { background: #f5e8db; color: #a4703f; }
+.row__tag--daily { background: #edf0e6; color: #6f7d5c; }
+.row__tag--medicine { background: var(--c-danger-soft, #f7e7e2); color: #a8564a; }
+.row__tag--pet { background: var(--c-sage-soft, #e2eee9); color: #557366; }
+.row__tag--other { background: #f1ede7; color: #837f76; }
 
 .row__right {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  margin-left: 12rpx;
+  gap: 10rpx;
 }
 
 .row__history {
-  color: var(--c-muted, #5b665d);
-  font-size: 23rpx;
+  color: var(--c-muted, #837f76);
+  font-size: 22rpx;
 }
 
 .row__chevron {
-  width: 10rpx;
-  height: 10rpx;
-  margin-left: 15rpx;
-  border-top: 1.5rpx solid #c6bdb4;
-  border-right: 1.5rpx solid #c6bdb4;
+  width: 12rpx;
+  height: 12rpx;
+  margin-left: 4rpx;
+  border-top: 2rpx solid #cfc6ba;
+  border-right: 2rpx solid #cfc6ba;
   transform: rotate(45deg);
 }

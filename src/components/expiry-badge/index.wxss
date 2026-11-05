@@ -1,28 +1,37 @@
 .badge {
   display: inline-flex;
+  height: 42rpx;
   align-items: center;
-  font-size: 25rpx;
-  font-weight: 400;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  font-size: 21rpx;
+  font-weight: 600;
+  letter-spacing: 0.2rpx;
   white-space: nowrap;
 }
 
 .badge--expired {
-  color: var(--c-danger, #e8695c);
+  background: var(--c-danger-soft, #f7e7e2);
+  color: var(--c-danger, #b86757);
 }
 
 .badge--today,
 .badge--urgent {
-  color: var(--c-warning, #e0a038);
+  background: var(--c-warning-soft, #f2e8cc);
+  color: #94661f;
 }
 
 .badge--soon {
-  color: #c98a2e;
+  background: #f5ecd8;
+  color: #94661f;
 }
 
 .badge--normal {
-  color: var(--c-success, #4fa87d);
+  background: var(--c-success-soft, #e2eee9);
+  color: #4f6d61;
 }
 
 .badge--none {
-  color: var(--c-muted, #9497a6);
+  background: var(--c-paper-2, #f1ede7);
+  color: var(--c-muted, #837f76);
 }

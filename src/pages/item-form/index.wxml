@@ -42,36 +42,52 @@
           <text>添加图片</text>
         </view>
       </view>
+    </view>
 
-      <view class="form-grid">
-        <view class="form-field">
+    <view class="form-section paper-card">
+      <view class="form-block">
+        <view class="form-block__head">
           <text class="form-label">分类</text>
-          <picker range="{{categoryLabels}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
-            <view class="form-picker">
-              <view class="form-picker__selection"><line-icon name="{{categoryIconNames[categoryIndex]}}" size="23" tone="orange" /><text>{{categoryLabels[categoryIndex]}}</text></view>
-              <text class="form-picker__arrow">›</text>
-            </view>
-          </picker>
+          <text class="form-hint">决定列表里的标签颜色</text>
         </view>
-        <view class="form-field">
-          <text class="form-label">存放位置</text>
-          <picker range="{{locationLabels}}" value="{{locationIndex}}" bindchange="onLocationChange">
-            <view class="form-picker">
-              <view class="form-picker__selection"><line-icon name="{{locationIconNames[locationIndex]}}" size="23" tone="blue" /><text>{{locationLabels[locationIndex]}}</text></view>
-              <text class="form-picker__arrow">›</text>
-            </view>
-          </picker>
+        <view class="chip-grid chip-grid--three">
+          <view wx:for="{{categoryOptions}}" wx:key="value" class="chip {{form.category === item.value ? 'chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectCategory">
+            <line-icon name="{{item.iconName}}" size="26" tone="{{form.category === item.value ? 'white' : 'color'}}" />
+            <text>{{item.label}}</text>
+          </view>
         </view>
       </view>
 
-      <view class="form-grid form-grid--compact">
-        <view class="form-field">
-          <text class="form-label">数量</text>
-          <input class="form-input" type="digit" value="{{form.quantity}}" bindinput="onQuantityInput" />
+      <view class="form-block form-block--last">
+        <view class="form-block__head">
+          <text class="form-label">存放位置</text>
+          <text class="form-hint">找不到就直接选其他</text>
         </view>
-        <view class="form-field">
-          <text class="form-label">单位</text>
-          <input class="form-input" value="{{form.unit}}" maxlength="8" bindinput="onUnitInput" />
+        <view class="chip-grid chip-grid--two">
+          <view wx:for="{{locationOptions}}" wx:key="value" class="chip {{form.location === item.value ? 'chip--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectLocation">
+            <line-icon name="{{item.iconName}}" size="26" tone="{{form.location === item.value ? 'white' : 'color'}}" />
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-section paper-card">
+      <view class="form-block">
+        <view class="form-block__head">
+          <text class="form-label">数量</text>
+          <text class="form-hint">用完一件就减一件</text>
+        </view>
+        <view class="qty-row">
+          <view class="stepper">
+            <view class="stepper__btn" data-delta="-1" bindtap="onStepQuantity">−</view>
+            <input class="stepper__value" type="digit" value="{{form.quantity}}" bindinput="onQuantityInput" />
+            <view class="stepper__btn" data-delta="1" bindtap="onStepQuantity">＋</view>
+          </view>
+          <text class="qty-unit-label">单位 · {{form.unit}}</text>
+        </view>
+        <view class="unit-row">
+          <view wx:for="{{unitOptions}}" wx:key="*this" class="unit-chip {{form.unit === item ? 'unit-chip--active' : ''}}" data-value="{{item}}" bindtap="onSelectUnit">{{item}}</view>
         </view>
       </view>
     </view>
@@ -85,8 +101,14 @@
         <switch checked="{{hasExpiry}}" color="#252b27" bindchange="onExpiryToggle" />
       </view>
 
-      <view wx:if="{{hasExpiry}}" class="form-field">
-        <text class="form-label">有效期</text>
+      <view wx:if="{{hasExpiry}}" class="form-block">
+        <view class="form-block__head">
+          <text class="form-label">有效期</text>
+          <text class="form-hint">先点一个常用时长，再按需改</text>
+        </view>
+        <view class="preset-row">
+          <view wx:for="{{expiryPresets}}" wx:key="days" class="preset" data-days="{{item.days}}" bindtap="onQuickExpiry">{{item.label}}</view>
+        </view>
         <picker mode="date" value="{{form.expiresOn}}" bindchange="onExpiryChange">
           <view class="form-picker form-picker--date">
             <text>{{form.expiresOn || '选择日期'}}</text>
@@ -95,9 +117,12 @@
         </picker>
       </view>
 
-      <view class="form-field form-field--last">
-        <text class="form-label">备注</text>
-        <textarea class="form-textarea" value="{{form.note}}" maxlength="200" placeholder="可选，写点容易忘记的信息" bindinput="onNoteInput" placeholder-class="app-input-placeholder" />
+      <view class="form-block form-block--last">
+        <view class="form-block__head">
+          <text class="form-label">备注</text>
+          <text class="form-hint">可选</text>
+        </view>
+        <textarea class="form-textarea" value="{{form.note}}" maxlength="200" placeholder="写点容易忘记的信息" bindinput="onNoteInput" placeholder-class="app-input-placeholder" />
       </view>
     </view>
 

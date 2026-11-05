@@ -61,6 +61,23 @@ Page({
     hasExpiry: false,
     categoryIndex: 0,
     locationIndex: 0,
+    categoryOptions: CATEGORY_OPTIONS.map((item) => ({
+      value: item.value,
+      label: item.label,
+      iconName: INVENTORY_CATEGORY_ICON_NAMES[item.value],
+    })),
+    locationOptions: LOCATION_OPTIONS.map((item) => ({
+      value: item.value,
+      label: item.label,
+      iconName: INVENTORY_LOCATION_ICON_NAMES[item.value],
+    })),
+    unitOptions: ['件', '瓶', '袋', '盒', '包', '罐', '个', '支'],
+    expiryPresets: [
+      { label: '7 天', days: 7 },
+      { label: '1 个月', days: 30 },
+      { label: '3 个月', days: 90 },
+      { label: '半年', days: 180 },
+    ],
     categoryLabels: CATEGORY_OPTIONS.map((item) => item.label),
     locationLabels: LOCATION_OPTIONS.map((item) => item.label),
     categoryIconNames: CATEGORY_OPTIONS.map(
@@ -237,6 +254,43 @@ Page({
   onRemoveImage() {
     if (this.data.imageUploading || this.data.saving) return
     this.setData({ image: null, 'form.imageMediaId': '' })
+  },
+
+  onSelectCategory(event: { currentTarget: { dataset: { value: string } } }) {
+    const value = event.currentTarget.dataset.value
+    const index = CATEGORY_OPTIONS.findIndex((option) => option.value === value)
+    if (index < 0) return
+    this.setData({ categoryIndex: index, 'form.category': value })
+  },
+
+  onSelectLocation(event: { currentTarget: { dataset: { value: string } } }) {
+    const value = event.currentTarget.dataset.value
+    const index = LOCATION_OPTIONS.findIndex((option) => option.value === value)
+    if (index < 0) return
+    this.setData({ locationIndex: index, 'form.location': value })
+  },
+
+  onStepQuantity(event: { currentTarget: { dataset: { delta: string } } }) {
+    const delta = Number(event.currentTarget.dataset.delta)
+    const current = Number(this.data.form.quantity)
+    const base = Number.isFinite(current) ? current : 0
+    const next = Math.max(0, Math.round((base + delta) * 100) / 100)
+    this.setData({ 'form.quantity': String(next) })
+  },
+
+  onSelectUnit(event: { currentTarget: { dataset: { value: string } } }) {
+    this.setData({ 'form.unit': event.currentTarget.dataset.value })
+  },
+
+  onQuickExpiry(event: { currentTarget: { dataset: { days: string } } }) {
+    const days = Number(event.currentTarget.dataset.days)
+    if (!Number.isFinite(days) || days <= 0) return
+    const target = new Date()
+    target.setDate(target.getDate() + days)
+    const yyyy = target.getFullYear()
+    const mm = String(target.getMonth() + 1).padStart(2, '0')
+    const dd = String(target.getDate()).padStart(2, '0')
+    this.setData({ hasExpiry: true, 'form.expiresOn': `${yyyy}-${mm}-${dd}` })
   },
 
   onCategoryChange(event: PickerEvent) {

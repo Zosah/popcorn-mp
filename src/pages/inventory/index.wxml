@@ -15,11 +15,11 @@
 
   <view class="inv-stats">
     <view class="inv-stat inv-stat--danger" data-value="expired" bindtap="onSelectExpiry">
-      <text class="inv-stat__value">{{summary.expired}}</text>
+      <text class="inv-stat__value {{summary.expired === 0 ? 'inv-stat__value--zero' : ''}}">{{summary.expired}}</text>
       <text class="inv-stat__label">已过期</text>
     </view>
     <view class="inv-stat inv-stat--warm" data-value="due" bindtap="onSelectExpiry">
-      <text class="inv-stat__value">{{summary.dueWithin3Days}}</text>
+      <text class="inv-stat__value {{summary.dueWithin3Days === 0 ? 'inv-stat__value--zero' : ''}}">{{summary.dueWithin3Days}}</text>
       <text class="inv-stat__label">三天内</text>
     </view>
     <view class="inv-stat inv-stat--muted" data-value="none" bindtap="onSelectExpiry">
