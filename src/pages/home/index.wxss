@@ -334,7 +334,7 @@
 
 /* ================= 首页下半区重构：今天 / 家里 / 最近发生 ================= */
 .home-block {
-  margin-top: 40rpx;
+  margin: 40rpx 40rpx 0;
 }
 
 .home-block__head {
@@ -512,14 +512,14 @@
 
 /* 最近发生 */
 .moment-row {
-  width: calc(100% + 72rpx);
-  margin: 0 -36rpx;
+  width: calc(100% + 80rpx);
+  margin: 0 -40rpx;
   white-space: nowrap;
 }
 
 .moment-row__inner {
   display: inline-flex;
-  padding: 2rpx 36rpx 8rpx;
+  padding: 2rpx 40rpx 8rpx;
   gap: 18rpx;
 }
 
