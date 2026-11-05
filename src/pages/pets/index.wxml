@@ -147,7 +147,7 @@
             <view class="care-row__icon"><line-icon name="{{item.iconName}}" size="38" tone="color" /></view>
             <view class="care-row__body">
               <view class="care-row__title">{{item.title}}</view>
-              <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOnLabel}} · 已过 <text>{{item.elapsedLabel}}</text></view>
+              <view wx:if="{{item.lastOn}}" class="care-row__elapsed">上次 {{item.lastOnLabel}}<text class="care-row__elapsed-dot">·</text>已过<text class="care-row__elapsed-value">{{item.elapsedLabel}}</text></view>
               <view wx:else class="care-row__elapsed">还没有记录</view>
               <view wx:if="{{item.nextOn}}" class="care-row__plan">下次 {{item.nextOn}}</view>
             </view>
@@ -229,7 +229,12 @@
             </view>
           </scroll-view>
         </view>
-        <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}"><view class="supply-filter__row"><view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view></view></scroll-view>
+        <scroll-view class="supply-filter" scroll-x enhanced show-scrollbar="{{false}}">
+          <view class="supply-filter__row">
+            <view wx:for="{{supplyCategories}}" wx:key="value" class="supply-filter__item {{selectedSupplyCategory === item.value ? 'supply-filter__item--active' : ''}}" data-value="{{item.value}}" bindtap="onSelectSupplyCategory">{{item.label}}</view>
+            <view class="supply-filter__item supply-filter__item--manage" bindtap="onManageSupplyCategories">管理标签</view>
+          </view>
+        </scroll-view>
         <view class="supply-list">
           <view wx:for="{{supplies}}" wx:key="id" class="supply-row" data-id="{{item.id}}" bindtap="onEditSupply">
             <view class="supply-row__index">{{index + 1}}</view>

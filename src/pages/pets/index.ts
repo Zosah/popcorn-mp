@@ -13,6 +13,7 @@ import {
   buildPetDailyTimeline,
   buildPetGrowthTimeline,
   filterPetSupplies,
+  type PetSupplyFilter,
   formatPetAge,
   formatPetElapsed,
   formatPetWeight,
@@ -25,6 +26,7 @@ import {
   PET_EVENT_LABELS,
   PET_SUPPLY_CATEGORY_LABELS,
   type DemoPetProfile,
+  type DemoPetSupply,
   type DemoPetState,
   type PetCareType,
   type PetBackgroundKey,
@@ -54,7 +56,7 @@ import { chooseEditableImages, editRemoteImage, isImageEditCancelled } from '../
 
 type PetSection = 'profile' | 'care' | 'daily' | 'supplies'
 
-type SupplyFilter = PetSupplyCategory | 'all'
+type SupplyFilter = PetSupplyFilter
 type PetWeightUnit = 'jin' | 'kg'
 type GrowthFilter = 'all' | 'vaccine' | 'weight' | 'visit' | 'checkup'
 type CareFilter = 'all' | PetCareType
@@ -178,6 +180,21 @@ const SUPPLY_PREFERENCE_OPTIONS: Array<{
   { value: 'neutral', label: '还行', hearts: '♥♥' },
   { value: 'dropped', label: '不爱', hearts: '♥' },
 ]
+
+function buildSupplyCategories(supplies: readonly DemoPetSupply[]): Array<{ value: SupplyFilter; label: string }> {
+  const customLabels = Array.from(new Set(
+    supplies
+      .filter((item) => item.category === 'custom')
+      .map((item) => item.categoryLabel.trim() || '自定义'),
+  )).sort((left, right) => left.localeCompare(right, 'zh-CN'))
+  return [
+    ...SUPPLY_CATEGORIES.filter((item) => item.value !== 'custom'),
+    ...customLabels.map((label) => ({
+      value: `custom:${label}` as SupplyFilter,
+      label,
+    })),
+  ]
+}
 
 const SUPPLY_EDITOR_CATEGORIES: Array<{
   value: PetSupplyCategory
@@ -898,6 +915,11 @@ Page({
         selected: state.profile.backgroundMediaId === item.mediaId,
       }))
 
+    const supplyCategories = buildSupplyCategories(state.supplies)
+    const selectedSupplyCategory = supplyCategories.some(
+      (item) => item.value === this.data.selectedSupplyCategory,
+    ) ? this.data.selectedSupplyCategory : 'all'
+
     this.setData({
       hasActivePet: true,
       petState: state,
@@ -945,12 +967,13 @@ Page({
         ? dailyHistory
         : dailyHistory.slice(0, 5),
       currentSupplies,
-      supplies: filterPetSupplies(
-        state.supplies,
-        this.data.selectedSupplyCategory,
-      ).map((item) => ({
+      supplyCategories,
+      selectedSupplyCategory,
+      supplies: filterPetSupplies(state.supplies, selectedSupplyCategory).map((item) => ({
         ...item,
-        categoryLabel: item.categoryLabel || PET_SUPPLY_CATEGORY_LABELS[item.category],
+        categoryLabel: item.category === 'custom'
+          ? (item.categoryLabel.trim() || '自定义')
+          : PET_SUPPLY_CATEGORY_LABELS[item.category],
         iconName: PET_SUPPLY_ICON_NAMES[item.category],
         mediaUrl: item.mediaUrl ?? '',
         mediaThumbUrl: item.mediaThumbUrl ?? item.mediaUrl ?? '',
@@ -1416,7 +1439,7 @@ Page({
       supplyEditingVersion: supply.version ?? 1,
       supplyDraft: {
         category: supply.category,
-        categoryLabel: supply.categoryLabel,
+        categoryLabel: supply.category === 'custom' ? supply.categoryLabel : '',
         name: supply.name,
         brand: supply.brand,
         preference: supply.preference,
@@ -1552,7 +1575,7 @@ Page({
     this.setData({ supplySaving: true })
     const input = {
       category: draft.category,
-      categoryLabel: draft.categoryLabel.trim(),
+      categoryLabel: draft.category === 'custom' ? draft.categoryLabel.trim() : '',
       name: draft.name.trim(),
       brand: draft.brand.trim(),
       preference: draft.preference,
@@ -1863,6 +1886,66 @@ Page({
       { selectedSupplyCategory: event.currentTarget.dataset.value },
       () => this.loadState(this.data.petState),
     )
+  },
+
+  onManageSupplyCategories() {
+    const labels = Array.from(new Set(
+      this.data.petState.supplies
+        .filter((item) => item.category === 'custom')
+        .map((item) => item.categoryLabel.trim() || '自定义'),
+    ))
+    if (!labels.length) {
+      wx.showToast({ title: '还没有自定义标签', icon: 'none' })
+      return
+    }
+    wx.showActionSheet({
+      itemList: labels.slice(0, 6).map((label) => `重命名「${label}」`),
+      success: (result) => {
+        const label = labels[result.tapIndex]
+        if (label) this.promptRenameSupplyCategory(label)
+      },
+    })
+  },
+
+  promptRenameSupplyCategory(oldLabel: string) {
+    wx.showModal({
+      title: '重命名自定义标签',
+      content: oldLabel,
+      editable: true,
+      placeholderText: '新的标签名',
+      confirmText: '保存',
+      success: (result) => {
+        if (!result.confirm) return
+        const nextLabel = (result.content ?? '').trim()
+        if (!nextLabel || nextLabel === oldLabel) return
+        void this.renameSupplyCategory(oldLabel, nextLabel)
+      },
+    })
+  },
+
+  async renameSupplyCategory(oldLabel: string, nextLabel: string) {
+    if (!requireAuthForWrite()) return
+    const petId = this.data.petState.profile.id
+    const targets = this.data.petState.supplies.filter(
+      (item) => item.category === 'custom'
+        && (item.categoryLabel.trim() || '自定义') === oldLabel,
+    )
+    if (!petId || !targets.length) return
+    await this.runPetMutation(async () => {
+      let latest = this.data.petState
+      for (const supply of targets) {
+        latest = await petGateway.updateSupply(petId, supply.id, {
+          category: 'custom',
+          categoryLabel: nextLabel,
+          name: supply.name,
+          brand: supply.brand,
+          preference: supply.preference,
+          note: supply.note,
+          mediaId: supply.mediaId ?? '',
+        }, supply.version ?? 1)
+      }
+      return latest
+    }, '标签已更新')
   },
 
   onAddDailyLog(event: {

@@ -36,6 +36,8 @@ export type BuiltInPetSupplyCategory =
 
 export type PetSupplyCategory = BuiltInPetSupplyCategory | 'custom'
 
+export type PetSupplyFilter = PetSupplyCategory | 'all' | `custom:${string}`
+
 export type PetSupplyPreference = 'loved' | 'neutral' | 'dropped'
 
 /** @deprecated 旧数据兼容，页面统一使用 preference。 */
@@ -638,10 +640,18 @@ export function buildPetCareCards(
 
 export function filterPetSupplies(
   supplies: readonly DemoPetSupply[],
-  category: PetSupplyCategory | 'all',
+  category: PetSupplyFilter,
 ): DemoPetSupply[] {
+  const customLabel = category.startsWith('custom:') ? category.slice('custom:'.length) : ''
   return supplies
-    .filter((item) => category === 'all' || item.category === category)
+    .filter((item) => {
+      if (category === 'all') return true
+      if (customLabel) {
+        return item.category === 'custom'
+          && (item.categoryLabel.trim() || '自定义') === customLabel
+      }
+      return item.category === category
+    })
     .sort((left, right) => {
       const weight: Record<PetSupplyPreference, number> = {
         loved: 0,

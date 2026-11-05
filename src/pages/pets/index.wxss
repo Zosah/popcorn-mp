@@ -2491,3 +2491,46 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+
+.care-row__elapsed {
+  line-height: 1.6;
+}
+
+.care-row__elapsed-dot {
+  margin: 0 8rpx;
+  color: var(--pet-ink-3);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.care-row__elapsed-value {
+  display: inline-block;
+  margin-left: 8rpx;
+  padding-left: 2rpx;
+  white-space: nowrap;
+}
+
+.supply-row__brand {
+  color: #5f5a53;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.supply-filter__item--manage {
+  border-style: dashed;
+  background: #faf8f4;
+  color: var(--pet-ink-3);
+}
+
+.supply-filter__item--manage::before {
+  margin-right: 4rpx;
+  content: '⚙';
+  font-size: 18rpx;
+}
+
+.supply-row__brand {
+  color: #4f4a44;
+  font-size: 24rpx;
+  font-weight: 600;
+}
