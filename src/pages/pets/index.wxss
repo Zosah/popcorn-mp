@@ -3104,3 +3104,74 @@
   min-height: 96rpx;
   height: 96rpx;
 }
+
+/* ================= 时间线：两列网格，右侧时间/记录人自动宽 ================= */
+.daily-timeline__row {
+  min-height: 0;
+  padding-bottom: 20rpx;
+}
+
+.daily-timeline__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 12rpx;
+}
+
+.daily-timeline__meta > text:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-timeline__meta-right {
+  display: flex;
+  min-width: 0;
+  max-width: none;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 2rpx;
+  text-align: right;
+}
+
+.daily-timeline__meta-right > text {
+  max-width: none;
+  margin-left: 0;
+  color: var(--pet-ink-3);
+  flex: 0 0 auto;
+  font-size: 18rpx;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.timeline-author--right {
+  max-width: 160rpx;
+  margin-top: 1rpx;
+  font-size: 18rpx;
+}
+
+.timeline-author--right text:last-child {
+  max-width: 120rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-timeline__meta {
+  width: 100%;
+}
+
+.daily-timeline__meta-right {
+  max-width: 100%;
+  padding-right: 2rpx;
+}
+
+.daily-timeline__meta-right > text {
+  font-size: 17rpx;
+  letter-spacing: -0.2rpx;
+}
+
+.daily-timeline__row {
+  padding-bottom: 16rpx;
+}
