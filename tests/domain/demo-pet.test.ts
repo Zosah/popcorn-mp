@@ -178,9 +178,9 @@ describe('护理记录', () => {
   })
 
   it('护理间隔超过十二个月时增加年维度', () => {
-    expect(formatPetElapsed('2024-10-01', '2026-11-04')).toBe('2 年 1 个月 3 天')
-    expect(formatPetElapsed('2025-10-01', '2026-11-04')).toBe('1 年 1 个月 3 天')
-    expect(formatPetElapsed('2025-11-04', '2026-11-04')).toBe('1 年')
+    expect(formatPetElapsed('2024-10-01', '2026-11-04')).toBe('2年1个月')
+    expect(formatPetElapsed('2025-10-01', '2026-11-04')).toBe('1年1个月')
+    expect(formatPetElapsed('2025-11-04', '2026-11-04')).toBe('1年')
   })
 
   it('没有护理记录时显示未记录状态', () => {
@@ -341,7 +341,7 @@ describe('每日吃喝拉撒记录', () => {
       recordedOn: '2026-08-25',
       dateLabel: '8月25日',
       timeLabel: '10:00',
-      elapsedLabel: '2 天 2 小时',
+      elapsedLabel: '2天2小时',
     })
   })
 
@@ -393,7 +393,7 @@ describe('每日吃喝拉撒记录', () => {
     expect(timeline[0]).toMatchObject({
       recordedOn: '2026-08-25',
       timeLabel: '07:00',
-      elapsedLabel: '2 天 5 小时',
+      elapsedLabel: '2天5小时',
     })
   })
 })

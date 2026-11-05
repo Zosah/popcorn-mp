@@ -3256,3 +3256,55 @@
 .daily-timeline__badges {
   margin-top: 7rpx;
 }
+
+/* ================= 时间线：右侧时间/记录人独立列，不占左侧行高 ================= */
+.daily-timeline__body {
+  position: relative;
+}
+
+.daily-timeline__meta {
+  display: block !important;
+  min-height: 0 !important;
+  padding: 0 232rpx 0 0 !important;
+}
+
+.daily-timeline__meta > text:first-child {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-timeline__meta-right {
+  position: absolute !important;
+  top: -1rpx !important;
+  right: 0 !important;
+  display: flex !important;
+  width: 216rpx !important;
+  max-width: 216rpx !important;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 3rpx;
+  text-align: right;
+}
+
+.daily-timeline__meta-right > text {
+  color: var(--pet-ink-3);
+  font-size: 17rpx;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.timeline-author--right {
+  max-width: 216rpx !important;
+  margin-top: 0;
+  font-size: 17rpx;
+}
+
+.timeline-author--right text:last-child {
+  max-width: 168rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

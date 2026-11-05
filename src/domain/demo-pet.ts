@@ -373,7 +373,7 @@ export function formatPetElapsed(from: string, to: string): string {
   const days = Math.floor((toMs - fromMs) / 86400000)
   if (days === 0) return '今天'
   const months = wholeMonthsBetween(from, to)
-  if (months <= 0) return `${days} 天`
+  if (months <= 0) return `${days}天`
 
   const years = Math.floor(months / 12)
   const remainingMonths = months % 12
@@ -381,10 +381,14 @@ export function formatPetElapsed(from: string, to: string): string {
   anchor.setUTCMonth(anchor.getUTCMonth() + months)
   const remainder = Math.max(0, Math.floor((toMs - anchor.getTime()) / 86400000))
   const parts: string[] = []
-  if (years > 0) parts.push(`${years} 年`)
-  if (remainingMonths > 0) parts.push(`${remainingMonths} 个月`)
-  if (remainder > 0) parts.push(`${remainder} 天`)
-  return parts.join(' ')
+  if (years > 0) {
+    parts.push(`${years}年`)
+    if (remainingMonths > 0) parts.push(`${remainingMonths}个月`)
+  } else if (remainingMonths > 0) {
+    parts.push(`${remainingMonths}个月`)
+    if (remainder > 0) parts.push(`${remainder}天`)
+  }
+  return parts.join('')
 }
 
 export function formatPetElapsedHours(from: string, nowMs = Date.now()): string {
@@ -394,8 +398,8 @@ export function formatPetElapsedHours(from: string, nowMs = Date.now()): string 
   if (totalHours < 1) return '刚刚'
   const days = Math.floor(totalHours / 24)
   const hours = totalHours % 24
-  if (days === 0) return `${hours} 小时`
-  return hours > 0 ? `${days} 天 ${hours} 小时` : `${days} 天`
+  if (days === 0) return `${hours}小时`
+  return hours > 0 ? `${days}天${hours}小时` : `${days}天`
 }
 
 export function buildPetTimeline(state: DemoPetState): PetTimelineItem[] {
