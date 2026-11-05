@@ -404,6 +404,29 @@
       </view>
     </view>
 
+    <view wx:if="{{supplyTagManagerOpen}}" class="pet-sheet-mask" catchtap="onCloseSupplyTagManager">
+      <view class="pet-sheet pet-sheet--tags" catchtap="noop">
+        <view class="pet-sheet__handle"></view>
+        <view class="pet-sheet__head">
+          <view><text class="pet-eyebrow">SUPPLY TAGS</text><text class="pet-sheet__title">管理标签</text></view>
+          <view bindtap="onCloseSupplyTagManager">关闭</view>
+        </view>
+        <scroll-view class="supply-tag-list" scroll-y enhanced show-scrollbar="{{false}}">
+          <view wx:if="{{!supplyTags.length}}" class="supply-tag-empty">还没有可管理的标签</view>
+          <view wx:for="{{supplyTags}}" wx:key="key" class="supply-tag-row {{selectedSupplyTagKey === item.key ? 'supply-tag-row--active' : ''}}" data-key="{{item.key}}" bindtap="onSelectSupplyTag">
+            <view class="supply-tag-row__main">
+              <text class="supply-tag-row__label">{{item.label}}</text>
+              <text class="supply-tag-row__meta">{{item.count}} 件 · {{item.custom ? '自定义' : '预设'}}</text>
+            </view>
+            <text class="supply-tag-row__count {{item.count === 0 ? 'supply-tag-row__count--zero' : ''}}">{{item.count}}</text>
+          </view>
+        </scroll-view>
+        <view wx:if="{{selectedSupplyTag}}" class="supply-tag-actions">
+          <view class="supply-tag-action {{selectedSupplyTag.custom ? '' : 'supply-tag-action--disabled'}}" bindtap="onRenameSupplyTag">重命名</view>
+          <view class="supply-tag-action supply-tag-action--danger {{selectedSupplyTag.count > 0 ? 'supply-tag-action--disabled' : ''}}" bindtap="onDeleteSupplyTag">{{selectedSupplyTag.count > 0 ? '标签内还有用品，不能删除' : (supplyTagDeleteConfirm ? '再点一次确认删除' : '删除标签')}}</view>
+        </view>
+      </view>
+    </view>
     <view wx:if="{{supplyEditorOpen}}" class="pet-sheet-mask" catchtap="onCloseSupplyEditor">
       <view class="pet-sheet pet-sheet--supply" catchtap="noop">
         <view class="pet-sheet__handle"></view>

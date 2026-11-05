@@ -181,26 +181,73 @@ const SUPPLY_PREFERENCE_OPTIONS: Array<{
   { value: 'dropped', label: '不爱', hearts: '♥' },
 ]
 
-function buildSupplyCategories(supplies: readonly DemoPetSupply[]): Array<{ value: SupplyFilter; label: string; count: number }> {
+const HIDDEN_SUPPLY_TAGS_KEY = 'popcorn_pet_hidden_supply_tags_v1'
+
+interface SupplyTagView {
+  key: string
+  label: string
+  count: number
+  custom: boolean
+}
+
+function readHiddenSupplyTags(): string[] {
+  const value = wx.getStorageSync<string[] | ''>(HIDDEN_SUPPLY_TAGS_KEY)
+  return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []
+}
+
+function writeHiddenSupplyTags(value: string[]): void {
+  wx.setStorageSync(HIDDEN_SUPPLY_TAGS_KEY, value)
+}
+
+function buildSupplyTags(supplies: readonly DemoPetSupply[], hidden: readonly string[]): SupplyTagView[] {
+  const countOf = (predicate: (item: DemoPetSupply) => boolean) => supplies.filter(predicate).length
   const customLabels = Array.from(new Set(
     supplies
       .filter((item) => item.category === 'custom')
       .map((item) => item.categoryLabel.trim() || '自定义'),
   )).sort((left, right) => left.localeCompare(right, 'zh-CN'))
-  const countOf = (predicate: (item: DemoPetSupply) => boolean) => supplies.filter(predicate).length
   return [
-    ...SUPPLY_CATEGORIES.filter((item) => item.value !== 'custom').map((item) => ({
-      ...item,
-      count: item.value === 'all'
-        ? supplies.length
-        : countOf((supply) => supply.category === item.value),
+    ...SUPPLY_EDITOR_CATEGORIES
+      .filter((item) => item.value !== 'custom' && !hidden.includes(item.value))
+      .map((item) => ({
+        key: item.value,
+        label: item.label,
+        count: countOf((supply) => supply.category === item.value),
+        custom: false,
+      })),
+    ...customLabels.map((label) => ({
+      key: `custom:${label}`,
+      label,
+      count: countOf((supply) => supply.category === 'custom'
+        && (supply.categoryLabel.trim() || '自定义') === label),
+      custom: true,
     })),
+  ]
+}
+
+function buildSupplyCategories(supplies: readonly DemoPetSupply[], hidden: readonly string[]): Array<{ value: SupplyFilter; label: string; count: number }> {
+  const countOf = (predicate: (item: DemoPetSupply) => boolean) => supplies.filter(predicate).length
+  const customLabels = Array.from(new Set(
+    supplies
+      .filter((item) => item.category === 'custom')
+      .map((item) => item.categoryLabel.trim() || '自定义'),
+  )).sort((left, right) => left.localeCompare(right, 'zh-CN'))
+  return [
+    ...SUPPLY_CATEGORIES
+      .filter((item) => item.value !== 'custom' && !hidden.includes(item.value))
+      .map((item) => ({
+        ...item,
+        count: item.value === 'all'
+          ? supplies.length
+          : countOf((supply) => supply.category === item.value),
+      }))
+      .filter((item) => item.count > 0),
     ...customLabels.map((label) => ({
       value: `custom:${label}` as SupplyFilter,
       label,
       count: countOf((supply) => supply.category === 'custom'
         && (supply.categoryLabel.trim() || '自定义') === label),
-    })),
+    })).filter((item) => item.count > 0),
   ]
 }
 
@@ -509,6 +556,11 @@ Page({
     dailyHistoryVisible: [] as DailyTimelineView[],
     dailyHistoryExpanded: false,
     supplyCategories: SUPPLY_CATEGORIES.map((item) => ({ ...item, count: 0 })),
+    supplyTagManagerOpen: false,
+    supplyTags: [] as SupplyTagView[],
+    selectedSupplyTagKey: '',
+    selectedSupplyTag: null as SupplyTagView | null,
+    supplyTagDeleteConfirm: false,
     selectedSupplyCategory: 'all' as SupplyFilter,
     currentSupplies: [] as Array<{
       id: string
@@ -925,7 +977,8 @@ Page({
         selected: state.profile.backgroundMediaId === item.mediaId,
       }))
 
-    const supplyCategories = buildSupplyCategories(state.supplies)
+    const hiddenSupplyTags = readHiddenSupplyTags()
+    const supplyCategories = buildSupplyCategories(state.supplies, hiddenSupplyTags)
     const selectedSupplyCategory = supplyCategories.some(
       (item) => item.value === this.data.selectedSupplyCategory,
     ) ? this.data.selectedSupplyCategory : 'all'
@@ -1582,6 +1635,10 @@ Page({
       wx.showToast({ title: '给自定义类型起个名字', icon: 'none' })
       return
     }
+    const hiddenTags = readHiddenSupplyTags()
+    if (hiddenTags.includes(draft.category)) {
+      writeHiddenSupplyTags(hiddenTags.filter((key) => key !== draft.category))
+    }
     this.setData({ supplySaving: true })
     const input = {
       category: draft.category,
@@ -1899,22 +1956,73 @@ Page({
   },
 
   onManageSupplyCategories() {
-    const labels = Array.from(new Set(
-      this.data.petState.supplies
-        .filter((item) => item.category === 'custom')
-        .map((item) => item.categoryLabel.trim() || '自定义'),
-    ))
-    if (!labels.length) {
-      wx.showToast({ title: '还没有自定义标签', icon: 'none' })
+    const tags = buildSupplyTags(this.data.petState.supplies, readHiddenSupplyTags())
+    const selected = tags.find((tag) => tag.key === this.data.selectedSupplyCategory)
+      ?? tags.find((tag) => tag.count > 0)
+      ?? tags[0]
+      ?? null
+    this.setData({
+      supplyTagManagerOpen: true,
+      supplyTags: tags,
+      selectedSupplyTagKey: selected?.key ?? '',
+      selectedSupplyTag: selected,
+    })
+  },
+
+  onCloseSupplyTagManager() {
+    this.setData({
+      supplyTagManagerOpen: false,
+      supplyTags: [],
+      selectedSupplyTagKey: '',
+      selectedSupplyTag: null,
+      supplyTagDeleteConfirm: false,
+    })
+  },
+
+  onSelectSupplyTag(event: { currentTarget: { dataset: { key?: string } } }) {
+    const key = event.currentTarget.dataset.key
+    if (!key) return
+    const selected = this.data.supplyTags.find((tag) => tag.key === key) ?? null
+    this.setData({
+      selectedSupplyTagKey: key,
+      selectedSupplyTag: selected,
+      supplyTagDeleteConfirm: false,
+    })
+  },
+
+  onRenameSupplyTag() {
+    const tag = this.data.selectedSupplyTag
+    if (!tag) return
+    if (!tag.custom) {
+      wx.showToast({ title: '预设标签暂不支持重命名', icon: 'none' })
       return
     }
-    wx.showActionSheet({
-      itemList: labels.slice(0, 6).map((label) => `重命名「${label}」`),
-      success: (result) => {
-        const label = labels[result.tapIndex]
-        if (label) this.promptRenameSupplyCategory(label)
-      },
+    this.promptRenameSupplyCategory(tag.label)
+  },
+
+  onDeleteSupplyTag() {
+    const tag = this.data.selectedSupplyTag
+    if (!tag) return
+    if (tag.count > 0) {
+      wx.showToast({ title: `标签内还有 ${tag.count} 件用品，不能删除`, icon: 'none' })
+      return
+    }
+    if (!this.data.supplyTagDeleteConfirm) {
+      this.setData({ supplyTagDeleteConfirm: true })
+      return
+    }
+    if (!tag.custom) {
+      writeHiddenSupplyTags([...new Set([...readHiddenSupplyTags(), tag.key])])
+    }
+    this.setData({
+      supplyTagManagerOpen: false,
+      supplyTags: [],
+      selectedSupplyTagKey: '',
+      selectedSupplyTag: null,
+      supplyTagDeleteConfirm: false,
     })
+    void this.loadState(this.data.petState)
+    wx.showToast({ title: '标签已删除', icon: 'success' })
   },
 
   promptRenameSupplyCategory(oldLabel: string) {
@@ -1928,7 +2036,9 @@ Page({
         if (!result.confirm) return
         const nextLabel = (result.content ?? '').trim()
         if (!nextLabel || nextLabel === oldLabel) return
-        void this.renameSupplyCategory(oldLabel, nextLabel)
+        void this.renameSupplyCategory(oldLabel, nextLabel).then(() => {
+          this.setData({ supplyTagManagerOpen: false })
+        })
       },
     })
   },

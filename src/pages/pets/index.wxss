@@ -2634,3 +2634,104 @@
 .supply-filter__manage {
   margin-top: 18rpx;
 }
+
+/* ================= 标签管理 Sheet ================= */
+.pet-sheet--tags {
+  max-height: 82vh;
+}
+
+.supply-tag-list {
+  max-height: 52vh;
+  margin-top: 12rpx;
+}
+
+.supply-tag-empty {
+  padding: 40rpx 0;
+  color: var(--pet-ink-3);
+  font-size: 22rpx;
+  text-align: center;
+}
+
+.supply-tag-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 20rpx;
+  border-bottom: 1rpx solid var(--pet-line);
+  border-radius: 18rpx;
+  gap: 16rpx;
+}
+
+.supply-tag-row--active {
+  background: #fbf1ef;
+  border-color: #eccfd4;
+}
+
+.supply-tag-row__main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3rpx;
+}
+
+.supply-tag-row__label {
+  color: var(--pet-ink);
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.supply-tag-row__meta {
+  color: var(--pet-ink-3);
+  font-size: 20rpx;
+}
+
+.supply-tag-row__count {
+  display: flex;
+  min-width: 40rpx;
+  height: 36rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rpx;
+  border-radius: 999rpx;
+  background: #f4e3e7;
+  box-sizing: border-box;
+  color: #9a5f6a;
+  flex: 0 0 auto;
+  font-size: 19rpx;
+  font-weight: 700;
+}
+
+.supply-tag-row__count--zero {
+  background: #f3efe9;
+  color: #b3aca3;
+}
+
+.supply-tag-actions {
+  display: flex;
+  margin-top: 18rpx;
+  gap: 12rpx;
+}
+
+.supply-tag-action {
+  display: flex;
+  height: 72rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  background: #f6ece8;
+  color: #8f5a52;
+  flex: 1;
+  font-size: 22rpx;
+  font-weight: 600;
+  padding: 0 10rpx;
+  text-align: center;
+}
+
+.supply-tag-action--danger {
+  background: #f9e4e2;
+  color: #a84f48;
+}
+
+.supply-tag-action--disabled {
+  opacity: 0.42;
+}
