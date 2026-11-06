@@ -80,3 +80,39 @@ export function swapFeatureAcrossSlots(
   target[targetIndex] = moving
   return { source, target }
 }
+
+/**
+ * 把功能放进底栏。首页快捷入口已下线，但服务端仍要求 5 个 homeSlots，
+ * 因此功能从隐藏区移进底栏时，用被顶掉的那个功能补回它原来的位置，
+ * 保证「5 + 3、全局不重复」的契约。
+ */
+export function placeIntoTabSlots(
+  homeSlots: readonly FeatureId[],
+  tabSlots: readonly FeatureId[],
+  featureId: FeatureId,
+  targetIndex: number,
+  allFeatureIds: readonly FeatureId[],
+): { homeSlots: FeatureId[]; tabSlots: FeatureId[] } | null {
+  const home = [...homeSlots]
+  const tab = [...tabSlots]
+  if (targetIndex < 0 || targetIndex >= tab.length) return null
+
+  const displaced = tab[targetIndex]
+  if (displaced === featureId) return null
+  tab[targetIndex] = featureId
+
+  const homeIndex = home.indexOf(featureId)
+  if (homeIndex < 0) return { homeSlots: home, tabSlots: tab }
+
+  if (displaced && !home.includes(displaced)) {
+    home[homeIndex] = displaced
+    return { homeSlots: home, tabSlots: tab }
+  }
+
+  const filler = allFeatureIds.find(
+    (id) => id !== featureId && !home.includes(id) && !tab.includes(id),
+  )
+  if (!filler) return null
+  home[homeIndex] = filler
+  return { homeSlots: home, tabSlots: tab }
+}

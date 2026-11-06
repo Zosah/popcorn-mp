@@ -1,5 +1,6 @@
 import { appConfig } from '../../config/env'
 import {
+  FEATURE_CATALOG,
   getFeatureCategoryGroups,
   getFeatureDefinition,
   isFeatureAvailableIn,
@@ -11,12 +12,12 @@ import {
 import {
   moveFeatureWithinSlots,
   placeFeatureInSlots,
+  placeIntoTabSlots,
   swapFeatureAcrossSlots,
 } from '../../domain/feature-layout'
 import { hydrateAuthState } from '../../services/auth'
 import {
   buildFeatureSettingsOwnerId,
-  FEATURE_SETTINGS_SLOT_COUNT,
   getFeatureSettingsSnapshot,
   normalizeFeatureSettings,
   type FeatureSettingsConfig,
@@ -78,6 +79,7 @@ interface DropRect {
   bottom: number
 }
 
+const TAB_SLOT_TOTAL = 3
 const DRAG_ACTIVATION_MS = 280
 
 interface AppTabBarHandle {
@@ -136,7 +138,7 @@ function withRegionSlots(
 }
 
 function placementForFeature(config: FeatureSettingsConfig, id: FeatureId): FeaturePlacement {
-  if (config.homeSlots.includes(id)) return 'home'
+  // 首页快捷入口已下线：占用状态只看底栏，避免功能卡在看不见的槽位里。
   if (config.tabSlots.includes(id)) return 'tab'
   return ''
 }
@@ -223,10 +225,8 @@ Page({
     this.setData({
       featureGroups: buildFeatureGroups(initial),
       featurePool: buildFeaturePool(initial),
-      featureCount: initial.homeSlots.length + initial.tabSlots.length,
-      featureProgress: Math.round(
-        ((initial.homeSlots.length + initial.tabSlots.length) / FEATURE_SETTINGS_SLOT_COUNT) * 100,
-      ),
+      featureCount: initial.tabSlots.length,
+      featureProgress: Math.round((initial.tabSlots.length / TAB_SLOT_TOTAL) * 100),
     })
     void this.loadSettings()
   },
@@ -298,10 +298,8 @@ Page({
       updatedAt: updatedAt ?? this.data.updatedAt,
       featureGroups: buildFeatureGroups(normalized),
       featurePool: buildFeaturePool(normalized),
-      featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
-      featureProgress: Math.round(
-        ((normalized.homeSlots.length + normalized.tabSlots.length) / FEATURE_SETTINGS_SLOT_COUNT) * 100,
-      ),
+      featureCount: normalized.tabSlots.length,
+      featureProgress: Math.round((normalized.tabSlots.length / TAB_SLOT_TOTAL) * 100),
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, saved),
@@ -316,10 +314,8 @@ Page({
       config: normalized,
       featureGroups: buildFeatureGroups(normalized),
       featurePool: buildFeaturePool(normalized),
-      featureCount: normalized.homeSlots.length + normalized.tabSlots.length,
-      featureProgress: Math.round(
-        ((normalized.homeSlots.length + normalized.tabSlots.length) / FEATURE_SETTINGS_SLOT_COUNT) * 100,
-      ),
+      featureCount: normalized.tabSlots.length,
+      featureProgress: Math.round((normalized.tabSlots.length / TAB_SLOT_TOTAL) * 100),
       homeSlots: buildSlots(normalized, 'home'),
       tabSlots: buildSlots(normalized, 'tab'),
       dirty: configChanged(normalized, this.data.savedConfig),
@@ -597,6 +593,19 @@ Page({
         region,
         moveFeatureWithinSlots(regionSlots(current, region), active.sourceIndex, targetIndex),
       )
+    } else if (region === 'tab') {
+      const placed = placeIntoTabSlots(
+        current.homeSlots,
+        current.tabSlots,
+        active.id,
+        targetIndex,
+        FEATURE_CATALOG.map((feature) => feature.id),
+      )
+      if (!placed) {
+        wx.showToast({ title: '底栏已满，先换下一个', icon: 'none' })
+        return
+      }
+      next = { ...current, ...placed }
     } else {
       next = withRegionSlots(
         current,

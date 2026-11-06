@@ -27,12 +27,12 @@
     </view>
     <view class="config-guide__copy">
       <text class="config-guide__title">安排常用入口</text>
-      <text class="config-guide__description">首页 5 格，底栏 3 格</text>
+      <text class="config-guide__description">底栏 3 格，按习惯排</text>
     </view>
     <view class="config-guide__progress">
       <view class="config-guide__count">
         <text class="config-guide__count-value">{{featureCount}}</text>
-        <text class="config-guide__count-total">/ 8</text>
+        <text class="config-guide__count-total">/ 3</text>
       </view>
       <view class="config-guide__track">
         <view class="config-guide__track-fill" style="width: {{featureProgress}}%;"></view>
@@ -85,42 +85,9 @@
       <text class="section-heading__meta">长按已选功能调整顺序</text>
     </view>
 
-    <view class="preview-caption">
-      <view class="preview-caption__title">
-        <text class="preview-caption__index">01</text>
-        <text class="preview-caption__label">首页快捷</text>
-      </view>
-      <text class="preview-caption__meta">5 个入口</text>
-    </view>
-    <view class="home-drop-grid">
-      <view
-        wx:for="{{homeSlots}}"
-        wx:for-item="slotItem"
-        wx:key="id"
-        class="drop-slot drop-slot--home {{dropRegion === 'home' && dropIndex === index ? (dropBlocked ? 'drop-slot--blocked' : 'drop-slot--active') : ''}}"
-        data-source="slot"
-        data-id="{{slotItem.id}}"
-        data-region="home"
-        data-index="{{index}}"
-        aria-role="button"
-        aria-label="首页第{{slotItem.order}}个位置，{{slotItem.shortLabel}}"
-        bindtap="onSlotTap"
-        catchtouchstart="onDragTouchStart"
-        catchtouchmove="onDragTouchMove"
-        catchtouchend="onDragTouchEnd"
-        catchtouchcancel="onDragTouchCancel"
-      >
-        <text class="drop-slot__order">{{slotItem.order}}</text>
-        <view class="drop-slot__icon feature-tile__icon--{{slotItem.tone}}">
-          <line-icon name="{{slotItem.icon}}" size="48" tone="{{slotItem.tone}}" active="{{true}}" />
-        </view>
-        <text class="drop-slot__title">{{slotItem.shortLabel}}</text>
-      </view>
-    </view>
-
     <view class="preview-caption preview-caption--tab">
       <view class="preview-caption__title">
-        <text class="preview-caption__index">02</text>
+        <text class="preview-caption__index">01</text>
         <text class="preview-caption__label">底部导航</text>
       </view>
       <text class="preview-caption__meta">家与「我的」固定</text>

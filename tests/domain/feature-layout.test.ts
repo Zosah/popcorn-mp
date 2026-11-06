@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   moveFeatureWithinSlots,
   placeFeatureInSlots,
+  placeIntoTabSlots,
   swapFeatureAcrossSlots,
 } from '../../src/domain/feature-layout'
 import type { FeatureId } from '../../src/domain/feature-catalog'
@@ -52,5 +53,30 @@ describe('功能配置拖放', () => {
     expect(moveFeatureWithinSlots(base, -1, 2)).toEqual(base)
     expect(moveFeatureWithinSlots(base, 1, 9)).toEqual(base)
     expect(swapFeatureAcrossSlots(base, 1, tabs, 9)).toEqual({ source: base, target: tabs })
+  })
+})
+
+describe('把功能放进底栏', () => {
+  const home: FeatureId[] = ['journal', 'inventory', 'todo', 'pets', 'travel']
+  const tab: FeatureId[] = ['menu', 'expense', 'fitness']
+  const all: FeatureId[] = ['inventory', 'expense', 'menu', 'travel', 'fitness', 'journal', 'todo', 'pets']
+
+  it('功能放在隐藏的首页槽位时，与被顶掉的功能交换', () => {
+    const result = placeIntoTabSlots(home, tab, 'inventory', 1, all)
+    expect(result).not.toBeNull()
+    expect(result!.tabSlots).toEqual(['menu', 'inventory', 'fitness'])
+    expect(result!.homeSlots).toEqual(['journal', 'expense', 'todo', 'pets', 'travel'])
+    expect(new Set([...result!.homeSlots, ...result!.tabSlots]).size).toBe(8)
+  })
+
+  it('功能不在首页槽位时只替换底栏目标', () => {
+    const result = placeIntoTabSlots(home, ['menu', 'todo', 'pets'], 'fitness', 0, all)
+    expect(result).not.toBeNull()
+    expect(result!.tabSlots).toEqual(['fitness', 'todo', 'pets'])
+    expect(result!.homeSlots).toEqual(home)
+  })
+
+  it('原地拖放不产生变化', () => {
+    expect(placeIntoTabSlots(home, tab, 'menu', 0, all)).toBeNull()
   })
 })
