@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import { hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
@@ -83,6 +84,7 @@ const MEAL_LABELS: Record<MealChoice, string> = {
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     allRecipes: [] as MenuRecipe[],
     categories: [] as MenuCategory[],
@@ -136,7 +138,7 @@ Page({
     void this.refresh()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refresh(true)
   },
 

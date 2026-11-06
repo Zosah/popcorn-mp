@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import { buildDemoAvatarText, type DemoAvatarTone } from '../../domain/demo-auth'
 import { buildDemoInvitePath } from '../../domain/demo-invite'
@@ -62,6 +63,7 @@ interface SpaceSwitchView {
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     isDemoMode: appConfig.demoMode,
     spaceId: '',
@@ -111,7 +113,7 @@ Page({
     void this.refreshAuth()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refreshAuth(true)
   },
 

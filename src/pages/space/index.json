@@ -3,6 +3,7 @@
   "enablePullDownRefresh": true,
   "usingComponents": {
     "line-icon": "/components/line-icon/index",
-    "page-loading": "/components/page-loading/index"
+    "page-loading": "/components/page-loading/index",
+    "pull-refresh": "/components/pull-refresh/index"
   }
 }

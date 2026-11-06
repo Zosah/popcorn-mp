@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="pets-page">
   <page-loading show="{{loading && !hasLoaded}}" title="正在看看毛孩子" copy="把照护、日常和喜欢的东西慢慢收好。" />
   <auth-preview-gate />

@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <template name="todo-row">
   <view class="todo-item {{done ? 'todo-item--done' : ''}}" data-id="{{id}}" bindlongpress="onLongPressItem">
     <view class="todo-item__main" data-id="{{id}}" bindtap="onEditItem">

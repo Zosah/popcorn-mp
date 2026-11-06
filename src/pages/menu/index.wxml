@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="page-shell menu-page">
   <page-loading show="{{loading && !hasLoaded}}" title="正在翻菜谱本" copy="今天的点子和常做的菜，很快就来。" />
   <auth-preview-gate />

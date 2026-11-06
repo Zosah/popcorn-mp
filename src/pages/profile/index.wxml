@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="tab-page profile-page">
   <page-loading show="{{initialLoading}}" title="正在打开你的空间" copy="把共同生活轻轻收在一起。" />
   <auth-preview-gate />

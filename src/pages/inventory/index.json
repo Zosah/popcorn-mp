@@ -7,6 +7,7 @@
     "line-icon": "/components/line-icon/index",
     "app-tab-bar": "/components/app-tab-bar/index",
     "page-loading": "/components/page-loading/index",
-    "auth-preview-gate": "/components/auth-preview-gate/index"
+    "auth-preview-gate": "/components/auth-preview-gate/index",
+    "pull-refresh": "/components/pull-refresh/index"
   }
 }

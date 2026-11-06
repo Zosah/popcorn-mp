@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="travel-detail-page">
   <page-loading show="{{loading && !trip}}" title="正在展开这趟行程" copy="把时间和随身物品一起带回来。" />
   <auth-preview-gate />

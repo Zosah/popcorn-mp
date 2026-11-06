@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="space-page">
   <page-loading
     show="{{initialLoading}}"

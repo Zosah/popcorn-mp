@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import type { DemoTodoInput, DemoTodoKind, DemoTodoItem } from '../../domain/demo-todo'
 import { getFeatureDefinition } from '../../domain/feature-catalog'
@@ -171,6 +172,7 @@ function buildTagGroups(items: TodoItem[]): TodoTagGroup[] {
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     activeKind: 'plan' as DemoTodoKind,
     isPlanMode: true,
@@ -232,7 +234,7 @@ Page({
     void this.refresh()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refresh(true)
   },
 

@@ -35,8 +35,8 @@
     "navigationBarBackgroundColor": "#fbfaf6",
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "时刻见",
-    "backgroundColor": "#fbfaf6",
-    "backgroundTextStyle": "light"
+    "backgroundColor": "#f1e7da",
+    "backgroundTextStyle": "dark"
   },
   "sitemapLocation": "sitemap.json"
 }

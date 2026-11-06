@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
 import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
@@ -152,6 +153,7 @@ function buildSections(
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     loading: true,
     hasLoaded: false,
@@ -193,7 +195,7 @@ Page({
     void this.refreshPage(!firstShow)
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     inventoryPageGate.invalidate()
     inventorySearchDebouncer.cancel()
     void this.loadInventory(true, true)

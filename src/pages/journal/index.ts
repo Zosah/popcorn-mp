@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import {
   DEMO_NOTE_CATEGORY_LABELS,
@@ -64,6 +65,7 @@ function removeEntryImageUrls(entry: JournalItem, index: number): JournalItem {
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     activeView: 'moments',
     activeSection: 'moments' as 'moments' | 'notes',
@@ -107,7 +109,7 @@ Page({
     void this.refresh()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refresh(true)
   },
 

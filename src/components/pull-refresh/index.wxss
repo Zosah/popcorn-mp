@@ -1,0 +1,66 @@
+/* 下拉刷新：牛皮纸托盘 + 品牌三点，替代默认的白底小圆点 */
+.pull-refresh {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 999;
+  display: flex;
+  height: 96rpx;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(250, 216, 202, 0.55), rgba(250, 216, 202, 0) 70%),
+    #f3ece2;
+  gap: 14rpx;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  transition: opacity 160ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pull-refresh--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pull-refresh__dots {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.pull-refresh__dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--c-coral, #c67d6d);
+  animation: pull-refresh-bounce 900ms infinite ease-in-out;
+}
+
+.pull-refresh__dot--two {
+  animation-delay: 120ms;
+  background: var(--c-butter, #c9a764);
+}
+
+.pull-refresh__dot--three {
+  animation-delay: 240ms;
+  background: var(--c-sage, #668478);
+}
+
+.pull-refresh__label {
+  color: #8a6a54;
+  font-size: 22rpx;
+  letter-spacing: 1rpx;
+}
+
+@keyframes pull-refresh-bounce {
+  0%, 80%, 100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-8rpx);
+  }
+}

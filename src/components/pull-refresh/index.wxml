@@ -1,0 +1,8 @@
+<view class="pull-refresh {{show ? 'pull-refresh--show' : ''}}">
+  <view class="pull-refresh__dots">
+    <view class="pull-refresh__dot pull-refresh__dot--one"></view>
+    <view class="pull-refresh__dot pull-refresh__dot--two"></view>
+    <view class="pull-refresh__dot pull-refresh__dot--three"></view>
+  </view>
+  <text class="pull-refresh__label">{{label}}</text>
+</view>

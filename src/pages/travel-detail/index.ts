@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import {
   formatTravelDateRange,
@@ -103,6 +104,7 @@ function sortTemplates(templates: TravelTemplate[]): TravelTemplate[] {
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     id: '',
     trip: null as TravelTripView | null,
@@ -148,7 +150,7 @@ Page({
     if (this.data.id) void this.refresh()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refresh(true)
   },
 

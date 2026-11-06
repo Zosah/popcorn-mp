@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import {
   buildPetDailySummary,
@@ -245,6 +246,7 @@ function pickSnapshotValue(
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     initialLoading: true,
     hasLoaded: false,
@@ -300,7 +302,7 @@ Page({
     void this.refreshProfile()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refreshProfile(true)
   },
 

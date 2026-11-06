@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="tab-page inventory-page">
   <page-loading show="{{loading && !hasLoaded}}" title="正在看看家里的库存" copy="临期、常用和存货马上整理好。" />
   <auth-preview-gate />

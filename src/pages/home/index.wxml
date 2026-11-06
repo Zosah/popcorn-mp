@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="tab-page home">
   <page-loading show="{{initialLoading}}" title="正在整理今天" copy="把共同生活里的小事收在一起。" />
   <auth-preview-gate />

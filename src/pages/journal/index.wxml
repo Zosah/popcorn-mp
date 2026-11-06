@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="tab-page journal-page">
   <page-loading show="{{loading && !hasLoaded}}" title="正在翻开生活记录" copy="把最近的片段和资料找出来。" />
   <auth-preview-gate />

@@ -1,3 +1,4 @@
+<pull-refresh show="{{pullRefreshing}}" />
 <view class="page-shell travel-page">
   <page-loading show="{{loading && !hasLoaded}}" title="正在收拾行囊" copy="把出发时间和要带的东西放在一起。" />
   <auth-preview-gate />

@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import {
   buildHomeSnapshotFromSummary,
@@ -117,6 +118,7 @@ function formatPetActivityDate(value: string, today: string): string {
 }
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     initialLoading: true,
     hasLoaded: false,
@@ -223,7 +225,7 @@ Page({
     void this.loadSnapshot()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.loadSnapshot(true)
   },
 

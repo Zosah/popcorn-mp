@@ -1,3 +1,4 @@
+import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
 import { getShanghaiDateOnly } from '../../domain/expiry'
 import { getPetSpeciesProfile, type PetSpeciesProfile } from '../../domain/pet-species-profile'
@@ -429,6 +430,7 @@ function formatBackgroundUsedAt(value: string): string {
 
 
 Page({
+  behaviors: [pullRefreshBehavior],
   data: {
     activeSection: 'daily' as PetSection,
     profileSectionActive: false,
@@ -653,7 +655,7 @@ Page({
     void this.refreshPetData()
   },
 
-  onPullDownRefresh() {
+  onPullRefreshTask() {
     void this.refreshPetData('', true)
   },
 
