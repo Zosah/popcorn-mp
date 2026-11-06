@@ -8,5 +8,9 @@ Component({
       type: String,
       value: '正在整理',
     },
+    top: {
+      type: Number,
+      value: 0,
+    },
   },
 })

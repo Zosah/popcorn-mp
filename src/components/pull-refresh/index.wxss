@@ -6,7 +6,7 @@
   left: 0;
   z-index: 999;
   display: flex;
-  height: 96rpx;
+  height: 112rpx;
   align-items: center;
   justify-content: center;
   background:
@@ -63,4 +63,15 @@
     opacity: 1;
     transform: translateY(-8rpx);
   }
+}
+
+/* 底部收口，避免和页面内容硬切 */
+.pull-refresh::after {
+  position: absolute;
+  right: 0;
+  bottom: -16rpx;
+  left: 0;
+  height: 16rpx;
+  background: linear-gradient(180deg, rgba(243, 236, 226, 0.9), rgba(243, 236, 226, 0));
+  content: "";
 }

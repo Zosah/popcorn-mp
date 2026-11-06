@@ -1,4 +1,4 @@
-<view class="pull-refresh {{show ? 'pull-refresh--show' : ''}}">
+<view class="pull-refresh {{show ? 'pull-refresh--show' : ''}}" style="top: {{top}}px">
   <view class="pull-refresh__dots">
     <view class="pull-refresh__dot pull-refresh__dot--one"></view>
     <view class="pull-refresh__dot pull-refresh__dot--two"></view>
