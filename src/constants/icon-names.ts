@@ -46,6 +46,7 @@ export const PET_EVENT_ICON_NAMES: Record<PetEventType, string> = {
   outing: 'pet-care-outing',
   'internal-deworm': 'pet-care-internal-deworm',
   'external-deworm': 'pet-care-external-deworm',
+  'nail-trim': 'pet-care-nail-trim',
 }
 
 export const PET_TIMELINE_ICON_NAMES: Record<
@@ -64,6 +65,7 @@ export const PET_DAILY_ICON_NAMES: Record<PetDailyLogType, string> = {
   urine: 'pet-daily-urine',
   'litter-change': 'pet-daily-litter-change',
   'water-change': 'pet-daily-water-change',
+  walk: 'pet-daily-walk',
   record: 'pet-daily-record',
 }
 
@@ -72,6 +74,9 @@ export const PET_SUPPLY_ICON_NAMES: Record<PetSupplyCategory, string> = {
   can: 'pet-supply-can',
   'freeze-dried': 'pet-supply-freeze-dried',
   soup: 'pet-supply-soup',
+  snack: 'pet-supply-snack',
+  leash: 'pet-supply-leash',
+  pad: 'pet-supply-pad',
   litter: 'pet-supply-litter',
   custom: 'pet-supply-custom',
 }

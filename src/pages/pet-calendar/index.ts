@@ -11,6 +11,7 @@ import {
   PET_EVENT_ICON_NAMES,
 } from '../../constants/icon-names'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import { getPetSpeciesProfile } from '../../domain/pet-species-profile'
 import { petGateway } from '../../services/pet'
 import { activePetFrom, getPetErrorMessage } from '../../services/pet-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -113,6 +114,7 @@ Page({
         return
       }
       const today = getShanghaiDateOnly(Date.now())
+      const speciesProfile = getPetSpeciesProfile(state.profile.species)
       const actualEvents: CalendarEventView[] = state.events.map((event) => ({
         id: event.id,
         eventId: event.id,
@@ -140,6 +142,7 @@ Page({
       const careEvents: CalendarEventView[] = buildPetCareCards(
         state.events,
         today,
+        speciesProfile.careTypes,
       )
         .filter(
           (item) =>

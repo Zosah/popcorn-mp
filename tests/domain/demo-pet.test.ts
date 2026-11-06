@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { getPetSpeciesProfile } from '../../src/domain/pet-species-profile'
 import {
   buildPetCareCards,
   buildPetCareTimeline,
@@ -109,7 +110,11 @@ describe('首页宠物动态', () => {
 describe('护理记录', () => {
   it('护理页只保留洗护、内驱和外驱，未明确安排时不自动推算下次日期', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
-    const cards = buildPetCareCards(state.events, '2026-08-27')
+    const cards = buildPetCareCards(state.events, '2026-08-27', [
+      'grooming',
+      'internal-deworm',
+      'external-deworm',
+    ])
 
     expect(cards.map((item) => item.type)).toEqual([
       'grooming',
@@ -454,5 +459,26 @@ describe('宠物日历', () => {
     )
 
     expect(cells.find((item) => item.date === '2026-09-02')?.eventCount).toBe(2)
+  })
+})
+
+describe('物种档案', () => {
+  it('狗狗的日常打卡用遛狗替换换猫砂', () => {
+    const profile = getPetSpeciesProfile('dog')
+    expect(profile.dailyTypes).toContain('walk')
+    expect(profile.dailyTypes).not.toContain('litter-change')
+    expect(profile.careTypes).toContain('nail-trim')
+  })
+
+  it('猫的用品分类保留猫砂，狗的用品分类换成牵引绳与尿垫', () => {
+    expect(getPetSpeciesProfile('cat').supplyCategories).toContain('litter')
+    expect(getPetSpeciesProfile('dog').supplyCategories).not.toContain('litter')
+    expect(getPetSpeciesProfile('dog').supplyCategories).toEqual(
+      expect.arrayContaining(['snack', 'leash', 'pad']),
+    )
+  })
+
+  it('没有物种的老数据按猫处理', () => {
+    expect(getPetSpeciesProfile(undefined).id).toBe('cat')
   })
 })

@@ -79,3 +79,11 @@
 .pet-form-error { display: flex; margin: 22rpx 4rpx 0; padding: 18rpx 20rpx; align-items: center; gap: 10rpx; border-radius: 18rpx; background: #fbece7; color: #a5574d; font-size: 23rpx; line-height: 1.55; }
 .pet-form-save { width: 100%; margin-top: 30rpx; gap: 10rpx; }
 .pet-form-back { padding: 26rpx 0 4rpx; color: var(--pet-form-ink-3); font-size: 23rpx; text-align: center; }
+
+.pet-form-species-hint {
+  display: block;
+  margin-top: 10rpx;
+  color: var(--c-muted, #837f76);
+  font-size: 22rpx;
+  line-height: 1.6;
+}

@@ -45,6 +45,7 @@
           <view class="pet-form-option__copy"><text>{{item.label}}</text><text>{{item.hint}}</text></view>
         </view>
       </view>
+      <text class="pet-form-species-hint">{{speciesHint}}</text>
     </view>
 
     <view class="pet-form-field">

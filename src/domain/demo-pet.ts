@@ -10,11 +10,13 @@ export type PetEventType =
   | 'outing'
   | 'internal-deworm'
   | 'external-deworm'
+  | 'nail-trim'
 
 export type PetCareType =
   | 'grooming'
   | 'internal-deworm'
   | 'external-deworm'
+  | 'nail-trim'
 
 export type PetDailyLogType =
   | 'meal'
@@ -23,6 +25,7 @@ export type PetDailyLogType =
   | 'urine'
   | 'litter-change'
   | 'water-change'
+  | 'walk'
   | 'record'
 
 export type PetSpecies = 'cat' | 'dog' | 'other'
@@ -33,6 +36,9 @@ export type BuiltInPetSupplyCategory =
   | 'freeze-dried'
   | 'soup'
   | 'litter'
+  | 'snack'
+  | 'leash'
+  | 'pad'
 
 export type PetSupplyCategory = BuiltInPetSupplyCategory | 'custom'
 
@@ -260,6 +266,7 @@ export const PET_EVENT_LABELS: Record<PetEventType, string> = {
   outing: '外出',
   'internal-deworm': '内驱',
   'external-deworm': '外驱',
+  'nail-trim': '剪指甲',
 }
 
 export const PET_SUPPLY_CATEGORY_LABELS: Record<PetSupplyCategory, string> = {
@@ -268,6 +275,9 @@ export const PET_SUPPLY_CATEGORY_LABELS: Record<PetSupplyCategory, string> = {
   'freeze-dried': '冻干',
   soup: '汤包',
   litter: '猫砂',
+  snack: '零食',
+  leash: '牵引绳',
+  pad: '尿垫',
   custom: '自定义',
 }
 
@@ -290,6 +300,7 @@ export const PET_DAILY_LOG_LABELS: Record<PetDailyLogType, string> = {
   urine: '尿尿',
   'litter-change': '换猫砂',
   'water-change': '换水',
+  walk: '遛狗',
   record: '记录',
 }
 
@@ -306,6 +317,7 @@ export const PET_DAILY_LOG_TYPES: readonly PetDailyLogType[] = [
   'urine',
   'litter-change',
   'water-change',
+  'walk',
 ]
 
 export function getPetSupplyPreferenceLabel(
@@ -324,6 +336,7 @@ export const PET_CARE_TYPES: readonly PetCareType[] = [
   'grooming',
   'internal-deworm',
   'external-deworm',
+  'nail-trim',
 ]
 
 export function isPetCareType(type: PetEventType): type is PetCareType {
@@ -622,8 +635,9 @@ export function buildPetHomeActivities(
 export function buildPetCareCards(
   events: readonly DemoPetEvent[],
   today: string,
+  careTypes: readonly PetCareType[] = PET_CARE_TYPES,
 ): PetCareCard[] {
-  return PET_CARE_TYPES.map((type) => {
+  return careTypes.map((type) => {
     const latest = events
       .filter((event) => event.type === type)
       .sort((left, right) =>
@@ -713,11 +727,12 @@ function formatShanghaiTime(timestamp: number): string {
 export function buildPetDailySummary(
   logs: readonly DemoPetDailyLog[],
   today: string,
+  dailyTypes: readonly PetDailyLogType[] = PET_DAILY_LOG_TYPES,
 ): PetDailySummaryItem[] {
   const nowMs = getShanghaiDateOnly(Date.now()) === today
     ? Date.now()
     : Date.parse(`${today}T23:59:59+08:00`)
-  return PET_DAILY_LOG_TYPES.map((type) => {
+  return dailyTypes.map((type) => {
     const matchingLogs = logs
       .filter((log) => !log.deletedAt)
       .filter((log) => log.type === type)

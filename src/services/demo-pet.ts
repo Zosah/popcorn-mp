@@ -383,6 +383,9 @@ function supplyCategoryLabel(category: PetSupplyCategory): string {
     'freeze-dried': '冻干',
     soup: '汤包',
     litter: '猫砂',
+    snack: '零食',
+    leash: '牵引绳',
+    pad: '尿垫',
     custom: '自定义',
   }
   return labels[category] ?? '用品'

@@ -4,6 +4,7 @@ import {
   type HomeSnapshot,
 } from '../../domain/home'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import { getPetSpeciesProfile } from '../../domain/pet-species-profile'
 import { buildDemoAvatarText, type DemoAvatarTone } from '../../domain/demo-auth'
 import {
   buildPetCareCards,
@@ -301,11 +302,14 @@ Page({
       ? getPetErrorMessage(petResult.reason, '宠物照护暂时没有同步过来')
       : ''
     const latestWeight = petState?.weights[petState.weights.length - 1]
-    const careCards = petState ? buildPetCareCards(petState.events, today) : []
+    const speciesProfile = getPetSpeciesProfile(petState?.profile.species)
+    const careCards = petState
+      ? buildPetCareCards(petState.events, today, speciesProfile.careTypes)
+      : []
     const overdueCare = careCards.find((item) => item.status === 'overdue')
     const dueSoonCare = careCards.find((item) => item.status === 'due-soon')
     const dailySummary = petState
-      ? buildPetDailySummary(petState.dailyLogs, today)
+      ? buildPetDailySummary(petState.dailyLogs, today, speciesProfile.dailyTypes)
       : []
     const petActivities = petState ? buildPetHomeActivities(petState, today, 3).map(
       (item): HomePetActivity => ({

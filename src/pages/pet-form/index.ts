@@ -39,6 +39,7 @@ Page({
     avatar: null as PetFormAvatar | null,
     avatarMediaId: '',
     speciesOptions: SPECIES_OPTIONS,
+    speciesHint: '选狗狗会启用遛狗、剪指甲，以及牵引绳、尿垫这类用品分类',
     sexOptions: [
       { value: 'female', label: '妹妹' },
       { value: 'male', label: '弟弟' },

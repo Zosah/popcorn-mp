@@ -1,5 +1,6 @@
 import { appConfig } from '../../config/env'
 import { getShanghaiDateOnly } from '../../domain/expiry'
+import { getPetSpeciesProfile, type PetSpeciesProfile } from '../../domain/pet-species-profile'
 import { toTravelDateTimeParts, toTravelISO } from '../../domain/travel'
 import {
   PET_DAILY_ICON_NAMES,
@@ -158,18 +159,20 @@ const EMPTY_PET_STATE: DemoPetState = {
   dailyLogs: [],
 }
 
-const SUPPLY_CATEGORIES: Array<{
-  value: SupplyFilter
+/** 用品筛选与编辑器分类都按物种档案生成：狗不会出现猫砂。 */
+function buildSupplyCategoryOptions(
+  profile: PetSpeciesProfile,
+): Array<{ value: PetSupplyCategory; label: string }> {
+  return profile.supplyCategories.map((value) => ({
+    value,
+    label: PET_SUPPLY_CATEGORY_LABELS[value],
+  }))
+}
+
+const SUPPLY_EDITOR_CATEGORIES: Array<{
+  value: PetSupplyCategory
   label: string
-}> = [
-  { value: 'all', label: '全部' },
-  { value: 'kibble', label: '主粮' },
-  { value: 'can', label: '罐头' },
-  { value: 'freeze-dried', label: '冻干' },
-  { value: 'soup', label: '汤包' },
-  { value: 'litter', label: '猫砂' },
-  { value: 'custom', label: '自定义' },
-]
+}> = buildSupplyCategoryOptions(getPetSpeciesProfile('cat'))
 
 const SUPPLY_PREFERENCE_OPTIONS: Array<{
   value: PetSupplyPreference
@@ -225,7 +228,11 @@ function buildSupplyTags(supplies: readonly DemoPetSupply[], hidden: readonly st
   ]
 }
 
-function buildSupplyCategories(supplies: readonly DemoPetSupply[], hidden: readonly string[]): Array<{ value: SupplyFilter; label: string; count: number }> {
+function buildSupplyCategories(
+  supplies: readonly DemoPetSupply[],
+  hidden: readonly string[],
+  options: ReadonlyArray<{ value: PetSupplyCategory; label: string }>,
+): Array<{ value: SupplyFilter; label: string; count: number }> {
   const countOf = (predicate: (item: DemoPetSupply) => boolean) => supplies.filter(predicate).length
   const customLabels = Array.from(new Set(
     supplies
@@ -233,13 +240,12 @@ function buildSupplyCategories(supplies: readonly DemoPetSupply[], hidden: reado
       .map((item) => item.categoryLabel.trim() || '自定义'),
   )).sort((left, right) => left.localeCompare(right, 'zh-CN'))
   return [
-    ...SUPPLY_CATEGORIES
+    { value: 'all' as SupplyFilter, label: '全部', count: supplies.length },
+    ...options
       .filter((item) => item.value !== 'custom' && !hidden.includes(item.value))
       .map((item) => ({
         ...item,
-        count: item.value === 'all'
-          ? supplies.length
-          : countOf((supply) => supply.category === item.value),
+        count: countOf((supply) => supply.category === item.value),
       }))
       .filter((item) => item.count > 0),
     ...customLabels.map((label) => ({
@@ -251,17 +257,6 @@ function buildSupplyCategories(supplies: readonly DemoPetSupply[], hidden: reado
   ]
 }
 
-const SUPPLY_EDITOR_CATEGORIES: Array<{
-  value: PetSupplyCategory
-  label: string
-}> = [
-  { value: 'kibble', label: '主粮' },
-  { value: 'can', label: '罐头' },
-  { value: 'freeze-dried', label: '冻干' },
-  { value: 'soup', label: '汤包' },
-  { value: 'litter', label: '猫砂' },
-  { value: 'custom', label: '自定义' },
-]
 
 interface BackgroundHistoryOption {
   mediaId: string
@@ -343,6 +338,17 @@ const DAILY_EDITOR_CONFIGS: Record<PetDailyLogType, DailyEditorConfig> = {
     choices: [
       { value: '整盆更换', label: '整盆更换' },
       { value: '局部清理', label: '局部清理' },
+    ],
+  },
+  walk: {
+    choiceLabel: '遛了多久',
+    detailLabel: '路线或备注',
+    detailPlaceholder: '例如 小区两圈 / 30 分钟',
+    choices: [
+      { value: '15 分钟', label: '15 分钟' },
+      { value: '30 分钟', label: '30 分钟' },
+      { value: '1 小时', label: '1 小时' },
+      { value: '更久', label: '更久' },
     ],
   },
   'water-change': {
@@ -474,6 +480,7 @@ Page({
     },
     supplyPreferenceOptions: SUPPLY_PREFERENCE_OPTIONS,
     supplyEditorCategories: SUPPLY_EDITOR_CATEGORIES,
+    careTypeOptions: PET_CARE_TYPES.map((type) => ({ value: type, label: PET_EVENT_LABELS[type] })),
     supplyDraft: {
       category: 'kibble' as PetSupplyCategory,
       categoryLabel: '',
@@ -557,7 +564,10 @@ Page({
     dailyHistory: [] as DailyTimelineView[],
     dailyHistoryVisible: [] as DailyTimelineView[],
     dailyHistoryExpanded: false,
-    supplyCategories: SUPPLY_CATEGORIES.map((item) => ({ ...item, count: 0 })),
+    supplyCategories: [
+      { value: 'all' as SupplyFilter, label: '全部', count: 0 },
+      ...buildSupplyCategoryOptions(getPetSpeciesProfile('cat')).map((item) => ({ ...item, count: 0 })),
+    ],
     supplyTagManagerOpen: false,
     supplyTags: [] as SupplyTagView[],
     selectedSupplyTagKey: '',
@@ -881,6 +891,7 @@ Page({
 
   loadState(state: DemoPetState) {
     const today = getShanghaiDateOnly(Date.now())
+    const speciesProfile = getPetSpeciesProfile(state.profile.species)
     const growthTimeline: GrowthTimelineView[] = buildPetGrowthTimeline(state).map((item) => {
       const [, month = '', day = ''] = item.occurredOn.split('-')
       return {
@@ -914,7 +925,7 @@ Page({
       weightDelta === null
         ? '还没有上一次记录'
         : formatWeightDelta(weightDelta, this.data.weightUnit)
-    const dailySummary = buildPetDailySummary(state.dailyLogs, today).map((item) => ({
+    const dailySummary = buildPetDailySummary(state.dailyLogs, today, speciesProfile.dailyTypes).map((item) => ({
       ...item,
       iconName: PET_DAILY_ICON_NAMES[item.type],
     }))
@@ -923,7 +934,7 @@ Page({
       iconName: PET_DAILY_ICON_NAMES[item.type],
       metaLabel: item.elapsedLabel === '刚刚' ? '刚刚' : `${item.elapsedLabel}前`,
     }))
-    const careCards: CareCardView[] = buildPetCareCards(state.events, today).map((item) => ({
+    const careCards: CareCardView[] = buildPetCareCards(state.events, today, speciesProfile.careTypes).map((item) => ({
       ...item,
       iconName: PET_EVENT_ICON_NAMES[item.type],
       lastOnLabel: item.lastOn ? item.lastOn.replace(/-/g, '.') : '',
@@ -980,7 +991,11 @@ Page({
       }))
 
     const hiddenSupplyTags = readHiddenSupplyTags()
-    const supplyCategories = buildSupplyCategories(state.supplies, hiddenSupplyTags)
+    const supplyCategories = buildSupplyCategories(
+      state.supplies,
+      hiddenSupplyTags,
+      buildSupplyCategoryOptions(speciesProfile),
+    )
     const selectedSupplyCategory = supplyCategories.some(
       (item) => item.value === this.data.selectedSupplyCategory,
     ) ? this.data.selectedSupplyCategory : 'all'
@@ -1033,6 +1048,11 @@ Page({
         : dailyHistory.slice(0, 5),
       currentSupplies,
       supplyCategories,
+      supplyEditorCategories: buildSupplyCategoryOptions(speciesProfile),
+      careTypeOptions: speciesProfile.careTypes.map((type) => ({
+        value: type,
+        label: PET_EVENT_LABELS[type],
+      })),
       selectedSupplyCategory,
       supplies: filterPetSupplies(state.supplies, selectedSupplyCategory).map((item) => ({
         ...item,
@@ -1907,9 +1927,9 @@ Page({
   onAddCareEvent() {
     if (!requireAuthForWrite()) return
     wx.showActionSheet({
-      itemList: PET_CARE_TYPES.map((type) => PET_EVENT_LABELS[type]),
+      itemList: this.data.careTypeOptions.map((option) => option.label),
       success: (result) => {
-        const type = PET_CARE_TYPES[result.tapIndex]
+        const type = this.data.careTypeOptions[result.tapIndex]?.value
         if (type) {
           wx.navigateTo({
             url: `/pages/pet-event-form/index?type=${type}&date=${getShanghaiDateOnly(Date.now())}`,
