@@ -6,6 +6,7 @@ import {
   type AppTabId,
   type AppTabItem,
 } from '../../services/app-tab-config'
+import { getFeatureDefinition } from '../../domain/feature-catalog'
 
 const appTabSubscriptions = new WeakMap<object, () => void>()
 
@@ -81,6 +82,13 @@ Component({
       const item = data.items.find((candidate) => candidate.id === id)
       if (!item) return
       if (data.pendingId) return
+
+      // 未上线功能只做提示，避免把用户带进半成品页面。
+      const feature = getFeatureDefinition(id ?? '')
+      if (feature?.comingSoon) {
+        wx.showToast({ title: `${feature.label}还在路上，敬请期待`, icon: 'none' })
+        return
+      }
 
       if (id === data.activeId) {
         wx.pageScrollTo({ scrollTop: 0, duration: 0 })

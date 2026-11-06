@@ -46,7 +46,8 @@
         <view class="feature-tile__body">
           <view class="feature-tile__title-line">
             <text class="feature-tile__title">{{feature.label}}</text>
-            <text wx:if="{{feature.placementLabel}}" class="feature-tile__placement">{{feature.placementLabel}}</text>
+            <text wx:if="{{feature.comingSoon}}" class="feature-tile__soon">敬请期待</text>
+            <text wx:elif="{{feature.placementLabel}}" class="feature-tile__placement">{{feature.placementLabel}}</text>
           </view>
           <text class="feature-tile__description">{{feature.description}}</text>
         </view>

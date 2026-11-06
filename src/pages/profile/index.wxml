@@ -124,6 +124,7 @@
         </view>
         <text class="profile-plan-card__title">{{item.title}}</text>
         <text class="profile-plan-card__meta">{{item.subtitle}}</text>
+        <text wx:if="{{item.comingSoon}}" class="profile-plan-card__soon">敬请期待</text>
       </view>
     </view>
   </view>

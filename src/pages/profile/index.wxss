@@ -572,3 +572,18 @@
     transition: none;
   }
 }
+
+/* 未上线功能：角标提示 */
+.profile-plan-card__soon {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 999rpx;
+  background: rgba(184, 103, 87, 0.12);
+  color: #a8635a;
+  align-self: flex-start;
+  font-size: 17rpx;
+  font-weight: 600;
+  line-height: 1.5;
+}

@@ -228,3 +228,15 @@
     transition: none;
   }
 }
+
+/* 未上线功能：角标提示 */
+.feature-tile__soon {
+  padding: 2rpx 8rpx;
+  border-radius: 999rpx;
+  background: rgba(184, 103, 87, 0.12);
+  color: #a8635a;
+  flex: 0 0 auto;
+  font-size: 15rpx;
+  font-weight: 660;
+  line-height: 1.4;
+}

@@ -40,22 +40,6 @@
     </view>
   </view>
 
-  <view class="function-glass">
-    <view
-      wx:for="{{homeShortcuts}}"
-      wx:key="id"
-      class="function-item"
-      hover-class="function-item--pressed"
-      data-id="{{item.id}}"
-      bindtap="onOpenHomeShortcut"
-    >
-      <view class="function-icon function-icon--{{item.tone}}">
-        <line-icon name="{{item.icon}}" size="52" tone="{{item.tone}}" active="{{true}}" />
-      </view>
-      <text class="function-item__label">{{item.shortLabel}}</text>
-    </view>
-  </view>
-
   <view class="home-block">
     <view class="home-block__head">
       <text class="home-block__title">今天</text>

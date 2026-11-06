@@ -38,6 +38,7 @@ interface ProfileFeatureCard {
   icon: string
   tone: string
   cardTone: ProfileCardTone
+  comingSoon: boolean
 }
 
 interface ProfileSnapshot {
@@ -90,6 +91,7 @@ function buildFeatureCard(
     icon: feature?.icon ?? 'list-todo',
     tone: feature?.tone ?? 'green',
     cardTone,
+    comingSoon: feature?.comingSoon === true,
   }
 }
 
@@ -553,6 +555,10 @@ Page({
   }) {
     const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
     if (!feature) return
+    if (feature.comingSoon) {
+      wx.showToast({ title: `${feature.label}还在路上，敬请期待`, icon: 'none' })
+      return
+    }
     if (feature.launchMode === 'root') {
       pushAppPage(feature.path)
       return

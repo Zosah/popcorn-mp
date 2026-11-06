@@ -1,9 +1,5 @@
 import { appConfig } from '../../config/env'
 import {
-  getFeatureDefinition,
-  type FeatureDefinition,
-} from '../../domain/feature-catalog'
-import {
   buildHomeSnapshotFromSummary,
   type HomeSnapshot,
 } from '../../domain/home'
@@ -45,11 +41,6 @@ import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 import { getActiveSpaceCreatedAt, getTogetherDays } from '../../utils/space-days'
-import {
-  buildFeatureSettingsOwnerId,
-  getFeatureSettingsConfig,
-  subscribeFeatureSettings,
-} from '../../services/feature-settings-config'
 
 interface HomeMemberView {
   userId: string
@@ -71,10 +62,6 @@ interface HomeSpaceOption {
   isActive: boolean
 }
 
-type HomeFeatureShortcut = Pick<
-  FeatureDefinition,
-  'id' | 'shortLabel' | 'icon' | 'tone' | 'path' | 'query' | 'launchMode'
->
 
 const EMPTY_SNAPSHOT: HomeSnapshot = {
   today: '',
@@ -89,27 +76,6 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
 
 const homeRequestGate = createRequestGate()
 const HOME_PAGE_CACHE_KEY = 'home:overview:v2'
-let unsubscribeHomeFeatureSettings: (() => void) | undefined
-
-function buildHomeFeatureShortcuts(): HomeFeatureShortcut[] {
-  const auth = getAuthState()
-  const ownerId = auth.isLoggedIn
-    ? buildFeatureSettingsOwnerId(auth.user?.id ?? '', auth.activeSpaceId)
-    : 'guest'
-  return getFeatureSettingsConfig(ownerId).homeSlots.flatMap((id) => {
-    const feature = getFeatureDefinition(id)
-    if (!feature) return []
-    return [{
-      id: feature.id,
-      shortLabel: feature.shortLabel,
-      icon: feature.icon,
-      tone: feature.tone,
-      path: feature.path,
-      query: feature.query,
-      launchMode: feature.launchMode,
-    }]
-  })
-}
 
 function buildHomeSpaceOptions(auth: AuthState): HomeSpaceOption[] {
   if (auth.spaces.length) {
@@ -156,7 +122,6 @@ Page({
     cacheFresh: false,
     hasShown: false,
     snapshot: EMPTY_SNAPSHOT,
-    homeShortcuts: buildHomeFeatureShortcuts(),
     inventoryError: '',
     latestEntry: null as JournalItem | null,
     latestEntryIsToday: false,
@@ -212,12 +177,6 @@ Page({
       })
     }
     this.measureNavBar()
-    this.refreshHomeShortcuts()
-    unsubscribeHomeFeatureSettings?.()
-    unsubscribeHomeFeatureSettings = subscribeFeatureSettings(() => {
-      this.refreshHomeShortcuts()
-      this.writePageCache()
-    })
   },
 
   /**
@@ -256,7 +215,6 @@ Page({
   },
 
   onShow() {
-    this.refreshHomeShortcuts()
     promptAuthGateIfNeeded()
     const firstShow = !this.data.hasShown
     if (firstShow) this.setData({ hasShown: true })
@@ -269,12 +227,6 @@ Page({
   },
 
   onUnload() {
-    unsubscribeHomeFeatureSettings?.()
-    unsubscribeHomeFeatureSettings = undefined
-  },
-
-  refreshHomeShortcuts() {
-    this.setData({ homeShortcuts: buildHomeFeatureShortcuts() })
   },
 
   async loadSnapshot(fromPullDown = false) {
@@ -287,7 +239,6 @@ Page({
 
     const auth = await hydrateAuthState()
     // 会话恢复后 activeSpaceId 可能变化，快捷入口必须按最新空间重新取配置。
-    this.refreshHomeShortcuts()
     if (!homeRequestGate.isCurrent(sequence)) {
       if (fromPullDown) wx.stopPullDownRefresh()
       return
@@ -492,8 +443,6 @@ Page({
       initialLoading: _initialLoading,
       cacheFresh: _cacheFresh,
       hasShown: _hasShown,
-      // 快捷入口始终从功能配置推导，不进入页面内容缓存，避免配置与缓存双写。
-      homeShortcuts: _homeShortcuts,
       ...snapshot
     } = data
     writePageCache(HOME_PAGE_CACHE_KEY, snapshot)
@@ -632,7 +581,6 @@ Page({
       switchingSpaceId: '',
       spaceName: nextSpace?.name || target.name,
     })
-    this.refreshHomeShortcuts()
     wx.showToast({ title: `已切换到${nextSpace?.name || target.name}`, icon: 'success' })
     void this.loadSnapshot()
   },
@@ -649,18 +597,6 @@ Page({
     }
     const targetSection = section === 'daily' ? 'daily' : 'profile'
     pushAppPage(`/pages/pets/index?section=${targetSection}`)
-  },
-
-  onOpenHomeShortcut(event: {
-    currentTarget: { dataset: { id?: string } }
-  }) {
-    const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
-    if (!feature) return
-    if (feature.launchMode === 'root') {
-      pushAppPage(feature.path)
-      return
-    }
-    wx.navigateTo({ url: feature.path })
   },
 
   onOpenPets() {

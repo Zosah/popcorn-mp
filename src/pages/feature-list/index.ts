@@ -43,6 +43,7 @@ function buildGroups(): FeatureCategoryView[] {
       const onTab = settings?.tabSlots.includes(feature.id) ?? false
       return {
         ...feature,
+        comingSoon: feature.comingSoon === true,
         placementLabel: onHome && onTab
           ? '首页 · 底栏'
           : onHome
@@ -89,6 +90,10 @@ Page({
   }) {
     const feature = getFeatureDefinition(event.currentTarget.dataset.id ?? '')
     if (!feature) return
+    if (feature.comingSoon) {
+      wx.showToast({ title: `${feature.label}还在路上，敬请期待`, icon: 'none' })
+      return
+    }
     if (feature.launchMode === 'root') {
       pushAppPage(feature.path)
       return

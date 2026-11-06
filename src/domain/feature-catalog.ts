@@ -49,6 +49,8 @@ export interface FeatureDefinition {
   tabEligible: boolean
   /** 打开方式：根页面使用 reLaunch。 */
   launchMode: 'root'
+  /** 功能尚未上线，入口只提示「敬请期待」。 */
+  comingSoon?: boolean
 }
 
 export interface FeatureCategoryGroup {
@@ -108,6 +110,7 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   },
   {
     id: 'expense',
+    comingSoon: true,
     label: '账单',
     shortLabel: '账单',
     description: '花了多少，买了什么',
@@ -157,6 +160,7 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   },
   {
     id: 'fitness',
+    comingSoon: true,
     label: '健身',
     shortLabel: '健身',
     description: '运动、时长和热量记录',
