@@ -75,8 +75,8 @@
 
     <view class="home-list">
       <view class="home-row" hover-class="home-row--pressed" data-target="inventory" bindtap="onOpenNearby">
-        <view class="home-row__icon home-row__icon--inventory">
-          <line-icon name="inventory-category-other" size="34" tone="gold" />
+        <view class="home-row__icon">
+          <image class="home-row__art" src="/images/home/inventory.png" mode="aspectFill" />
         </view>
         <view class="home-row__body">
           <text class="home-row__title">家庭库存</text>
@@ -87,20 +87,20 @@
       </view>
 
       <view class="home-row" hover-class="home-row--pressed" data-target="pets" bindtap="onOpenNearby">
-        <view class="home-row__icon home-row__icon--pet">
-          <line-icon name="pet-tab-profile" size="34" tone="green" />
+        <view class="home-row__icon">
+          <image class="home-row__art" src="/images/home/pet.png" mode="aspectFill" />
         </view>
         <view class="home-row__body">
           <text class="home-row__title">{{petSnapshot.name}} 的照护</text>
-          <text class="home-row__copy">{{petSnapshot.careNotice}}</text>
+          <text class="home-row__copy">{{petActivities.length ? petActivities[0].title : petSnapshot.careNotice}}</text>
         </view>
-        <text class="home-row__value">{{petSnapshot.weight}} kg</text>
+        <text class="home-row__value">{{petActivities.length ? petActivities[0].dateLabel : ''}}</text>
         <view class="home-row__chevron"></view>
       </view>
 
       <view class="home-row" hover-class="home-row--pressed" data-target="menu" bindtap="onOpenNearby">
-        <view class="home-row__icon home-row__icon--menu">
-          <line-icon name="system-clock" size="34" tone="accent" />
+        <view class="home-row__icon">
+          <image class="home-row__art" src="/images/home/kitchen.png" mode="aspectFill" />
         </view>
         <view class="home-row__body">
           <text class="home-row__title">今晚吃什么</text>
