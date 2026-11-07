@@ -20,6 +20,7 @@
     "pages/feature-list/index",
     "pages/feature-settings/index",
     "pages/settings/index",
+    "pages/privacy/index",
     "pages/auth/index",
     "pages/travel/index",
     "pages/travel-form/index",
@@ -38,5 +39,6 @@
     "backgroundColor": "#f1e7da",
     "backgroundTextStyle": "dark"
   },
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "__usePrivacyCheck__": true
 }

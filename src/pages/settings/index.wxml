@@ -37,6 +37,17 @@
       <text class="settings-row__arrow">›</text>
     </view>
 
+    <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenPrivacy">
+      <view class="settings-row__icon settings-row__icon--blue">
+        <line-icon name="system-lock" size="30" tone="blue" />
+      </view>
+      <view class="settings-row__body">
+        <text class="settings-row__title">隐私与数据</text>
+        <text class="settings-row__description">我们收集什么、存在哪、怎么删</text>
+      </view>
+      <text class="settings-row__arrow">›</text>
+    </view>
+
     <view class="settings-row" hover-class="settings-row--pressed" bindtap="onOpenFeatureSettings">
       <view class="settings-row__icon settings-row__icon--gold">
         <line-icon name="todo-status-pending" size="30" tone="gold" />
