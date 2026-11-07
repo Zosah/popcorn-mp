@@ -16,9 +16,9 @@
     <view class="auth-gate__content">
       <text class="auth-gate__title">{{force ? '登录后继续' : '登录后，一起记录'}}</text>
       <text class="auth-gate__copy">{{force ? '这一步需要登录后才能保存。' : '先看看也可以，想保存时再登录。'}}</text>
-      <view class="auth-gate__privacy">
+      <view class="auth-gate__privacy" catchtap="openPrivacy">
         <line-icon name="system-lock" size="26" tone="muted" />
-        <text>登录后即可保存并共享记录</text>
+        <text>登录即表示同意《隐私与数据说明》</text>
       </view>
     </view>
 

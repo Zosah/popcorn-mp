@@ -16,7 +16,7 @@
 
   <view class="privacy-card privacy-card--contact">
     <text class="privacy-card__title">联系我们</text>
-    <text class="privacy-card__text">对隐私有任何疑问，或需要删除账号数据，请发邮件到 privacy@simiway.cc，标题注明「时刻见 数据申请」。</text>
+    <text class="privacy-card__text">对隐私有任何疑问，或需要删除账号数据，请发邮件到 zosah1921@gmail.com，标题注明「时刻见 数据申请」。</text>
   </view>
 
   <text class="privacy-footer">时刻见 · 家庭共同生活记录</text>

@@ -44,6 +44,7 @@
           <line-icon wx:if="{{!loginSubmitting}}" class="auth-arrow-forward" name="system-back" size="24" tone="white" />
         </button>
         <text class="auth-primary-note">登录后设置头像和名字，让空间成员认出你</text>
+        <view class="auth-privacy-link" bindtap="onOpenPrivacy">《隐私与数据说明》</view>
         <view class="auth-secondary" bindtap="onBack">{{returnToInvite ? '返回邀请' : '稍后再说'}}</view>
       </view>
 

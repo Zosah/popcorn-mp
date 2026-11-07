@@ -54,7 +54,7 @@
       </view>
       <view class="settings-row__body">
         <text class="settings-row__title">功能配置</text>
-        <text class="settings-row__description">首页快捷与底部导航</text>
+        <text class="settings-row__description">底部导航三个入口</text>
       </view>
       <text class="settings-row__arrow">›</text>
     </view>

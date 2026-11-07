@@ -35,6 +35,7 @@
 
         <view class="pet-portrait" bindtap="onOpenAvatarPreview">
           <image wx:if="{{profile.avatarUrl}}" class="pet-portrait__image" src="{{profile.avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+          <image wx:elif="{{profile.species === 'dog'}}" class="pet-portrait__image" src="/images/pets/dog-default.png" mode="aspectFill" />
           <block wx:elif="{{profile.species === 'cat'}}">
             <view class="pet-cat__ear pet-cat__ear--left"></view>
             <view class="pet-cat__ear pet-cat__ear--right"></view>
@@ -380,6 +381,7 @@
       <view class="avatar-preview" catchtap="noop">
         <view class="avatar-preview__visual">
           <image wx:if="{{avatarPreviewUrl || profile.avatarUrl}}" src="{{avatarPreviewUrl || profile.avatarUrl}}" mode="aspectFill" />
+          <image wx:elif="{{profile.species === 'dog'}}" src="/images/pets/dog-default.png" mode="aspectFill" />
           <block wx:elif="{{profile.species === 'cat'}}"><view class="avatar-preview__initial">猫</view></block>
           <view wx:else class="avatar-preview__initial">{{profileInitial}}</view>
         </view>

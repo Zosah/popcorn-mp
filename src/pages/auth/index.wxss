@@ -739,3 +739,11 @@
 }
 
 .auth-arrow-forward { transform: rotate(180deg); }
+
+.auth-privacy-link {
+  margin-top: 14rpx;
+  color: #a8665a;
+  font-size: 23rpx;
+  text-align: center;
+  text-decoration: underline;
+}
