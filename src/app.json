@@ -20,7 +20,6 @@
     "pages/feature-list/index",
     "pages/feature-settings/index",
     "pages/settings/index",
-    "pages/privacy/index",
     "pages/auth/index",
     "pages/travel/index",
     "pages/travel-form/index",

@@ -39,10 +39,6 @@ Page({
     wx.navigateTo({ url: '/pages/space/index' })
   },
 
-  onOpenPrivacy() {
-    wx.navigateTo({ url: '/pages/privacy/index' })
-  },
-
   onOpenFeatureSettings() {
     if (!this.ensureLoggedIn()) return
     wx.navigateTo({ url: '/pages/feature-settings/index' })

@@ -400,10 +400,6 @@ Page<AuthPageData, WechatMiniprogram.Page.CustomOption>({
     wx.navigateTo({ url: '/pages/space/index' })
   },
 
-  onOpenPrivacy() {
-    wx.navigateTo({ url: '/pages/privacy/index' })
-  },
-
   onLogout() {
     wx.showModal({
       title: '退出登录？',
