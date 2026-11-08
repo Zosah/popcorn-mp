@@ -100,13 +100,24 @@ export async function chooseEditableImages(options: {
   const files = await chooseImageFiles(options.count, options.sourceType)
   const prepared: ChosenImageFile[] = []
   for (const file of files) {
+    let tempFilePath = file.tempFilePath
+    // 微信图片编辑器只是加分项：打不开、机型不支持、路径失效时都退回原图，
+    // 不能因为「编辑」这一步失败就丢掉用户刚选的照片。
     try {
-      let tempFilePath = await editLocalImage(file.tempFilePath)
-      if (options.cropSquare) tempFilePath = await cropSquareImage(tempFilePath)
-      prepared.push({ ...file, tempFilePath })
-    } catch (error) {
-      if (!isImageEditCancelled(error)) throw error
+      tempFilePath = await editLocalImage(file.tempFilePath)
+    } catch {
+      tempFilePath = file.tempFilePath
     }
+    if (options.cropSquare) {
+      try {
+        tempFilePath = await cropSquareImage(tempFilePath)
+      } catch (error) {
+        // 裁剪被取消或不可用时，保留上一步的结果，继续走上传。
+        if (isImageEditCancelled(error)) continue
+        tempFilePath = file.tempFilePath
+      }
+    }
+    prepared.push({ ...file, tempFilePath })
   }
   return prepared
 }
