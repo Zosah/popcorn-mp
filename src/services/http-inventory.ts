@@ -220,11 +220,11 @@ function inventoryItemPath(spaceId: string, itemId: string): string {
 }
 
 function toInventoryItem(item: ApiInventoryItem): InventoryItem {
-  return { ...item }
+  return { ...item, iconKey: item.iconKey ?? '' }
 }
 
 function toApiInput(input: InventoryItemInput): ApiInventoryItemInput {
-  return { ...input }
+  return { ...input, iconKey: input.iconKey ?? '' }
 }
 
 function versionETag(version: number): string {

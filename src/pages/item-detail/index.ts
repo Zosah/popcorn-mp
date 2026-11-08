@@ -9,6 +9,7 @@ import {
 } from '../../domain/expiry'
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
+import { resolveInventoryIcon } from '../../services/inventory-icon'
 import { mediaGateway } from '../../services/media'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
@@ -29,6 +30,9 @@ const ACTION_LABELS = {
 
 interface ItemDetailView extends InventoryItem {
   iconName: string
+  iconUrl: string
+  fallbackText: string
+  fallbackColor: string
   categoryLabel: string
   locationLabel: string
   expiry: ReturnType<typeof resolveExpiry>
@@ -90,6 +94,7 @@ Page({
         item: {
           ...item,
           iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
+          ...resolveInventoryIcon({ name: item.name, category: item.category, iconKey: item.iconKey }),
           categoryLabel: getCategoryLabel(item.category),
           locationLabel: getLocationLabel(item.location),
           expiry: resolveExpiry(item.expiresOn, today),

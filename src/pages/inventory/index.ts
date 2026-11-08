@@ -23,12 +23,16 @@ import { getAuthState, hydrateAuthState } from '../../services/auth'
 import { promptAuthGateIfNeeded, requireAuthForWrite } from '../../services/auth-preview'
 import { readPageCache, writePageCache as persistPageCache } from '../../services/page-cache'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { resolveInventoryIcon } from '../../services/inventory-icon'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createDebouncer, createRequestGate } from '../../utils/request-control'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
 
 interface InventoryItemView extends InventoryItem {
+  iconUrl: string
+  fallbackText: string
+  fallbackColor: string
   iconName: string
   categoryLabel: string
   locationLabel: string
@@ -79,8 +83,16 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
     discarded: '已丢弃',
     archived: '已归档',
   }
+  const icon = resolveInventoryIcon({
+    name: item.name,
+    category: item.category,
+    iconKey: item.iconKey,
+  })
   return {
     ...item,
+    iconUrl: icon.iconUrl,
+    fallbackText: icon.fallbackText,
+    fallbackColor: icon.fallbackColor,
     iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
     categoryLabel: getCategoryLabel(item.category),
     locationLabel: getLocationLabel(item.location),

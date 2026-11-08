@@ -31,6 +31,7 @@ const input: InventoryItemInput = {
   expiresOn: '2026-09-05',
   note: '周末早餐',
   imageMediaId: '',
+  iconKey: '',
 }
 
 function createGateway(storage?: InventoryStorage) {

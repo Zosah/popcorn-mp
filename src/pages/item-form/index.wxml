@@ -23,6 +23,20 @@
         <input class="form-input form-input--lead" value="{{form.name}}" maxlength="40" placeholder="例如：鲜牛奶" bindinput="onNameInput" placeholder-class="app-input-placeholder" />
       </view>
 
+      <view class="form-icon-row">
+        <view class="form-icon-row__copy">
+          <text class="form-label">图标</text>
+          <text class="form-photo-row__hint">没拍照时用它，按名字自动匹配</text>
+        </view>
+        <view class="form-icon-row__preview" bindtap="onOpenIconPicker">
+          <image wx:if="{{iconPreviewUrl}}" class="form-icon-row__image" src="{{iconPreviewUrl}}" mode="aspectFit" />
+          <view wx:else class="form-icon-row__empty">{{iconPreviewText}}</view>
+        </view>
+        <view class="form-icon-row__action" bindtap="onOpenIconPicker">
+          {{form.iconKey ? '更换' : '选择'}}
+        </view>
+      </view>
+
       <view class="form-photo-row">
         <view class="form-photo-row__copy">
           <text class="form-label">物品图片</text>
@@ -123,6 +137,30 @@
           <text class="form-hint">可选</text>
         </view>
         <textarea class="form-textarea" value="{{form.note}}" maxlength="200" placeholder="写点容易忘记的信息" bindinput="onNoteInput" placeholder-class="app-input-placeholder" />
+      </view>
+    </view>
+
+    <view wx:if="{{iconPickerOpen}}" class="icon-sheet-mask" catchtap="onCloseIconPicker">
+      <view class="icon-sheet" catchtap="noop">
+        <view class="icon-sheet__head">
+          <text class="icon-sheet__title">选一个图标</text>
+          <view class="sheet-close-icon" bindtap="onCloseIconPicker" aria-label="关闭"><line-icon name="system-close" size="26" tone="muted" /></view>
+        </view>
+        <view class="icon-sheet__auto" bindtap="onClearIcon">
+          <text>不选，按名字自动匹配</text>
+          <text class="icon-sheet__auto-mark">{{form.iconKey ? '' : '✓'}}</text>
+        </view>
+        <scroll-view class="icon-sheet__scroll" scroll-y>
+          <view wx:for="{{iconGroups}}" wx:key="group" class="icon-sheet__group">
+            <text class="icon-sheet__group-title">{{item.group}}</text>
+            <view class="icon-sheet__grid">
+              <view wx:for="{{item.items}}" wx:for-item="icon" wx:key="key" class="icon-sheet__cell {{form.iconKey === icon.key ? 'icon-sheet__cell--active' : ''}}" data-key="{{icon.key}}" bindtap="onSelectIcon">
+                <image class="icon-sheet__image" src="{{icon.url}}" mode="aspectFit" />
+                <text class="icon-sheet__name">{{icon.name}}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
       </view>
     </view>
 

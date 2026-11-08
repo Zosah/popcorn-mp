@@ -44,6 +44,8 @@ export interface InventoryItem {
   expiresOn: string | null
   note: string
   imageMediaId: string
+  /** 用户选择的图标 key，空表示按名称自动匹配 */
+  iconKey?: string
   status: InventoryLifecycleStatus
   version: number
   deletedAt: string | null
@@ -62,6 +64,7 @@ export interface InventoryItemInput {
   expiresOn: string | null
   note: string
   imageMediaId: string
+  iconKey?: string
 }
 
 export interface ExpiryInfo {

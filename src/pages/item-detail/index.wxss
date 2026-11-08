@@ -322,3 +322,8 @@
   font-size: 25rpx;
   font-weight: 600;
 }
+
+.detail-hero__icon-image {
+  width: 96rpx;
+  height: 96rpx;
+}

@@ -26,6 +26,7 @@
       <view wx:if="{{item.imageSrc}}" class="detail-hero__icon detail-hero__icon--image" bindtap="onPreviewImage">
         <image class="detail-hero__image" src="{{item.imageSrc}}" mode="aspectFill" />
       </view>
+      <view wx:elif="{{item.iconUrl}}" class="detail-hero__icon"><image class="detail-hero__icon-image" src="{{item.iconUrl}}" mode="aspectFit" /></view>
       <view wx:else class="detail-hero__icon"><line-icon name="{{item.iconName}}" size="42" tone="orange" /></view>
       <view class="detail-hero__body">
         <view class="detail-hero__name">{{item.name}}</view>
