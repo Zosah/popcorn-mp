@@ -24,6 +24,11 @@ export function showMediaUploadError(error: unknown, fallback: string): void {
     return
   }
   const detail = message === fallback ? describeError(error) : ''
+  // 微信在《用户隐私保护指引》未生效时会拦下 chooseMedia/chooseImage。
+  if (/scope is not declared|privacy agreement/i.test(detail)) {
+    wx.showToast({ title: '隐私授权还没生效，晚点再试', icon: 'none' })
+    return
+  }
   const text = detail ? `${fallback}（${detail.slice(0, 40)}）` : message
   wx.showToast({ title: text.slice(0, 60), icon: 'none' })
 }
