@@ -39,6 +39,5 @@
     "backgroundColor": "#f1e7da",
     "backgroundTextStyle": "dark"
   },
-  "sitemapLocation": "sitemap.json",
-  "__usePrivacyCheck__": true
+  "sitemapLocation": "sitemap.json"
 }
