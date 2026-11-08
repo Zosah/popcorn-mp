@@ -28,7 +28,7 @@ describe('选图链路', () => {
 
     const files = await chooseEditableImages({ count: 1 })
     expect(files).toHaveLength(1)
-    expect(files[0].tempFilePath).toBe('wxfile://tmp/a.jpg')
+    expect(files[0]?.tempFilePath).toBe('wxfile://tmp/a.jpg')
   })
 
   it('用户在编辑器里取消时同样保留原图', async () => {
@@ -39,7 +39,7 @@ describe('选图链路', () => {
 
     const files = await chooseEditableImages({ count: 1 })
     expect(files).toHaveLength(1)
-    expect(files[0].tempFilePath).toBe('wxfile://tmp/a.jpg')
+    expect(files[0]?.tempFilePath).toBe('wxfile://tmp/a.jpg')
   })
 
   it('用户取消选图时返回空数组', async () => {
@@ -60,6 +60,6 @@ describe('选图链路', () => {
     })
 
     const files = await chooseEditableImages({ count: 1, cropSquare: true })
-    expect(files[0].tempFilePath).toBe('wxfile://tmp/a.jpg')
+    expect(files[0]?.tempFilePath).toBe('wxfile://tmp/a.jpg')
   })
 })
