@@ -37,6 +37,7 @@ const ICON_OVERRIDES: Array<{ pattern: RegExp; key: string }> = [
   { pattern: /毛巾|浴巾|洗脸巾|面巾/, key: 'bathtub' },
   { pattern: /抽纸|卷纸|纸巾|卫生纸/, key: 'page-facing-up' },
   { pattern: /牛奶|酸奶|豆浆/, key: 'glass-of-milk' },
+  { pattern: /驱虫|体外驱|体内驱|胶囊|维生素|创可贴|碘伏|药$|药\b/, key: 'pill' },
 ]
 
 export function matchInventoryIcon(name: string, category?: string): string {
