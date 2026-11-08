@@ -6,7 +6,7 @@ describe('库存图标匹配', () => {
   it('按关键词匹配生活用品', () => {
     expect(matchInventoryIcon('海飞丝洗发水')).toBe('lotion-bottle')
     expect(matchInventoryIcon('维达抽纸')).toBe('page-facing-up')
-    expect(matchInventoryIcon('蓝月亮洗衣液')).toBe('basket')
+    expect(matchInventoryIcon('蓝月亮洗衣液')).toBe('bucket')
   })
 
   it('长关键词优先，抽纸不会被纸抢先命中', () => {
@@ -18,10 +18,10 @@ describe('库存图标匹配', () => {
     expect(matchInventoryIcon('', 'medicine')).toBe('pill')
   })
 
-  it('用户选择优先于自动匹配', () => {
-    const picked = resolveInventoryIcon({ name: '洗发水', iconKey: 'soap' })
-    expect(picked.iconKey).toBe('soap')
-    expect(picked.iconUrl).toContain('/png128/soap.png')
+  it('只用名称识别，不再受历史手选影响', () => {
+    const display = resolveInventoryIcon({ name: '海飞丝洗发水' })
+    expect(display.iconKey).toBe('lotion-bottle')
+    expect(display.iconUrl).toContain('/png128/lotion-bottle.png')
   })
 
   it('未上传图片时也有兜底首字与色块', () => {

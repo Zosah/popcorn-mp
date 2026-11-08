@@ -94,7 +94,7 @@ Page({
         item: {
           ...item,
           iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
-          ...resolveInventoryIcon({ name: item.name, category: item.category, iconKey: item.iconKey }),
+          ...resolveInventoryIcon({ name: item.name, category: item.category }),
           categoryLabel: getCategoryLabel(item.category),
           locationLabel: getLocationLabel(item.location),
           expiry: resolveExpiry(item.expiresOn, today),

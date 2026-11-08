@@ -7,8 +7,6 @@ import {
   INVENTORY_LOCATION_ICON_NAMES,
 } from '../../constants/icon-names'
 import { formatChineseDate } from '../../domain/expiry'
-import { INVENTORY_ICONS } from '../../constants/inventory-icons'
-import { inventoryIconUrl, resolveInventoryIcon } from '../../services/inventory-icon'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { mediaGateway } from '../../services/media'
@@ -40,16 +38,6 @@ interface InventoryImage {
   thumbSrc: string
 }
 
-function buildIconGroups() {
-  const groups = new Map<string, Array<{ key: string; name: string; url: string }>>()
-  for (const icon of INVENTORY_ICONS) {
-    const group = icon.group || '其他'
-    if (!groups.has(group)) groups.set(group, [])
-    groups.get(group)!.push({ key: icon.key, name: icon.name, url: inventoryIconUrl(icon.key, 64) })
-  }
-  return Array.from(groups, ([group, items]) => ({ group, items }))
-}
-
 const DEFAULT_FORM: InventoryItemInput = {
   name: '',
   category: 'food',
@@ -74,10 +62,7 @@ Page({
     imageUploading: false,
     hasExpiry: false,
     expiryDisplay: '',
-    iconPickerOpen: false,
-    iconGroups: buildIconGroups(),
-    iconPreviewUrl: '',
-    iconPreviewText: '自动',
+
     categoryIndex: 0,
     locationIndex: 0,
     categoryOptions: CATEGORY_OPTIONS.map((item) => ({
@@ -177,7 +162,7 @@ Page({
         ),
       })
     } finally {
-      this.setData({ loading: false }, () => this.refreshIconPreview())
+      this.setData({ loading: false })
     }
   },
 
@@ -351,40 +336,6 @@ Page({
     this.setData({
       'form.expiresOn': event.detail.value,
       expiryDisplay: formatChineseDate(event.detail.value),
-    })
-  },
-
-  onOpenIconPicker() {
-    this.setData({ iconPickerOpen: true })
-  },
-
-  onCloseIconPicker() {
-    this.setData({ iconPickerOpen: false })
-  },
-
-  onSelectIcon(event: { currentTarget: { dataset: { key?: string } } }) {
-    const key = event.currentTarget.dataset.key ?? ''
-    this.setData({
-      'form.iconKey': key,
-      iconPickerOpen: false,
-    })
-    this.refreshIconPreview()
-  },
-
-  onClearIcon() {
-    this.setData({ 'form.iconKey': '', iconPickerOpen: false })
-    this.refreshIconPreview()
-  },
-
-  refreshIconPreview() {
-    const icon = resolveInventoryIcon({
-      name: this.data.form.name,
-      category: this.data.form.category,
-      iconKey: this.data.form.iconKey,
-    })
-    this.setData({
-      iconPreviewUrl: icon.iconUrl,
-      iconPreviewText: icon.fallbackText,
     })
   },
 

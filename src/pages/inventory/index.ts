@@ -83,11 +83,7 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
     discarded: '已丢弃',
     archived: '已归档',
   }
-  const icon = resolveInventoryIcon({
-    name: item.name,
-    category: item.category,
-    iconKey: item.iconKey,
-  })
+  const icon = resolveInventoryIcon({ name: item.name, category: item.category })
   return {
     ...item,
     iconUrl: icon.iconUrl,

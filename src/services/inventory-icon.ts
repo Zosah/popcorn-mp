@@ -24,11 +24,27 @@ export function isKnownInventoryIcon(key: string): boolean {
 /** 名称 → 图标 key：按关键词长度倒序，先长后短，避免「抽纸」被「纸」抢先命中。 */
 const KEYWORD_TABLE: Array<{ word: string; key: string }> = INVENTORY_ICON_RULES
   .flatMap((rule) => rule.words.map((word) => ({ word, key: rule.key })))
+  // 单字关键词太容易误命中（「洗面奶」被「奶」抓走），只保留两字以上。
+  .filter((entry) => entry.word.length > 1)
   .sort((left, right) => right.word.length - left.word.length)
+
+/** 常见商品的优先判定，压过规则表里的泛化词。 */
+const ICON_OVERRIDES: Array<{ pattern: RegExp; key: string }> = [
+  { pattern: /洗面奶|洁面|洗颜/, key: 'lotion-bottle' },
+  { pattern: /洗发|沐浴|护发|洗手液/, key: 'lotion-bottle' },
+  { pattern: /洗衣液|洗衣粉|柔顺剂|消毒液/, key: 'bucket' },
+  { pattern: /牙膏/, key: 'toothbrush' },
+  { pattern: /毛巾|浴巾|洗脸巾|面巾/, key: 'bathtub' },
+  { pattern: /抽纸|卷纸|纸巾|卫生纸/, key: 'page-facing-up' },
+  { pattern: /牛奶|酸奶|豆浆/, key: 'glass-of-milk' },
+]
 
 export function matchInventoryIcon(name: string, category?: string): string {
   const text = (name ?? '').trim().toLowerCase()
   if (!text) return categoryDefaultIcon(category)
+  for (const rule of ICON_OVERRIDES) {
+    if (rule.pattern.test(text)) return rule.key
+  }
   for (const entry of KEYWORD_TABLE) {
     if (text.includes(entry.word)) return entry.key
   }
@@ -60,12 +76,9 @@ export interface InventoryIconDisplay {
 export function resolveInventoryIcon(options: {
   name: string
   category?: string
-  iconKey?: string
 }): InventoryIconDisplay {
-  const explicit = (options.iconKey ?? '').trim()
-  const key = explicit && isKnownInventoryIcon(explicit)
-    ? explicit
-    : matchInventoryIcon(options.name, options.category)
+  // 只按名称/品类自动识别：用户手选容易挑错，也会让同类物品图标不一致。
+  const key = matchInventoryIcon(options.name, options.category)
   const initial = Array.from(options.name.trim())[0] ?? '物'
   const index = Math.abs(hashCode(options.name)) % INVENTORY_ICON_FALLBACK_COLORS.length
   return {
