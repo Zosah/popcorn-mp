@@ -117,7 +117,7 @@
 }
 
 .inv-view-tab--active {
-  color: var(--inv-ink);
+  color: #9a5f4b;
   font-weight: 700;
 }
 
@@ -128,7 +128,7 @@
   left: 0;
   height: 4rpx;
   border-radius: 4rpx;
-  background: var(--inv-deep);
+  background: linear-gradient(90deg, #d18f7d, #b96a5c);
   content: "";
 }
 
@@ -188,16 +188,16 @@
   padding: 0 22rpx;
   border: 1rpx solid var(--inv-line);
   border-radius: 999rpx;
-  background: #ffffff;
+  background: linear-gradient(180deg, #fdf9f3, #f7f0e7);
   color: var(--inv-ink-2);
   font-size: 25rpx;
   white-space: nowrap;
 }
 
 .inv-chip--active {
-  border-color: var(--inv-deep);
-  background: var(--inv-deep);
-  color: #fff;
+  border-color: #d8b3a3;
+  background: linear-gradient(135deg, #f8ece5, #f2e2d8);
+  color: #9a5f4b;
   font-weight: 600;
 }
 
@@ -346,8 +346,9 @@
 }
 
 .inv-chip--category.inv-chip--active {
-  background: var(--c-primary, #252b27);
-  color: #fff;
+  background: linear-gradient(135deg, #d18f7d, #b96a5c);
+  color: #fff8f4;
+  box-shadow: 0 8rpx 18rpx -12rpx rgba(185, 106, 92, 0.7);
 }
 
 /* 时间筛选：弱化成描边小 chips，不抢分类的位置 */

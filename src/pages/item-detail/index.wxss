@@ -362,7 +362,7 @@
   align-items: center;
   padding: 6rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, #f9eee4, #f1e7dc);
   gap: 4rpx;
 }
 
@@ -373,18 +373,16 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 3rpx 10rpx rgba(58, 51, 44, 0.1);
-  color: var(--c-text, #252b27);
+  background: linear-gradient(135deg, #fbf1e6, #f2e0cf);
+  color: #9a5f4b;
   font-size: 34rpx;
   font-weight: 700;
   line-height: 1;
 }
 
 .detail-quick__btn--plus {
-  background: var(--c-sage, #668478);
-  box-shadow: none;
-  color: #fff;
+  background: linear-gradient(135deg, #7d9a8d, #5c7a6f);
+  color: #fffbf6;
 }
 
 .detail-quick__btn--busy {
