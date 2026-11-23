@@ -64,11 +64,11 @@
 
   <scroll-view wx:if="{{viewMode === 'active'}}" class="inv-chips inv-chips--expiry" scroll-x enhanced show-scrollbar="{{false}}">
     <view class="inv-chips__row">
-      <view class="inv-chip {{selectedExpiry === 'all' ? 'inv-chip--active' : ''}}" data-value="all" bindtap="onSelectExpiry">不限时间<text wx:if="{{selectedCategory === 'all'}}" class="inv-chip__count"> {{summary.total}}</text></view>
-      <view class="inv-chip {{selectedExpiry === 'expired' ? 'inv-chip--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">已过期<text wx:if="{{selectedCategory === 'all'}}" class="inv-chip__count"> {{summary.expired}}</text></view>
-      <view class="inv-chip {{selectedExpiry === 'due' ? 'inv-chip--active' : ''}}" data-value="due" bindtap="onSelectExpiry">三天内<text wx:if="{{selectedCategory === 'all'}}" class="inv-chip__count"> {{summary.dueWithin3Days}}</text></view>
-      <view class="inv-chip {{selectedExpiry === 'soon' ? 'inv-chip--active' : ''}}" data-value="soon" bindtap="onSelectExpiry">七天内<text wx:if="{{selectedCategory === 'all'}}" class="inv-chip__count"> {{summary.soon}}</text></view>
-      <view class="inv-chip {{selectedExpiry === 'none' ? 'inv-chip--active' : ''}}" data-value="none" bindtap="onSelectExpiry">无有效期<text wx:if="{{selectedCategory === 'all'}}" class="inv-chip__count"> {{summary.none}}</text></view>
+      <view class="inv-chip {{selectedExpiry === 'all' ? 'inv-chip--active' : ''}}" data-value="all" bindtap="onSelectExpiry">不限时间<text class="inv-chip__count"> {{expiryCounts.all}}</text></view>
+      <view class="inv-chip {{selectedExpiry === 'expired' ? 'inv-chip--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">已过期<text class="inv-chip__count"> {{expiryCounts.expired}}</text></view>
+      <view class="inv-chip {{selectedExpiry === 'due' ? 'inv-chip--active' : ''}}" data-value="due" bindtap="onSelectExpiry">三天内<text class="inv-chip__count"> {{expiryCounts.due}}</text></view>
+      <view class="inv-chip {{selectedExpiry === 'soon' ? 'inv-chip--active' : ''}}" data-value="soon" bindtap="onSelectExpiry">七天内<text class="inv-chip__count"> {{expiryCounts.soon}}</text></view>
+      <view class="inv-chip {{selectedExpiry === 'none' ? 'inv-chip--active' : ''}}" data-value="none" bindtap="onSelectExpiry">无有效期<text class="inv-chip__count"> {{expiryCounts.none}}</text></view>
     </view>
   </scroll-view>
 

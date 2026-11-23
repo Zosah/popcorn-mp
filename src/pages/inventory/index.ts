@@ -145,6 +145,48 @@ async function resolveItemImages(views: InventoryItemView[]): Promise<InventoryI
   })
 }
 
+interface ExpiryCounts {
+  all: number
+  expired: number
+  due: number
+  soon: number
+  none: number
+}
+
+function buildExpiryCounts(views: InventoryItemView[]): ExpiryCounts {
+  const counts: ExpiryCounts = { all: views.length, expired: 0, due: 0, soon: 0, none: 0 }
+  for (const view of views) {
+    switch (view.expiry.status) {
+      case 'expired':
+        counts.expired += 1
+        break
+      case 'today':
+      case 'urgent':
+        counts.due += 1
+        break
+      case 'soon':
+        counts.soon += 1
+        break
+      case 'none':
+        counts.none += 1
+        break
+      default:
+        break
+    }
+  }
+  return counts
+}
+
+function filterByExpiry(
+  views: InventoryItemView[],
+  filter: DemoExpiryFilter,
+): InventoryItemView[] {
+  if (filter === 'all') return views
+  const statuses = toExpiryStatuses(filter)
+  if (!statuses) return views
+  return views.filter((view) => statuses.includes(view.expiry.status))
+}
+
 function buildCategoryTabs(views: InventoryItemView[]): Array<{ value: string; label: string; count: number }> {
   const counts = new Map<string, number>()
   for (const view of views) {
@@ -211,6 +253,9 @@ function buildSections(
 }
 
 Page({
+  /** 最近一次加载的视图（已按分类/搜索过滤），时间筛选在本地切，不再发请求 */
+  loadedViews: [] as InventoryItemView[],
+
 
   behaviors: [pullRefreshBehavior],
   data: {
@@ -227,6 +272,7 @@ Page({
     selectedExpiry: 'all' as DemoExpiryFilter,
     selectedCategory: 'all' as InventoryCategory | 'all',
     categoryTabs: [] as Array<{ value: string; label: string; count: number }>,
+    expiryCounts: { all: 0, expired: 0, due: 0, soon: 0, none: 0 },
     summary: EMPTY_SUMMARY,
     sections: [] as InventorySection[],
     hasResults: false,
@@ -238,6 +284,9 @@ Page({
   onLoad() {
     const cached = readPageCache<Record<string, unknown>>(INVENTORY_PAGE_CACHE_KEY)
     if (cached) {
+      const cachedSections = (cached.value as { sections?: InventorySection[] }).sections ?? []
+      this.loadedViews = cachedSections.flatMap((section) => section.items)
+
       this.setData({
         ...cached.value,
         loading: false,
@@ -312,10 +361,7 @@ Page({
         categories:
           this.data.selectedCategory === 'all' ? undefined : [this.data.selectedCategory],
         lifecycleStatuses: resolveInventoryLifecycleStatuses(this.data.viewMode),
-        expiryStatuses:
-          this.data.viewMode === 'active'
-            ? toExpiryStatuses(this.data.selectedExpiry)
-            : undefined,
+
       }
       const [summaryResult, listResult] = await Promise.allSettled([
         inventoryGateway.summary(today),
@@ -340,7 +386,12 @@ Page({
       const visibleItems = listResult.status === 'fulfilled' ? listResult.value : []
       const views = await resolveItemImages(visibleItems.map((item) => toView(item, today)))
       if (!inventoryRequestGate.isCurrent(sequence)) return
+      this.loadedViews = views
       const categoryTabs = buildCategoryTabs(views)
+      const expiryCounts = buildExpiryCounts(views)
+      const expiryFiltered = this.data.viewMode === 'active'
+        ? filterByExpiry(views, this.data.selectedExpiry)
+        : views
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0
@@ -355,8 +406,9 @@ Page({
           ? summaryResult.value
           : this.data.summary,
         categoryTabs,
+        expiryCounts,
         sections: hasListLoaded
-          ? buildSections(views, this.data.viewMode)
+          ? buildSections(expiryFiltered, this.data.viewMode)
           : this.data.sections,
         hasResults: hasListLoaded ? views.length > 0 : this.data.hasResults,
         errorMessage: errors[0] ?? '',
@@ -436,8 +488,16 @@ Page({
 
     const current = Number(target.quantity)
     const base = Number.isFinite(current) ? current : 0
-    const next = Math.max(0, Math.round((base + delta) * 100) / 100)
+    const next = Math.round((base + delta) * 100) / 100
     if (next === base) return
+
+    // 减到 0 是高风险动作：先问一句，避免误触把库存抹掉。
+    if (next <= 0) {
+      const confirmed = await this.confirmConsume(target)
+      if (!confirmed) return
+      await this.markConsumed(target)
+      return
+    }
 
     this.patchItemView(id, { quantity: String(next), adjusting: true })
     try {
@@ -475,6 +535,36 @@ Page({
     }
   },
 
+  confirmConsume(item: InventoryItemView): Promise<boolean> {
+    return new Promise((resolve) => {
+      wx.showModal({
+        title: `「${item.name}」用完了？`,
+        content: '数量会清零，并移到历史记录里。之后可以随时恢复。',
+        confirmText: '用完了',
+        cancelText: '再想想',
+        confirmColor: '#b96a5c',
+        cancelColor: '#837f76',
+        success: (result) => resolve(Boolean(result.confirm)),
+        fail: () => resolve(false),
+      })
+    })
+  },
+
+  async markConsumed(item: InventoryItemView) {
+    this.patchItemView(item.id, { adjusting: true })
+    try {
+      await inventoryGateway.changeStatus(item.id, 'consumed', item.version)
+      wx.showToast({ title: '已记作用完', icon: 'success' })
+      await this.refreshPage(true)
+    } catch (error) {
+      this.patchItemView(item.id, { adjusting: false })
+      wx.showToast({
+        title: getInventoryErrorMessage(error, '没有标记成功'),
+        icon: 'none',
+      })
+    }
+  },
+
   findItemView(id: string): InventoryItemView | null {
     for (const section of this.data.sections) {
       const found = section.items.find((item) => item.id === id)
@@ -496,12 +586,18 @@ Page({
   },
 
   onSelectExpiry(event: { currentTarget: { dataset: { value: DemoExpiryFilter } } }) {
-    inventorySearchDebouncer.cancel()
     const value = event.currentTarget.dataset.value
+    const next = this.data.selectedExpiry === value ? 'all' : value
+    const source = this.loadedViews.length
+      ? this.loadedViews
+      : this.data.sections.flatMap((section) => section.items)
+    const views = filterByExpiry(source, next)
+    const sections = buildSections(views, this.data.viewMode)
     this.setData({
-      selectedExpiry: this.data.selectedExpiry === value ? 'all' : value,
+      selectedExpiry: next,
+      sections,
+      hasResults: sections.some((section) => section.items.length > 0),
     })
-    void this.loadInventory()
   },
 
   onSwitchView(event: {
