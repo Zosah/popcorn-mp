@@ -358,8 +358,6 @@ Page({
       const today = getShanghaiDateOnly(Date.now())
       const filters: InventoryFilters = {
         query: this.data.query,
-        categories:
-          this.data.selectedCategory === 'all' ? undefined : [this.data.selectedCategory],
         lifecycleStatuses: resolveInventoryLifecycleStatuses(this.data.viewMode),
 
       }
@@ -388,10 +386,14 @@ Page({
       if (!inventoryRequestGate.isCurrent(sequence)) return
       this.loadedViews = views
       const categoryTabs = buildCategoryTabs(views)
-      const expiryCounts = buildExpiryCounts(views)
+      // 计数与列表都基于当前分类范围，分类/时间切换后口径一致
+      const categoryViews = this.data.selectedCategory === 'all'
+        ? views
+        : views.filter((view) => view.category === this.data.selectedCategory)
+      const expiryCounts = buildExpiryCounts(categoryViews)
       const expiryFiltered = this.data.viewMode === 'active'
-        ? filterByExpiry(views, this.data.selectedExpiry)
-        : views
+        ? filterByExpiry(categoryViews, this.data.selectedExpiry)
+        : categoryViews
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0
@@ -474,8 +476,26 @@ Page({
   onSelectCategory(event: { currentTarget: { dataset: { value?: string } } }) {
     const value = (event.currentTarget.dataset.value ?? 'all') as InventoryCategory | 'all'
     if (value === this.data.selectedCategory) return
-    this.setData({ selectedCategory: value }, () => {
-      void this.refreshPage(true)
+    this.applyLocalFilters({ category: value })
+  },
+
+  /** 分类与时间都在本地切：不重新请求，一次 setData 完成，列表不闪 */
+  applyLocalFilters(next: { category?: InventoryCategory | 'all'; expiry?: DemoExpiryFilter } = {}) {
+    const category = next.category ?? this.data.selectedCategory
+    const expiry = next.expiry ?? this.data.selectedExpiry
+    const categoryViews = category === 'all'
+      ? this.loadedViews
+      : this.loadedViews.filter((item) => item.category === category)
+    const sections = buildSections(
+      filterByExpiry(categoryViews, expiry),
+      this.data.viewMode,
+    )
+    this.setData({
+      selectedCategory: category,
+      selectedExpiry: expiry,
+      expiryCounts: buildExpiryCounts(categoryViews),
+      sections,
+      hasResults: sections.some((section) => section.items.length > 0),
     })
   },
 
@@ -588,16 +608,7 @@ Page({
   onSelectExpiry(event: { currentTarget: { dataset: { value: DemoExpiryFilter } } }) {
     const value = event.currentTarget.dataset.value
     const next = this.data.selectedExpiry === value ? 'all' : value
-    const source = this.loadedViews.length
-      ? this.loadedViews
-      : this.data.sections.flatMap((section) => section.items)
-    const views = filterByExpiry(source, next)
-    const sections = buildSections(views, this.data.viewMode)
-    this.setData({
-      selectedExpiry: next,
-      sections,
-      hasResults: sections.some((section) => section.items.length > 0),
-    })
+    this.applyLocalFilters({ expiry: next })
   },
 
   onSwitchView(event: {
