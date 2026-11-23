@@ -57,7 +57,9 @@ export interface InventoryItem {
 export interface InventoryEvent {
   id: string
   kind: 'created' | 'quantity' | 'updated' | 'status' | string
+  userName?: string
   summary: string
+  detail?: string
   quantityFrom: string
   quantityTo: string
   createdAt: string

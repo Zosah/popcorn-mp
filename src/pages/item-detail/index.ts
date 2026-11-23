@@ -70,19 +70,44 @@ const EVENT_TONES: Record<string, string> = {
   status: 'ink',
 }
 
-/** 操作流水按天分组没有必要，直接按时间倒序列出即可。 */
-function buildTimeline(events: InventoryEvent[], item: { createdAt: string; updatedAt: string }) {
+/** 操作流水按时间倒序；标题说「做了什么」，副行说「具体变了什么、谁动的」。 */
+function buildTimeline(
+  events: InventoryEvent[],
+  item: { createdAt: string; updatedAt: string; unit?: string; quantity?: string },
+) {
   if (events.length) {
-    return events.map((event) => ({
-      id: event.id,
-      icon: EVENT_ICONS[event.kind] ?? 'system-refresh',
-      tone: EVENT_TONES[event.kind] ?? 'muted',
-      label: formatShanghaiDateTime(event.createdAt),
-      summary: event.summary,
-      detail: event.kind === 'quantity'
-        ? `${event.quantityFrom || '0'} → ${event.quantityTo || '0'}`
-        : '',
-    }))
+    return events.map((event) => {
+      const who = event.userName || '有人'
+      const unit = item.unit ?? ''
+      if (event.kind === 'created') {
+        return {
+          id: event.id,
+          icon: EVENT_ICONS.created ?? 'system-add',
+          tone: EVENT_TONES.created ?? 'green',
+          label: formatShanghaiDateTime(event.createdAt),
+          summary: '创建了这件物品',
+          detail: `${who} 创建，库存 ${event.quantityTo || item.quantity || '0'} ${unit}`,
+        }
+      }
+      if (event.kind === 'quantity') {
+        return {
+          id: event.id,
+          icon: EVENT_ICONS.quantity ?? 'inventory-status-active',
+          tone: EVENT_TONES.quantity ?? 'orange',
+          label: formatShanghaiDateTime(event.createdAt),
+          summary: '更新了库存',
+          detail: `${who} 调整：${event.quantityFrom || '0'} → ${event.quantityTo || '0'} ${unit}`,
+        }
+      }
+      return {
+        id: event.id,
+        icon: EVENT_ICONS[event.kind] ?? 'system-refresh',
+        tone: EVENT_TONES[event.kind] ?? 'muted',
+        label: formatShanghaiDateTime(event.createdAt),
+        summary: event.summary,
+        detail: [who, event.detail].filter(Boolean).join(' · '),
+      }
+    })
   }
   // 老数据没有流水时，至少给出创建时间这一条快照
   return [{
@@ -90,8 +115,8 @@ function buildTimeline(events: InventoryEvent[], item: { createdAt: string; upda
     icon: 'system-add',
     tone: 'green',
     label: formatShanghaiDateTime(item.createdAt),
-    summary: '创建了这个物品',
-    detail: '',
+    summary: '创建了这件物品',
+    detail: `库存 ${item.quantity || '0'} ${item.unit ?? ''}`,
   }]
 }
 
@@ -205,6 +230,7 @@ Page({
         'item.quantity': updated.quantity,
         'item.version': updated.version,
       })
+      wx.showToast({ title: '库存已更新', icon: 'success', duration: 1200 })
     } catch (error) {
       this.setData({ adjusting: false, 'item.quantity': previous })
       wx.showToast({ title: '库存没有调整成功', icon: 'none' })

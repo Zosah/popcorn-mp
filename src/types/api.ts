@@ -159,7 +159,9 @@ export interface ApiInventoryItem {
   events?: Array<{
     id: string
     kind: string
+    userName?: string
     summary: string
+    detail?: string
     quantityFrom: string
     quantityTo: string
     createdAt: string
