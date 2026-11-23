@@ -24,6 +24,12 @@ import {
 import { promptAuthGateIfNeeded } from '../../services/auth-preview'
 import { inventoryGateway } from '../../services/inventory'
 import { menuGateway } from '../../services/menu'
+import { mealOrderGateway } from '../../services/meal-order'
+import { mediaGateway } from '../../services/media'
+import { resolveInventoryIcon } from '../../services/inventory-icon'
+import type { InventoryItem } from '../../domain/inventory'
+import type { MenuRecipe } from '../../services/menu-gateway'
+import { resolveExpiry } from '../../domain/expiry'
 import { getMenuErrorMessage } from '../../services/menu-gateway'
 import { petGateway } from '../../services/pet'
 import {
@@ -74,6 +80,98 @@ const EMPTY_SNAPSHOT: HomeSnapshot = {
   inventoryNotice: '',
   inventoryNoticeCount: 0,
   inventoryItemCount: 0,
+}
+
+
+export interface HomeFocusView {
+  /** 有照片用照片，没有就用彩色图标 */
+  src: string
+  mediaId: string
+  iconUrl: string
+  title: string
+  copy: string
+  tone: 'danger' | 'warn' | 'normal' | 'none'
+}
+
+/**
+ * 库存行的主角：先看「最快到期」的那件（过期优先），
+ * 没有临期物品时退回到「最近更新」的那件，让首页反映刚发生的变化。
+ */
+function buildInventoryFocus(items: InventoryItem[], today: string): HomeFocusView {
+  const empty: HomeFocusView = {
+    src: '',
+    mediaId: '',
+    iconUrl: '',
+    title: '',
+    copy: '家里的库存都还好。',
+    tone: 'none',
+  }
+  if (!items.length) return empty
+
+  const withExpiry = items
+    .map((item) => ({ item, expiry: resolveExpiry(item.expiresOn, today) }))
+    .filter((entry) => entry.expiry.daysRemaining !== null)
+    .sort((left, right) =>
+      (left.expiry.daysRemaining ?? 0) - (right.expiry.daysRemaining ?? 0),
+    )
+  const urgent = withExpiry.find((entry) => (entry.expiry.daysRemaining ?? 99) <= 3)
+  const focus = urgent?.item
+    ?? [...items].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+  if (!focus) return empty
+
+  const expiry = resolveExpiry(focus.expiresOn, today)
+  const icon = resolveInventoryIcon({ name: focus.name, category: focus.category })
+  const days = expiry.daysRemaining
+  const copy = days === null
+    ? `${focus.name} 刚更新`
+    : days < 0
+      ? `${focus.name} 已经过期 ${Math.abs(days)} 天`
+      : days === 0
+        ? `${focus.name} 今天到期`
+        : `${focus.name} ${days} 天后到期`
+  const tone: HomeFocusView['tone'] = days === null
+    ? 'normal'
+    : days < 0 ? 'danger' : days <= 3 ? 'warn' : 'normal'
+
+  return { src: '', mediaId: focus.imageMediaId ?? '', iconUrl: icon.iconUrl, title: focus.name, copy, tone }
+}
+
+/**
+ * 菜单行的主角：有备餐就先报备餐，没有就报最近更新过的菜谱
+ * （收录只是更新的一种，改菜谱也算）。
+ */
+function buildMenuFocus(
+  recipes: MenuRecipe[] | null,
+  orders: Array<{ status: string; items: Array<{ title?: string; recipeTitle?: string }> }>,
+): HomeFocusView {
+  const pendingOrder = orders.find((order) => order.status !== 'completed')
+  const orderTitle = pendingOrder?.items?.[0]?.recipeTitle || pendingOrder?.items?.[0]?.title
+  if (orderTitle) {
+    return {
+      src: '',
+      mediaId: '',
+      iconUrl: resolveInventoryIcon({ name: orderTitle }).iconUrl,
+      title: orderTitle,
+      copy: `备餐中：「${orderTitle}」`,
+      tone: 'warn',
+    }
+  }
+  const latest = (recipes ?? [])
+    .slice()
+    .sort((left, right) => (right.updatedAt ?? right.createdAt).localeCompare(left.updatedAt ?? left.createdAt))[0]
+  if (!latest) {
+    return { src: '', mediaId: '', iconUrl: '', title: '', copy: '还没有收藏菜单，先收一道常做的菜。', tone: 'none' }
+  }
+  const icon = resolveInventoryIcon({ name: latest.title })
+  const edited = Boolean(latest.updatedAt && latest.updatedAt !== latest.createdAt)
+  return {
+    src: latest.image?.src ?? '',
+    mediaId: '',
+    iconUrl: icon.iconUrl,
+    title: latest.title,
+    copy: `${edited ? '刚调整' : '最近收着'}「${latest.title}」，${latest.cookingMinutes} 分钟`,
+    tone: 'normal',
+  }
 }
 
 const homeRequestGate = createRequestGate()
@@ -138,6 +236,24 @@ Page({
     menuSummary: '还没有收藏菜单，先收一道常做的菜。',
     todoPendingCount: 0,
     todoSummary: '想到的事，用自己的标签收好',
+    inventoryFocus: {
+      src: '',
+      mediaId: '',
+      iconUrl: '',
+      title: '',
+      copy: '家里的库存都还好。',
+      tone: 'none',
+    },
+    menuFocus: {
+      src: '',
+      mediaId: '',
+      iconUrl: '',
+      title: '',
+      copy: '',
+      tone: 'none',
+    },
+    petAvatarUrl: '',
+    petArtUrl: '/images/home/pet.png',
     petActivities: [] as HomePetActivity[],
     petActivityCount: 0,
     hasLoadedInventory: false,
@@ -263,16 +379,20 @@ Page({
     }
     const [
       inventoryResult,
+      inventoryItemsResult,
       momentsResult,
       todoResult,
       menuResult,
+      menuOrdersResult,
       membersResult,
       petResult,
     ] = await Promise.allSettled([
       inventoryGateway.summary(today),
+      inventoryGateway.list({ lifecycleStatuses: ['active'] }, today),
       journalGateway.list({ kinds: ['moment'] }),
       todoGateway.summary(),
       menuGateway.list(),
+      mealOrderGateway.list(),
       auth.source === 'api' && auth.activeSpaceId
         ? listApiSpaceMembers(auth.activeSpaceId)
         : Promise.resolve(null),
@@ -334,7 +454,34 @@ Page({
         : '还没有宠物档案，先添加一位家庭成员'
     const pendingTodoCount = todoSummary?.pending ?? 0
     const pendingTravelCount = todoSummary?.pendingByKind.travel ?? 0
+    const inventoryItems = inventoryItemsResult.status === 'fulfilled'
+      ? inventoryItemsResult.value
+      : []
+    const inventoryFocus = buildInventoryFocus(inventoryItems, today)
     const menuRecipes = menuResult.status === 'fulfilled' ? menuResult.value : null
+    const menuOrders = menuOrdersResult.status === 'fulfilled'
+      ? (menuOrdersResult.value as Array<{ status: string; items: Array<{ title?: string; recipeTitle?: string; recipeId?: string }> }>)
+      : []
+    const menuFocus = buildMenuFocus(menuRecipes, menuOrders)
+    const petAvatarMediaId = petState?.profile.avatarMediaId ?? ''
+    const focusMediaIds = [inventoryFocus.mediaId, petAvatarMediaId].filter(Boolean)
+    let focusAssets: Record<string, { thumb: { url: string } }> = {}
+    if (focusMediaIds.length) {
+      try {
+        focusAssets = await mediaGateway.getMany(focusMediaIds) as unknown as Record<string, { thumb: { url: string } }>
+      } catch {
+        focusAssets = {}
+      }
+    }
+    const inventoryFocusSrc = inventoryFocus.mediaId
+      ? focusAssets[inventoryFocus.mediaId]?.thumb?.url ?? ''
+      : ''
+    const petAvatarUrl = petAvatarMediaId
+      ? focusAssets[petAvatarMediaId]?.thumb?.url ?? ''
+      : ''
+    const petArtUrl = petState?.profile.species === 'dog'
+      ? '/images/pets/dog-default.png'
+      : '/images/home/pet.png'
     const latestMenu = menuRecipes?.[0]
     const menuError = menuResult.status === 'rejected'
       ? getMenuErrorMessage(menuResult.reason, '菜单暂时没有同步过来')
@@ -401,11 +548,11 @@ Page({
       todoCompletedCount: todoSummary?.completed ?? this.data.todoCompletedCount,
       greetingName: auth.user?.nickname?.slice(0, 4) || '你',
       menuCount: menuRecipes?.length ?? this.data.menuCount,
-      menuSummary: menuRecipes
-        ? (latestMenu
-          ? `最近收着「${latestMenu.title}」，${latestMenu.cookingMinutes} 分钟`
-          : '还没有收藏菜单，先收一道常做的菜。')
-        : (this.data.hasLoadedMenu ? this.data.menuSummary : menuError),
+      menuFocus: { ...menuFocus, src: menuFocus.src || '' },
+      inventoryFocus: { ...inventoryFocus, src: inventoryFocusSrc },
+      petAvatarUrl,
+      petArtUrl,
+      menuSummary: menuFocus.copy || (this.data.hasLoadedMenu ? this.data.menuSummary : menuError),
       todoPendingCount: pendingTodoCount,
       todoSummary: todoSummary
         ? (pendingTodoCount

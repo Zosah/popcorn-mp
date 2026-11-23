@@ -651,3 +651,22 @@
     transform: rotate(360deg);
   }
 }
+
+/* 家里三行的图标：能显示具体物品时就显示它的照片或彩色图标 */
+.home-row__art--photo {
+  border-radius: 20rpx;
+}
+
+.home-row__art--glyph {
+  width: 74rpx;
+  height: 74rpx;
+}
+
+/* 副标题按紧迫程度着色，过期红、临期橙 */
+.home-row__copy--danger {
+  color: #c0564a;
+}
+
+.home-row__copy--warn {
+  color: #c98a3f;
+}

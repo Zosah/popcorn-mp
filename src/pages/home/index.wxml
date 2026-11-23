@@ -77,11 +77,13 @@
     <view class="home-list">
       <view class="home-row" hover-class="home-row--pressed" data-target="inventory" bindtap="onOpenNearby">
         <view class="home-row__icon">
-          <image class="home-row__art" src="/images/home/inventory.png" mode="aspectFill" />
+          <image wx:if="{{inventoryFocus.src}}" class="home-row__art home-row__art--photo" src="{{inventoryFocus.src}}" mode="aspectFill" />
+          <image wx:elif="{{inventoryFocus.iconUrl}}" class="home-row__art home-row__art--glyph" src="{{inventoryFocus.iconUrl}}" mode="aspectFit" />
+          <image wx:else class="home-row__art" src="/images/home/inventory.png" mode="aspectFill" />
         </view>
         <view class="home-row__body">
           <text class="home-row__title">家庭库存</text>
-          <text class="home-row__copy">{{snapshot.inventoryNotice}}</text>
+          <text class="home-row__copy home-row__copy--{{inventoryFocus.tone}}">{{inventoryFocus.copy}}</text>
         </view>
         <text class="home-row__value">{{snapshot.inventoryItemCount}} 件</text>
         <view class="home-row__chevron"></view>
@@ -89,7 +91,8 @@
 
       <view class="home-row" hover-class="home-row--pressed" data-target="pets" bindtap="onOpenNearby">
         <view class="home-row__icon">
-          <image class="home-row__art" src="/images/home/pet.png" mode="aspectFill" />
+          <image wx:if="{{petAvatarUrl}}" class="home-row__art home-row__art--photo" src="{{petAvatarUrl}}" mode="aspectFill" />
+          <image wx:else class="home-row__art" src="{{petArtUrl}}" mode="aspectFill" />
         </view>
         <view class="home-row__body">
           <text class="home-row__title">{{petSnapshot.name}} 的照护</text>
@@ -101,11 +104,13 @@
 
       <view class="home-row" hover-class="home-row--pressed" data-target="menu" bindtap="onOpenNearby">
         <view class="home-row__icon">
-          <image class="home-row__art" src="/images/home/kitchen.png" mode="aspectFill" />
+          <image wx:if="{{menuFocus.src}}" class="home-row__art home-row__art--photo" src="{{menuFocus.src}}" mode="aspectFill" />
+          <image wx:elif="{{menuFocus.iconUrl}}" class="home-row__art home-row__art--glyph" src="{{menuFocus.iconUrl}}" mode="aspectFit" />
+          <image wx:else class="home-row__art" src="/images/home/kitchen.png" mode="aspectFill" />
         </view>
         <view class="home-row__body">
           <text class="home-row__title">今晚吃什么</text>
-          <text class="home-row__copy">{{menuSummary}}</text>
+          <text class="home-row__copy home-row__copy--{{menuFocus.tone}}">{{menuFocus.copy || menuSummary}}</text>
         </view>
         <text class="home-row__value">{{menuCount}} 道</text>
         <view class="home-row__chevron"></view>
