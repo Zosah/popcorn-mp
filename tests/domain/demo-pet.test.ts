@@ -101,6 +101,7 @@ describe('首页宠物动态', () => {
   it('体重在 3 天内发生变化时才出现', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const latest = state.weights[state.weights.length - 1]
+    if (!latest) throw new Error('用例缺少体重数据')
     const activities = buildPetHomeActivities(state, latest.recordedOn, 3)
     const weight = activities.find((item) => item.typeLabel === '体重')
     expect(weight).toBeDefined()
