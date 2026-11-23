@@ -84,17 +84,35 @@ describe('成长记录', () => {
 })
 
 describe('首页宠物动态', () => {
-  it('把今日照护、最近体重和照护事件整理成倒序动态', () => {
+  it('把今日照护和照护事件整理成倒序动态', () => {
     const state = createDemoPetState(Date.UTC(2026, 7, 27))
     const activities = buildPetHomeActivities(state, '2026-08-27', 3)
 
-    expect(activities.map((item) => item.typeLabel)).toEqual([
-      '日常',
-      '外出',
-      '体重',
-    ])
+    expect(activities.map((item) => item.typeLabel)).toEqual(['日常', '外出'])
     expect(activities[0]?.title).toBe('今天的照护已记录')
-    expect(activities[2]?.copy).toContain('3.8 kg')
+  })
+
+  it('体重不是常驻项：超过 3 天就不占动态', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const activities = buildPetHomeActivities(state, '2026-08-27', 3)
+    expect(activities.some((item) => item.typeLabel === '体重')).toBe(false)
+  })
+
+  it('体重在 3 天内发生变化时才出现', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const latest = state.weights[state.weights.length - 1]
+    const activities = buildPetHomeActivities(state, latest.recordedOn, 3)
+    const weight = activities.find((item) => item.typeLabel === '体重')
+    expect(weight).toBeDefined()
+    expect(weight?.title).toContain('体重')
+    expect(weight?.title).toContain('kg')
+  })
+
+  it('今天没记录时展示最近一次日常记录', () => {
+    const state = createDemoPetState(Date.UTC(2026, 7, 27))
+    const activities = buildPetHomeActivities(state, '2026-09-30', 3)
+    expect(activities.some((item) => item.title === '今天的照护已记录')).toBe(false)
+    expect(activities.some((item) => item.title.startsWith('记录了'))).toBe(true)
   })
 
   it('没有照护数据时返回空动态', () => {

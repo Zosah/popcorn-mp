@@ -577,24 +577,45 @@ export function buildPetHomeActivities(
       icon: 'pet-tab-daily',
       target: 'daily',
     })
+  } else {
+    // 今天还没记录时，把最近一次日常记录本身当成动态，而不是只留体重。
+    const latestLog = [...activeDailyLogs].sort((left, right) =>
+      right.recordedAt.localeCompare(left.recordedAt),
+    )[0]
+    if (latestLog) {
+      const label = PET_DAILY_LOG_LABELS[latestLog.type]
+      activities.push({
+        id: latestLog.id,
+        title: `记录了${label}`,
+        copy: latestLog.note || `${state.profile.name} · ${label}`,
+        occurredOn: getShanghaiDateOnly(Date.parse(latestLog.recordedAt)),
+        typeLabel: '日常',
+        icon: 'pet-tab-daily',
+        target: 'daily',
+      })
+    }
   }
 
   const weights = [...state.weights].sort((left, right) =>
     left.recordedOn.localeCompare(right.recordedOn),
   )
   const latestWeight = weights[weights.length - 1]
-  if (latestWeight) {
+  // 体重只在近 3 天有变化时才占一条动态，避免首页长期卡在体重上。
+  const weightDaysAgo = latestWeight
+    ? Math.round((parseDateOnly(today) - parseDateOnly(latestWeight.recordedOn)) / 86400000)
+    : Number.POSITIVE_INFINITY
+  if (latestWeight && weightDaysAgo <= 3) {
     const previousWeight = weights[weights.length - 2]
     const delta = previousWeight
       ? Number(latestWeight.value) - Number(previousWeight.value)
       : null
     activities.push({
       id: latestWeight.id,
-      title: `${state.profile.name}更新了体重`,
+      title: `体重 ${latestWeight.value} kg`,
       copy:
         delta === null || Math.abs(delta) < 0.05
-          ? `现在 ${latestWeight.value} kg`
-          : `现在 ${latestWeight.value} kg · 较上次 ${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`,
+          ? `${state.profile.name}今天的体重记录`
+          : `较上次 ${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`,
       occurredOn: latestWeight.recordedOn,
       typeLabel: '体重',
       icon: 'pet-metric-weight',
@@ -623,10 +644,12 @@ export function buildPetHomeActivities(
     })
   }
 
+  const priority = (item: PetHomeActivity) => (item.target === 'profile' ? 1 : 0)
   return activities
     .sort(
       (left, right) =>
         right.occurredOn.localeCompare(left.occurredOn) ||
+        priority(left) - priority(right) ||
         right.id.localeCompare(left.id),
     )
     .slice(0, Math.max(0, limit))
