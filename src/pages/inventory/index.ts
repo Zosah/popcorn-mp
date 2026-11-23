@@ -6,7 +6,7 @@ import {
   resolveInventoryLifecycleStatuses,
   type InventoryViewMode,
 } from '../../domain/demo-interactions'
-import { getShanghaiDateOnly, resolveExpiry } from '../../domain/expiry'
+import { formatChineseDate, getShanghaiDateOnly, resolveExpiry } from '../../domain/expiry'
 import type {
   ExpiryStatus,
   InventoryCategory,
@@ -113,8 +113,7 @@ function buildDateColumn(
   if (!item.expiresOn) {
     return { dateDay: '—', dateHint: '无期限', dateTone: 'none' }
   }
-  const [, month, day] = item.expiresOn.split('-')
-  const dayLabel = month && day ? `${Number(month)}/${Number(day)}` : '—'
+  const dayLabel = formatChineseDate(item.expiresOn) || '—'
   const tone =
     expiry.status === 'expired' ? 'danger'
       : expiry.status === 'today' || expiry.status === 'urgent' ? 'warn'
@@ -543,6 +542,7 @@ Page({
         version: updated.version,
         adjusting: false,
       })
+      wx.showToast({ title: '库存已更新', icon: 'success', duration: 1200 })
     } catch (error) {
       this.patchItemView(id, {
         quantity: target.quantity,
