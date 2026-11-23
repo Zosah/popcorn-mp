@@ -50,9 +50,21 @@
     <text wx:if="{{query}}" class="inv-search__clear" bindtap="onClearSearch">清除</text>
   </view>
 
-  <scroll-view wx:if="{{viewMode === 'active'}}" class="inv-chips" scroll-x enhanced show-scrollbar="{{false}}">
+  <scroll-view wx:if="{{viewMode === 'active'}}" class="inv-chips inv-chips--category" scroll-x enhanced show-scrollbar="{{false}}">
     <view class="inv-chips__row">
-      <view class="inv-chip {{selectedExpiry === 'all' ? 'inv-chip--active' : ''}}" data-value="all" bindtap="onSelectExpiry">全部 {{summary.total}}</view>
+      <view
+        wx:for="{{categoryTabs}}"
+        wx:key="value"
+        class="inv-chip inv-chip--category {{selectedCategory === item.value ? 'inv-chip--active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onSelectCategory"
+      >{{item.label}} {{item.count}}</view>
+    </view>
+  </scroll-view>
+
+  <scroll-view wx:if="{{viewMode === 'active'}}" class="inv-chips inv-chips--expiry" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="inv-chips__row">
+      <view class="inv-chip {{selectedExpiry === 'all' ? 'inv-chip--active' : ''}}" data-value="all" bindtap="onSelectExpiry">不限时间</view>
       <view class="inv-chip {{selectedExpiry === 'expired' ? 'inv-chip--active' : ''}}" data-value="expired" bindtap="onSelectExpiry">已过期 {{summary.expired}}</view>
       <view class="inv-chip {{selectedExpiry === 'due' ? 'inv-chip--active' : ''}}" data-value="due" bindtap="onSelectExpiry">三天内 {{summary.dueWithin3Days}}</view>
       <view class="inv-chip {{selectedExpiry === 'soon' ? 'inv-chip--active' : ''}}" data-value="soon" bindtap="onSelectExpiry">七天内 {{summary.soon}}</view>
@@ -93,7 +105,7 @@
           <text class="inv-group__hint">{{item.hint}}</text>
         </view>
         <view class="inv-group__list">
-          <inventory-card wx:for="{{item.items}}" wx:for-item="inventoryItem" wx:key="id" item="{{inventoryItem}}" bind:cardtap="onOpenItem" />
+          <inventory-card wx:for="{{item.items}}" wx:for-item="inventoryItem" wx:key="id" item="{{inventoryItem}}" bind:cardtap="onOpenItem" bind:adjust="onQuickAdjust" />
         </view>
       </view>
     </block>

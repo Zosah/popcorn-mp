@@ -8,15 +8,37 @@
   <view class="row__main">
     <text class="row__name">{{item.name}}</text>
     <view class="row__tags">
-      <text class="row__tag row__tag--qty">{{item.quantity}}{{item.unit}}</text>
       <text class="row__tag">{{item.locationLabel}}</text>
       <text class="row__tag row__tag--{{item.category}}">{{item.categoryLabel}}</text>
     </view>
+    <view class="row__meta row__meta--{{item.dateTone}}">
+      <text class="row__meta-date">{{item.dateDay}}</text>
+      <text class="row__meta-dot">·</text>
+      <text class="row__meta-hint">{{item.dateHint}}</text>
+    </view>
   </view>
 
-  <view class="row__right">
-    <expiry-badge wx:if="{{item.status === 'active'}}" status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
-    <view wx:else class="row__history">{{item.lifecycleLabel}}</view>
-    <view class="row__chevron"></view>
+  <view wx:if="{{item.status === 'active'}}" class="row__stepper" catchtap="onStepperTap">
+    <view
+      class="row__step {{item.adjusting ? 'row__step--busy' : ''}}"
+      data-delta="-1"
+      catchtap="onQuickAdjust"
+      aria-label="减少一件"
+    >−</view>
+    <view class="row__qty">
+      <text class="row__qty-value">{{item.quantity}}</text>
+      <text class="row__qty-unit">{{item.unit}}</text>
+    </view>
+    <view
+      class="row__step row__step--plus {{item.adjusting ? 'row__step--busy' : ''}}"
+      data-delta="1"
+      catchtap="onQuickAdjust"
+      aria-label="增加一件"
+    >＋</view>
+  </view>
+
+  <view wx:else class="row__history">
+    <text class="row__tag row__tag--qty">{{item.quantity}}{{item.unit}}</text>
+    <text class="row__history-label">{{item.lifecycleLabel}}</text>
   </view>
 </view>

@@ -1,6 +1,6 @@
 import { pullRefreshBehavior } from '../../utils/pull-refresh'
 import { appConfig } from '../../config/env'
-import { getCategoryLabel, getLocationLabel } from '../../constants/inventory'
+import { CATEGORY_OPTIONS, getCategoryLabel, getLocationLabel } from '../../constants/inventory'
 import { INVENTORY_CATEGORY_ICON_NAMES } from '../../constants/icon-names'
 import {
   resolveInventoryLifecycleStatuses,
@@ -9,6 +9,7 @@ import {
 import { getShanghaiDateOnly, resolveExpiry } from '../../domain/expiry'
 import type {
   ExpiryStatus,
+  InventoryCategory,
   InventoryItem,
   InventoryLifecycleStatus,
 } from '../../domain/inventory'
@@ -39,6 +40,10 @@ interface InventoryItemView extends InventoryItem {
   expiry: ReturnType<typeof resolveExpiry>
   lifecycleLabel: string
   imageSrc: string
+  dateDay: string
+  dateHint: string
+  dateTone: string
+  adjusting: boolean
 }
 
 interface InventorySection {
@@ -95,7 +100,33 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
     expiry: resolveExpiry(item.expiresOn, today),
     lifecycleLabel: lifecycleLabels[item.status],
     imageSrc: '',
+    adjusting: false,
+    ...buildDateColumn(item, resolveExpiry(item.expiresOn, today)),
   }
+}
+
+/** 左列只做「时间感」提示：日期弱化，相对期限用颜色区分轻重。 */
+function buildDateColumn(
+  item: InventoryItem,
+  expiry: ReturnType<typeof resolveExpiry>,
+): { dateDay: string; dateHint: string; dateTone: string } {
+  if (!item.expiresOn) {
+    return { dateDay: '—', dateHint: '无期限', dateTone: 'none' }
+  }
+  const [, month, day] = item.expiresOn.split('-')
+  const dayLabel = month && day ? `${Number(month)}/${Number(day)}` : '—'
+  const tone =
+    expiry.status === 'expired' ? 'danger'
+      : expiry.status === 'today' || expiry.status === 'urgent' ? 'warn'
+        : expiry.status === 'soon' ? 'soon'
+          : 'normal'
+  const days = expiry.daysRemaining
+  const hint =
+    days === null ? '无期限'
+      : days < 0 ? `已过期 ${Math.abs(days)} 天`
+        : days === 0 ? '今天到期'
+          : `还剩 ${days} 天`
+  return { dateDay: dayLabel, dateHint: hint, dateTone: tone }
 }
 
 /** 一次批量取签名，避免 N 件物品各发一次请求。 */
@@ -112,6 +143,19 @@ async function resolveItemImages(views: InventoryItemView[]): Promise<InventoryI
     const asset = assets[view.imageMediaId]
     return asset ? { ...view, imageSrc: asset.thumb.url } : view
   })
+}
+
+function buildCategoryTabs(views: InventoryItemView[]): Array<{ value: string; label: string; count: number }> {
+  const counts = new Map<string, number>()
+  for (const view of views) {
+    counts.set(view.category, (counts.get(view.category) ?? 0) + 1)
+  }
+  const tabs = [{ value: 'all', label: '全部分类', count: views.length }]
+  for (const option of CATEGORY_OPTIONS) {
+    const count = counts.get(option.value) ?? 0
+    if (count > 0) tabs.push({ value: option.value, label: option.label, count })
+  }
+  return tabs
 }
 
 function buildSections(
@@ -180,6 +224,8 @@ Page({
     searchFocused: false,
     viewMode: 'active' as InventoryViewMode,
     selectedExpiry: 'all' as DemoExpiryFilter,
+    selectedCategory: 'all' as InventoryCategory | 'all',
+    categoryTabs: [] as Array<{ value: string; label: string; count: number }>,
     summary: EMPTY_SUMMARY,
     sections: [] as InventorySection[],
     hasResults: false,
@@ -291,6 +337,10 @@ Page({
       const visibleItems = listResult.status === 'fulfilled' ? listResult.value : []
       const views = await resolveItemImages(visibleItems.map((item) => toView(item, today)))
       if (!inventoryRequestGate.isCurrent(sequence)) return
+      const categoryTabs = buildCategoryTabs(views)
+      const categoryFiltered = this.data.selectedCategory === 'all'
+        ? views
+        : views.filter((view) => view.category === this.data.selectedCategory)
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0
@@ -304,8 +354,9 @@ Page({
         summary: summaryResult.status === 'fulfilled'
           ? summaryResult.value
           : this.data.summary,
+        categoryTabs,
         sections: hasListLoaded
-          ? buildSections(views, this.data.viewMode)
+          ? buildSections(categoryFiltered, this.data.viewMode)
           : this.data.sections,
         hasResults: hasListLoaded ? views.length > 0 : this.data.hasResults,
         errorMessage: errors[0] ?? '',
@@ -366,6 +417,97 @@ Page({
 
   onSearchBlur() {
     this.setData({ searchFocused: false })
+  },
+
+  onSelectCategory(event: { currentTarget: { dataset: { value?: string } } }) {
+    const value = (event.currentTarget.dataset.value ?? 'all') as InventoryCategory | 'all'
+    if (value === this.data.selectedCategory) return
+    this.setData({ selectedCategory: value }, () => {
+      const sections = buildSections(
+        this.collectCategoryFilteredViews(),
+        this.data.viewMode,
+      )
+      this.setData({ sections, hasResults: sections.some((section) => section.items.length > 0) })
+    })
+  },
+
+  collectCategoryFilteredViews(): InventoryItemView[] {
+    const seen = new Map<string, InventoryItemView>()
+    for (const section of this.data.sections) {
+      for (const item of section.items) seen.set(item.id, item)
+    }
+    const all = Array.from(seen.values())
+    return this.data.selectedCategory === 'all'
+      ? all
+      : all.filter((item) => item.category === this.data.selectedCategory)
+  },
+
+  async onQuickAdjust(event: { detail?: { id?: string; delta?: number } }) {
+    const id = event?.detail?.id ?? ''
+    const delta = Number(event?.detail?.delta ?? 0)
+    if (!id || !delta) return
+    const target = this.findItemView(id)
+    if (!target || target.adjusting) return
+
+    const current = Number(target.quantity)
+    const base = Number.isFinite(current) ? current : 0
+    const next = Math.max(0, Math.round((base + delta) * 100) / 100)
+    if (next === base) return
+
+    this.patchItemView(id, { quantity: String(next), adjusting: true })
+    try {
+      const updated = await inventoryGateway.update(
+        id,
+        {
+          name: target.name,
+          category: target.category,
+          quantity: String(next),
+          unit: target.unit,
+          location: target.location,
+          purchasedOn: target.purchasedOn,
+          openedOn: target.openedOn,
+          expiresOn: target.expiresOn,
+          note: target.note,
+          imageMediaId: target.imageMediaId,
+          iconKey: target.iconKey ?? '',
+        },
+        target.version,
+      )
+      this.patchItemView(id, {
+        quantity: updated.quantity,
+        version: updated.version,
+        adjusting: false,
+      })
+    } catch (error) {
+      this.patchItemView(id, {
+        quantity: target.quantity,
+        adjusting: false,
+      })
+      wx.showToast({
+        title: getInventoryErrorMessage(error, '库存没有调整成功'),
+        icon: 'none',
+      })
+    }
+  },
+
+  findItemView(id: string): InventoryItemView | null {
+    for (const section of this.data.sections) {
+      const found = section.items.find((item) => item.id === id)
+      if (found) return found
+    }
+    return null
+  },
+
+  patchItemView(id: string, patch: Partial<InventoryItemView>) {
+    this.data.sections.forEach((section, sectionIndex) => {
+      const itemIndex = section.items.findIndex((item) => item.id === id)
+      if (itemIndex < 0) return
+      const updates: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(patch)) {
+        updates[`sections[${sectionIndex}].items[${itemIndex}].${key}`] = value
+      }
+      this.setData(updates)
+    })
   },
 
   onSelectExpiry(event: { currentTarget: { dataset: { value: DemoExpiryFilter } } }) {

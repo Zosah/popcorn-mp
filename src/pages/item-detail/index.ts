@@ -49,6 +49,7 @@ interface ItemDetailView extends InventoryItem {
 
 Page({
   data: {
+    adjusting: false,
     id: '',
     loading: true,
     hasShownOnce: false,
@@ -117,6 +118,47 @@ Page({
       })
     } finally {
       this.setData({ loading: false })
+    }
+  },
+
+  async onQuickAdjust(event: { currentTarget: { dataset: { delta?: number | string } } }) {
+    const delta = Number(event.currentTarget.dataset.delta ?? 0)
+    const item = this.data.item
+    if (!delta || !item || this.data.adjusting) return
+
+    const base = Number(item.quantity)
+    const current = Number.isFinite(base) ? base : 0
+    const next = Math.max(0, Math.round((current + delta) * 100) / 100)
+    if (next === current) return
+
+    const previous = item.quantity
+    this.setData({ adjusting: true, 'item.quantity': String(next) })
+    try {
+      const updated = await inventoryGateway.update(
+        item.id,
+        {
+          name: item.name,
+          category: item.category,
+          quantity: String(next),
+          unit: item.unit,
+          location: item.location,
+          purchasedOn: item.purchasedOn,
+          openedOn: item.openedOn,
+          expiresOn: item.expiresOn,
+          note: item.note,
+          imageMediaId: item.imageMediaId,
+          iconKey: item.iconKey ?? '',
+        },
+        item.version,
+      )
+      this.setData({
+        adjusting: false,
+        'item.quantity': updated.quantity,
+        'item.version': updated.version,
+      })
+    } catch (error) {
+      this.setData({ adjusting: false, 'item.quantity': previous })
+      wx.showToast({ title: '库存没有调整成功', icon: 'none' })
     }
   },
 

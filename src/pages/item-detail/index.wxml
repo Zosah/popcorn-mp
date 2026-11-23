@@ -22,6 +22,21 @@
       </view>
     </view>
 
+    <view wx:if="{{item.status === 'active'}}" class="detail-quick">
+      <view class="detail-quick__copy">
+        <text class="detail-quick__label">快速调整</text>
+        <text class="detail-quick__hint">用掉一件就减一，补货就加一</text>
+      </view>
+      <view class="detail-quick__stepper">
+        <view class="detail-quick__btn {{adjusting ? 'detail-quick__btn--busy' : ''}}" data-delta="-1" bindtap="onQuickAdjust">−</view>
+        <view class="detail-quick__value">
+          <text class="detail-quick__num">{{item.quantity}}</text>
+          <text class="detail-quick__unit">{{item.unit}}</text>
+        </view>
+        <view class="detail-quick__btn detail-quick__btn--plus {{adjusting ? 'detail-quick__btn--busy' : ''}}" data-delta="1" bindtap="onQuickAdjust">＋</view>
+      </view>
+    </view>
+
     <view class="detail-hero">
       <view wx:if="{{item.imageSrc}}" class="detail-hero__icon detail-hero__icon--image" bindtap="onPreviewImage">
         <image class="detail-hero__image" src="{{item.imageSrc}}" mode="aspectFill" />

@@ -331,3 +331,34 @@
   font-size: 24rpx;
   font-weight: 700;
 }
+
+/* 分类筛选：实心选中态，与时间筛选形成主次 */
+.inv-chips--category {
+  margin-top: 18rpx;
+}
+
+.inv-chip--category {
+  height: 62rpx;
+  border-color: transparent;
+  background: var(--c-paper-2, #f1ede7);
+  color: var(--inv-ink-2);
+  font-weight: 600;
+}
+
+.inv-chip--category.inv-chip--active {
+  background: var(--c-primary, #252b27);
+  color: #fff;
+}
+
+/* 时间筛选：弱化成描边小 chips，不抢分类的位置 */
+.inv-chips--expiry {
+  margin-top: 12rpx;
+}
+
+.inv-chips--expiry .inv-chip {
+  height: 52rpx;
+  padding: 0 18rpx;
+  color: var(--inv-ink-3, #837f76);
+  font-size: 22rpx;
+  font-weight: 500;
+}

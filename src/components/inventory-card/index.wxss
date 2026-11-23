@@ -1,11 +1,107 @@
 /* 库存行：与宠物用品清单同一套层级（缩略图 / 名称 / 标签 / 右侧状态） */
 .row {
   display: flex;
-  min-height: 132rpx;
+  min-height: 148rpx;
   align-items: center;
-  padding: 22rpx 0;
+  padding: 24rpx 0;
   border-bottom: 1rpx solid var(--c-line, #e9e6e1);
-  gap: 18rpx;
+  gap: 16rpx;
+}
+
+/* 时间放在标签下方，字号更小、颜色更淡，不抢主信息 */
+.row__meta {
+  display: flex;
+  align-items: center;
+  margin-top: 2rpx;
+  gap: 6rpx;
+}
+
+.row__meta-date,
+.row__meta-dot,
+.row__meta-hint {
+  color: var(--c-faint, #a29b91);
+  font-size: 20rpx;
+  line-height: 1.3;
+}
+
+.row__meta--danger .row__meta-date,
+.row__meta--danger .row__meta-dot,
+.row__meta--danger .row__meta-hint { color: #c0564a; }
+
+.row__meta--warn .row__meta-date,
+.row__meta--warn .row__meta-dot,
+.row__meta--warn .row__meta-hint { color: #c98a3f; }
+
+.row__meta--soon .row__meta-date,
+.row__meta--soon .row__meta-dot,
+.row__meta--soon .row__meta-hint { color: #7d8f6a; }
+
+/* 快速调整库存：右侧步进器 */
+.row__stepper {
+  display: flex;
+  align-items: center;
+  padding: 4rpx;
+  border-radius: 999rpx;
+  background: var(--c-paper-2, #f1ede7);
+  gap: 2rpx;
+  flex: 0 0 auto;
+}
+
+.row__step {
+  display: flex;
+  width: 52rpx;
+  height: 52rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2rpx 6rpx rgba(58, 51, 44, 0.08);
+  color: var(--c-text, #252b27);
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.row__step--plus {
+  background: var(--c-sage, #668478);
+  box-shadow: none;
+  color: #fff;
+}
+
+.row__step--busy {
+  opacity: 0.45;
+}
+
+.row__qty {
+  display: flex;
+  min-width: 62rpx;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2rpx;
+}
+
+.row__qty-value {
+  color: var(--c-text, #252b27);
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.row__qty-unit {
+  color: var(--c-muted, #837f76);
+  font-size: 18rpx;
+}
+
+.row__history {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 0 0 auto;
+}
+
+.row__history-label {
+  color: var(--c-muted, #837f76);
+  font-size: 20rpx;
 }
 
 .row:last-child {
