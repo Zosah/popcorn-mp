@@ -14,6 +14,9 @@ import { createRequestId } from './transport'
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 const UPLOAD_TIMEOUT_MS = 30000
+/** 签名地址本地缓存：同一 URL 复用能让微信图片磁盘缓存命中，冷启动也不重新下载。 */
+const MEDIA_URL_STORAGE_KEY = 'popcorn_media_urls_v1'
+const MEDIA_URL_STORAGE_LIMIT = 300
 
 interface MediaContext {
   token: string
@@ -86,6 +89,7 @@ export class HttpMediaGateway implements MediaGateway {
       })
     })
     this.cache.set(asset.id, asset)
+    persistAsset(asset)
     return asset
   }
 
@@ -94,6 +98,11 @@ export class HttpMediaGateway implements MediaGateway {
     if (!id) throw new MediaGatewayError('MEDIA_NOT_FOUND', '图片不存在')
     const cached = this.cache.get(id)
     if (cached && !isExpired(cached)) return cached
+    const stored = readStoredAsset(id)
+    if (stored && !isExpired(stored)) {
+      this.cache.set(id, stored)
+      return stored
+    }
     const pending = this.pending.get(id)
     if (pending) return pending
 
@@ -103,6 +112,80 @@ export class HttpMediaGateway implements MediaGateway {
       return await request
     } finally {
       this.pending.delete(id)
+    }
+  }
+
+  async getMany(mediaIds: string[]): Promise<Record<string, ApiMediaAsset>> {
+    const unique = Array.from(new Set(mediaIds.map((id) => id.trim()).filter(Boolean)))
+    const result: Record<string, ApiMediaAsset> = {}
+    const missing: string[] = []
+    for (const id of unique) {
+      const cached = this.cache.get(id)
+      if (cached && !isExpired(cached)) {
+        result[id] = cached
+        continue
+      }
+      const stored = readStoredAsset(id)
+      if (stored && !isExpired(stored)) {
+        this.cache.set(id, stored)
+        result[id] = stored
+        continue
+      }
+      missing.push(id)
+    }
+    if (!missing.length) return result
+
+    const context = mediaContext()
+    try {
+      const response = await new Promise<{ items: ApiMediaAsset[] }>((resolve, reject) => {
+        wx.request({
+          url: `${apiBaseUrl()}/spaces/${encodeURIComponent(context.spaceId)}/media/batch`,
+          method: 'POST',
+          timeout: appConfig.requestTimeoutMs,
+          data: { ids: missing },
+          header: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${context.token}`,
+            'X-Request-Id': createRequestId(),
+          },
+          success(res) {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve(res.data as { items: ApiMediaAsset[] })
+              return
+            }
+            reject(new MediaGatewayError(`HTTP_${res.statusCode}`, '图片地址暂时无法读取'))
+          },
+          fail(error) {
+            reject(new MediaGatewayError('NETWORK_ERROR', error.errMsg || '网络不给力，稍后再试'))
+          },
+        })
+      })
+      for (const raw of response.items || []) {
+        try {
+          const asset = parseMediaAsset(raw)
+          this.cache.set(asset.id, asset)
+          persistAsset(asset)
+          result[asset.id] = asset
+        } catch {
+          // 单张解析失败不影响整批
+        }
+      }
+      return result
+    } catch {
+      // 批量失败退回逐个，保证功能不受影响
+      const settled = await Promise.all(unique.map(async (id) => {
+        if (result[id]) return null
+        try {
+          return await this.get(id)
+        } catch {
+          return null
+        }
+      }))
+      for (const asset of settled) {
+        if (asset) result[asset.id] = asset
+      }
+      return result
     }
   }
 
@@ -151,6 +234,7 @@ export class HttpMediaGateway implements MediaGateway {
       })
     })
     this.cache.set(asset.id, asset)
+    persistAsset(asset)
     return asset
   }
 }
@@ -201,6 +285,37 @@ function parseErrorBody(value: unknown): ApiErrorBody {
     return raw as ApiErrorBody
   } catch {
     return {}
+  }
+}
+
+type StoredAssetMap = Record<string, ApiMediaAsset>
+
+function readAssetMap(): StoredAssetMap {
+  try {
+    const raw = wx.getStorageSync<StoredAssetMap | ''>(MEDIA_URL_STORAGE_KEY)
+    return raw && typeof raw === 'object' ? raw : {}
+  } catch {
+    return {}
+  }
+}
+
+function readStoredAsset(mediaId: string): ApiMediaAsset | null {
+  const map = readAssetMap()
+  const asset = map[mediaId]
+  return asset && asset.id ? asset : null
+}
+
+/** 只保留未过期的条目，并按近期写入裁剪条数，避免 storage 无限增长。 */
+function persistAsset(asset: ApiMediaAsset): void {
+  try {
+    const map = readAssetMap()
+    map[asset.id] = asset
+    const alive = Object.entries(map)
+      .filter(([, value]) => value && !isExpired(value))
+      .slice(-MEDIA_URL_STORAGE_LIMIT)
+    wx.setStorageSync(MEDIA_URL_STORAGE_KEY, Object.fromEntries(alive))
+  } catch {
+    // 缓存失败不影响主流程
   }
 }
 

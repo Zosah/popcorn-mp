@@ -11,6 +11,8 @@ export interface MediaGateway {
     fileSize?: number,
   ): Promise<ApiMediaAsset>
   get(mediaId: string): Promise<ApiMediaAsset>
+  /** 批量取签名地址：列表页把 N 次请求压成 1 次。 */
+  getMany(mediaIds: string[]): Promise<Record<string, ApiMediaAsset>>
 }
 
 export class MediaGatewayError extends Error {

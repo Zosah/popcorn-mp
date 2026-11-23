@@ -48,6 +48,15 @@ export class DemoMediaGateway implements MediaGateway {
     return asset
   }
 
+  async getMany(mediaIds: string[]): Promise<Record<string, ApiMediaAsset>> {
+    const out: Record<string, ApiMediaAsset> = {}
+    for (const id of mediaIds) {
+      const asset = this.cache.get(id)
+      if (asset) out[id] = asset
+    }
+    return out
+  }
+
   async get(mediaId: string): Promise<ApiMediaAsset> {
     const cached = this.cache.get(mediaId)
     if (cached) return cached

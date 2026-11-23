@@ -98,14 +98,20 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
   }
 }
 
-async function resolveItemImage(view: InventoryItemView): Promise<InventoryItemView> {
-  if (!view.imageMediaId) return view
+/** 一次批量取签名，避免 N 件物品各发一次请求。 */
+async function resolveItemImages(views: InventoryItemView[]): Promise<InventoryItemView[]> {
+  const ids = views.map((view) => view.imageMediaId).filter(Boolean)
+  if (!ids.length) return views
+  let assets: Record<string, { thumb: { url: string } }> = {}
   try {
-    const asset = await mediaGateway.get(view.imageMediaId)
-    return { ...view, imageSrc: asset.thumb.url }
+    assets = await mediaGateway.getMany(ids)
   } catch {
-    return view
+    return views
   }
+  return views.map((view) => {
+    const asset = assets[view.imageMediaId]
+    return asset ? { ...view, imageSrc: asset.thumb.url } : view
+  })
 }
 
 function buildSections(
@@ -283,9 +289,7 @@ Page({
       }
 
       const visibleItems = listResult.status === 'fulfilled' ? listResult.value : []
-      const views = await Promise.all(
-        visibleItems.map((item) => resolveItemImage(toView(item, today))),
-      )
+      const views = await resolveItemImages(visibleItems.map((item) => toView(item, today)))
       if (!inventoryRequestGate.isCurrent(sequence)) return
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded

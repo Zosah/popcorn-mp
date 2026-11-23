@@ -1,5 +1,6 @@
 import { readStoredApiSession } from '../stores/session'
 import type {
+  ApiMediaAsset,
   ApiMenuCategory,
   ApiMenuCategoryList,
   ApiMenuRecipe,
@@ -40,7 +41,8 @@ export class HttpMenuGateway implements MenuGateway {
         ))
         items.push(...response.data.items)
         if (!response.data.nextCursor) {
-          return Promise.all(items.map((item) => toMenuRecipe(item, 'thumb')))
+          const assets = await loadMenuAssets(items)
+          return items.map((item) => toMenuRecipeWith(item, 'thumb', assets))
         }
         cursor = response.data.nextCursor
       }
@@ -306,6 +308,32 @@ async function toMenuRecipe(
     resolveMenuImage(item.imageMediaId, variant, item.title),
     resolveNoteImages(item.noteImageMediaIds ?? [], variant),
   ])
+  return buildMenuRecipe(item, image, noteImages)
+}
+
+/** 已拿到签名结果时的同步组装，列表批量路径用这个，避免逐条 await。 */
+function toMenuRecipeWith(
+  item: ApiMenuRecipe,
+  variant: 'display' | 'thumb',
+  assets: Record<string, ApiMediaAsset>,
+): MenuRecipe {
+  const imageId = (item.imageMediaId || '').trim()
+  const imageSrc = assetSrc(assets, imageId, variant)
+  const image = imageId && imageSrc
+    ? { mediaId: imageId, src: imageSrc, caption: item.title }
+    : undefined
+  const noteImages = (item.noteImageMediaIds ?? [])
+    .filter(Boolean)
+    .map((noteId) => ({ mediaId: noteId, src: assetSrc(assets, noteId, variant) }))
+    .filter((entry) => entry.src)
+  return buildMenuRecipe(item, image, noteImages)
+}
+
+function buildMenuRecipe(
+  item: ApiMenuRecipe,
+  image: MenuRecipe['image'] | undefined,
+  noteImages: MenuRecipe['noteImages'],
+): MenuRecipe {
   return {
     id: item.id,
     title: item.title,
@@ -337,6 +365,33 @@ async function toMenuRecipe(
     noteImageMediaIds: [...(item.noteImageMediaIds ?? [])],
     noteImages,
   }
+}
+
+/** 一次把列表里用到的图片签名全取回来，避免每张图各发一次请求。 */
+async function loadMenuAssets(items: ApiMenuRecipe[]): Promise<Record<string, ApiMediaAsset>> {
+  const ids: string[] = []
+  for (const item of items) {
+    if (item.imageMediaId) ids.push(item.imageMediaId)
+    for (const noteId of item.noteImageMediaIds ?? []) {
+      if (noteId) ids.push(noteId)
+    }
+  }
+  if (!ids.length) return {}
+  try {
+    return await mediaGateway.getMany(ids)
+  } catch {
+    return {}
+  }
+}
+
+function assetSrc(
+  assets: Record<string, ApiMediaAsset>,
+  mediaId: string,
+  variant: 'display' | 'thumb',
+): string {
+  const asset = assets[mediaId]
+  if (!asset) return ''
+  return variant === 'thumb' ? asset.thumb.url : asset.display.url
 }
 
 async function resolveNoteImages(
