@@ -328,88 +328,7 @@
   height: 96rpx;
 }
 
-/* 快速调整：进详情第一眼就能改数量 */
-.detail-quick {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20rpx;
-  padding: 22rpx 26rpx;
-  border-radius: 28rpx;
-  background: linear-gradient(135deg, #fbf2ec, #f3f7f2);
-  box-shadow: 0 14rpx 30rpx -26rpx rgba(92, 74, 61, 0.45);
-}
 
-.detail-quick__copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-
-.detail-quick__label {
-  color: var(--c-text, #252b27);
-  font-size: 27rpx;
-  font-weight: 700;
-}
-
-.detail-quick__hint {
-  color: var(--c-muted, #837f76);
-  font-size: 21rpx;
-}
-
-.detail-quick__stepper {
-  display: flex;
-  align-items: center;
-  padding: 6rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(135deg, #f9eee4, #f1e7dc);
-  gap: 4rpx;
-}
-
-.detail-quick__btn {
-  display: flex;
-  width: 62rpx;
-  height: 62rpx;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fbf1e6, #f2e0cf);
-  color: #9a5f4b;
-  font-size: 34rpx;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.detail-quick__btn--plus {
-  background: linear-gradient(135deg, #7d9a8d, #5c7a6f);
-  color: #fffbf6;
-}
-
-.detail-quick__btn--busy {
-  opacity: 0.45;
-}
-
-.detail-quick__value {
-  display: flex;
-  min-width: 88rpx;
-  align-items: baseline;
-  justify-content: center;
-  gap: 3rpx;
-}
-
-.detail-quick__num {
-  color: var(--c-text, #252b27);
-  font-size: 30rpx;
-  font-weight: 800;
-}
-
-.detail-quick__unit {
-  color: var(--c-muted, #837f76);
-  font-size: 20rpx;
-}
-
-/* 流水圆点：按操作类型区分 */
-.detail-timeline__dot--blue { background: #7f9bb5; }
 .detail-timeline__dot--ink { background: #8a7b6c; }
 .detail-timeline__dot--muted { background: var(--c-faint, #a29b91); }
 
@@ -417,4 +336,56 @@
   padding: 8rpx 0 4rpx;
   color: var(--c-muted, #837f76);
   font-size: 23rpx;
+}
+
+/* 数量行内置步进器：不再单独占一张卡片 */
+.detail-info__row--qty {
+  align-items: center;
+}
+
+.detail-info__stepper {
+  display: flex;
+  align-items: center;
+  padding: 4rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #f9eee4, #f1e7dc);
+  gap: 2rpx;
+}
+
+.detail-info__step {
+  display: flex;
+  width: 52rpx;
+  height: 52rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbf1e6, #f2e0cf);
+  color: #9a5f4b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.detail-info__step--plus {
+  background: linear-gradient(135deg, #7d9a8d, #5c7a6f);
+  color: #fffbf6;
+}
+
+.detail-info__step--busy {
+  opacity: 0.45;
+}
+
+.detail-info__qty {
+  min-width: 76rpx;
+  color: var(--c-text, #252b27);
+  font-size: 28rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.detail-info__unit {
+  margin-left: 2rpx;
+  color: var(--c-muted, #837f76);
+  font-size: 20rpx;
+  font-weight: 400;
 }
