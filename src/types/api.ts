@@ -156,6 +156,14 @@ export interface ApiInventoryItem {
   iconKey?: string
   status: ApiInventoryLifecycleStatus
   version: number
+  events?: Array<{
+    id: string
+    kind: string
+    summary: string
+    quantityFrom: string
+    quantityTo: string
+    createdAt: string
+  }>
   deletedAt: string | null
   createdAt: string
   updatedAt: string

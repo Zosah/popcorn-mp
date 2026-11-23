@@ -70,20 +70,15 @@
       <view class="detail-note">{{item.note}}</view>
     </block>
 
-    <view class="detail-section-head"><text>时间线</text><text>这件东西的足迹</text></view>
+    <view class="detail-section-head"><text>变化记录</text><text>谁动过、动了什么</text></view>
     <view class="detail-timeline">
-      <view class="detail-timeline__item">
-        <view class="detail-timeline__dot detail-timeline__dot--orange"></view>
-        <view class="detail-timeline__date">最近更新</view>
-        <view class="detail-timeline__title">{{item.updatedAtLabel}}</view>
-        <view class="detail-timeline__copy">当前状态：{{item.statusLabel}}</view>
+      <view wx:for="{{item.timeline}}" wx:key="id" class="detail-timeline__item">
+        <view class="detail-timeline__dot detail-timeline__dot--{{item.tone}}"></view>
+        <view class="detail-timeline__date">{{item.label}}</view>
+        <view class="detail-timeline__title">{{item.summary}}</view>
+        <view wx:if="{{item.detail}}" class="detail-timeline__copy">{{item.detail}}</view>
       </view>
-      <view class="detail-timeline__item">
-        <view class="detail-timeline__dot detail-timeline__dot--green"></view>
-        <view class="detail-timeline__date">有效期</view>
-        <view class="detail-timeline__title">{{item.expiresOnLabel || '长期存放'}}</view>
-        <view class="detail-timeline__copy">{{item.expiry.label}}</view>
-      </view>
+      <view wx:if="{{!item.timeline.length}}" class="detail-timeline__empty">还没有记录</view>
     </view>
 
     <view class="detail-section-head"><text>处理这件东西</text><text>先做最常用的一步</text></view>

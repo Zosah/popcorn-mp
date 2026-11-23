@@ -407,3 +407,14 @@
   color: var(--c-muted, #837f76);
   font-size: 20rpx;
 }
+
+/* 流水圆点：按操作类型区分 */
+.detail-timeline__dot--blue { background: #7f9bb5; }
+.detail-timeline__dot--ink { background: #8a7b6c; }
+.detail-timeline__dot--muted { background: var(--c-faint, #a29b91); }
+
+.detail-timeline__empty {
+  padding: 8rpx 0 4rpx;
+  color: var(--c-muted, #837f76);
+  font-size: 23rpx;
+}

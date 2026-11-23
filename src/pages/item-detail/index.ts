@@ -10,6 +10,7 @@ import {
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { resolveInventoryIcon } from '../../services/inventory-icon'
+import type { InventoryEvent } from '../../domain/inventory'
 import { mediaGateway } from '../../services/media'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
@@ -40,11 +41,58 @@ interface ItemDetailView extends InventoryItem {
   updatedAtLabel: string
   expiresOnLabel: string
   imageSrc: string
+  timeline: Array<{
+    id: string
+    icon: string
+    tone: string
+    label: string
+    summary: string
+    detail: string
+  }>
   actions: Array<{
     key: keyof typeof ACTION_LABELS
     label: string
     nextStatus: InventoryLifecycleStatus
   }>
+}
+
+const EVENT_ICONS: Record<string, string> = {
+  created: 'system-add',
+  quantity: 'inventory-status-active',
+  updated: 'system-edit',
+  status: 'system-check',
+}
+
+const EVENT_TONES: Record<string, string> = {
+  created: 'green',
+  quantity: 'orange',
+  updated: 'blue',
+  status: 'ink',
+}
+
+/** 操作流水按天分组没有必要，直接按时间倒序列出即可。 */
+function buildTimeline(events: InventoryEvent[], item: { createdAt: string; updatedAt: string }) {
+  if (events.length) {
+    return events.map((event) => ({
+      id: event.id,
+      icon: EVENT_ICONS[event.kind] ?? 'system-refresh',
+      tone: EVENT_TONES[event.kind] ?? 'muted',
+      label: formatShanghaiDateTime(event.createdAt),
+      summary: event.summary,
+      detail: event.kind === 'quantity'
+        ? `${event.quantityFrom || '0'} → ${event.quantityTo || '0'}`
+        : '',
+    }))
+  }
+  // 老数据没有流水时，至少给出创建时间这一条快照
+  return [{
+    id: 'fallback-created',
+    icon: 'system-add',
+    tone: 'green',
+    label: formatShanghaiDateTime(item.createdAt),
+    summary: '创建了这个物品',
+    detail: '',
+  }]
 }
 
 Page({
@@ -102,6 +150,7 @@ Page({
           statusLabel: LIFECYCLE_LABELS[item.status],
           updatedAtLabel: formatShanghaiDateTime(item.updatedAt),
           expiresOnLabel: formatChineseDate(item.expiresOn),
+          timeline: buildTimeline(item.events ?? [], item),
           imageSrc,
           actions: resolveInventoryLifecycleActions(item.status).map((action) => ({
             ...action,

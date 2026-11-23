@@ -48,9 +48,19 @@ export interface InventoryItem {
   iconKey?: string
   status: InventoryLifecycleStatus
   version: number
+  events?: InventoryEvent[]
   deletedAt: string | null
   createdAt: string
   updatedAt: string
+}
+
+export interface InventoryEvent {
+  id: string
+  kind: 'created' | 'quantity' | 'updated' | 'status' | string
+  summary: string
+  quantityFrom: string
+  quantityTo: string
+  createdAt: string
 }
 
 export interface InventoryItemInput {
