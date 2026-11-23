@@ -144,13 +144,16 @@ function buildMenuFocus(
   recipes: MenuRecipe[] | null,
   orders: Array<{ status: string; items: Array<{ title?: string; recipeTitle?: string }> }>,
 ): HomeFocusView {
-  const pendingOrder = orders.find((order) => order.status !== 'completed')
+  // 只有还在流程里的点单才算备餐；done = 已经吃完，cancelled = 取消，都不展示
+  const pendingOrder = orders.find(
+    (order) => order.status === 'pending' || order.status === 'preparing' || order.status === 'ready',
+  )
   const orderTitle = pendingOrder?.items?.[0]?.recipeTitle || pendingOrder?.items?.[0]?.title
   if (orderTitle) {
     return {
       src: '',
       mediaId: '',
-      iconUrl: resolveInventoryIcon({ name: orderTitle }).iconUrl,
+      iconUrl: '',
       title: orderTitle,
       copy: `备餐中：「${orderTitle}」`,
       tone: 'warn',
@@ -169,7 +172,9 @@ function buildMenuFocus(
     mediaId: '',
     iconUrl: icon.iconUrl,
     title: latest.title,
-    copy: `${edited ? '刚调整' : '最近收着'}「${latest.title}」，${latest.cookingMinutes} 分钟`,
+    copy: edited
+      ? `刚改过「${latest.title}」，${latest.cookingMinutes} 分钟`
+      : `最近收着「${latest.title}」，${latest.cookingMinutes} 分钟`,
     tone: 'normal',
   }
 }
