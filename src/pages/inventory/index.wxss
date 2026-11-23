@@ -363,3 +363,9 @@
   font-size: 22rpx;
   font-weight: 500;
 }
+
+.inv-chip__count {
+  margin-left: 4rpx;
+  font-size: 21rpx;
+  opacity: 0.75;
+}

@@ -211,6 +211,7 @@ function buildSections(
 }
 
 Page({
+
   behaviors: [pullRefreshBehavior],
   data: {
     loading: true,
@@ -308,6 +309,8 @@ Page({
       const today = getShanghaiDateOnly(Date.now())
       const filters: InventoryFilters = {
         query: this.data.query,
+        categories:
+          this.data.selectedCategory === 'all' ? undefined : [this.data.selectedCategory],
         lifecycleStatuses: resolveInventoryLifecycleStatuses(this.data.viewMode),
         expiryStatuses:
           this.data.viewMode === 'active'
@@ -338,9 +341,6 @@ Page({
       const views = await resolveItemImages(visibleItems.map((item) => toView(item, today)))
       if (!inventoryRequestGate.isCurrent(sequence)) return
       const categoryTabs = buildCategoryTabs(views)
-      const categoryFiltered = this.data.selectedCategory === 'all'
-        ? views
-        : views.filter((view) => view.category === this.data.selectedCategory)
       const hasListLoaded = listResult.status === 'fulfilled'
       const hasLoaded = this.data.hasLoaded || hasListLoaded
       const hasError = errors.length > 0
@@ -356,7 +356,7 @@ Page({
           : this.data.summary,
         categoryTabs,
         sections: hasListLoaded
-          ? buildSections(categoryFiltered, this.data.viewMode)
+          ? buildSections(views, this.data.viewMode)
           : this.data.sections,
         hasResults: hasListLoaded ? views.length > 0 : this.data.hasResults,
         errorMessage: errors[0] ?? '',
@@ -423,23 +423,8 @@ Page({
     const value = (event.currentTarget.dataset.value ?? 'all') as InventoryCategory | 'all'
     if (value === this.data.selectedCategory) return
     this.setData({ selectedCategory: value }, () => {
-      const sections = buildSections(
-        this.collectCategoryFilteredViews(),
-        this.data.viewMode,
-      )
-      this.setData({ sections, hasResults: sections.some((section) => section.items.length > 0) })
+      void this.refreshPage(true)
     })
-  },
-
-  collectCategoryFilteredViews(): InventoryItemView[] {
-    const seen = new Map<string, InventoryItemView>()
-    for (const section of this.data.sections) {
-      for (const item of section.items) seen.set(item.id, item)
-    }
-    const all = Array.from(seen.values())
-    return this.data.selectedCategory === 'all'
-      ? all
-      : all.filter((item) => item.category === this.data.selectedCategory)
   },
 
   async onQuickAdjust(event: { detail?: { id?: string; delta?: number } }) {
