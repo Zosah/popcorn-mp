@@ -27,7 +27,10 @@
         <image class="detail-hero__image" src="{{item.imageSrc}}" mode="aspectFill" />
       </view>
       <view wx:elif="{{item.iconUrl}}" class="detail-hero__icon"><image class="detail-hero__icon-image" src="{{item.iconUrl}}" mode="aspectFit" /></view>
-      <view wx:else class="detail-hero__icon"><line-icon name="{{item.iconName}}" size="42" tone="orange" /></view>
+      <view wx:else class="detail-hero__icon" bindtap="onGenerateImage">
+        <line-icon wx:if="{{!generating}}" name="{{item.iconName}}" size="42" tone="orange" />
+        <text wx:else class="detail-hero__loading">生成中</text>
+      </view>
       <view class="detail-hero__body">
         <view class="detail-hero__name">{{item.name}}</view>
         <view class="detail-hero__meta">{{item.quantity}}{{item.unit}} · {{item.locationLabel}}</view>
@@ -36,6 +39,12 @@
         <text>{{item.statusLabel}}</text>
         <expiry-badge wx:if="{{item.status === 'active'}}" status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
       </view>
+    </view>
+
+    <view wx:if="{{!item.imageSrc && item.status === 'active'}}" class="detail-gen" bindtap="onGenerateImage">
+      <line-icon name="system-image" size="22" tone="pink" />
+      <text class="detail-gen__text">{{generating ? '正在生成，约 5 秒…' : '没有照片？生成一张示意图'}}</text>
+      <text class="detail-gen__tag">AI</text>
     </view>
 
     <view class="detail-section-head">
