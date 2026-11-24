@@ -206,6 +206,7 @@ Page({
       return
     }
     this.setData({ aiGenerating: true })
+    showToast(this, '开始生成，约 5 秒')
     try {
       const url = await previewScenarioImage('inventory', name)
       this.setData({ aiGenerating: false, aiPreviewUrl: url })

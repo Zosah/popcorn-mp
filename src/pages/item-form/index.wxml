@@ -28,6 +28,14 @@
         <view class="form-photo-row__copy">
           <text class="form-label">物品图片</text>
           <text class="form-photo-row__hint">一张就够，之后更容易认出来</text>
+          <view
+            wx:if="{{!image && !imageUploading && !aiPreviewUrl}}"
+            class="form-photo-row__ai"
+            catchtap="onGenerateImage"
+          >
+            <line-icon name="system-image" size="18" tone="green" />
+            <text>{{aiGenerating ? '正在生成…' : '没有照片？生成示意图'}}</text>
+          </view>
         </view>
         <view wx:if="{{image && image.src}}" class="form-photo" bindtap="onPreviewImage">
           <image class="form-photo__image" src="{{image.thumbSrc || image.src}}" mode="aspectFill" />
@@ -57,15 +65,6 @@
         </view>
       </view>
 
-      <view
-        wx:elif="{{!image && !imageUploading && !aiGenerating}}"
-        class="form-ai"
-        bindtap="onGenerateImage"
-      >
-        <line-icon name="system-image" size="22" tone="green" />
-        <text class="form-ai__text">没有照片？生成一张示意图</text>
-        <text class="form-ai__tag">AI</text>
-      </view>
     </view>
 
     <view class="form-section paper-card">
