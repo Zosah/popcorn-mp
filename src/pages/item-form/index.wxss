@@ -304,6 +304,8 @@
 /* 生成入口：并入左侧说明区，不单独占一行 */
 .form-photo-row__ai {
   display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
   align-items: center;
   margin-top: 10rpx;
   padding: 8rpx 16rpx;
