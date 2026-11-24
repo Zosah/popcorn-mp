@@ -37,10 +37,24 @@
           <line-icon name="system-image" size="28" tone="blue" />
           <text>上传中</text>
         </view>
+        <view wx:elif="{{aiGenerating}}" class="form-photo form-photo--empty form-photo--busy">
+          <line-icon name="system-image" size="28" tone="blue" />
+          <text>生成中</text>
+        </view>
         <view wx:else class="form-photo form-photo--empty" bindtap="onChooseImage">
           <line-icon name="system-image" size="30" tone="blue" />
           <text>添加图片</text>
         </view>
+      </view>
+
+      <view
+        wx:if="{{!image && !imageUploading && !aiGenerating}}"
+        class="form-ai"
+        bindtap="onGenerateImage"
+      >
+        <line-icon name="system-image" size="22" tone="green" />
+        <text class="form-ai__text">没有照片？生成一张示意图</text>
+        <text class="form-ai__tag">AI</text>
       </view>
     </view>
 

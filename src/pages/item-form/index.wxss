@@ -249,3 +249,30 @@
   background: linear-gradient(135deg, #d18d7c 0%, #bb6d5d 100%);
   box-shadow: 0 18rpx 32rpx -20rpx rgba(184, 103, 87, 0.8);
 }
+
+/* AI 生成入口：编辑页专用，生成后随保存一起落库 */
+.form-ai {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+  padding: 16rpx 20rpx;
+  border: 1rpx dashed #cfe0d6;
+  border-radius: 20rpx;
+  background: linear-gradient(135deg, #f4f8f4, #eef4ef);
+  gap: 10rpx;
+}
+
+.form-ai__text {
+  color: #5c7a6f;
+  flex: 1;
+  font-size: 24rpx;
+}
+
+.form-ai__tag {
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  background: #e2eee9;
+  color: #4f6f62;
+  font-size: 19rpx;
+  font-weight: 700;
+}

@@ -10,7 +10,6 @@ import {
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { resolveInventoryIcon } from '../../services/inventory-icon'
-import { generateScenarioImage } from '../../services/generated-image'
 import type { InventoryEvent } from '../../domain/inventory'
 import { mediaGateway } from '../../services/media'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -236,26 +235,6 @@ Page({
     } catch (error) {
       this.setData({ adjusting: false, 'item.quantity': previous })
       wx.showToast({ title: '库存没有调整成功', icon: 'none' })
-    }
-  },
-
-  async onGenerateImage() {
-    const item = this.data.item
-    if (!item || this.data.generating) return
-    this.setData({ generating: true })
-    wx.showLoading({ title: '正在生成图片', mask: true })
-    try {
-      const image = await generateScenarioImage('inventory', item.name)
-      wx.hideLoading()
-      this.setData({ 'item.imageSrc': image.displayUrl, generating: false })
-      wx.showToast({ title: '图片已生成', icon: 'success' })
-    } catch (error) {
-      wx.hideLoading()
-      this.setData({ generating: false })
-      wx.showToast({
-        title: error instanceof Error ? error.message : '这次没有生成成功',
-        icon: 'none',
-      })
     }
   },
 

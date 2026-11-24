@@ -7,6 +7,7 @@ import {
   INVENTORY_LOCATION_ICON_NAMES,
 } from '../../constants/icon-names'
 import { formatChineseDate } from '../../domain/expiry'
+import { generateScenarioImage } from '../../services/generated-image'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { mediaGateway } from '../../services/media'
@@ -60,6 +61,7 @@ Page({
     loadError: '',
     saving: false,
     imageUploading: false,
+    aiGenerating: false,
     hasExpiry: false,
     expiryDisplay: '',
 
@@ -190,6 +192,35 @@ Page({
 
   onNoteInput(event: InputEvent) {
     this.setData({ 'form.note': event.detail.value })
+  },
+
+  async onGenerateImage() {
+    if (this.data.aiGenerating || this.data.imageUploading) return
+    const name = this.data.form.name.trim()
+    if (name.length < 2) {
+      wx.showToast({ title: '先写下物品名称', icon: 'none' })
+      return
+    }
+    this.setData({ aiGenerating: true })
+    wx.showLoading({ title: '正在生成，约 5 秒', mask: true })
+    try {
+      const image = await generateScenarioImage('inventory', name)
+      wx.hideLoading()
+      this.setData({
+        aiGenerating: false,
+        image: { mediaId: image.mediaId, src: image.displayUrl, thumbSrc: image.thumbUrl },
+        imageMediaId: image.mediaId,
+        'form.imageMediaId': image.mediaId,
+      })
+      wx.showToast({ title: '图片已生成，记得保存', icon: 'success' })
+    } catch (error) {
+      wx.hideLoading()
+      this.setData({ aiGenerating: false })
+      wx.showToast({
+        title: error instanceof Error ? error.message : '这次没有生成成功',
+        icon: 'none',
+      })
+    }
   },
 
   async onChooseImage() {
