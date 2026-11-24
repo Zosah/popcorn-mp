@@ -7,7 +7,7 @@ import {
   INVENTORY_LOCATION_ICON_NAMES,
 } from '../../constants/icon-names'
 import { formatChineseDate } from '../../domain/expiry'
-import { generateScenarioImage } from '../../services/generated-image'
+import { adoptScenarioImage, previewScenarioImage } from '../../services/generated-image'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { mediaGateway } from '../../services/media'
@@ -20,6 +20,7 @@ import {
   isImageEditCancelled,
 } from '../../utils/image-editor'
 import { showMediaUploadError } from '../../utils/media-error'
+import { appToastBehavior, showToast } from '../../utils/app-toast'
 
 interface PickerEvent {
   detail: { value: string }
@@ -54,6 +55,7 @@ const DEFAULT_FORM: InventoryItemInput = {
 }
 
 Page({
+  behaviors: [appToastBehavior],
   data: {
     itemId: '',
     version: 0,
@@ -62,6 +64,8 @@ Page({
     saving: false,
     imageUploading: false,
     aiGenerating: false,
+    aiPreviewUrl: '',
+    aiAdopting: false,
     hasExpiry: false,
     expiryDisplay: '',
 
@@ -198,28 +202,46 @@ Page({
     if (this.data.aiGenerating || this.data.imageUploading) return
     const name = this.data.form.name.trim()
     if (name.length < 2) {
-      wx.showToast({ title: '先写下物品名称', icon: 'none' })
+      showToast(this, '先写下物品名称')
       return
     }
     this.setData({ aiGenerating: true })
-    wx.showLoading({ title: '正在生成，约 5 秒', mask: true })
     try {
-      const image = await generateScenarioImage('inventory', name)
-      wx.hideLoading()
+      const url = await previewScenarioImage('inventory', name)
+      this.setData({ aiGenerating: false, aiPreviewUrl: url })
+    } catch (error) {
+      this.setData({ aiGenerating: false })
+      showToast(this, error instanceof Error ? error.message : '这次没有生成成功')
+    }
+  },
+
+  onPreviewAiImage() {
+    const url = this.data.aiPreviewUrl
+    if (url) wx.previewImage({ current: url, urls: [url] })
+  },
+
+  onDiscardAiPreview() {
+    this.setData({ aiPreviewUrl: '' })
+  },
+
+  async onAdoptAiPreview() {
+    const name = this.data.form.name.trim()
+    const sourceUrl = this.data.aiPreviewUrl
+    if (!name || !sourceUrl || this.data.aiAdopting) return
+    this.setData({ aiAdopting: true })
+    try {
+      const image = await adoptScenarioImage('inventory', name, sourceUrl)
       this.setData({
-        aiGenerating: false,
+        aiAdopting: false,
+        aiPreviewUrl: '',
         image: { mediaId: image.mediaId, src: image.displayUrl, thumbSrc: image.thumbUrl },
         imageMediaId: image.mediaId,
         'form.imageMediaId': image.mediaId,
       })
-      wx.showToast({ title: '图片已生成，记得保存', icon: 'success' })
+      showToast(this, '已用这张，记得保存')
     } catch (error) {
-      wx.hideLoading()
-      this.setData({ aiGenerating: false })
-      wx.showToast({
-        title: error instanceof Error ? error.message : '这次没有生成成功',
-        icon: 'none',
-      })
+      this.setData({ aiAdopting: false })
+      showToast(this, error instanceof Error ? error.message : '这张没有保存成功')
     }
   },
 

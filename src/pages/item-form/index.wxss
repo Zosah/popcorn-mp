@@ -276,3 +276,52 @@
   font-size: 19rpx;
   font-weight: 700;
 }
+
+/* AI 预览：先看效果，再决定用不用 */
+.form-ai-preview {
+  margin-top: 16rpx;
+  overflow: hidden;
+  border: 1rpx solid #e2d6c8;
+  border-radius: 24rpx;
+  background: #fdf9f3;
+}
+
+.form-ai-preview__image {
+  width: 100%;
+  height: 320rpx;
+  display: block;
+  background: #f2ece2;
+}
+
+.form-ai-preview__bar {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 18rpx;
+  gap: 12rpx;
+}
+
+.form-ai-preview__hint {
+  color: #8a7b6c;
+  flex: 1;
+  font-size: 22rpx;
+}
+
+.form-ai-preview__btn {
+  padding: 10rpx 22rpx;
+  border: 1rpx solid #e2d6c8;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #9a5f4b;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.form-ai-preview__btn--primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #d18f7d, #b96a5c);
+  color: #fff8f4;
+}
+
+.form-ai-preview__btn--busy {
+  opacity: 0.6;
+}

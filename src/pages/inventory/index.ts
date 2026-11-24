@@ -27,6 +27,7 @@ import { getInventoryErrorMessage } from '../../utils/inventory-error'
 import { resolveInventoryIcon } from '../../services/inventory-icon'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createDebouncer, createRequestGate } from '../../utils/request-control'
+import { appToastBehavior, showToast } from '../../utils/app-toast'
 
 type DemoExpiryFilter = 'all' | 'expired' | 'due' | 'soon' | 'normal' | 'none'
 
@@ -256,7 +257,7 @@ Page({
   loadedViews: [] as InventoryItemView[],
 
 
-  behaviors: [pullRefreshBehavior],
+  behaviors: [appToastBehavior, pullRefreshBehavior],
   data: {
     loading: true,
     hasLoaded: false,
@@ -542,7 +543,7 @@ Page({
         version: updated.version,
         adjusting: false,
       })
-      wx.showToast({ title: '库存已更新', icon: 'success', duration: 1200 })
+      showToast(this, '库存已更新')
     } catch (error) {
       this.patchItemView(id, {
         quantity: target.quantity,

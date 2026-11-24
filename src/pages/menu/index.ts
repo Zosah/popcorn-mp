@@ -20,6 +20,7 @@ import { readStoredApiSession } from '../../stores/session'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
+import { appToastBehavior } from '../../utils/app-toast'
 
 type MenuTab = 'eat' | 'recipes'
 type MealChoice = 'breakfast' | 'lunch' | 'dinner' | 'snack'
@@ -84,7 +85,7 @@ const MEAL_LABELS: Record<MealChoice, string> = {
 }
 
 Page({
-  behaviors: [pullRefreshBehavior],
+  behaviors: [appToastBehavior, pullRefreshBehavior],
   data: {
     allRecipes: [] as MenuRecipe[],
     categories: [] as MenuCategory[],

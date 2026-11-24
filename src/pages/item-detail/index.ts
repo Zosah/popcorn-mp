@@ -14,6 +14,7 @@ import type { InventoryEvent } from '../../domain/inventory'
 import { mediaGateway } from '../../services/media'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
 import { getInventoryErrorMessage } from '../../utils/inventory-error'
+import { appToastBehavior, showToast } from '../../utils/app-toast'
 
 const LIFECYCLE_LABELS: Record<InventoryLifecycleStatus, string> = {
   active: '正在库存中',
@@ -121,6 +122,7 @@ function buildTimeline(
 }
 
 Page({
+  behaviors: [appToastBehavior],
   data: {
     adjusting: false,
     generating: false,
@@ -231,10 +233,10 @@ Page({
         'item.quantity': updated.quantity,
         'item.version': updated.version,
       })
-      wx.showToast({ title: '库存已更新', icon: 'success', duration: 1200 })
+      showToast(this, '库存已更新')
     } catch (error) {
       this.setData({ adjusting: false, 'item.quantity': previous })
-      wx.showToast({ title: '库存没有调整成功', icon: 'none' })
+      showToast(this, '库存没有调整成功')
     }
   },
 

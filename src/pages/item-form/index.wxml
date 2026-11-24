@@ -1,3 +1,4 @@
+<app-toast visible="{{appToastVisible}}" text="{{appToastText}}" />
 <view class="page-shell item-form-page">
   <view class="form-hero">
     <view class="form-hero__icon"><line-icon name="inventory-category-other" size="30" tone="orange" /></view>
@@ -47,8 +48,17 @@
         </view>
       </view>
 
+      <view wx:if="{{aiPreviewUrl}}" class="form-ai-preview">
+        <image class="form-ai-preview__image" src="{{aiPreviewUrl}}" mode="aspectFill" catchtap="onPreviewAiImage" />
+        <view class="form-ai-preview__bar">
+          <text class="form-ai-preview__hint">这张满意吗？</text>
+          <view class="form-ai-preview__btn" catchtap="onGenerateImage">{{aiGenerating ? '生成中…' : '换一张'}}</view>
+          <view class="form-ai-preview__btn form-ai-preview__btn--primary {{aiAdopting ? 'form-ai-preview__btn--busy' : ''}}" catchtap="onAdoptAiPreview">{{aiAdopting ? '保存中…' : '用这张'}}</view>
+        </view>
+      </view>
+
       <view
-        wx:if="{{!image && !imageUploading && !aiGenerating}}"
+        wx:elif="{{!image && !imageUploading && !aiGenerating}}"
         class="form-ai"
         bindtap="onGenerateImage"
       >

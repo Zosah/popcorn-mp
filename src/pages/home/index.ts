@@ -49,6 +49,7 @@ import { resolveAvatarUrl } from '../../utils/avatar'
 import { waitForMinimumLoading } from '../../utils/loading'
 import { createRequestGate } from '../../utils/request-control'
 import { getActiveSpaceCreatedAt, getTogetherDays } from '../../utils/space-days'
+import { appToastBehavior } from '../../utils/app-toast'
 
 interface HomeMemberView {
   userId: string
@@ -221,7 +222,7 @@ function formatPetActivityDate(value: string, today: string): string {
 }
 
 Page({
-  behaviors: [pullRefreshBehavior],
+  behaviors: [appToastBehavior, pullRefreshBehavior],
   data: {
     initialLoading: true,
     hasLoaded: false,

@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "添加物品",
   "usingComponents": {
-    "line-icon": "/components/line-icon/index"
+    "line-icon": "/components/line-icon/index",
+    "app-toast": "/components/app-toast/index"
   }
 }

@@ -1,0 +1,3 @@
+<view wx:if="{{visible}}" class="app-toast">
+  <text class="app-toast__text">{{text}}</text>
+</view>

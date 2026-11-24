@@ -10,7 +10,8 @@
     "app-tab-bar": "/components/app-tab-bar/index",
     "page-loading": "/components/page-loading/index",
     "auth-preview-gate": "/components/auth-preview-gate/index",
-    "pull-refresh": "/components/pull-refresh/index"
+    "pull-refresh": "/components/pull-refresh/index",
+    "app-toast": "/components/app-toast/index"
   },
   "navigationStyle": "custom"
 }

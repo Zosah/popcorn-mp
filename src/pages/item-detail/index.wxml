@@ -1,3 +1,4 @@
+<app-toast visible="{{appToastVisible}}" text="{{appToastText}}" />
 <view class="page-shell detail-page">
   <view wx:if="{{loading}}" class="detail-state">正在打开这件物品…</view>
   <view wx:elif="{{errorMessage}}" class="detail-state">
