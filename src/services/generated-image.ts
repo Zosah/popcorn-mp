@@ -18,10 +18,12 @@ interface ApiGeneratedImage {
 export async function previewScenarioImage(
   kind: 'inventory' | 'menu',
   topic: string,
+  category = '',
 ): Promise<string> {
   const { token, spaceId } = imageAuth()
-  return requestImageApi<{ url: string }>('/generated-images/preview', token, spaceId, { kind, topic })
-    .then((data) => data.url)
+  return requestImageApi<{ url: string }>('/generated-images/preview', token, spaceId, {
+    kind, topic, category,
+  }).then((data) => data.url)
 }
 
 /** 用户选中后再把临时图转存为自己的资源（此时才真正落库）。 */
@@ -29,11 +31,13 @@ export async function adoptScenarioImage(
   kind: 'inventory' | 'menu',
   topic: string,
   sourceUrl: string,
+  category = '',
 ): Promise<ScenarioImage> {
   const { token, spaceId } = imageAuth()
   const data = await requestImageApi<ApiGeneratedImage>('/generated-images/adopt', token, spaceId, {
     kind,
     topic,
+    category,
     sourceUrl,
   })
   return {

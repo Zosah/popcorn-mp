@@ -208,7 +208,7 @@ Page({
     this.setData({ aiGenerating: true })
     showToast(this, '开始生成，约 5 秒')
     try {
-      const url = await previewScenarioImage('inventory', name)
+      const url = await previewScenarioImage('inventory', name, this.data.form.category)
       this.setData({ aiGenerating: false, aiPreviewUrl: url })
     } catch (error) {
       this.setData({ aiGenerating: false })
@@ -231,7 +231,7 @@ Page({
     if (!name || !sourceUrl || this.data.aiAdopting) return
     this.setData({ aiAdopting: true })
     try {
-      const image = await adoptScenarioImage('inventory', name, sourceUrl)
+      const image = await adoptScenarioImage('inventory', name, sourceUrl, this.data.form.category)
       this.setData({
         aiAdopting: false,
         aiPreviewUrl: '',
