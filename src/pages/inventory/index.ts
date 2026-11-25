@@ -93,8 +93,10 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
     ...item,
     imageState,
     placeholder: imageState === 'failed'
-      ? '/images/inventory-failed.png'
-      : '/images/inventory-placeholder.png',
+      ? '/images/inventory-failed-state.jpg'
+      : imageState === 'pending'
+        ? '/images/inventory-generating.jpg'
+        : '/images/inventory-placeholder.png',
     generating: imageState === 'pending',
     generateFailed: imageState === 'failed',
     iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],

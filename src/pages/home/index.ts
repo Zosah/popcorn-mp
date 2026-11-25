@@ -133,7 +133,12 @@ function buildInventoryFocus(items: InventoryItem[], today: string): HomeFocusVi
     ? 'normal'
     : days < 0 ? 'danger' : days <= 3 ? 'warn' : 'normal'
 
-  return { src: '', mediaId: focus.imageMediaId ?? '', iconUrl: '/images/inventory-placeholder.png', title: focus.name, copy, tone }
+  const iconUrl = focus.imageState === 'failed'
+    ? '/images/inventory-failed-state.jpg'
+    : focus.imageState === 'pending'
+      ? '/images/inventory-generating.jpg'
+      : '/images/inventory-placeholder.png'
+  return { src: '', mediaId: focus.imageMediaId ?? '', iconUrl, title: focus.name, copy, tone }
 }
 
 /**

@@ -171,8 +171,10 @@ Page({
           ...item,
           iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
           placeholder: item.imageState === 'failed'
-            ? '/images/inventory-failed.png'
-            : '/images/inventory-placeholder.png',
+            ? '/images/inventory-failed-state.jpg'
+            : item.imageState === 'pending'
+              ? '/images/inventory-generating.jpg'
+              : '/images/inventory-placeholder.png',
           generating: item.imageState === 'pending',
           generateFailed: item.imageState === 'failed',
           categoryLabel: getCategoryLabel(item.category),

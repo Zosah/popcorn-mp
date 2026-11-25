@@ -5,7 +5,6 @@
       src="{{item.imageSrc || item.placeholder}}"
       mode="aspectFill"
     />
-    <view wx:if="{{item.generating}}" class="row__pulse"></view>
   </view>
 
   <view class="row__main">
