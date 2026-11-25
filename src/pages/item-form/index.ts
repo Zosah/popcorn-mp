@@ -230,6 +230,7 @@ Page({
             'form.imageMediaId': asset.id,
             aiQueued: false,
           })
+          showToast(this, '已为您生成封面图，记得保存', 2600)
         }
       } catch {
         this.stopImagePolling()
@@ -262,8 +263,9 @@ Page({
         targetItemId: this.data.itemId || '',
         forced,
       })
-      this.setData({ aiGenerating: false, aiQueued: true })
-      showToast(this, forced ? '已在后台重做一张' : '已在后台生成，可以先保存')
+      this.setData({ aiGenerating: false, aiQueued: true, imageState: 'pending' })
+      showToast(this, forced ? '已重新生成，可以先保存' : '已在后台生成，可以先保存')
+      if (this.data.itemId) this.startImagePolling(this.data.itemId)
     } catch (error) {
       this.setData({ aiGenerating: false })
       showToast(this, error instanceof Error ? error.message : '这次没有排上队')
@@ -447,7 +449,13 @@ Page({
           expiresOn: this.data.hasExpiry ? form.expiresOn : null,
         })
       }
-      wx.showToast({ title: this.data.itemId ? '已更新' : '已添加', icon: 'success' })
+      const pending = this.data.imageState === 'pending' || this.data.aiQueued
+      showToast(
+        this,
+        pending
+          ? (this.data.itemId ? '已更新，封面生成后会补上' : '已添加，封面生成后会补上')
+          : (this.data.itemId ? '已更新' : '已添加'),
+      )
       navigateBackOrTab('/pages/inventory/index')
     } catch (error) {
       wx.showToast({
