@@ -45,7 +45,7 @@
             <line-icon name="system-image" size="30" tone="blue" />
             <text>上传中</text>
           </view>
-          <view wx:elif="{{aiGenerating || imageState === 'pending'}}" class="recipe-cover__preview">
+          <view wx:elif="{{aiGenerating || imageState === 'pending' || imageState === 'ready'}}" class="recipe-cover__preview">
             <image src="/images/inventory-generating.jpg" mode="aspectFit" />
             <view class="recipe-cover__caption">AI 生成中</view>
           </view>

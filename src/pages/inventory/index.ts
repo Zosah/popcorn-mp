@@ -92,6 +92,7 @@ function toView(item: InventoryItem, today: string): InventoryItemView {
   return {
     ...item,
     imageState,
+    // 已有图但签名地址还没解析出来时，也用「生成中」兜住，避免图片闪一下就没了
     placeholder: imageState === 'failed'
       ? '/images/inventory-failed-state.jpg'
       : imageState === 'pending'
@@ -145,7 +146,10 @@ async function resolveItemImages(views: InventoryItemView[]): Promise<InventoryI
   }
   return views.map((view) => {
     const asset = assets[view.imageMediaId]
-    return asset ? { ...view, imageSrc: asset.thumb.url } : view
+    if (asset) return { ...view, imageSrc: asset.thumb.url }
+    // 有图片 ID 却拿不到地址：继续用「生成中」兜住，别让用户看到图片闪一下消失
+    if (view.imageMediaId) return { ...view, placeholder: '/images/inventory-generating.jpg' }
+    return view
   })
 }
 

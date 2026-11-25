@@ -46,7 +46,7 @@
           <line-icon name="system-image" size="28" tone="blue" />
           <text>上传中</text>
         </view>
-        <view wx:elif="{{aiGenerating || aiQueued || imageState === 'pending'}}" class="form-photo">
+        <view wx:elif="{{aiGenerating || aiQueued || imageState === 'pending' || imageState === 'ready'}}" class="form-photo">
           <image class="form-photo__image" src="/images/inventory-generating.jpg" mode="aspectFill" />
         </view>
         <view wx:elif="{{imageState === 'failed'}}" class="form-photo" catchtap="onGenerateImage">
