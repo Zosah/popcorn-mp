@@ -65,6 +65,7 @@ Page({
     imageUploading: false,
     aiGenerating: false,
     aiQueued: false,
+    imageState: '',
     hasExpiry: false,
     expiryDisplay: '',
 
@@ -145,6 +146,10 @@ Page({
           LOCATION_OPTIONS.findIndex((option) => option.value === item.location),
         ),
         image,
+        imageState: item.imageState ?? '',
+        placeholder: item.imageState === 'failed'
+          ? '/images/inventory-failed-state.jpg'
+          : '/images/inventory-generating.jpg',
         form: {
           name: item.name,
           category: item.category,
@@ -195,6 +200,48 @@ Page({
 
   onNoteInput(event: InputEvent) {
     this.setData({ 'form.note': event.detail.value })
+  },
+
+  /** 生成中时每 3 秒看一眼，出图就自动带上，用户不用手动刷新 */
+  startImagePolling(id: string) {
+    this.stopImagePolling()
+    let tries = 0
+    const timer = setInterval(async () => {
+      tries += 1
+      if (tries > 20) {
+        this.stopImagePolling()
+        return
+      }
+      try {
+        const item = await inventoryGateway.get(id)
+        if (!item) {
+          this.stopImagePolling()
+          return
+        }
+        const state = item.imageState ?? ''
+        if (state === 'pending') return
+        this.stopImagePolling()
+        this.setData({ imageState: state })
+        if (item.imageMediaId) {
+          const asset = await mediaGateway.get(item.imageMediaId)
+          const src = asset.display.url || asset.thumb.url
+          this.setData({
+            image: { mediaId: asset.id, src, thumbSrc: asset.thumb.url || src },
+            'form.imageMediaId': asset.id,
+            aiQueued: false,
+          })
+        }
+      } catch {
+        this.stopImagePolling()
+      }
+    }, 3000)
+    ;(this as unknown as { imagePollTimer?: number }).imagePollTimer = timer as unknown as number
+  },
+
+  stopImagePolling() {
+    const timer = (this as unknown as { imagePollTimer?: number }).imagePollTimer
+    if (timer) clearInterval(timer)
+    ;(this as unknown as { imagePollTimer?: number }).imagePollTimer = undefined
   },
 
   async onGenerateImage() {

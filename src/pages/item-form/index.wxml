@@ -34,7 +34,7 @@
             catchtap="onGenerateImage"
           >
             <line-icon name="system-image" size="18" tone="green" />
-            <text>{{aiGenerating ? '正在排队…' : (aiQueued ? '再生成一张' : '没有照片？生成示意图')}}</text>
+            <text>{{aiGenerating ? '正在排队…' : (imageState === 'failed' ? '重新生成一张' : (aiQueued ? '再生成一张' : '没有照片？生成示意图'))}}</text>
           </view>
         </view>
         <view wx:if="{{image && image.src}}" class="form-photo" bindtap="onPreviewImage">
@@ -46,9 +46,11 @@
           <line-icon name="system-image" size="28" tone="blue" />
           <text>上传中</text>
         </view>
-        <view wx:elif="{{aiGenerating}}" class="form-photo form-photo--empty form-photo--busy">
-          <line-icon name="system-image" size="28" tone="blue" />
-          <text>生成中</text>
+        <view wx:elif="{{aiGenerating || aiQueued || imageState === 'pending'}}" class="form-photo">
+          <image class="form-photo__image" src="/images/inventory-generating.jpg" mode="aspectFill" />
+        </view>
+        <view wx:elif="{{imageState === 'failed'}}" class="form-photo" catchtap="onGenerateImage">
+          <image class="form-photo__image" src="/images/inventory-failed-state.jpg" mode="aspectFill" />
         </view>
         <view wx:else class="form-photo form-photo--empty" bindtap="onChooseImage">
           <line-icon name="system-image" size="30" tone="blue" />
