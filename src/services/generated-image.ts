@@ -2,52 +2,18 @@ import { appConfig } from '../config/env'
 import { readApiToken, readStoredApiSession } from '../stores/session'
 import { createRequestId } from './transport'
 
-export interface ScenarioImage {
-  mediaId: string
-  displayUrl: string
-  thumbUrl: string
-}
+export type ImageJobStatus = 'pending' | 'running' | 'done' | 'failed'
 
-interface ApiGeneratedImage {
+export interface ImageJob {
   id: string
-  display: { url: string }
-  thumb: { url: string }
+  status: ImageJobStatus
+  mediaId: string
+  error: string
+  topic: string
+  targetItemId: string
 }
 
-/** 只生成不落库：返回第三方临时地址，供用户预览。 */
-export async function previewScenarioImage(
-  kind: 'inventory' | 'menu',
-  topic: string,
-  category = '',
-): Promise<string> {
-  const { token, spaceId } = imageAuth()
-  return requestImageApi<{ url: string }>('/generated-images/preview', token, spaceId, {
-    kind, topic, category,
-  }).then((data) => data.url)
-}
-
-/** 用户选中后再把临时图转存为自己的资源（此时才真正落库）。 */
-export async function adoptScenarioImage(
-  kind: 'inventory' | 'menu',
-  topic: string,
-  sourceUrl: string,
-  category = '',
-): Promise<ScenarioImage> {
-  const { token, spaceId } = imageAuth()
-  const data = await requestImageApi<ApiGeneratedImage>('/generated-images/adopt', token, spaceId, {
-    kind,
-    topic,
-    category,
-    sourceUrl,
-  })
-  return {
-    mediaId: data.id,
-    displayUrl: data.display?.url ?? '',
-    thumbUrl: data.thumb?.url ?? data.display?.url ?? '',
-  }
-}
-
-function imageAuth(): { token: string; spaceId: string } {
+function auth(): { token: string; spaceId: string } {
   const stored = readStoredApiSession()
   const token = readApiToken()
   const spaceId = stored?.session?.activeSpaceId ?? ''
@@ -55,17 +21,13 @@ function imageAuth(): { token: string; spaceId: string } {
   return { token, spaceId }
 }
 
-function requestImageApi<T>(
-  path: string,
-  token: string,
-  spaceId: string,
-  data: Record<string, unknown>,
-): Promise<T> {
+function request<T>(path: string, method: 'POST' | 'GET', data?: Record<string, unknown>): Promise<T> {
+  const { token, spaceId } = auth()
   return new Promise<T>((resolve, reject) => {
     wx.request({
       url: `${appConfig.apiBaseUrl}/spaces/${encodeURIComponent(spaceId)}${path}`,
-      method: 'POST',
-      timeout: 60000,
+      method,
+      timeout: 15000,
       data,
       header: {
         Accept: 'application/json',
@@ -79,7 +41,7 @@ function requestImageApi<T>(
           return
         }
         const body = res.data as { message?: string } | undefined
-        reject(new Error(body?.message || '这次没有生成成功'))
+        reject(new Error(body?.message || '操作没成功，稍后再试'))
       },
       fail(error) {
         reject(new Error(error.errMsg || '网络不给力，稍后再试'))
@@ -89,47 +51,26 @@ function requestImageApi<T>(
 }
 
 /**
- * 让服务端按名称生成一张示意图（同名全站复用，命中缓存立刻返回）。
- * 生成一次约 4 秒，调用方需要自己给 loading。
+ * 提交一张生图任务（幂等：同 分类+名称 已有图或已有排队任务时，后端直接复用）。
+ * forced=true 表示用户主动「换一张」，跳过缓存重新生成。
  */
-export async function generateScenarioImage(
-  kind: 'inventory' | 'menu',
-  topic: string,
-): Promise<ScenarioImage> {
-  const stored = readStoredApiSession()
-  const token = readApiToken()
-  const spaceId = stored?.session?.activeSpaceId ?? ''
-  if (!token || !spaceId) {
-    throw new Error('登录后才能生成图片')
-  }
-  const response = await new Promise<ApiGeneratedImage>((resolve, reject) => {
-    wx.request({
-      url: `${appConfig.apiBaseUrl}/spaces/${encodeURIComponent(spaceId)}/generated-images`,
-      method: 'POST',
-      timeout: 60000,
-      data: { kind, topic },
-      header: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        'X-Request-Id': createRequestId(),
-      },
-      success(res) {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data as ApiGeneratedImage)
-          return
-        }
-        const body = res.data as { message?: string } | undefined
-        reject(new Error(body?.message || '这次没有生成成功'))
-      },
-      fail(error) {
-        reject(new Error(error.errMsg || '网络不给力，稍后再试'))
-      },
-    })
+export function enqueueImageJob(input: {
+  kind: 'inventory' | 'menu'
+  category: string
+  topic: string
+  targetItemId?: string
+  forced?: boolean
+}): Promise<ImageJob> {
+  return request<ImageJob>('/generated-images/jobs', 'POST', {
+    kind: input.kind,
+    category: input.category,
+    topic: input.topic,
+    targetItemId: input.targetItemId ?? '',
+    forced: input.forced ?? false,
   })
-  return {
-    mediaId: response.id,
-    displayUrl: response.display?.url ?? '',
-    thumbUrl: response.thumb?.url ?? response.display?.url ?? '',
-  }
+}
+
+/** 轮询任务状态。 */
+export function getImageJob(jobId: string): Promise<ImageJob> {
+  return request<ImageJob>(`/generated-images/jobs/${encodeURIComponent(jobId)}`, 'GET')
 }

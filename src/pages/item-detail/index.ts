@@ -9,7 +9,6 @@ import {
 } from '../../domain/expiry'
 import type { InventoryItem, InventoryLifecycleStatus } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
-import { resolveInventoryIcon } from '../../services/inventory-icon'
 import type { InventoryEvent } from '../../domain/inventory'
 import { mediaGateway } from '../../services/media'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -32,9 +31,9 @@ const ACTION_LABELS = {
 
 interface ItemDetailView extends InventoryItem {
   iconName: string
-  iconUrl: string
-  fallbackText: string
-  fallbackColor: string
+  placeholder: string
+  generating: boolean
+  generateFailed: boolean
   categoryLabel: string
   locationLabel: string
   expiry: ReturnType<typeof resolveExpiry>
@@ -171,7 +170,11 @@ Page({
         item: {
           ...item,
           iconName: INVENTORY_CATEGORY_ICON_NAMES[item.category],
-          ...resolveInventoryIcon({ name: item.name, category: item.category }),
+          placeholder: item.imageState === 'failed'
+            ? '/images/inventory-failed.png'
+            : '/images/inventory-placeholder.png',
+          generating: item.imageState === 'pending',
+          generateFailed: item.imageState === 'failed',
           categoryLabel: getCategoryLabel(item.category),
           locationLabel: getLocationLabel(item.location),
           expiry: resolveExpiry(item.expiresOn, today),
@@ -186,6 +189,7 @@ Page({
           })),
         },
       })
+      if (this.data.item?.generating) this.startImagePolling()
     } catch (error) {
       this.setData({
         errorMessage: getInventoryErrorMessage(
@@ -238,6 +242,27 @@ Page({
       this.setData({ adjusting: false, 'item.quantity': previous })
       showToast(this, '库存没有调整成功')
     }
+  },
+
+  startImagePolling() {
+    this.stopImagePolling()
+    let tries = 0
+    const timer = setInterval(async () => {
+      tries += 1
+      if (!this.data.item?.generating || tries > 20) {
+        this.stopImagePolling()
+        return
+      }
+      await this.loadItem(this.data.id)
+      if (!this.data.item?.generating) this.stopImagePolling()
+    }, 3000)
+    ;(this as unknown as { imagePollTimer?: number }).imagePollTimer = timer as unknown as number
+  },
+
+  stopImagePolling() {
+    const timer = (this as unknown as { imagePollTimer?: number }).imagePollTimer
+    if (timer) clearInterval(timer)
+    ;(this as unknown as { imagePollTimer?: number }).imagePollTimer = undefined
   },
 
   onRetry() {

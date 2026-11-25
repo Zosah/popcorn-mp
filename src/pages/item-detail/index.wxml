@@ -28,10 +28,12 @@
         <image class="detail-hero__image" src="{{item.imageSrc}}" mode="aspectFill" />
       </view>
       <view wx:elif="{{item.iconUrl}}" class="detail-hero__icon"><image class="detail-hero__icon-image" src="{{item.iconUrl}}" mode="aspectFit" /></view>
-      <view wx:else class="detail-hero__icon" bindtap="onGenerateImage">
-        <line-icon wx:if="{{!generating}}" name="{{item.iconName}}" size="42" tone="orange" />
-        <text wx:else class="detail-hero__loading">生成中</text>
-      </view>
+      <image
+        wx:else
+        class="detail-hero__icon detail-hero__icon--image"
+        src="{{item.placeholder}}"
+        mode="aspectFill"
+      />
       <view class="detail-hero__body">
         <view class="detail-hero__name">{{item.name}}</view>
         <view class="detail-hero__meta">{{item.quantity}}{{item.unit}} · {{item.locationLabel}}</view>
@@ -40,6 +42,15 @@
         <text>{{item.statusLabel}}</text>
         <expiry-badge wx:if="{{item.status === 'active'}}" status="{{item.expiry.status}}" label="{{item.expiry.label}}" />
       </view>
+    </view>
+
+    <view wx:if="{{item.generating}}" class="detail-image-hint">
+      <line-icon name="system-refresh" size="20" tone="pink" />
+      <text>AI 正在补充示意图，稍后自动出现</text>
+    </view>
+    <view wx:elif="{{item.generateFailed}}" class="detail-image-hint detail-image-hint--failed">
+      <line-icon name="system-alert" size="20" tone="danger" />
+      <text>示意图没生成出来，去编辑页可以重试</text>
     </view>
 
     <view class="detail-section-head">

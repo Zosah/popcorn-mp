@@ -29,12 +29,12 @@
           <text class="form-label">物品图片</text>
           <text class="form-photo-row__hint">一张就够，之后更容易认出来</text>
           <view
-            wx:if="{{!image && !imageUploading && !aiPreviewUrl}}"
+            wx:if="{{!image && !imageUploading}}"
             class="form-photo-row__ai"
             catchtap="onGenerateImage"
           >
             <line-icon name="system-image" size="18" tone="green" />
-            <text>{{aiGenerating ? '正在生成…' : '没有照片？生成示意图'}}</text>
+            <text>{{aiGenerating ? '正在排队…' : (aiQueued ? '再生成一张' : '没有照片？生成示意图')}}</text>
           </view>
         </view>
         <view wx:if="{{image && image.src}}" class="form-photo" bindtap="onPreviewImage">
@@ -56,13 +56,9 @@
         </view>
       </view>
 
-      <view wx:if="{{aiPreviewUrl}}" class="form-ai-preview">
-        <image class="form-ai-preview__image" src="{{aiPreviewUrl}}" mode="aspectFill" catchtap="onPreviewAiImage" />
-        <view class="form-ai-preview__bar">
-          <text class="form-ai-preview__hint">这张满意吗？</text>
-          <view class="form-ai-preview__btn" catchtap="onGenerateImage">{{aiGenerating ? '生成中…' : '换一张'}}</view>
-          <view class="form-ai-preview__btn form-ai-preview__btn--primary {{aiAdopting ? 'form-ai-preview__btn--busy' : ''}}" catchtap="onAdoptAiPreview">{{aiAdopting ? '保存中…' : '用这张'}}</view>
-        </view>
+      <view wx:if="{{aiQueued && !image}}" class="form-ai-note">
+        <line-icon name="system-refresh" size="18" tone="pink" />
+        <text>AI 正在后台生成，保存后会自动带上图片，也可以先离开</text>
       </view>
 
     </view>

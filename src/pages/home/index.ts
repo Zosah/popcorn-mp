@@ -26,7 +26,6 @@ import { inventoryGateway } from '../../services/inventory'
 import { menuGateway } from '../../services/menu'
 import { mealOrderGateway } from '../../services/meal-order'
 import { mediaGateway } from '../../services/media'
-import { resolveInventoryIcon } from '../../services/inventory-icon'
 import type { InventoryItem } from '../../domain/inventory'
 import type { MenuRecipe } from '../../services/menu-gateway'
 import { resolveExpiry } from '../../domain/expiry'
@@ -121,7 +120,7 @@ function buildInventoryFocus(items: InventoryItem[], today: string): HomeFocusVi
   if (!focus) return empty
 
   const expiry = resolveExpiry(focus.expiresOn, today)
-  const icon = resolveInventoryIcon({ name: focus.name, category: focus.category })
+  // 物品不再用彩色图标池，占位统一走默认图
   const days = expiry.daysRemaining
   const copy = days === null
     ? `${focus.name} 刚更新`
@@ -134,7 +133,7 @@ function buildInventoryFocus(items: InventoryItem[], today: string): HomeFocusVi
     ? 'normal'
     : days < 0 ? 'danger' : days <= 3 ? 'warn' : 'normal'
 
-  return { src: '', mediaId: focus.imageMediaId ?? '', iconUrl: icon.iconUrl, title: focus.name, copy, tone }
+  return { src: '', mediaId: focus.imageMediaId ?? '', iconUrl: '/images/inventory-placeholder.png', title: focus.name, copy, tone }
 }
 
 /**
@@ -166,12 +165,12 @@ function buildMenuFocus(
   if (!latest) {
     return { src: '', mediaId: '', iconUrl: '', title: '', copy: '还没有收藏菜单，先收一道常做的菜。', tone: 'none' }
   }
-  const icon = resolveInventoryIcon({ name: latest.title })
+
   const edited = Boolean(latest.updatedAt && latest.updatedAt !== latest.createdAt)
   return {
     src: latest.image?.src ?? '',
     mediaId: '',
-    iconUrl: icon.iconUrl,
+    iconUrl: '/images/inventory-placeholder.png',
     title: latest.title,
     copy: edited
       ? `刚改过「${latest.title}」，${latest.cookingMinutes} 分钟`

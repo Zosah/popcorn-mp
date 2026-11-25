@@ -392,3 +392,28 @@
 }
 
 
+
+/* 无图时的占位：正常状态是浅暖底，失败状态是灰底 + 感叹号 */
+.detail-hero__icon--image {
+  width: 152rpx;
+  height: 152rpx;
+  border-radius: 24rpx;
+  object-fit: cover;
+}
+
+.detail-image-hint {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 18rpx;
+  background: #fdf3ec;
+  color: #9a5f4b;
+  font-size: 22rpx;
+  gap: 10rpx;
+}
+
+.detail-image-hint--failed {
+  background: #f7eeee;
+  color: #b8674f;
+}

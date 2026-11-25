@@ -107,6 +107,7 @@
 }
 
 .row__thumb {
+  position: relative;
   display: flex;
   width: 96rpx;
   height: 96rpx;
@@ -229,4 +230,22 @@
   border-top: 2rpx solid #cfc6ba;
   border-right: 2rpx solid #cfc6ba;
   transform: rotate(45deg);
+}
+
+/* 生成中：缩略图右上角一颗呼吸点 */
+.row__pulse {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: #c67d6d;
+  box-shadow: 0 0 0 4rpx rgba(198, 125, 109, 0.22);
+  animation: row-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes row-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
 }

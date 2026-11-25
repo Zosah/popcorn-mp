@@ -44,6 +44,8 @@ export interface InventoryItem {
   expiresOn: string | null
   note: string
   imageMediaId: string
+  /** 图片状态：pending 生成中 / ready 已有图 / failed 生成失败 */
+  imageState?: string
   /** 用户选择的图标 key，空表示按名称自动匹配 */
   iconKey?: string
   status: InventoryLifecycleStatus

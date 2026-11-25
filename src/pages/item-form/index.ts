@@ -7,7 +7,7 @@ import {
   INVENTORY_LOCATION_ICON_NAMES,
 } from '../../constants/icon-names'
 import { formatChineseDate } from '../../domain/expiry'
-import { adoptScenarioImage, previewScenarioImage } from '../../services/generated-image'
+import { enqueueImageJob } from '../../services/generated-image'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
 import { mediaGateway } from '../../services/media'
@@ -64,8 +64,7 @@ Page({
     saving: false,
     imageUploading: false,
     aiGenerating: false,
-    aiPreviewUrl: '',
-    aiAdopting: false,
+    aiQueued: false,
     hasExpiry: false,
     expiryDisplay: '',
 
@@ -199,50 +198,28 @@ Page({
   },
 
   async onGenerateImage() {
-    if (this.data.aiGenerating || this.data.imageUploading) return
+    if (this.data.aiGenerating) return
     const name = this.data.form.name.trim()
     if (name.length < 2) {
       showToast(this, '先写下物品名称')
       return
     }
+    // 已经点过一次就是「换一张」：跳过缓存重新生成
+    const forced = this.data.aiQueued
     this.setData({ aiGenerating: true })
-    showToast(this, '开始生成，约 5 秒')
     try {
-      const url = await previewScenarioImage('inventory', name, this.data.form.category)
-      this.setData({ aiGenerating: false, aiPreviewUrl: url })
+      await enqueueImageJob({
+        kind: 'inventory',
+        category: this.data.form.category,
+        topic: name,
+        targetItemId: this.data.itemId || '',
+        forced,
+      })
+      this.setData({ aiGenerating: false, aiQueued: true })
+      showToast(this, forced ? '已在后台重做一张' : '已在后台生成，可以先保存')
     } catch (error) {
       this.setData({ aiGenerating: false })
-      showToast(this, error instanceof Error ? error.message : '这次没有生成成功')
-    }
-  },
-
-  onPreviewAiImage() {
-    const url = this.data.aiPreviewUrl
-    if (url) wx.previewImage({ current: url, urls: [url] })
-  },
-
-  onDiscardAiPreview() {
-    this.setData({ aiPreviewUrl: '' })
-  },
-
-  async onAdoptAiPreview() {
-    const name = this.data.form.name.trim()
-    const sourceUrl = this.data.aiPreviewUrl
-    if (!name || !sourceUrl || this.data.aiAdopting) return
-    this.setData({ aiAdopting: true })
-    try {
-      const image = await adoptScenarioImage('inventory', name, sourceUrl, this.data.form.category)
-      this.setData({
-        aiAdopting: false,
-        aiPreviewUrl: '',
-        image: { mediaId: image.mediaId, src: image.displayUrl, thumbSrc: image.thumbUrl },
-        imageMediaId: image.mediaId,
-        'form.imageMediaId': image.mediaId,
-      })
-      showToast(this, '已用这张，记得保存')
-    } catch (error) {
-      this.setData({ aiAdopting: false })
-      showToast(this, error instanceof Error ? error.message : '这张没有保存成功')
+      showToast(this, error instanceof Error ? error.message : '这次没有排上队')
     }
   },
 

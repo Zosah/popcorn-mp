@@ -1,8 +1,11 @@
 <view class="row" bindtap="onTap">
-  <view class="row__thumb {{item.imageSrc || item.iconUrl ? 'row__thumb--image' : ''}}">
-    <image wx:if="{{item.imageSrc}}" class="row__image" src="{{item.imageSrc}}" mode="aspectFill" />
-    <image wx:elif="{{item.iconUrl}}" class="row__icon" src="{{item.iconUrl}}" mode="aspectFit" />
-    <view wx:else class="row__initial" style="background: {{item.fallbackColor}}">{{item.fallbackText}}</view>
+  <view class="row__thumb row__thumb--image">
+    <image
+      class="row__image"
+      src="{{item.imageSrc || item.placeholder}}"
+      mode="aspectFill"
+    />
+    <view wx:if="{{item.generating}}" class="row__pulse"></view>
   </view>
 
   <view class="row__main">
