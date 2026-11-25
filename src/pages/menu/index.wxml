@@ -245,7 +245,7 @@
               </view>
               <view class="menu-recipe__media">
                 <image wx:if="{{item.image && item.image.src}}" src="{{item.image.src}}" mode="aspectFit" />
-                <line-icon wx:else name="menu-category-soup" size="34" tone="gold" />
+                <image wx:else class="menu-recipe__placeholder" src="{{item.placeholder}}" mode="aspectFill" />
               </view>
             </view>
             <view class="menu-recipe__foot">

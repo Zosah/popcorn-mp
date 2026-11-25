@@ -362,6 +362,7 @@ function buildMenuRecipe(
     version: item.version,
     createdBy: item.createdBy,
     imageMediaId: item.imageMediaId || '',
+    imageState: item.imageState || '',
     noteImageMediaIds: [...(item.noteImageMediaIds ?? [])],
     noteImages,
   }

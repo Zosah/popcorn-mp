@@ -2168,3 +2168,10 @@
   font-size: 19rpx !important;
   white-space: nowrap;
 }
+
+/* 菜谱卡片没有成品图时用中间态占位，而不是通用图标 */
+.menu-recipe__placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+}

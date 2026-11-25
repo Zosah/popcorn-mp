@@ -400,6 +400,8 @@ export interface ApiMenuRecipe {
   servings: number
   cookingMinutes: number
   imageMediaId: string
+  /** 图片状态：pending 生成中 / ready 已有图 / failed 生成失败 */
+  imageState?: string
   noteImageMediaIds: string[]
   ingredients: ApiMenuIngredient[]
   steps: ApiMenuStep[]

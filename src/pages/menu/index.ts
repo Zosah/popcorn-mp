@@ -147,6 +147,30 @@ Page({
     menuRequestGate.invalidate()
   },
 
+  /** 有菜谱在生成成品图时，短轮询刷新列表，出图后自动替换占位 */
+  startRecipeImagePolling() {
+    const state = this as unknown as { recipePollTimer?: number }
+    if (state.recipePollTimer) return
+    const hasPending = this.data.allRecipes.some((item) => item.imageState === 'pending')
+    if (!hasPending) return
+    let tries = 0
+    const timer = setInterval(() => {
+      tries += 1
+      if (tries > 20) {
+        this.stopRecipeImagePolling()
+        return
+      }
+      void this.refresh(false)
+    }, 4000)
+    state.recipePollTimer = timer as unknown as number
+  },
+
+  stopRecipeImagePolling() {
+    const state = this as unknown as { recipePollTimer?: number }
+    if (state.recipePollTimer) clearInterval(state.recipePollTimer)
+    state.recipePollTimer = undefined
+  },
+
   async refresh(fromPullDown = false) {
     const sequence = menuRequestGate.begin()
     const startedAt = Date.now()
@@ -215,6 +239,12 @@ Page({
     const decoratedRecipes = recipes.map((recipe) => ({
       ...recipe,
       updatedLabel: recipeUpdatedLabel(recipe.updatedAt || recipe.createdAt),
+      // 没有成品图时给三态占位，不再退回通用图标
+      placeholder: recipe.imageState === 'failed'
+        ? '/images/inventory-failed-state.jpg'
+        : recipe.imageState === 'pending' || (recipe.imageMediaId && !recipe.image?.src)
+          ? '/images/inventory-generating.jpg'
+          : '/images/inventory-placeholder.png',
     }))
     const categoryTabs = buildCategoryTabs(decoratedRecipes, categories)
     const selectedCategoryId = categoryTabs.some((item) => item.id === this.data.selectedCategoryId)
@@ -239,6 +269,7 @@ Page({
     }, () => {
       this.syncCartFromRecipes(recipes)
       this.cacheCurrentPage()
+      this.startRecipeImagePolling()
     })
   },
 
@@ -817,7 +848,7 @@ function readStoredPage(): Record<string, unknown> | null {
 
 function menuPageCacheKey(): string {
   const spaceId = readStoredApiSession()?.session.activeSpaceId || 'demo'
-  return `menu:overview:v7:${spaceId}`
+  return `menu:overview:v8:${spaceId}`
 }
 
 function cartStorageKey(): string {
