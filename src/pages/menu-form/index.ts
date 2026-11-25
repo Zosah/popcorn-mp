@@ -1,4 +1,6 @@
 import { mediaGateway } from '../../services/media'
+import { enqueueImageJob } from '../../services/generated-image'
+import { appToastBehavior, showToast } from '../../utils/app-toast'
 import { menuGateway } from '../../services/menu'
 import {
   getMenuErrorMessage,
@@ -21,6 +23,7 @@ import { showMediaUploadError } from '../../utils/media-error'
 interface MenuFormImage {
   mediaId: string
   src: string
+  thumbSrc?: string
   caption?: string
 }
 
@@ -62,10 +65,13 @@ function emptyIngredient(): IngredientDraft {
 }
 
 Page({
+  behaviors: [appToastBehavior],
   data: {
     loading: true,
     saving: false,
     imageUploading: false,
+    aiGenerating: false,
+    imageState: '',
     noteImageUploading: false,
     loadError: '',
     recipeId: '',
@@ -237,6 +243,70 @@ Page({
 
   onStepsInput(event: { detail: { value: string } }) {
     this.setData({ stepsText: event.detail.value })
+  },
+
+  /** 没有成品图时按菜名生成一张，走异步队列，出图后提示人工保存 */
+  async onGenerateImage() {
+    if (this.data.aiGenerating) return
+    const title = String(this.data.form.title ?? '').trim()
+    if (title.length < 2) {
+      showToast(this, '先写下菜名')
+      return
+    }
+    this.setData({ aiGenerating: true, imageState: 'pending' })
+    try {
+      await enqueueImageJob({
+        kind: 'menu',
+        category: '',
+        topic: title,
+        targetItemId: this.data.recipeId || '',
+        forced: true,
+      })
+      this.setData({ aiGenerating: false })
+      showToast(this, '已开始生成菜品图，可以先保存')
+      if (this.data.recipeId) this.startImagePolling(this.data.recipeId)
+    } catch (error) {
+      this.setData({ aiGenerating: false, imageState: '' })
+      showToast(this, error instanceof Error ? error.message : '这次没有排上队')
+    }
+  },
+
+  /** 生成中每 3 秒看一眼，出图后带进表单并提示保存 */
+  startImagePolling(recipeId: string) {
+    this.stopImagePolling()
+    let tries = 0
+    const timer = setInterval(async () => {
+      tries += 1
+      if (tries > 20) {
+        this.stopImagePolling()
+        return
+      }
+      try {
+        const recipe = await menuGateway.get(recipeId)
+        const state = String(recipe?.imageState ?? '')
+        if (state === 'pending') return
+        this.stopImagePolling()
+        this.setData({ imageState: state })
+        if (recipe?.imageMediaId) {
+          const asset = await mediaGateway.get(recipe.imageMediaId)
+          const src = asset.display.url || asset.thumb.url
+          this.setData({
+            image: { mediaId: asset.id, src, thumbSrc: asset.thumb.url || src },
+            imageMediaId: asset.id,
+          })
+          showToast(this, '已为您生成成品图，记得保存', 2600)
+        }
+      } catch {
+        this.stopImagePolling()
+      }
+    }, 3000)
+    ;(this as unknown as { imagePollTimer?: number }).imagePollTimer = timer as unknown as number
+  },
+
+  stopImagePolling() {
+    const timer = (this as unknown as { imagePollTimer?: number }).imagePollTimer
+    if (timer) clearInterval(timer)
+    ;(this as unknown as { imagePollTimer?: number }).imagePollTimer = undefined
   },
 
   async onChooseImage() {

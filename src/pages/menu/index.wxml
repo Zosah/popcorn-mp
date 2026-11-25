@@ -91,7 +91,12 @@
             <view class="menu-order__dish-head">
               <view class="menu-order__dish-cover">
                 <image wx:if="{{dish.imageSrc}}" src="{{dish.imageSrc}}" mode="aspectFill" />
-                <view wx:else class="menu-order__dish-cover-empty"><line-icon name="menu-object-ingredient" size="24" tone="muted" /></view>
+                <image
+                  wx:else
+                  class="menu-order__dish-cover-placeholder"
+                  src="{{dish.placeholder || '/images/inventory-placeholder.png'}}"
+                  mode="aspectFill"
+                />
                 <text class="menu-order__dish-index">{{dish.numberLabel}}</text>
               </view>
               <view class="menu-order__dish-title-row">

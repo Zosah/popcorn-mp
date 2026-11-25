@@ -708,6 +708,11 @@ function toOrderView(order: MealOrder, recipes: MenuRecipe[]): OrderView {
         numberLabel: String(index + 1).padStart(2, '0'),
         readyCount,
         imageSrc: recipe?.image?.src || '',
+        placeholder: recipe?.imageState === 'failed'
+          ? '/images/inventory-failed-state.jpg'
+          : recipe?.imageState === 'pending'
+            ? '/images/inventory-generating.jpg'
+            : '/images/inventory-placeholder.png',
         steps: recipe?.steps || [],
         expanded: readyCount < item.ingredients.length,
       }

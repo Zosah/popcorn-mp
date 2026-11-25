@@ -49,6 +49,8 @@ export interface MenuRecipe extends DemoMenuRecipe {
   version: number
   createdBy: string
   imageMediaId: string
+  /** 图片状态：pending 生成中 / ready 已有图 / failed 生成失败 */
+  imageState?: string
   categoryId: string
   categoryName: string
   noteImageMediaIds: string[]

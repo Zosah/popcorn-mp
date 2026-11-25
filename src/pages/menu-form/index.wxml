@@ -1,3 +1,4 @@
+<app-toast visible="{{appToastVisible}}" text="{{appToastText}}" />
 <view class="page-shell menu-form-page">
   <view class="recipe-head">
     <view class="recipe-head__mark"><line-icon name="menu-category-soup" size="30" tone="gold" /></view>
@@ -44,11 +45,30 @@
             <line-icon name="system-image" size="30" tone="blue" />
             <text>上传中</text>
           </view>
+          <view wx:elif="{{aiGenerating || imageState === 'pending'}}" class="recipe-cover__preview">
+            <image src="/images/inventory-generating.jpg" mode="aspectFit" />
+            <view class="recipe-cover__caption">AI 生成中</view>
+          </view>
+          <view wx:elif="{{imageState === 'failed'}}" class="recipe-cover__preview" bindtap="onGenerateImage">
+            <image src="/images/inventory-failed-state.jpg" mode="aspectFit" />
+            <view class="recipe-cover__caption">生成失败，点击重试</view>
+          </view>
           <view wx:else class="recipe-cover__empty" bindtap="onChooseImage">
             <line-icon name="system-image" size="32" tone="blue" />
             <text>添加成品图</text>
           </view>
+
         </view>
+
+      </view>
+
+      <view
+        wx:if="{{!image && !imageUploading}}"
+        class="recipe-ai"
+        catchtap="onGenerateImage"
+      >
+        <line-icon name="menu-object-dish" size="20" tone="green" />
+        <text>{{aiGenerating ? '正在排队…' : '没有成品图？AI 生成一张'}}</text>
       </view>
 
       <view class="recipe-field recipe-category-field">

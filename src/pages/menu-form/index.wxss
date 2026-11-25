@@ -224,3 +224,20 @@
   font-size: 21rpx;
 }
 .add-row { display: flex; height: 74rpx; align-items: center; justify-content: center; border: 1rpx dashed #d9d3c7; border-radius: 24rpx; background: rgba(255, 255, 255, 0.56); color: var(--recipe-gold); gap: 7rpx; font-size: 24rpx; font-weight: 600; }
+
+/* AI 生成成品图：放在封面下方，与库存编辑页同款胶囊 */
+.recipe-ai {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  align-items: center;
+  margin-top: 14rpx;
+  padding: 10rpx 20rpx;
+  border: 1rpx dashed #cfe0d6;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #f4f8f4, #eef4ef);
+  color: #5c7a6f;
+  font-size: 22rpx;
+  gap: 8rpx;
+}
