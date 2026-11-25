@@ -57,12 +57,6 @@
           <text>添加图片</text>
         </view>
       </view>
-
-      <view wx:if="{{aiQueued && !image}}" class="form-ai-note">
-        <line-icon name="system-refresh" size="18" tone="pink" />
-        <text>AI 正在后台生成，保存后会自动带上图片，也可以先离开</text>
-      </view>
-
     </view>
 
     <view class="form-section paper-card">

@@ -317,16 +317,3 @@
   gap: 8rpx;
 }
 
-/* 已排队提示：告诉用户可以走开，图会自己补上 */
-.form-ai-note {
-  display: flex;
-  align-items: center;
-  margin-top: 14rpx;
-  padding: 14rpx 18rpx;
-  border-radius: 18rpx;
-  background: #fdf3ec;
-  color: #9a5f4b;
-  font-size: 21rpx;
-  line-height: 1.5;
-  gap: 10rpx;
-}
