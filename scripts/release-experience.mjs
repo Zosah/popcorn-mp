@@ -23,7 +23,7 @@
  *   RELEASE_DESC          覆盖上传描述
  *   RELEASE_DEBOUNCE_MS   watch 静默时间，默认 20000
  */
-import { spawn } from 'node:child_process'
+import { spawn, execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
   appendFileSync,
@@ -267,6 +267,43 @@ async function runUiCheck() {
   return 'passed'
 }
 
+
+/**
+ * 发布通知统一格式（用户指定，长期有效）：
+ *   时刻见 1.0.0 已上传。
+ *   1. 提交记录：b496f95 2026/11/25 14:41
+ *   2. 本次改动：修改摘要
+ *    - 改动1
+ *   3. 测试结果：测试【通过】，UI 测试【通过】
+ */
+function buildWeComNotice(version, workspace, record) {
+  const shortSha = String(workspace.commit ?? '').slice(0, 7) || 'unknown'
+  const commitAt = execFileSync('git', ['log', '-1', '--format=%ad', '--date=format:%Y/%m/%d %H:%M'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim()
+  const subject = execFileSync('git', ['log', '-1', '--format=%s'], { cwd: ROOT, encoding: 'utf8' }).trim()
+  let bullets = []
+  try {
+    bullets = execFileSync('git', ['log', '-1', '--format=%b'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n')
+      .map((line) => line.replace(/^[-*]\s*/, '').trim())
+      .filter(Boolean)
+      .slice(0, 3)
+  } catch {
+    bullets = []
+  }
+  const label = (value) => (value === 'passed' ? '通过' : value === 'skipped' ? '跳过' : '失败')
+  const lines = [
+    `时刻见 ${version} 已上传。`,
+    `1. 提交记录：${shortSha} ${commitAt}`,
+    `2. 本次改动：${subject}`,
+  ]
+  for (const bullet of bullets) lines.push(` - ${bullet}`)
+  lines.push(`3. 测试结果：测试【${label(record.tests)}】，UI 测试【${label(record.uiCheck)}】`)
+  return lines.join('\n')
+}
+
 function persist(record) {
   mkdirSync(PREVIEW_DIR, { recursive: true })
   writeFileSync(STATUS_FILE, `${JSON.stringify(record, null, 2)}\n`)
@@ -322,9 +359,7 @@ async function releaseOnce(reason) {
     }
 
     if (!options.previewOnly) {
-      const notice = await notifyWeCom(
-        `时刻见 ${version} 已上传。${desc}。测试 ${record.tests}，UI ${record.uiCheck}。预览码 .preview/experience-latest.png`,
-      )
+      const notice = await notifyWeCom(buildWeComNotice(version, workspace, record))
       record.wecom = notice.ok ? 'sent' : 'failed'
     }
 

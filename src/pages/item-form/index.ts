@@ -10,6 +10,12 @@ import { formatChineseDate } from '../../domain/expiry'
 import { enqueueImageJob } from '../../services/generated-image'
 import type { InventoryItemInput } from '../../domain/inventory'
 import { inventoryGateway } from '../../services/inventory'
+import { InventoryGatewayError } from '../../services/inventory-gateway'
+
+/** 版本冲突：物品刚被后台或别人改过。 */
+function isVersionConflict(error: unknown): boolean {
+  return error instanceof InventoryGatewayError && error.code === 'VERSION_CONFLICT'
+}
 import { mediaGateway } from '../../services/media'
 import { MediaGatewayError } from '../../services/media-gateway'
 import { navigateBackOrTab } from '../../utils/demo-navigation'
@@ -228,7 +234,9 @@ Page({
           this.setData({
             image: { mediaId: asset.id, src, thumbSrc: asset.thumb.url || src },
             'form.imageMediaId': asset.id,
+            version: item.version,
             aiQueued: false,
+            imageState: 'ready',
           })
           showToast(this, '已为您生成封面图，记得保存', 2600)
         }
@@ -458,10 +466,26 @@ Page({
       )
       navigateBackOrTab('/pages/inventory/index')
     } catch (error) {
-      wx.showToast({
-        title: getInventoryErrorMessage(error, '保存失败'),
-        icon: 'none',
-      })
+      if (isVersionConflict(error) && this.data.itemId) {
+        // 后台刚补过图或别处改过：拉一次最新版本再存，避免用户重填
+        try {
+          const latest = await inventoryGateway.get(this.data.itemId)
+          if (latest) {
+            await inventoryGateway.update(
+              this.data.itemId,
+              { ...form, expiresOn: this.data.hasExpiry ? form.expiresOn : null },
+              latest.version,
+            )
+            this.setData({ version: latest.version })
+            showToast(this, this.data.imageState === 'pending' ? '已保存，封面生成后会补上' : '已保存')
+            navigateBackOrTab('/pages/inventory/index')
+            return
+          }
+        } catch {
+          // 落到下面的失败提示
+        }
+      }
+      showToast(this, getInventoryErrorMessage(error, '保存失败'))
     } finally {
       this.setData({ saving: false })
     }
