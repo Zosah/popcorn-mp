@@ -260,8 +260,8 @@ Page({
       showToast(this, '先写下物品名称')
       return
     }
-    // 已经点过一次就是「换一张」：跳过缓存重新生成
-    const forced = this.data.aiQueued
+    // 手动点击一律强制：用户要的是「新的一张」，不能拿缓存里的旧图糊弄
+    const forced = true
     this.setData({ aiGenerating: true })
     try {
       await enqueueImageJob({
@@ -272,7 +272,7 @@ Page({
         forced,
       })
       this.setData({ aiGenerating: false, aiQueued: true, imageState: 'pending' })
-      showToast(this, forced ? '已重新生成，可以先保存' : '已在后台生成，可以先保存')
+      showToast(this, '已开始生成新的一张，可以先保存')
       if (this.data.itemId) this.startImagePolling(this.data.itemId)
     } catch (error) {
       this.setData({ aiGenerating: false })
