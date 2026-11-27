@@ -371,7 +371,9 @@ Page({
 
   onRemoveImage() {
     if (this.data.imageUploading || this.data.saving) return
-    this.setData({ image: null, imageMediaId: '' })
+    // 回到最初的空态，不保留生成中的占位
+    this.stopImagePolling()
+    this.setData({ image: null, imageMediaId: '', imageState: '', aiGenerating: false })
   },
 
   async onChooseNoteImages() {

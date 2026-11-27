@@ -349,7 +349,14 @@ Page({
 
   onRemoveImage() {
     if (this.data.imageUploading || this.data.saving) return
-    this.setData({ image: null, 'form.imageMediaId': '' })
+    // 回到最初的空态：连同生成状态一起清掉，否则会继续显示「AI 生成中」
+    this.stopImagePolling()
+    this.setData({
+      image: null,
+      imageState: '',
+      aiQueued: false,
+      'form.imageMediaId': '',
+    })
   },
 
   onSelectCategory(event: { currentTarget: { dataset: { value: string } } }) {
